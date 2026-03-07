@@ -293,30 +293,62 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
     }
   };
 
-  // Create room function
+  // Create room function (supports comma-separated room numbers for batch creation)
   const handleCreateRoom = async () => {
     if (!token) return;
-    
+
+    // Parse comma-separated room numbers
+    const roomNumbers = roomForm.roomNumber
+      .split(',')
+      .map((r) => r.trim())
+      .filter((r) => r.length > 0);
+
+    if (roomNumbers.length === 0) return;
+
     try {
       setLoading(true);
-      const response = await hotelAdminApi.createRoom(token, roomForm);
-      if (response.success) {
-        setCreateDialogOpen(false);
-        setRoomForm({
-          roomNumber: '',
-          roomType: 'STANDARD',
-          pricePerNight: 0,
-          capacity: 1,
-          description: '',
+
+      if (roomNumbers.length === 1) {
+        // Single room — use existing endpoint
+        const response = await hotelAdminApi.createRoom(token, {
+          ...roomForm,
+          roomNumber: roomNumbers[0],
         });
-        await loadRooms();
-        setError(null);
+        if (response.success) {
+          setCreateDialogOpen(false);
+          setRoomForm({ roomNumber: '', roomType: 'STANDARD', pricePerNight: 0, capacity: 1, description: '' });
+          await loadRooms();
+          setError(null);
+        } else {
+          setError(response.message || 'Failed to create room. Please check the room number is unique.');
+        }
       } else {
-        setError(response.message || 'Failed to create room. Please check the room number is unique.');
+        // Multiple rooms — use batch endpoint
+        const response = await hotelAdminApi.createRoomsBatch(token, {
+          roomNumbers,
+          roomType: roomForm.roomType,
+          pricePerNight: roomForm.pricePerNight,
+          capacity: roomForm.capacity,
+          description: roomForm.description,
+        });
+
+        if (response.success && response.data) {
+          const { data } = response;
+          if (data.failed === 0) {
+            setCreateDialogOpen(false);
+            setRoomForm({ roomNumber: '', roomType: 'STANDARD', pricePerNight: 0, capacity: 1, description: '' });
+            setError(null);
+          } else {
+            const failedList = data.failedRooms.map(f => `${f.roomNumber}: ${f.error}`).join(', ');
+            setError(`${data.created} room(s) created. ${data.failed} failed: ${failedList}`);
+          }
+          await loadRooms();
+        } else {
+          setError(response.message || 'Failed to create rooms.');
+        }
       }
     } catch (err) {
-      // console.error('Error creating room:', err);
-      setError('Failed to create room. Please check the room number is unique.');
+      setError('Failed to create room(s). Please try again.');
     } finally {
       setLoading(false);
     }

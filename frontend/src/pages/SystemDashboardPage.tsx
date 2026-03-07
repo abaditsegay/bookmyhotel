@@ -5,7 +5,6 @@ import {
   Grid,
   Card,
   CardContent,
-  CardActions,
   Button,
   Box,
   Paper,
@@ -258,74 +257,6 @@ export const SystemDashboardPage: React.FC = () => {
   const isSystemAdmin = user.roles.includes('ADMIN') || user.roles.includes('SYSTEM_ADMIN') || user.role === 'ADMIN' || user.role === 'SYSTEM_ADMIN';
   const isSystemCustomer = user.roles.includes('CUSTOMER');
 
-  const adminQuickActions = [
-    {
-      title: t('admin.tenant.title'),
-      description: t('dashboard.system.manageTenants'),
-      icon: <Business />,
-      action: () => navigate('/system/tenants'),
-      color: 'info' as const,
-      buttonText: t('admin.tenant.viewTenants'),
-      stat: stats.totalTenants,
-      statLabel: t('dashboard.system.activeTenants')
-    },
-    {
-      title: t('admin.hotel.title'),
-      description: t('dashboard.system.manageHotels'),
-      icon: <Hotel />,
-      action: () => navigate('/system/hotels'),
-      color: 'primary' as const,
-      buttonText: t('admin.hotel.viewHotels'),
-      stat: stats.totalHotels,
-      statLabel: t('dashboard.system.totalHotels')
-    },
-    {
-      title: t('admin.user.title'),
-      description: t('dashboard.system.manageUsers'),
-      icon: <People />,
-      action: () => navigate('/system/users'),
-      color: 'secondary' as const,
-      buttonText: t('admin.user.viewUsers'),
-      stat: stats.totalUsers,
-      statLabel: t('dashboard.system.totalUsers')
-    },
-  ];
-
-  const customerQuickActions = [
-    {
-      title: t('hotelSearch.title'),
-      description: t('dashboard.customer.searchHotels'),
-      icon: <Hotel />,
-      action: () => navigate('/search'),
-      color: 'primary' as const,
-      buttonText: t('dashboard.customer.startSearch'),
-      stat: null,
-      statLabel: null
-    },
-    {
-      title: t('dashboard.customer.myBookings'),
-      description: t('dashboard.customer.viewBookings'),
-      icon: <Dashboard />,
-      action: () => navigate('/my-bookings'),
-      color: 'secondary' as const,
-      buttonText: t('dashboard.customer.manageBookings'),
-      stat: null,
-      statLabel: null
-    },
-    {
-      title: t('dashboard.customer.profileSettings'),
-      description: t('dashboard.customer.updateProfile'),
-      icon: <Settings />,
-      action: () => navigate('/profile'),
-      color: 'info' as const,
-      buttonText: t('dashboard.customer.editProfile'),
-      stat: null,
-      statLabel: null
-    },
-  ];
-
-  const quickActions = isSystemAdmin ? adminQuickActions : customerQuickActions;
-
   // If statistics are still loading, show loading indicator
   if (stats.loading) {
     return (
@@ -479,73 +410,46 @@ export const SystemDashboardPage: React.FC = () => {
           </Box>
         </Paper>
 
-        <Grid container spacing={3} sx={{ mb: 4 }} data-testid="stats-cards">
-          {quickActions.map((action, index) => (
-            <Grid item xs={12} sm={6} md={3} key={index}>
-              <Card 
-                sx={{ 
-                  height: '100%',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease-in-out',
-                  '&:hover': {
-                    transform: 'translateY(-4px)',
-                    boxShadow: 4,
-                  }
-                }}
-                onClick={action.action}
-                data-testid={`stats-card-${action.title.toLowerCase().replace(/\s+/g, '-')}`}
-              >
-                <CardContent sx={{ textAlign: 'center', pb: 0.75, px: 1.5 }}>
-                  <Box 
-                    sx={{ 
-                      width: 36, 
-                      height: 36, 
-                      borderRadius: '50%', 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      justifyContent: 'center',
-                      margin: '0 auto 8px',
-                      bgcolor: `${action.color}.light`,
-                      color: `${action.color}.contrastText`
-                    }}
-                  >
-                    {React.cloneElement(action.icon, { sx: { fontSize: 18 } })}
-                  </Box>
-                  <Typography variant="body2" gutterBottom fontWeight="bold" data-testid={`stat-title-${action.title.toLowerCase().replace(/\s+/g, '-')}`} sx={{ lineHeight: 1.2 }}>
-                    {action.title}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
-                    {action.description}
-                  </Typography>
-                  {action.stat !== null && action.stat !== undefined && (
-                    <Box sx={{ mt: 1, textAlign: 'center' }}>
-                      <Typography variant="h5" color={action.color} fontWeight="bold" data-testid={action.title === 'Manage Hotels' ? 'total-hotels' : action.title === 'Manage Users' ? 'total-users' : 'active-bookings'} sx={{ lineHeight: 1.2 }}>
-                        {stats.loading ? '...' : action.stat}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
-                        {action.statLabel}
-                      </Typography>
-                    </Box>
-                  )}
-                </CardContent>
-                <CardActions sx={{ justifyContent: 'center', pt: 0 }}>
-                  <Button 
-                    size="small" 
-                    color={action.color}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      action.action();
-                    }}
-                    data-testid={`nav-${action.title.toLowerCase().replace(/\s+/g, '-')}`}
-                    disabled={stats.loading}
-                  >
-                    {action.buttonText}
-                  </Button>
-                </CardActions>
-              </Card>
+        {/* Summary Stats */}
+        {isSystemAdmin && (
+          <Grid container spacing={3} sx={{ mb: 4 }} data-testid="stats-cards">
+            <Grid item xs={12} sm={6} md={3}>
+              <MetricCard
+                title={t('dashboard.system.activeTenants', 'Active Tenants')}
+                value={stats.totalTenants}
+                icon={<Business />}
+                color="info"
+                data-testid="total-tenants"
+              />
             </Grid>
-          ))}
-        </Grid>
+            <Grid item xs={12} sm={6} md={3}>
+              <MetricCard
+                title={t('dashboard.system.totalHotels', 'Total Hotels')}
+                value={stats.totalHotels}
+                icon={<Hotel />}
+                color="primary"
+                data-testid="total-hotels"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} md={3}>
+              <MetricCard
+                title={t('dashboard.system.totalUsers', 'Total Users')}
+                value={stats.totalUsers}
+                icon={<People />}
+                color="secondary"
+                data-testid="total-users"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} md={3}>
+              <MetricCard
+                title={t('dashboard.system.totalBookings', 'Total Bookings')}
+                value={stats.totalBookings}
+                icon={<BookIcon />}
+                color="success"
+              />
+            </Grid>
+          </Grid>
+        )}
 
         {/* System Status and Information */}
         <Grid container spacing={3}>

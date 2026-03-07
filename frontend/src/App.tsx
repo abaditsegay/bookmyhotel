@@ -4,6 +4,7 @@ import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { SnackbarProvider } from 'notistack';
 import './i18n'; // Initialize i18n
 import EnhancedLayout from './components/layout/EnhancedLayout';
+import AdminLayout from './components/layout/AdminLayout';
 import { ErrorBoundary } from './components/common';
 import { NotificationProvider } from './components/common';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -17,49 +18,69 @@ import OperationsPage from './pages/operations/OperationsPage';
 import StaffDashboardPage from './pages/StaffDashboardPage';
 import ShopRoutes from './pages/shop/ShopRoutes';
 import PublicHotelRegistration from './pages/PublicHotelRegistration';
+import LandingPage from './pages/LandingPage';
 import NotificationsPage from './pages/NotificationsPage';
 
+// Retry wrapper for lazy imports — handles stale chunk errors after deployment
+function lazyWithRetry(importFn: () => Promise<any>) {
+  return lazy(() =>
+    importFn().catch((error: Error) => {
+      // Only reload once to avoid infinite loops
+      const hasReloaded = sessionStorage.getItem('chunk_reload');
+      if (!hasReloaded) {
+        sessionStorage.setItem('chunk_reload', '1');
+        window.location.reload();
+        return new Promise(() => {}); // never resolves — page is reloading
+      }
+      sessionStorage.removeItem('chunk_reload');
+      throw error;
+    })
+  );
+}
+
 // Lazy load all page components for code splitting
-const HotelSearchPage = lazy(() => import('./pages/HotelSearchPage'));
-const SearchResultsPage = lazy(() => import('./pages/SearchResultsPage'));
-const HotelListPage = lazy(() => import('./pages/HotelListPage'));
-const HotelDetailPage = lazy(() => import('./pages/HotelDetailPage'));
-const BookingPage = lazy(() => import('./pages/BookingPage'));
-const BookingConfirmationPage = lazy(() => import('./pages/BookingConfirmationPage'));
-const FindBookingPage = lazy(() => import('./pages/FindBookingPage'));
-const BookingSearchPage = lazy(() => import('./pages/BookingSearchPage'));
-const LoginPage = lazy(() => import('./pages/LoginPage'));
-const GuestAuthPage = lazy(() => import('./pages/GuestAuthPage'));
-const ProfilePage = lazy(() => import('./pages/ProfilePage'));
+const HotelSearchPage = lazyWithRetry(() => import('./pages/HotelSearchPage'));
+const SearchResultsPage = lazyWithRetry(() => import('./pages/SearchResultsPage'));
+const HotelListPage = lazyWithRetry(() => import('./pages/HotelListPage'));
+const HotelDetailPage = lazyWithRetry(() => import('./pages/HotelDetailPage'));
+const BookingPage = lazyWithRetry(() => import('./pages/BookingPage'));
+const BookingConfirmationPage = lazyWithRetry(() => import('./pages/BookingConfirmationPage'));
+const FindBookingPage = lazyWithRetry(() => import('./pages/FindBookingPage'));
+const BookingSearchPage = lazyWithRetry(() => import('./pages/BookingSearchPage'));
+const LoginPage = lazyWithRetry(() => import('./pages/LoginPage'));
+const GuestAuthPage = lazyWithRetry(() => import('./pages/GuestAuthPage'));
+const ForgotPasswordPage = lazyWithRetry(() => import('./pages/ForgotPasswordPage'));
+const ResetPasswordPage = lazyWithRetry(() => import('./pages/ResetPasswordPage'));
+const ProfilePage = lazyWithRetry(() => import('./pages/ProfilePage'));
 
 // Admin pages
-const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
-const HotelRegistrationAdmin = lazy(() => import('./pages/admin/HotelRegistrationAdmin'));
-const HotelRegistrationForm = lazy(() => import('./pages/admin/HotelRegistrationForm'));
-const HotelManagementAdmin = lazy(() => import('./pages/admin/HotelManagementAdmin'));
-const TenantManagementAdmin = lazy(() => import('./pages/admin/TenantManagementAdmin'));
-const UserManagementAdmin = lazy(() => import('./pages/admin/UserManagementAdmin'));
-const UserRegistrationForm = lazy(() => import('./pages/admin/UserRegistrationForm'));
-const UserViewEdit = lazy(() => import('./pages/admin/UserViewEdit'));
-const HotelViewEdit = lazy(() => import('./pages/admin/HotelViewEdit'));
+const AdminDashboard = lazyWithRetry(() => import('./pages/admin/AdminDashboard'));
+const HotelRegistrationAdmin = lazyWithRetry(() => import('./pages/admin/HotelRegistrationAdmin'));
+const HotelRegistrationForm = lazyWithRetry(() => import('./pages/admin/HotelRegistrationForm'));
+const HotelManagementAdmin = lazyWithRetry(() => import('./pages/admin/HotelManagementAdmin'));
+const TenantManagementAdmin = lazyWithRetry(() => import('./pages/admin/TenantManagementAdmin'));
+const UserManagementAdmin = lazyWithRetry(() => import('./pages/admin/UserManagementAdmin'));
+const UserRegistrationForm = lazyWithRetry(() => import('./pages/admin/UserRegistrationForm'));
+const UserViewEdit = lazyWithRetry(() => import('./pages/admin/UserViewEdit'));
+const HotelViewEdit = lazyWithRetry(() => import('./pages/admin/HotelViewEdit'));
 
 // Hotel Admin pages
-const HotelAdminDashboard = lazy(() => import('./pages/hotel-admin/HotelAdminDashboard'));
-const RoomManagement = lazy(() => import('./pages/hotel-admin/RoomManagement'));
-const RoomViewEdit = lazy(() => import('./pages/hotel-admin/RoomViewEdit'));
-const StaffManagement = lazy(() => import('./pages/hotel-admin/StaffManagement'));
-const StaffDetails = lazy(() => import('./pages/hotel-admin/StaffDetails'));
-const HotelAdminBookingDetails = lazy(() => import('./pages/hotel-admin/HotelAdminBookingDetails'));
+const HotelAdminDashboard = lazyWithRetry(() => import('./pages/hotel-admin/HotelAdminDashboard'));
+const RoomManagement = lazyWithRetry(() => import('./pages/hotel-admin/RoomManagement'));
+const RoomViewEdit = lazyWithRetry(() => import('./pages/hotel-admin/RoomViewEdit'));
+const StaffManagement = lazyWithRetry(() => import('./pages/hotel-admin/StaffManagement'));
+const StaffDetails = lazyWithRetry(() => import('./pages/hotel-admin/StaffDetails'));
+const HotelAdminBookingDetails = lazyWithRetry(() => import('./pages/hotel-admin/HotelAdminBookingDetails'));
 
 // Front Desk pages
-const FrontDeskDashboard = lazy(() => import('./pages/frontdesk/FrontDeskDashboard'));
-const FrontDeskUnifiedBookingDetails = lazy(() => import('./pages/frontdesk/FrontDeskUnifiedBookingDetails'));
+const FrontDeskDashboard = lazyWithRetry(() => import('./pages/frontdesk/FrontDeskDashboard'));
+const FrontDeskUnifiedBookingDetails = lazyWithRetry(() => import('./pages/frontdesk/FrontDeskUnifiedBookingDetails'));
 
 // Debug pages
-const RoleDashboardDebug = lazy(() => import('./pages/RoleDashboardDebug'));
+const RoleDashboardDebug = lazyWithRetry(() => import('./pages/RoleDashboardDebug'));
 
 // Booking Management
-const BookingManagementPage = lazy(() => import('./pages/BookingManagementPage'));
+const BookingManagementPage = lazyWithRetry(() => import('./pages/BookingManagementPage'));
 const GuestBookingManagementPage = lazy(() => import('./pages/GuestBookingManagementPage'));
 
 // Staff components
@@ -234,9 +255,9 @@ function App() {
           <EnhancedLayout hideSidebar={!isAuthenticated} maxWidth={isFullWidthRoute ? false : 'xl'}>
           <Suspense fallback={<PageLoader />}>
           <Routes>
-        <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />} />
+        <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <LandingPage />} />
         <Route path="/dashboard" element={<RoleBasedRouter />} />
-        <Route path="/home" element={<HotelSearchPage />} />
+        <Route path="/home" element={<LandingPage />} />
         <Route path="/hotels" element={
           <PlaceholderPage 
             title="Hotels" 
@@ -260,6 +281,8 @@ function App() {
           />
         } />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/guest-auth" element={<GuestAuthPage />} />
         {/* Development Demo Routes - only available in development mode */}
         {process.env.NODE_ENV === 'development' && (
@@ -292,48 +315,62 @@ function App() {
           </ProtectedRoute>
         } />
         
-        {/* System-Wide User Routes */}
+        {/* System-Wide User Routes — wrapped in AdminLayout for persistent sidebar */}
         <Route path="/system-dashboard" element={
           <ProtectedRoute>
-            <SystemDashboardPage />
+            <AdminLayout>
+              <SystemDashboardPage />
+            </AdminLayout>
           </ProtectedRoute>
         } />
         <Route path="/system/*" element={
           <ProtectedRoute requiredRole="ADMIN">
-            <React.Suspense fallback={<div>Loading...</div>}>
-              <SystemModule />
-            </React.Suspense>
+            <AdminLayout>
+              <React.Suspense fallback={<div>Loading...</div>}>
+                <SystemModule />
+              </React.Suspense>
+            </AdminLayout>
           </ProtectedRoute>
         } />
         <Route path="/system/hotels" element={
           <ProtectedRoute requiredRole="ADMIN">
-            <HotelManagementAdmin />
+            <AdminLayout>
+              <HotelManagementAdmin />
+            </AdminLayout>
           </ProtectedRoute>
         } />
         <Route path="/system/tenants" element={
           <ProtectedRoute requiredRole="ADMIN">
-            <TenantManagementAdmin />
+            <AdminLayout>
+              <TenantManagementAdmin />
+            </AdminLayout>
           </ProtectedRoute>
         } />
         <Route path="/system/users" element={
           <ProtectedRoute requiredRole="ADMIN">
-            <UserManagementAdmin />
+            <AdminLayout>
+              <UserManagementAdmin />
+            </AdminLayout>
           </ProtectedRoute>
         } />
         <Route path="/system/analytics" element={
           <ProtectedRoute requiredRole="ADMIN">
-            <PlaceholderPage 
-              title="System Analytics" 
-              message="Platform-wide analytics dashboard coming soon!" 
-            />
+            <AdminLayout>
+              <PlaceholderPage 
+                title="System Analytics" 
+                message="Platform-wide analytics dashboard coming soon!" 
+              />
+            </AdminLayout>
           </ProtectedRoute>
         } />
         <Route path="/system/settings" element={
           <ProtectedRoute requiredRole="ADMIN">
-            <PlaceholderPage 
-              title="System Settings" 
-              message="Global system configuration coming soon!" 
-            />
+            <AdminLayout>
+              <PlaceholderPage 
+                title="System Settings" 
+                message="Global system configuration coming soon!" 
+              />
+            </AdminLayout>
           </ProtectedRoute>
         } />
         <Route path="/my-bookings" element={

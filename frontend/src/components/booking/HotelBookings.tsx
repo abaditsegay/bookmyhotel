@@ -27,7 +27,6 @@ import {
 } from '@mui/material';
 import {
   Visibility as VisibilityIcon,
-  Delete as DeleteIcon,
   Search as SearchIcon,
   Refresh as RefreshIcon,
   PersonAdd as AddGuestIcon,
@@ -83,7 +82,6 @@ const HotelBookings: React.FC<HotelBookingsProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [snackbar, setSnackbar] = useState({ 
     open: false, 
     message: '', 
@@ -179,29 +177,6 @@ const HotelBookings: React.FC<HotelBookingsProps> = ({
   const handleViewBookingDetails = (booking: Booking) => {
     setSelectedBooking(booking);
     setDetailsDialogOpen(true);
-  };
-
-  // Handle delete booking
-  const handleDeleteBooking = async () => {
-    if (!selectedBooking || !token) return;
-
-    try {
-      await hotelAdminApi.deleteBooking(token, selectedBooking.reservationId);
-      setSnackbar({
-        open: true,
-        message: 'Booking deleted successfully',
-        severity: 'success'
-      });
-      setDeleteDialogOpen(false);
-      await loadBookings();
-    } catch (error) {
-      // console.error('Error deleting booking:', error);
-      setSnackbar({
-        open: true,
-        message: 'Failed to delete booking',
-        severity: 'error'
-      });
-    }
   };
 
   // Handle check-in/out actions
@@ -433,20 +408,6 @@ const HotelBookings: React.FC<HotelBookingsProps> = ({
                             </>
                           )}
                           
-                          {mode === 'hotel-admin' && (
-                            <Tooltip title="Delete Booking">
-                              <IconButton 
-                                size="small"
-                                onClick={() => {
-                                  setSelectedBooking(booking);
-                                  setDeleteDialogOpen(true);
-                                }}
-                                color="error"
-                              >
-                                <DeleteIcon />
-                              </IconButton>
-                            </Tooltip>
-                          )}
                         </Box>
                       </TableCell>
                     )}
@@ -548,27 +509,6 @@ const HotelBookings: React.FC<HotelBookingsProps> = ({
               )}
             </>
           )}
-        </DialogActions>
-      </Dialog>
-
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
-        <DialogTitle>Confirm Delete</DialogTitle>
-        <DialogContent>
-          <Typography>
-            Are you sure you want to delete the booking for {selectedBooking?.guestName}?
-            This action cannot be undone.
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
-          <Button 
-            onClick={handleDeleteBooking} 
-            color="error" 
-            variant="contained"
-          >
-            Delete
-          </Button>
         </DialogActions>
       </Dialog>
 

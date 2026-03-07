@@ -27,6 +27,7 @@ import {
   Search as SearchIcon,
   Store as StoreIcon,
   Notifications as NotificationsIcon,
+  Home as HomeIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
@@ -331,17 +332,17 @@ const Navbar: React.FC = () => {
         {/* Additional items for non-authenticated users */}
         {!user && (
           <>
+            <ListItem onClick={() => handleNavigation('/')} sx={{ cursor: 'pointer' }}>
+              <ListItemIcon>
+                <HomeIcon />
+              </ListItemIcon>
+              <ListItemText primary="Home" />
+            </ListItem>
             <ListItem onClick={() => handleNavigation('/find-booking')} sx={{ cursor: 'pointer' }}>
               <ListItemIcon>
                 <BusinessIcon />
               </ListItemIcon>
               <ListItemText primary="My Reservation" />
-            </ListItem>
-            <ListItem onClick={() => handleNavigation('/hotels/search')} sx={{ cursor: 'pointer' }}>
-              <ListItemIcon>
-                <SearchIcon />
-              </ListItemIcon>
-              <ListItemText primary="Reserve MyStay" />
             </ListItem>
           </>
         )}
@@ -554,46 +555,6 @@ const Navbar: React.FC = () => {
             </Box>
           )}
 
-          {/* Center Section: Shegeroom Branding - Only for non-logged-in users */}
-          {!user && (
-            <Box sx={{ 
-              display: { xs: 'none', md: 'flex' },
-              justifyContent: 'center', 
-              flex: 1,
-              alignItems: 'center',
-            }}>
-              <Typography
-                variant="h5"
-                sx={{
-                  fontWeight: 600,
-                  color: COLORS.WHITE,
-                  fontSize: { xs: '1rem', md: '1.5rem' },
-                  letterSpacing: '0.02em',
-                  textAlign: 'center',
-                }}
-              >
-                <Box
-                  component="span"
-                  sx={{
-                    color: theme.palette.warning.main,
-                    fontWeight: 900,
-                    fontFamily: '"Pacifico", "Lobster", cursive',
-                    fontSize: '1.25em',
-                    fontStyle: 'italic',
-                    letterSpacing: '0.05em',
-                    textShadow: `2px 2px 4px ${addAlpha(COLORS.BLACK, 0.5)}, 0 0 1px ${theme.palette.warning.main}`,
-                    WebkitTextStroke: `0.5px ${theme.palette.warning.main}`,
-                  }}
-                >
-                  Shegeroom
-                </Box>{' '}
-                <Box component="span" sx={{ color: COLORS.WHITE }}>
-                  Hotel Reservation Management
-                </Box>
-              </Typography>
-            </Box>
-          )}
-
           {/* For users who shouldn't see hotel name, or on mobile, show navigation in center */}
           {user && (!user.hotelName || !shouldShowHotelName() || isMobile) && (
             <Box sx={{ display: { xs: 'none', md: 'flex' }, justifyContent: 'center', flex: 1 }}>
@@ -649,6 +610,20 @@ const Navbar: React.FC = () => {
                   <>
                     <Button
                       color="inherit"
+                      onClick={() => handleNavigation('/')}
+                      startIcon={<HomeIcon />}
+                      sx={{
+                        borderRadius: 2,
+                        fontSize: '0.8rem',
+                        fontWeight: 'normal',
+                        textTransform: 'none',
+                        '&:hover': { backgroundColor: getHoverBackground() },
+                      }}
+                    >
+                      Home
+                    </Button>
+                    <Button
+                      color="inherit"
                       onClick={() => handleNavigation('/find-booking')}
                       sx={{
                         borderRadius: 2,
@@ -659,19 +634,6 @@ const Navbar: React.FC = () => {
                       }}
                     >
                       My Reservation
-                    </Button>
-                    <Button
-                      color="inherit"
-                      onClick={() => handleNavigation('/hotels/search')}
-                      sx={{
-                        borderRadius: 2,
-                        fontSize: '0.8rem', // Smaller font size
-                        fontWeight: user ? 'bold' : 'normal', // Bold for authenticated users
-                        textTransform: 'none', // Disable all caps
-                        '&:hover': { backgroundColor: getHoverBackground() },
-                      }}
-                    >
-                      Reserve MyStay
                     </Button>
                   </>
                 )}

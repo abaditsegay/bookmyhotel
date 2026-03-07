@@ -36,6 +36,33 @@ export const enTranslations = {
       registrationSuccess: "Registration successful! Redirecting...",
       loginFailed: "Login failed",
       registrationFailed: "Registration failed"
+    },
+    forgotPassword: {
+      title: "Forgot Password",
+      subtitle: "Enter your email and we'll send you a reset link",
+      sendButton: "Send Reset Link",
+      sending: "Sending...",
+      successMessage: "If an account with that email exists, a password reset link has been sent.",
+      errorMessage: "Something went wrong. Please try again later.",
+      invalidEmail: "Please enter a valid email address.",
+      checkInbox: "Please check your email inbox (and spam folder) for the reset link.",
+      backToLogin: "Back to Sign In"
+    },
+    resetPassword: {
+      title: "Reset Password",
+      subtitle: "Enter your new password below",
+      newPasswordLabel: "New Password",
+      confirmPasswordLabel: "Confirm New Password",
+      resetButton: "Reset Password",
+      resetting: "Resetting...",
+      successMessage: "Your password has been reset successfully!",
+      errorMessage: "Failed to reset password. Please try again.",
+      passwordTooShort: "Password must be at least 8 characters long.",
+      passwordsNoMatch: "Passwords do not match.",
+      invalidTokenTitle: "Invalid or Expired Link",
+      invalidTokenMessage: "This password reset link is invalid or has expired. Please request a new one.",
+      requestNewLink: "Request New Link",
+      goToLogin: "Go to Sign In"
     }
   },
 
@@ -2222,6 +2249,35 @@ export const enTranslations = {
     }
   },
   
+  landing: {
+    hero: {
+      title: "BookMyHotel",
+      subtitle: "Discover and book the perfect hotel for your next trip — fast, secure, and hassle-free."
+    },
+    search: {
+      title: "Search Hotels"
+    },
+    partner: {
+      title: "Partner With Us",
+      description: "List your hotel on BookMyHotel and reach thousands of travelers. Our platform gives you powerful management tools, real-time booking, and dedicated support to grow your business.",
+      benefit1: "Increase your hotel's visibility to a wider audience",
+      benefit2: "Streamlined booking and management dashboard",
+      benefit3: "Dedicated onboarding and ongoing support",
+      registerButton: "Register Your Hotel"
+    },
+    contact: {
+      title: "Contact Us",
+      description: "Have questions or need assistance? Our team is here to help you with bookings, partnerships, or any inquiries.",
+      emailLabel: "Email",
+      email: "support@bookmyhotel.com",
+      phoneLabel: "Phone",
+      phone: "+251-911-000-000"
+    },
+    footer: {
+      tagline: "© 2026 BookMyHotel — Your trusted hotel booking platform."
+    }
+  },
+
   language: {
     english: "English",
     amharic: "አማርኛ",

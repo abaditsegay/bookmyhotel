@@ -36,6 +36,33 @@ export const amTranslations = {
       registrationSuccess: "መመዝገብ በተሳካ ሁኔታ ተጠናቋል! በማዞር ላይ...",
       loginFailed: "መይግቡት አልተሳካም",
       registrationFailed: "መመዝገብ አልተሳካም"
+    },
+    forgotPassword: {
+      title: "የይለፍ ቃል ረሳህ",
+      subtitle: "ኢሜይልዎን ያስገቡ እና የመቀየሪያ ሊንክ እንልክልዎታለን",
+      sendButton: "የመቀየሪያ ሊንክ ላክ",
+      sending: "በመላክ ላይ...",
+      successMessage: "በዚያ ኢሜይል አካውንት ካለ የይለፍ ቃል መቀየሪያ ሊንክ ተልኳል።",
+      errorMessage: "የሆነ ችግር ተፈጥሯል። እባክዎ ቆይተው ይሞክሩ።",
+      invalidEmail: "እባክዎ ትክክለኛ ኢሜይል አድራሻ ያስገቡ።",
+      checkInbox: "እባክዎ የኢሜይል ገቢ ሣጥንዎን (እና ስፓም አቃፊን) ያረጋግጡ።",
+      backToLogin: "ወደ መግቢያ ተመለስ"
+    },
+    resetPassword: {
+      title: "የይለፍ ቃል ቀይር",
+      subtitle: "አዲሱን የይለፍ ቃልዎን ከዚህ ቀርስ ያስገቡ",
+      newPasswordLabel: "አዲስ የይለፍ ቃል",
+      confirmPasswordLabel: "አዲስ የይለፍ ቃል ያረጋግጡ",
+      resetButton: "የይለፍ ቃል ቀይር",
+      resetting: "በመቀየር ላይ...",
+      successMessage: "የይለፍ ቃልዎ በተሳካ ሁኔታ ተቀይሯል!",
+      errorMessage: "የይለፍ ቃል መቀየር አልተሳካም። እባክዎ እንደገና ይሞክሩ።",
+      passwordTooShort: "የይለፍ ቃል ቢያንስ 8 ቁምፊዎች ሊኖረው ይገባል።",
+      passwordsNoMatch: "የይለፍ ቃሎች አይመሳሰሉም።",
+      invalidTokenTitle: "ልክ ያልሆነ ወይም ጊዜው ያለፈበት ሊንክ",
+      invalidTokenMessage: "ይህ የይለፍ ቃል መቀየሪያ ሊንክ ልክ ያልሆነ ወይም ጊዜው ያለፈበት ነው።",
+      requestNewLink: "አዲስ ሊንክ ጠይቅ",
+      goToLogin: "ወደ መግቢያ ሂድ"
     }
   },
 
@@ -2073,6 +2100,35 @@ export const amTranslations = {
     }
   },
   
+  landing: {
+    hero: {
+      title: "BookMyHotel",
+      subtitle: "ለሚቀጥለው ጉዞዎ ፍጹም ሆቴል ያግኙ እና ያስመዝግቡ — ፈጣን፣ ደህንነቱ የተጠበቀ እና ምቹ።"
+    },
+    search: {
+      title: "ሆቴሎችን ይፈልጉ"
+    },
+    partner: {
+      title: "ከእኛ ጋር ይተባበሩ",
+      description: "ሆቴልዎን በ BookMyHotel ላይ ያስመዝግቡ እና በሺዎች የሚቆጠሩ ተጓዦችን ያግኙ። የእኛ መድረክ ንግድዎን ለማሳደግ ኃይለኛ የአስተዳደር መሳሪያዎች፣ የቅጽበት ቦታ ማስያዝ እና ልዩ ድጋፍ ይሰጥዎታል።",
+      benefit1: "የሆቴልዎን ታይነት ለሰፊ ታዳሚ ያሳድጉ",
+      benefit2: "ቀለል ያለ ቦታ ማስያዝ እና የአስተዳደር ዳሽቦርድ",
+      benefit3: "ልዩ የመቀላቀያ እና ቀጣይ ድጋፍ",
+      registerButton: "ሆቴልዎን ያስመዝግቡ"
+    },
+    contact: {
+      title: "ያግኙን",
+      description: "ጥያቄዎች አሉዎት ወይም እርዳታ ይፈልጋሉ? ቡድናችን ለቦታ ማስያዝ፣ ለሽርክና ወይም ለማንኛውም ጥያቄ ለመርዳት ዝግጁ ነው።",
+      emailLabel: "ኢሜይል",
+      email: "support@bookmyhotel.com",
+      phoneLabel: "ስልክ",
+      phone: "+251-911-000-000"
+    },
+    footer: {
+      tagline: "© 2026 BookMyHotel — የእርስዎ ታማኝ የሆቴል ማስያዝ መድረክ።"
+    }
+  },
+
   language: {
     english: "English",
     amharic: "አማርኛ",

@@ -18,7 +18,7 @@ import {
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link as RouterLink } from 'react-router-dom';
 import { API_CONFIG } from '../config/apiConfig';
 import PremiumTextField from '../components/common/PremiumTextField';
 
@@ -304,6 +304,24 @@ const LoginPage: React.FC = () => {
                   autoComplete="current-password"
                   inputProps={{ 'data-testid': 'password-input' }}
                 />
+                <Box sx={{ textAlign: 'right', mt: 0.5 }}>
+                  <Button
+                    component={RouterLink}
+                    to="/forgot-password"
+                    variant="text"
+                    size="small"
+                    sx={{ 
+                      color: COLORS.PRIMARY,
+                      textTransform: 'none',
+                      fontWeight: 500,
+                      p: 0,
+                      minWidth: 'auto',
+                      '&:hover': { textDecoration: 'underline', background: 'transparent' },
+                    }}
+                  >
+                    {t('auth.login.forgotPassword')}
+                  </Button>
+                </Box>
                 <Button
                   type="submit"
                   fullWidth

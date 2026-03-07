@@ -1,6 +1,5 @@
 package com.bookmyhotel.dto.admin;
 
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 /**
@@ -11,7 +10,6 @@ public class ApproveRegistrationRequest {
     @Size(max = 500, message = "Comments must not exceed 500 characters")
     private String comments;
     
-    @NotBlank(message = "Tenant ID is required for approval")
     @Size(max = 50, message = "Tenant ID must not exceed 50 characters")
     private String tenantId;
     

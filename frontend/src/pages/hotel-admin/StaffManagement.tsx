@@ -30,7 +30,6 @@ import {
 } from '@mui/material';
 import {
   Search as SearchIcon,
-  Delete as DeleteIcon,
   Visibility as ViewIcon,
   Refresh as RefreshIcon,
   PersonAdd as PersonAddIcon,
@@ -68,8 +67,6 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
 
   // Dialog states
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [selectedStaff, setSelectedStaff] = useState<StaffResponse | null>(null);
 
   // Form state
   const [staffForm, setStaffForm] = useState<StaffCreateRequest>({
@@ -203,28 +200,6 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
     } catch (err) {
       // console.error('Error creating staff:', err);
       setError('Failed to create staff member. Please check the email is unique.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDeleteStaff = async () => {
-    if (!selectedStaff || !token) return;
-    
-    try {
-      setLoading(true);
-      const response = await hotelAdminApi.deleteStaff(token, selectedStaff.id);
-      if (response.success) {
-        setDeleteDialogOpen(false);
-        setSelectedStaff(null);
-        await loadStaff();
-        setError(null);
-      } else {
-        setError(response.message || 'Failed to delete staff member.');
-      }
-    } catch (err) {
-      // console.error('Error deleting staff:', err);
-      setError('Failed to delete staff member.');
     } finally {
       setLoading(false);
     }
@@ -453,17 +428,6 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
                           >
                             <ViewIcon />
                           </IconButton>
-                          <IconButton
-                            size="small"
-                            onClick={() => {
-                              setSelectedStaff(member);
-                              setDeleteDialogOpen(true);
-                            }}
-                            title="Delete Staff"
-                            color="error"
-                          >
-                            <DeleteIcon />
-                          </IconButton>
                         </Box>
                       </TableCell>
                     </TableRow>
@@ -586,30 +550,7 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
           </DialogActions>
         </Dialog>
 
-        {/* Delete Confirmation Dialog */}
-        <Dialog
-          open={deleteDialogOpen}
-          onClose={() => setDeleteDialogOpen(false)}
-        >
-          <DialogTitle>Confirm Delete</DialogTitle>
-          <DialogContent>
-            <Typography>
-              Are you sure you want to delete {selectedStaff?.firstName} {selectedStaff?.lastName}? 
-              This action cannot be undone and will deactivate the staff member.
-            </Typography>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
-            <Button 
-              onClick={handleDeleteStaff}
-              variant="contained"
-              color="error"
-              disabled={loading}
-            >
-              Delete
-            </Button>
-          </DialogActions>
-        </Dialog>
+
     </Box>
   );
 };

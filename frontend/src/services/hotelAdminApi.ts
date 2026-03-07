@@ -88,6 +88,22 @@ export interface RoomCreateRequest {
   description?: string;
 }
 
+export interface BatchRoomCreateRequest {
+  roomNumbers: string[];
+  roomType: string;
+  pricePerNight: number;
+  capacity: number;
+  description?: string;
+}
+
+export interface BatchRoomCreateResponse {
+  totalRequested: number;
+  created: number;
+  failed: number;
+  createdRooms: RoomResponse[];
+  failedRooms: { roomNumber: string; error: string }[];
+}
+
 export interface RoomUpdateRequest {
   roomNumber: string;
   roomType: string;
@@ -562,6 +578,33 @@ export const hotelAdminApi = {
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to create room' 
+      };
+    }
+  },
+
+  // Create multiple rooms in a single batch
+  createRoomsBatch: async (
+    token: string,
+    batchData: BatchRoomCreateRequest
+  ): Promise<{ success: boolean; data?: BatchRoomCreateResponse; message?: string }> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/hotel-admin/rooms/batch`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(batchData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to create rooms');
+      }
+
+      const data = await response.json();
+      return { success: true, data };
+    } catch (error) {
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : 'Failed to create rooms'
       };
     }
   },

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { COLORS } from '../../theme/themeColors';
+import { formatEthiopianPhone } from '../../utils/phoneUtils';
 import {
   Box,
   Paper,
@@ -23,10 +24,10 @@ import {
   MenuItem,
   Grid,
   Tooltip,
+  Snackbar,
 } from '@mui/material';
 import {
   Edit as EditIcon,
-  Delete as DeleteIcon,
   Visibility as VisibilityIcon,
   Add as AddIcon,
   FilterList as FilterListIcon,
@@ -72,9 +73,12 @@ const UserManagementAdmin: React.FC = () => {
   // Dialog states
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  // Delete functionality removed - use deactivation instead
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
   const [passwordResetDialogOpen, setPasswordResetDialogOpen] = useState(false);
+  const [toggleStatusDialogOpen, setToggleStatusDialogOpen] = useState(false);
+  const [toggleStatusReason, setToggleStatusReason] = useState('');
+  const [toggleUser, setToggleUser] = useState<UserManagementResponse | null>(null);
   const [selectedUser, setSelectedUser] = useState<UserManagementResponse | null>(null);
   const [createError, setCreateError] = useState<string | null>(null);
 
@@ -99,13 +103,12 @@ const UserManagementAdmin: React.FC = () => {
     roles: [],
   });
 
-  const [newPassword, setNewPassword] = useState('');
-
   // Tenant and Hotel state for user creation
   const [tenants, setTenants] = useState<TenantDTO[]>([]);
   const [hotels, setHotels] = useState<HotelDTO[]>([]);
   const [loadingTenants, setLoadingTenants] = useState(false);
   const [loadingHotels, setLoadingHotels] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const roleOptions = ['SYSTEM_ADMIN', 'HOTEL_MANAGER', 'HOTEL_ADMIN', 'FRONTDESK', 'HOUSEKEEPING', 'CUSTOMER'];
   const statusOptions = [
@@ -289,23 +292,13 @@ const UserManagementAdmin: React.FC = () => {
     }
   };
 
-  const handleDeleteUser = async () => {
-    if (!selectedUser) return;
-    
+  const handleToggleUserStatus = async () => {
+    if (!toggleUser) return;
     try {
-      await adminApiService.deleteUser(selectedUser.id);
-      setDeleteDialogOpen(false);
-      setSelectedUser(null);
-      loadUsers();
-    } catch (err) {
-      // console.error('Error deleting user:', err);
-      setError('Failed to delete user');
-    }
-  };
-
-  const handleToggleUserStatus = async (userId: number) => {
-    try {
-      await adminApiService.toggleUserStatus(userId);
+      await adminApiService.toggleUserStatus(toggleUser.id, toggleStatusReason);
+      setToggleStatusDialogOpen(false);
+      setToggleStatusReason('');
+      setToggleUser(null);
       loadUsers();
     } catch (err) {
       // console.error('Error toggling user status:', err);
@@ -314,17 +307,17 @@ const UserManagementAdmin: React.FC = () => {
   };
 
   const handlePasswordReset = async () => {
-    if (!selectedUser || !newPassword) return;
-    
+    if (!selectedUser) return;
+    setLoading(true);
     try {
-      await adminApiService.resetUserPassword(selectedUser.id, newPassword);
+      await adminApiService.resetUserPassword(selectedUser.id);
       setPasswordResetDialogOpen(false);
       setSelectedUser(null);
-      setNewPassword('');
-      alert('Password reset successfully');
+      setSuccessMessage('A new password has been generated and sent to the user\'s email.');
     } catch (err) {
-      // console.error('Error resetting password:', err);
       setError('Failed to reset password');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -339,11 +332,6 @@ const UserManagementAdmin: React.FC = () => {
       roles: user.roles || [],
     });
     setEditDialogOpen(true);
-  };
-
-  const openDeleteDialog = (user: UserManagementResponse) => {
-    setSelectedUser(user);
-    setDeleteDialogOpen(true);
   };
 
   const openDetailsDialog = (user: UserManagementResponse) => {
@@ -384,12 +372,6 @@ const UserManagementAdmin: React.FC = () => {
     <Box sx={{ p: 3 }}>
       {/* Header */}
       <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
-        <IconButton
-          onClick={() => navigate('/system-dashboard')}
-          sx={{ mr: 2 }}
-        >
-          <ArrowBackIcon />
-        </IconButton>
         <Typography variant="h4" component="h1" sx={{ 
           flexGrow: 1,
           color: COLORS.PRIMARY,
@@ -532,7 +514,11 @@ const UserManagementAdmin: React.FC = () => {
                       <Tooltip title={user.isActive ? 'Deactivate User' : 'Activate User'}>
                         <IconButton
                           size="small"
-                          onClick={() => handleToggleUserStatus(user.id)}
+                          onClick={() => {
+                            setToggleUser(user);
+                            setToggleStatusReason('');
+                            setToggleStatusDialogOpen(true);
+                          }}
                           color={user.isActive ? 'success' : 'error'}
                         >
                           {user.isActive ? <ToggleOnIcon /> : <ToggleOffIcon />}
@@ -544,15 +530,6 @@ const UserManagementAdmin: React.FC = () => {
                           onClick={() => openPasswordResetDialog(user)}
                         >
                           <LockResetIcon />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Delete User">
-                        <IconButton
-                          size="small"
-                          onClick={() => openDeleteDialog(user)}
-                          color="error"
-                        >
-                          <DeleteIcon />
                         </IconButton>
                       </Tooltip>
                     </Box>
@@ -796,19 +773,50 @@ const UserManagementAdmin: React.FC = () => {
         </DialogActions>
       </Dialog>
 
-      {/* Delete User Dialog */}
-      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
-        <DialogTitle>Delete User</DialogTitle>
+      {/* Toggle Status Confirmation Dialog */}
+      <Dialog
+        open={toggleStatusDialogOpen}
+        onClose={() => {
+          setToggleStatusDialogOpen(false);
+          setToggleStatusReason('');
+          setToggleUser(null);
+        }}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          {toggleUser?.isActive ? 'Deactivate User' : 'Activate User'}
+        </DialogTitle>
         <DialogContent>
-          <Typography>
-            Are you sure you want to delete user "{selectedUser?.firstName} {selectedUser?.lastName}"?
-            This action cannot be undone.
+          <Typography sx={{ mb: 2 }}>
+            Are you sure you want to {toggleUser?.isActive ? 'deactivate' : 'activate'} user "{toggleUser?.firstName} {toggleUser?.lastName}" ({toggleUser?.email})?
           </Typography>
+          <PremiumTextField
+            label="Reason"
+            fullWidth
+            required
+            multiline
+            rows={3}
+            value={toggleStatusReason}
+            onChange={(e) => setToggleStatusReason(e.target.value)}
+            placeholder={`Enter reason for ${toggleUser?.isActive ? 'deactivation' : 'activation'}...`}
+          />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
-          <Button onClick={handleDeleteUser} color="error" variant="contained">
-            Delete
+          <Button onClick={() => {
+            setToggleStatusDialogOpen(false);
+            setToggleStatusReason('');
+            setToggleUser(null);
+          }}>
+            Cancel
+          </Button>
+          <Button
+            onClick={handleToggleUserStatus}
+            variant="contained"
+            color={toggleUser?.isActive ? 'error' : 'success'}
+            disabled={!toggleStatusReason.trim() || loading}
+          >
+            {loading ? <CircularProgress size={20} /> : (toggleUser?.isActive ? 'Deactivate' : 'Activate')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -818,21 +826,16 @@ const UserManagementAdmin: React.FC = () => {
         <DialogTitle>Reset Password</DialogTitle>
         <DialogContent>
           <Typography sx={{ mb: 2 }}>
-            Reset password for user "{selectedUser?.email}"?
+            A new random password will be generated and sent to <strong>{selectedUser?.email}</strong> via email.
           </Typography>
-          <PremiumTextField
-            fullWidth
-            label="New Password"
-            type="password"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            required
-          />
+          <Typography variant="body2" color="text.secondary">
+            The new password will not be visible to you.
+          </Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setPasswordResetDialogOpen(false)}>Cancel</Button>
-          <Button onClick={handlePasswordReset} variant="contained">
-            Reset Password
+          <Button onClick={handlePasswordReset} variant="contained" disabled={loading}>
+            {loading ? 'Sending...' : 'Reset & Send Email'}
           </Button>
         </DialogActions>
       </Dialog>
@@ -948,6 +951,18 @@ const UserManagementAdmin: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Success Snackbar */}
+      <Snackbar
+        open={!!successMessage}
+        autoHideDuration={5000}
+        onClose={() => setSuccessMessage(null)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert onClose={() => setSuccessMessage(null)} severity="success" variant="filled" sx={{ width: '100%' }}>
+          {successMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

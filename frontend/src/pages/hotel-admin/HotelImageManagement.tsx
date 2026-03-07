@@ -12,18 +12,12 @@ import {
   ImageList,
   ImageListItem,
   ImageListItemBar,
-  IconButton,
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
 } from '@mui/material';
 import {
   CloudUpload as UploadIcon,
-  Delete as DeleteIcon,
   ExpandMore as ExpandMoreIcon,
   Image as ImageIcon,
 } from '@mui/icons-material';
@@ -50,8 +44,6 @@ const HotelImageManagement: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [imageToDelete, setImageToDelete] = useState<HotelImageResponse | null>(null);
 
   // Initialize state for each room type
   const [roomTypeStates, setRoomTypeStates] = useState<Record<string, RoomTypeImageState>>(() => {
@@ -229,47 +221,6 @@ const HotelImageManagement: React.FC = () => {
     } finally {
       setHotelGeneralState(prev => ({ ...prev, uploading: false }));
     }
-  };
-
-  const handleDeleteImage = async () => {
-    if (!token || !imageToDelete) return;
-    
-    try {
-      const response = await hotelAdminApi.deleteHotelImage(token, imageToDelete.id);
-      if (response.success) {
-        setSuccess('Image deleted successfully!');
-        // Reload images for the affected room type or hotel general
-        if (imageToDelete.roomTypeName) {
-          const imagesResponse = await hotelAdminApi.getHotelImages(token, imageToDelete.roomTypeName);
-          if (imagesResponse.success) {
-            updateRoomTypeState(imageToDelete.roomTypeName, {
-              existingImages: imagesResponse.data || [],
-            });
-          }
-        } else {
-          // This is a hotel general image
-          const imagesResponse = await hotelAdminApi.getHotelImages(token); // No room type = hotel general
-          if (imagesResponse.success) {
-            setHotelGeneralState(prev => ({
-              ...prev,
-              existingImages: imagesResponse.data || [],
-            }));
-          }
-        }
-      } else {
-        setError(response.message || 'Failed to delete image');
-      }
-    } catch (err) {
-      setError('Failed to delete image');
-    } finally {
-      setDeleteDialogOpen(false);
-      setImageToDelete(null);
-    }
-  };
-
-  const confirmDeleteImage = (image: HotelImageResponse) => {
-    setImageToDelete(image);
-    setDeleteDialogOpen(true);
   };
 
   if (loading) {
@@ -540,19 +491,6 @@ const HotelImageManagement: React.FC = () => {
                               sx={{
                                 background: `linear-gradient(to top, ${addAlpha(COLORS.BLACK, 0.7)} 0%, ${addAlpha(COLORS.BLACK, 0.3)} 70%, ${addAlpha(COLORS.BLACK, 0)} 100%)`,
                               }}
-                              actionIcon={
-                                <IconButton
-                                  sx={{ 
-                                    color: COLORS.WHITE,
-                                    '&:hover': {
-                                      color: 'error.light',
-                                    },
-                                  }}
-                                  onClick={() => confirmDeleteImage(image)}
-                                >
-                                  <DeleteIcon />
-                                </IconButton>
-                              }
                             />
                           </ImageListItem>
                         ))}
@@ -787,19 +725,6 @@ const HotelImageManagement: React.FC = () => {
                                   sx={{
                                     background: `linear-gradient(to top, ${addAlpha(COLORS.BLACK, 0.7)} 0%, ${addAlpha(COLORS.BLACK, 0.3)} 70%, ${addAlpha(COLORS.BLACK, 0)} 100%)`,
                                   }}
-                                  actionIcon={
-                                    <IconButton
-                                      sx={{ 
-                                        color: COLORS.WHITE,
-                                        '&:hover': {
-                                          color: 'error.light',
-                                        },
-                                      }}
-                                      onClick={() => confirmDeleteImage(image)}
-                                    >
-                                      <DeleteIcon />
-                                    </IconButton>
-                                  }
                                 />
                               </ImageListItem>
                             ))}
@@ -815,74 +740,6 @@ const HotelImageManagement: React.FC = () => {
         );
       })}
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog 
-        open={deleteDialogOpen} 
-        onClose={() => setDeleteDialogOpen(false)}
-        maxWidth="sm"
-        fullWidth
-        PaperProps={{
-          sx: {
-            borderRadius: 2,
-          },
-        }}
-      >
-        <DialogTitle sx={{ bgcolor: 'error.main', color: 'white', pb: 2 }}>
-          <Typography variant="h6" sx={{ fontWeight: 600 }}>
-            Confirm Delete
-          </Typography>
-        </DialogTitle>
-        <DialogContent sx={{ mt: 3 }}>
-          <Typography variant="body1" sx={{ mb: 2 }}>
-            Are you sure you want to delete this image? This action cannot be undone.
-          </Typography>
-          {imageToDelete && (
-            <Box 
-              sx={{ 
-                mt: 3,
-                textAlign: 'center',
-                p: 2,
-                bgcolor: 'grey.50',
-                borderRadius: 2,
-              }}
-            >
-              <img
-                src={imageToDelete.s3Url}
-                alt={imageToDelete.altText || 'Image to delete'}
-                style={{ 
-                  maxWidth: '100%',
-                  maxHeight: '250px',
-                  objectFit: 'contain',
-                  borderRadius: '8px',
-                  border: `1px solid ${addAlpha(COLORS.BLACK, 0.1)}`,
-                }}
-              />
-              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
-                {imageToDelete.altText || imageToDelete.fileName}
-              </Typography>
-            </Box>
-          )}
-        </DialogContent>
-        <DialogActions sx={{ p: 3, gap: 1 }}>
-          <Button 
-            onClick={() => setDeleteDialogOpen(false)}
-            variant="outlined"
-            size="large"
-            sx={{ textTransform: 'none', px: 3 }}
-          >
-            Cancel
-          </Button>
-          <Button 
-            onClick={handleDeleteImage} 
-            color="error" 
-            variant="contained"
-            size="large"
-            sx={{ textTransform: 'none', px: 3 }}
-          >
-            Delete Image
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Box>
   );
 };

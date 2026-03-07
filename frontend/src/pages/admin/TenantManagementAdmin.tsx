@@ -27,7 +27,6 @@ import {
 } from '@mui/material';
 import {
   Search as SearchIcon,
-  Delete as DeleteIcon,
   Visibility as ViewIcon,
   Refresh as RefreshIcon,
   Add as AddIcon,
@@ -70,7 +69,6 @@ const TenantManagementAdmin: React.FC = () => {
   // Dialog states
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
   const [selectedTenant, setSelectedTenant] = useState<TenantDTO | null>(null);
 
@@ -228,24 +226,6 @@ const TenantManagementAdmin: React.FC = () => {
     }
   };
 
-  const handleDeleteTenant = async () => {
-    if (!selectedTenant || !token) return;
-    
-    try {
-      setLoading(true);
-      await adminApiService.deleteTenant(selectedTenant.tenantId);
-      setDeleteDialogOpen(false);
-      setSelectedTenant(null);
-      await loadTenants();
-      setError(null);
-    } catch (err) {
-      // console.error('Error deleting tenant:', err);
-      setError('Failed to delete tenant.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleToggleTenantStatus = async (tenant: TenantDTO) => {
     if (!token) return;
     
@@ -270,11 +250,6 @@ const TenantManagementAdmin: React.FC = () => {
       description: tenant.description || '',
     });
     setEditDialogOpen(true);
-  };
-
-  const openDeleteDialog = (tenant: TenantDTO) => {
-    setSelectedTenant(tenant);
-    setDeleteDialogOpen(true);
   };
 
   const getStatusColor = (isActive: boolean) => {
@@ -303,12 +278,6 @@ const TenantManagementAdmin: React.FC = () => {
     <Box sx={{ width: '100%', p: 3 }}>
       <Box sx={{ py: 4 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-          <IconButton
-            onClick={() => navigate('/system-dashboard')}
-            sx={{ mr: 2 }}
-          >
-            <ArrowBackIcon />
-          </IconButton>
           <Typography variant="h5" component="h1" sx={{ 
             flexGrow: 1,
             color: COLORS.PRIMARY,
@@ -481,14 +450,6 @@ const TenantManagementAdmin: React.FC = () => {
                           >
                             {tenant.isActive ? <ToggleOnIcon /> : <ToggleOffIcon />}
                           </IconButton>
-                          <IconButton
-                            size="small"
-                            onClick={() => openDeleteDialog(tenant)}
-                            title="Delete Tenant"
-                            color="error"
-                          >
-                            <DeleteIcon />
-                          </IconButton>
                         </Box>
                       </TableCell>
                     </TableRow>
@@ -608,31 +569,6 @@ const TenantManagementAdmin: React.FC = () => {
               disabled={loading || !editForm.name}
             >
               Update Tenant
-            </Button>
-          </DialogActions>
-        </Dialog>
-
-        {/* Delete Confirmation Dialog */}
-        <Dialog
-          open={deleteDialogOpen}
-          onClose={() => setDeleteDialogOpen(false)}
-        >
-          <DialogTitle>Confirm Delete</DialogTitle>
-          <DialogContent>
-            <Typography>
-              Are you sure you want to delete tenant "{selectedTenant?.name}"? 
-              This action cannot be undone and will permanently remove all associated data.
-            </Typography>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
-            <Button 
-              onClick={handleDeleteTenant}
-              variant="contained"
-              color="error"
-              disabled={loading}
-            >
-              Delete
             </Button>
           </DialogActions>
         </Dialog>

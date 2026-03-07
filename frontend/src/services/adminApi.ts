@@ -81,9 +81,10 @@ class AdminApiService {
     });
   }
 
-  async toggleUserStatus(id: number): Promise<UserManagementResponse> {
+  async toggleUserStatus(id: number, reason: string): Promise<UserManagementResponse> {
     return this.fetchApi<UserManagementResponse>(`/admin/users/${id}/toggle-status`, {
       method: 'POST',
+      body: JSON.stringify({ reason }),
     });
   }
 
@@ -105,8 +106,8 @@ class AdminApiService {
     });
   }
 
-  async resetUserPassword(id: number, newPassword: string): Promise<void> {
-    return this.fetchApi<void>(`/admin/users/${id}/reset-password?newPassword=${encodeURIComponent(newPassword)}`, {
+  async resetUserPassword(id: number): Promise<void> {
+    return this.fetchApi<void>(`/admin/users/${id}/reset-password`, {
       method: 'POST',
     });
   }
@@ -171,9 +172,10 @@ class AdminApiService {
     });
   }
 
-  async toggleHotelStatus(hotelId: number): Promise<HotelDTO> {
+  async toggleHotelStatus(hotelId: number, reason: string): Promise<HotelDTO> {
     return this.fetchApi<HotelDTO>(`/admin/hotels/${hotelId}/toggle-status`, {
       method: 'POST',
+      body: JSON.stringify({ reason }),
     });
   }
 
@@ -499,7 +501,7 @@ export interface HotelRegistrationResponse {
 
 export interface ApproveRegistrationRequest {
   comments?: string;
-  tenantId: string;
+  tenantId?: string;
 }
 
 export interface RejectRegistrationRequest {

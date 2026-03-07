@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.bookmyhotel.dto.HotelDTO;
 import com.bookmyhotel.dto.RoomDTO;
+import com.bookmyhotel.dto.admin.ToggleStatusRequest;
 import com.bookmyhotel.service.HotelManagementService;
 
 import jakarta.validation.Valid;
@@ -120,8 +121,10 @@ public class HotelManagementAdminController {
      * Toggle hotel status
      */
     @PostMapping("/{id}/toggle-status")
-    public ResponseEntity<HotelDTO> toggleHotelStatus(@PathVariable Long id) {
-        HotelDTO hotel = hotelManagementService.toggleHotelStatus(id);
+    public ResponseEntity<HotelDTO> toggleHotelStatus(
+            @PathVariable Long id,
+            @Valid @RequestBody ToggleStatusRequest request) {
+        HotelDTO hotel = hotelManagementService.toggleHotelStatus(id, request.getReason());
         return ResponseEntity.ok(hotel);
     }
 

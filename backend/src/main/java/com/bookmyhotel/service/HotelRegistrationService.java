@@ -41,6 +41,8 @@ public class HotelRegistrationService {
     private static final Logger logger = LoggerFactory.getLogger(HotelRegistrationService.class);
     private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
     private static final int PASSWORD_LENGTH = 12;
+    private static final String DEFAULT_TENANT_ID = "all-hotels";
+    private static final String DEFAULT_TENANT_NAME = "All Hotels";
 
     @Autowired
     private HotelRegistrationRepository registrationRepository;
@@ -166,12 +168,15 @@ public class HotelRegistrationService {
             throw new RuntimeException("Only pending or under review registrations can be approved");
         }
 
+        // Resolve tenant ID - use provided or fall back to default "All Hotels" tenant
+        String resolvedTenantId = resolveDefaultTenant(request.getTenantId());
+
         // Create the hotel
-        Hotel hotel = createHotelFromRegistration(registration, request.getTenantId());
+        Hotel hotel = createHotelFromRegistration(registration, resolvedTenantId);
 
         // Generate temporary password and create hotel admin user
         String temporaryPassword = generateTemporaryPassword();
-        User hotelAdmin = createHotelAdminUser(registration, request.getTenantId(), temporaryPassword, hotel);
+        User hotelAdmin = createHotelAdminUser(registration, resolvedTenantId, temporaryPassword, hotel);
 
         // Update registration status
         registration.setStatus(RegistrationStatus.APPROVED);
@@ -179,7 +184,7 @@ public class HotelRegistrationService {
         registration.setReviewedBy(reviewerId);
         registration.setReviewComments(request.getComments());
         registration.setApprovedHotelId(hotel.getId());
-        registration.setTenantId(request.getTenantId());
+        registration.setTenantId(resolvedTenantId);
 
         registration = registrationRepository.save(registration);
 
@@ -193,6 +198,32 @@ public class HotelRegistrationService {
         }
 
         return convertToResponse(registration);
+    }
+
+    /**
+     * Resolve the tenant ID to use for hotel approval.
+     * If no tenant ID is provided, find or create the default "All Hotels" tenant.
+     */
+    private String resolveDefaultTenant(String tenantId) {
+        if (tenantId != null && !tenantId.isBlank()) {
+            return tenantId;
+        }
+
+        // Look for existing default tenant
+        return tenantRepository.findById(DEFAULT_TENANT_ID)
+                .map(Tenant::getId)
+                .orElseGet(() -> {
+                    // Create the default tenant if it doesn't exist
+                    Tenant defaultTenant = new Tenant();
+                    defaultTenant.setId(DEFAULT_TENANT_ID);
+                    defaultTenant.setName(DEFAULT_TENANT_NAME);
+                    defaultTenant.setSubdomain("all");
+                    defaultTenant.setDescription("Default tenant for all hotels");
+                    defaultTenant.setIsActive(true);
+                    tenantRepository.save(defaultTenant);
+                    logger.info("Created default tenant: {} ({})", DEFAULT_TENANT_NAME, DEFAULT_TENANT_ID);
+                    return DEFAULT_TENANT_ID;
+                });
     }
 
     /**

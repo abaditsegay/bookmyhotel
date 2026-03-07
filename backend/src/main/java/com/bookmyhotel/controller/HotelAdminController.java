@@ -24,6 +24,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.bookmyhotel.dto.BatchRoomCreateRequest;
+import com.bookmyhotel.dto.BatchRoomCreateResponse;
 import com.bookmyhotel.dto.BookingModificationRequest;
 import com.bookmyhotel.dto.BookingModificationResponse;
 import com.bookmyhotel.dto.BookingRequest;
@@ -155,6 +157,13 @@ public class HotelAdminController {
     public ResponseEntity<RoomDTO> addRoom(@Valid @RequestBody RoomDTO roomDTO, Authentication auth) {
         RoomDTO newRoom = hotelAdminService.addRoom(roomDTO, auth.getName());
         return ResponseEntity.ok(newRoom);
+    }
+
+    @PostMapping("/rooms/batch")
+    public ResponseEntity<BatchRoomCreateResponse> addRoomsBatch(
+            @Valid @RequestBody BatchRoomCreateRequest request, Authentication auth) {
+        BatchRoomCreateResponse response = hotelAdminService.addRoomsBatch(request, auth.getName());
+        return ResponseEntity.ok(response);
     }
 
     /**

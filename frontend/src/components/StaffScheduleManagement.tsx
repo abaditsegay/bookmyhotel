@@ -28,7 +28,6 @@ import {
 } from '@mui/material';
 import {
   Edit as EditIcon,
-  Delete as DeleteIcon,
   FilterList as FilterIcon,
   Cancel as CancelIcon,
   Schedule as ScheduleIcon,
@@ -113,10 +112,6 @@ const StaffScheduleManagement: React.FC = () => {
   const [editingSchedule, setEditingSchedule] = useState<StaffSchedule | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  
-  // Delete confirmation dialog state
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [scheduleToDelete, setScheduleToDelete] = useState<number | null>(null);
   
   // Filter states
   const [selectedHotel, setSelectedHotel] = useState<number | ''>('');
@@ -355,45 +350,6 @@ const StaffScheduleManagement: React.FC = () => {
       notes: schedule.notes || ''
     });
     setShowModal(true);
-  };
-
-  const handleDelete = async (id: number) => {
-    setScheduleToDelete(id);
-    setShowDeleteDialog(true);
-  };
-
-  const confirmDelete = async () => {
-    if (scheduleToDelete) {
-      try {
-        if (!token) {
-          setError('Authentication token not available');
-          return;
-        }
-        
-        const response = await fetch(buildApiUrl(`/staff-schedules/${scheduleToDelete}`), {
-          method: 'DELETE',
-          headers: getAuthHeaders(token),
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        setSuccess('Schedule deleted successfully');
-        await fetchSchedules();
-      } catch (error) {
-        // console.error('Error deleting schedule:', error);
-        setError('Failed to delete schedule');
-      } finally {
-        setShowDeleteDialog(false);
-        setScheduleToDelete(null);
-      }
-    }
-  };
-
-  const cancelDelete = () => {
-    setShowDeleteDialog(false);
-    setScheduleToDelete(null);
   };
 
   const handleStatusUpdate = async (id: number, status: string) => {
@@ -830,21 +786,6 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
                           <EditIcon />
                         </IconButton>
                       </Tooltip>
-                      <Tooltip title="Delete Schedule">
-                        <IconButton 
-                          size="small"
-                          onClick={() => handleDelete(schedule.id)}
-                          sx={{
-                            color: COLORS.TEXT_SECONDARY,
-                            '&:hover': {
-                              backgroundColor: addAlpha(COLORS.ERROR, 0.08),
-                              color: COLORS.ERROR
-                            }
-                          }}
-                        >
-                          <DeleteIcon />
-                        </IconButton>
-                      </Tooltip>
                     </Stack>
                   </TableCell>
                 </TableRow>
@@ -1258,51 +1199,6 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
         </DialogActions>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog
-        open={showDeleteDialog}
-        onClose={cancelDelete}
-        maxWidth="sm"
-        fullWidth
-        PaperProps={{
-          sx: { borderRadius: 2 }
-        }}
-      >
-        <DialogTitle sx={{ pb: 1 }}>
-          <Box display="flex" alignItems="center">
-            <DeleteIcon sx={{ mr: 1, color: 'error.main' }} />
-            Confirm Delete
-          </Box>
-        </DialogTitle>
-        
-        <DialogContent dividers>
-          <Typography variant="body1" sx={{ mb: 2 }}>
-            Are you sure you want to delete this schedule?
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            This action cannot be undone. The schedule will be permanently removed from the system.
-          </Typography>
-        </DialogContent>
-        
-        <DialogActions sx={{ p: 3 }}>
-          <Button 
-            onClick={cancelDelete}
-            color="inherit"
-            startIcon={<CancelIcon />}
-          >
-            Cancel
-          </Button>
-          <Button 
-            onClick={confirmDelete}
-            variant="contained" 
-            color="error"
-            startIcon={<DeleteIcon />}
-            sx={{ ml: 1 }}
-          >
-            Delete Schedule
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Box>
   );
 };

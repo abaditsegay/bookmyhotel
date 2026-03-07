@@ -28,7 +28,6 @@ import {
 } from '@mui/material';
 import {
   Visibility as VisibilityIcon,
-  Delete as DeleteIcon,
   Search as SearchIcon,
   Refresh as RefreshIcon,
   PersonAdd as AddGuestIcon,
@@ -105,7 +104,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  // Delete functionality removed
   const [snackbar, setSnackbar] = useState({ 
     open: false, 
     message: '', 
@@ -355,45 +354,6 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
       navigate(`/frontdesk/bookings/${booking.reservationId}?returnTab=${currentTab}`);
     } else {
       navigate(`/hotel-admin/bookings/${booking.reservationId}?returnTab=${currentTab}`);
-    }
-  };
-
-  // Handle delete booking
-  const handleDeleteBooking = async () => {
-    if (!selectedBooking || !token) return;
-
-    try {
-      let result;
-      if (mode === 'front-desk') {
-        result = await frontDeskApiService.deleteBooking(token, selectedBooking.reservationId);
-      } else {
-        result = await hotelAdminApi.deleteBooking(token, selectedBooking.reservationId);
-      }
-
-      if (result.success) {
-        setSnackbar({
-          open: true,
-          message: 'Booking deleted successfully',
-          severity: 'success'
-        });
-        setDeleteDialogOpen(false);
-        await loadBookings();
-        // Trigger notification refresh after booking deletion
-        BookingNotificationEvents.afterCancellation();
-      } else {
-        setSnackbar({
-          open: true,
-          message: result.message || 'Failed to delete booking',
-          severity: 'error'
-        });
-      }
-    } catch (error) {
-      // console.error('Error deleting booking:', error);
-      setSnackbar({
-        open: true,
-        message: 'Failed to delete booking',
-        severity: 'error'
-      });
     }
   };
 
@@ -1228,20 +1188,6 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                             </>
                           )}
                           
-                          {(mode === 'hotel-admin' || mode === 'front-desk') && (
-                            <Tooltip title={t('booking.management.actions.delete')}>
-                              <IconButton 
-                                size="small"
-                                onClick={() => {
-                                  setSelectedBooking(booking);
-                                  setDeleteDialogOpen(true);
-                                }}
-                                color="error"
-                              >
-                                <DeleteIcon />
-                              </IconButton>
-                            </Tooltip>
-                          )}
                         </Box>
                       </TableCell>
                     )}
@@ -1321,26 +1267,6 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
           />
         </TableContainer>
       </Card>
-
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
-        <DialogTitle>{t('booking.management.dialogs.deleteConfirm.title')}</DialogTitle>
-        <DialogContent>
-          <Typography>
-            {t('booking.management.dialogs.deleteConfirm.message', { guestName: selectedBooking?.guestName })}
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)}>{t('booking.management.dialogs.deleteConfirm.cancel')}</Button>
-          <Button 
-            onClick={handleDeleteBooking} 
-            color="error" 
-            variant="contained"
-          >
-            {t('booking.management.dialogs.deleteConfirm.delete')}
-          </Button>
-        </DialogActions>
-      </Dialog>
 
       {/* Snackbar for notifications */}
       <Snackbar

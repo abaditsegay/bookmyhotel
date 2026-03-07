@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bookmyhotel.dto.admin.CreateUserRequest;
+import com.bookmyhotel.dto.admin.ToggleStatusRequest;
 import com.bookmyhotel.dto.admin.UpdateUserRequest;
 import com.bookmyhotel.dto.admin.UserManagementResponse;
 import com.bookmyhotel.entity.UserRole;
@@ -149,8 +150,10 @@ public class UserManagementAdminController {
      * Toggle user active status
      */
     @PostMapping("/{id}/toggle-status")
-    public ResponseEntity<UserManagementResponse> toggleUserStatus(@PathVariable Long id) {
-        UserManagementResponse user = userManagementService.toggleUserStatus(id);
+    public ResponseEntity<UserManagementResponse> toggleUserStatus(
+            @PathVariable Long id,
+            @Valid @RequestBody ToggleStatusRequest request) {
+        UserManagementResponse user = userManagementService.toggleUserStatus(id, request.getReason());
         return ResponseEntity.ok(user);
     }
 
@@ -188,14 +191,11 @@ public class UserManagementAdminController {
     }
 
     /**
-     * Reset user password
+     * Reset user password - generates random password and emails it to the user
      */
     @PostMapping("/{id}/reset-password")
-    public ResponseEntity<Void> resetUserPassword(
-            @PathVariable Long id,
-            @RequestParam String newPassword) {
-
-        userManagementService.resetUserPassword(id, newPassword);
+    public ResponseEntity<Void> resetUserPassword(@PathVariable Long id) {
+        userManagementService.resetUserPassword(id);
         return ResponseEntity.ok().build();
     }
 

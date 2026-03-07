@@ -4,16 +4,13 @@
  * Handles caching, offline requests, and background sync
  */
 
-const CACHE_NAME = 'bookmyhotel-v1';
-const API_CACHE_NAME = 'bookmyhotel-api-v1';
+const CACHE_NAME = 'bookmyhotel-v3';
+const API_CACHE_NAME = 'bookmyhotel-api-v3';
 
-// Assets to cache for offline use
+// Assets to cache for offline use (do NOT cache index.html — it must always come from the network
+// so that chunk references stay in sync with deployed files)
 const STATIC_ASSETS = [
-  '/',
-  '/static/js/bundle.js',
-  '/static/css/main.css',
   '/manifest.json',
-  // Add other critical assets
 ];
 
 // API endpoints to cache
@@ -78,9 +75,14 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Handle static assets
-  if (request.destination === 'document' || 
-      request.destination === 'script' || 
+  // Handle navigation requests (HTML documents) — always network-first, never serve stale HTML
+  if (request.mode === 'navigate' || request.destination === 'document') {
+    event.respondWith(handleNavigationRequest(request));
+    return;
+  }
+
+  // Handle static assets (scripts, styles, images)
+  if (request.destination === 'script' || 
       request.destination === 'style' ||
       request.destination === 'image') {
     event.respondWith(handleStaticRequest(request));
@@ -227,36 +229,52 @@ async function handleWriteRequest(request) {
 }
 
 // Handle static asset requests
-async function handleStaticRequest(request) {
+// Handle navigation (document) requests — always network, cache only as offline fallback
+async function handleNavigationRequest(request) {
   try {
-    // Try network first for fresh content
     const networkResponse = await fetch(request);
-    
-    // Cache successful responses
     if (networkResponse.ok) {
       const responseClone = networkResponse.clone();
       const cache = await caches.open(CACHE_NAME);
       cache.put(request, responseClone);
     }
-    
     return networkResponse;
   } catch (error) {
-    // Network failed, try cache
+    // Offline — try cached HTML
     const cachedResponse = await caches.match(request);
     if (cachedResponse) {
-      console.log('📋 Serving static asset from cache:', request.url);
+      console.log('📋 Serving cached page (offline):', request.url);
       return cachedResponse;
     }
+    const offlineResponse = await caches.match('/offline.html');
+    if (offlineResponse) return offlineResponse;
+    return new Response('Offline', { status: 503 });
+  }
+}
 
-    // Return offline page for document requests
-    if (request.destination === 'document') {
-      const offlineResponse = await caches.match('/offline.html');
-      if (offlineResponse) {
-        return offlineResponse;
+// Handle static assets (JS, CSS, images) — network-first, cache for offline
+async function handleStaticRequest(request) {
+  try {
+    const networkResponse = await fetch(request);
+    if (networkResponse.ok) {
+      const responseClone = networkResponse.clone();
+      const cache = await caches.open(CACHE_NAME);
+      cache.put(request, responseClone);
+    }
+    return networkResponse;
+  } catch (error) {
+    // Network failed, try cache only for non-hashed assets
+    // Hashed chunks (e.g. 7264.abc123.chunk.js) should NOT be served from stale cache
+    // because they belong to a different build
+    const url = new URL(request.url);
+    const isHashedChunk = /\.[a-f0-9]{8,}\.chunk\./.test(url.pathname);
+    if (!isHashedChunk) {
+      const cachedResponse = await caches.match(request);
+      if (cachedResponse) {
+        console.log('📋 Serving static asset from cache:', request.url);
+        return cachedResponse;
       }
     }
-
-    // Return network error
     return new Response('Offline', { status: 503 });
   }
 }

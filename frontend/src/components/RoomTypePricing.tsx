@@ -34,7 +34,6 @@ import PremiumTextField from './common/PremiumTextField';
 import {
   Add as AddIcon,
   Edit as EditIcon,
-  Delete as DeleteIcon,
   Info as InfoIcon
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
@@ -63,8 +62,6 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
   const [error, setError] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingPricing, setEditingPricing] = useState<RoomTypePricingResponse | null>(null);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [selectedPricing, setSelectedPricing] = useState<RoomTypePricingResponse | null>(null);
   const [pricingMultipliers, setPricingMultipliers] = useState<PricingMultipliers>({
     weekendMultiplier: 1.0,
     holidayMultiplier: 1.0,
@@ -223,32 +220,6 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
     } catch (err) {
       // console.error('Error saving pricing:', err);
       setError('Failed to save pricing');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDelete = async () => {
-    if (!token || !selectedPricing) return;
-
-    try {
-      setLoading(true);
-      const response = await roomTypePricingService.deleteRoomTypePricing(token, selectedPricing.id);
-      
-      if (response.success) {
-        setDeleteDialogOpen(false);
-        setSelectedPricing(null);
-        await loadPricing();
-        if (onPricingUpdate) {
-          onPricingUpdate();
-        }
-        setError(null);
-      } else {
-        setError(response.message || 'Failed to delete pricing');
-      }
-    } catch (err) {
-      // console.error('Error deleting pricing:', err);
-      setError('Failed to delete pricing');
     } finally {
       setLoading(false);
     }
@@ -483,20 +454,6 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
                               <EditIcon fontSize="small" />
                             </Button>
                           </Tooltip>
-                          <Tooltip title="Delete Pricing">
-                            <Button
-                              size="small"
-                              variant="outlined"
-                              color="error"
-                              onClick={() => {
-                                setSelectedPricing(pricing);
-                                setDeleteDialogOpen(true);
-                              }}
-                              disabled={loading}
-                            >
-                              <DeleteIcon fontSize="small" />
-                            </Button>
-                          </Tooltip>
                         </Box>
                       </TableCell>
                     </TableRow>
@@ -699,30 +656,6 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
         </DialogActions>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
-        <DialogTitle>Confirm Delete</DialogTitle>
-        <DialogContent>
-          <Typography>
-            Are you sure you want to delete the pricing for{' '}
-            {selectedPricing && getRoomTypeLabel(selectedPricing.roomType)}?
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-            This action cannot be undone. Existing rooms will keep their current prices.
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
-          <Button 
-            onClick={handleDelete} 
-            color="error" 
-            variant="contained"
-            disabled={loading}
-          >
-            {loading ? <CircularProgress size={20} /> : 'Delete'}
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Box>
   );
 };

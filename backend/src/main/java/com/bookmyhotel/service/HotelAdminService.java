@@ -28,6 +28,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.bookmyhotel.config.CacheConfig;
+import com.bookmyhotel.dto.BatchRoomCreateRequest;
+import com.bookmyhotel.dto.BatchRoomCreateResponse;
 import com.bookmyhotel.dto.BookingModificationRequest;
 import com.bookmyhotel.dto.BookingModificationResponse;
 import com.bookmyhotel.dto.BookingResponse;
@@ -486,6 +488,64 @@ public class HotelAdminService {
 
         Room saved = roomRepository.save(newRoom);
         return convertToRoomDTO(saved);
+    }
+
+    /**
+     * Add multiple rooms in a single batch operation
+     */
+    @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = CacheConfig.ROOMS_BY_HOTEL_CACHE, allEntries = true),
+            @CacheEvict(value = CacheConfig.ROOM_TYPES_CACHE, allEntries = true),
+            @CacheEvict(value = CacheConfig.AVAILABLE_ROOMS_CACHE, allEntries = true)
+    })
+    public BatchRoomCreateResponse addRoomsBatch(BatchRoomCreateRequest request, String adminEmail) {
+        User admin = getUserByEmail(adminEmail);
+        Hotel hotel = admin.getHotel();
+
+        if (hotel == null) {
+            throw new RuntimeException("Hotel admin is not associated with any hotel");
+        }
+
+        List<RoomDTO> createdRooms = new ArrayList<>();
+        List<BatchRoomCreateResponse.FailedRoom> failedRooms = new ArrayList<>();
+
+        BigDecimal pricePerNight = request.getPricePerNight();
+        if (pricePerNight == null || pricePerNight.compareTo(BigDecimal.ZERO) <= 0) {
+            pricePerNight = roomTypePricingService.getBasePriceForRoomType(hotel.getId(), request.getRoomType());
+        }
+
+        for (String roomNumber : request.getRoomNumbers()) {
+            String trimmed = roomNumber.trim();
+            if (trimmed.isEmpty()) continue;
+
+            if (roomRepository.existsByHotelAndRoomNumber(hotel, trimmed)) {
+                failedRooms.add(new BatchRoomCreateResponse.FailedRoom(trimmed, "Room number already exists"));
+                continue;
+            }
+
+            Room newRoom = new Room();
+            newRoom.setRoomNumber(trimmed);
+            newRoom.setRoomType(request.getRoomType());
+            newRoom.setPricePerNight(pricePerNight);
+            newRoom.setCapacity(request.getCapacity());
+            newRoom.setDescription(request.getDescription());
+            newRoom.setIsAvailable(true);
+            newRoom.setHotel(hotel);
+            newRoom.setCreatedAt(LocalDateTime.now());
+            newRoom.setUpdatedAt(LocalDateTime.now());
+
+            Room saved = roomRepository.save(newRoom);
+            createdRooms.add(convertToRoomDTO(saved));
+        }
+
+        BatchRoomCreateResponse response = new BatchRoomCreateResponse();
+        response.setTotalRequested(request.getRoomNumbers().size());
+        response.setCreated(createdRooms.size());
+        response.setFailed(failedRooms.size());
+        response.setCreatedRooms(createdRooms);
+        response.setFailedRooms(failedRooms);
+        return response;
     }
 
     /**

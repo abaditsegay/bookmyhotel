@@ -20,7 +20,8 @@ import {
   Stepper,
   Step,
   StepLabel,
-  StepContent
+  StepContent,
+  Snackbar,
 } from '@mui/material';
 import {
   CloudUpload as UploadIcon,
@@ -72,6 +73,7 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
   const [errorDialogOpen, setErrorDialogOpen] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const [successOverlayOpen, setSuccessOverlayOpen] = useState(false);
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'error' | 'warning' | 'success' }>({ open: false, message: '', severity: 'error' });
   const [importStats, setImportStats] = useState<{
     successful: number;
     failed: number;
@@ -253,7 +255,7 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
     if (!file) return;
     
     if (!file.name.endsWith('.csv')) {
-      alert('Please select a CSV file');
+      setSnackbar({ open: true, message: 'Please select a CSV file', severity: 'error' });
       return;
     }
     
@@ -298,7 +300,7 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
           setIsProcessing(false);
         } catch (error) {
           // console.error('Error parsing CSV:', error);
-          alert('Error parsing CSV file. Please check the format.');
+          setSnackbar({ open: true, message: 'Error parsing CSV file. Please check the format.', severity: 'error' });
           setIsProcessing(false);
         }
       };
@@ -307,7 +309,7 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
       
     } catch (error) {
       // console.error('Error validating file:', error);
-      alert('Error validating file. Using offline validation.');
+      setSnackbar({ open: true, message: 'Error validating file. Using offline validation.', severity: 'warning' });
       
       // Fallback to client-side validation
       const reader = new FileReader();
@@ -324,7 +326,7 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
           setIsProcessing(false);
         } catch (error) {
           // console.error('Error parsing CSV:', error);
-          alert('Error parsing CSV file. Please check the format.');
+          setSnackbar({ open: true, message: 'Error parsing CSV file. Please check the format.', severity: 'error' });
           setIsProcessing(false);
         }
       };
@@ -386,7 +388,7 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
       
     } catch (error) {
       // console.error('Error uploading rooms:', error);
-      alert('Error uploading rooms: ' + (error instanceof Error ? error.message : 'Unknown error'));
+      setSnackbar({ open: true, message: 'Error uploading rooms: ' + (error instanceof Error ? error.message : 'Unknown error'), severity: 'error' });
     } finally {
       setIsImporting(false);
     }
@@ -1039,6 +1041,18 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Snackbar for notifications */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={5000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert onClose={() => setSnackbar({ ...snackbar, open: false })} severity={snackbar.severity} variant="filled" sx={{ width: '100%' }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

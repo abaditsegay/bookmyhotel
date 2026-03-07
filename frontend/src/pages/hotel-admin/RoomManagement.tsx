@@ -37,7 +37,6 @@ import {
 } from '@mui/material';
 import {
   Search as SearchIcon,
-  Delete as DeleteIcon,
   Add as AddIcon,
   Visibility as ViewIcon,
   Refresh as RefreshIcon,
@@ -84,7 +83,6 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
   const [bulkUploadDialogOpen, setBulkUploadDialogOpen] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState<RoomResponse | null>(null);
@@ -105,6 +103,7 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
     capacity: 1,
     description: '',
   });
+  const [bulkCreateProgress, setBulkCreateProgress] = useState<{ created: string[]; failed: { room: string; error: string }[] } | null>(null);
 
   const [editForm, setEditForm] = useState<RoomUpdateRequest>({
     roomNumber: '',
@@ -356,58 +355,67 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
     }
   };
 
-  const handleDeleteRoom = async () => {
-    if (!selectedRoom || !token) return;
-    
-    try {
-      setLoading(true);
-      // console.log('🗑️ Deleting room:', selectedRoom.id, selectedRoom.roomNumber);
-      
-      const response = await hotelAdminApi.deleteRoom(token, selectedRoom.id);
-      // console.log('🗑️ Delete response:', response);
-      
-      if (response.success) {
-        // console.log('🗑️ Delete successful, refreshing room list...');
-        setDeleteDialogOpen(false);
-        setSelectedRoom(null);
-        await loadRooms();
-        setError(null);
-        // console.log('🗑️ Room list refreshed');
-      } else {
-        // console.log('🗑️ Delete failed:', response.message);
-        setError(response.message || 'Failed to delete room. Room may have active bookings.');
-      }
-    } catch (err) {
-      // console.error('🗑️ Error deleting room:', err);
-      setError('Failed to delete room. Room may have active bookings.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleCreateRoom = async () => {
     if (!token) return;
-    
+
+    // Parse comma-separated room numbers
+    const roomNumbers = roomForm.roomNumber
+      .split(',')
+      .map((r) => r.trim())
+      .filter((r) => r.length > 0);
+
+    if (roomNumbers.length === 0) return;
+
     try {
       setLoading(true);
-      const response = await hotelAdminApi.createRoom(token, roomForm);
-      if (response.success) {
-        setCreateDialogOpen(false);
-        setRoomForm({
-          roomNumber: '',
-          roomType: 'STANDARD',
-          pricePerNight: 0,
-          capacity: 1,
-          description: '',
+      setBulkCreateProgress(null);
+
+      if (roomNumbers.length === 1) {
+        // Single room — use existing endpoint
+        const response = await hotelAdminApi.createRoom(token, {
+          ...roomForm,
+          roomNumber: roomNumbers[0],
         });
-        await loadRooms();
-        setError(null);
+        if (response.success) {
+          setCreateDialogOpen(false);
+          setRoomForm({ roomNumber: '', roomType: 'STANDARD', pricePerNight: 0, capacity: 1, description: '' });
+          setBulkCreateProgress(null);
+          setError(null);
+        } else {
+          setError(response.message || 'Failed to create room. Please check the room number is unique.');
+        }
       } else {
-        setError(response.message || 'Failed to create room. Please check the room number is unique.');
+        // Multiple rooms — use batch endpoint
+        const response = await hotelAdminApi.createRoomsBatch(token, {
+          roomNumbers,
+          roomType: roomForm.roomType,
+          pricePerNight: roomForm.pricePerNight,
+          capacity: roomForm.capacity,
+          description: roomForm.description,
+        });
+
+        if (response.success && response.data) {
+          const { data } = response;
+          if (data.failed === 0) {
+            setCreateDialogOpen(false);
+            setRoomForm({ roomNumber: '', roomType: 'STANDARD', pricePerNight: 0, capacity: 1, description: '' });
+            setBulkCreateProgress(null);
+            setError(null);
+          } else {
+            setBulkCreateProgress({
+              created: data.createdRooms.map(r => r.roomNumber),
+              failed: data.failedRooms.map(f => ({ room: f.roomNumber, error: f.error })),
+            });
+            setError(`${data.failed} room(s) failed to create. ${data.created} created successfully.`);
+          }
+        } else {
+          setError(response.message || 'Failed to create rooms.');
+        }
       }
+
+      await loadRooms();
     } catch (err) {
-      // console.error('Error creating room:', err);
-      setError('Failed to create room. Please check the room number is unique.');
+      setError('Failed to create rooms. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -720,17 +728,6 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
                           >
                             <ViewIcon />
                           </IconButton>
-                          <IconButton
-                            size="small"
-                            onClick={() => {
-                              setSelectedRoom(room);
-                              setDeleteDialogOpen(true);
-                            }}
-                            title="Delete Room"
-                            color="error"
-                          >
-                            <DeleteIcon />
-                          </IconButton>
                         </Box>
                       </TableCell>
                     </TableRow>
@@ -860,16 +857,18 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
           maxWidth="md"
           fullWidth
         >
-          <DialogTitle>Add New Room</DialogTitle>
+          <DialogTitle>Add New Room(s)</DialogTitle>
           <DialogContent>
             <Grid container spacing={2} sx={{ mt: 1 }}>
-              <Grid item xs={12} md={6}>
+              <Grid item xs={12}>
                 <PremiumTextField
                   fullWidth
-                  label="Room Number"
+                  label="Room Number(s)"
                   value={roomForm.roomNumber}
-                  onChange={(e) => setRoomForm({ ...roomForm, roomNumber: e.target.value })}
+                  onChange={(e) => { setRoomForm({ ...roomForm, roomNumber: e.target.value }); setBulkCreateProgress(null); }}
                   required
+                  placeholder="e.g. 101, 102, 103, 104"
+                  helperText="Enter one or more room numbers separated by commas"
                 />
               </Grid>
               <Grid item xs={12} md={6}>
@@ -918,15 +917,29 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
                 />
               </Grid>
             </Grid>
+            {bulkCreateProgress && (
+              <Box sx={{ mt: 2 }}>
+                {bulkCreateProgress.created.length > 0 && (
+                  <Alert severity="success" sx={{ mb: 1 }}>
+                    Created: {bulkCreateProgress.created.join(', ')}
+                  </Alert>
+                )}
+                {bulkCreateProgress.failed.length > 0 && (
+                  <Alert severity="error">
+                    Failed: {bulkCreateProgress.failed.map(f => `${f.room} (${f.error})`).join(', ')}
+                  </Alert>
+                )}
+              </Box>
+            )}
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setCreateDialogOpen(false)}>Cancel</Button>
+            <Button onClick={() => { setCreateDialogOpen(false); setBulkCreateProgress(null); }}>Cancel</Button>
             <Button 
               onClick={handleCreateRoom}
               variant="contained"
-              disabled={loading || !roomForm.roomNumber || !roomForm.pricePerNight}
+              disabled={loading || !roomForm.roomNumber.trim() || !roomForm.pricePerNight}
             >
-              Create Room
+              {roomForm.roomNumber.includes(',') ? `Create ${roomForm.roomNumber.split(',').filter(r => r.trim()).length} Rooms` : 'Create Room'}
             </Button>
           </DialogActions>
         </Dialog>
@@ -1007,31 +1020,6 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
               disabled={loading || !editForm.pricePerNight}
             >
               Update Room
-            </Button>
-          </DialogActions>
-        </Dialog>
-
-        {/* Delete Confirmation Dialog */}
-        <Dialog
-          open={deleteDialogOpen}
-          onClose={() => setDeleteDialogOpen(false)}
-        >
-          <DialogTitle>Confirm Delete</DialogTitle>
-          <DialogContent>
-            <Typography>
-              Are you sure you want to delete room {selectedRoom?.roomNumber}? 
-              This action cannot be undone and will fail if the room has active bookings.
-            </Typography>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
-            <Button 
-              onClick={handleDeleteRoom}
-              variant="contained"
-              color="error"
-              disabled={loading}
-            >
-              Delete
             </Button>
           </DialogActions>
         </Dialog>

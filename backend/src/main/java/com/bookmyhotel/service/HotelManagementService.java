@@ -9,6 +9,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.bookmyhotel.dto.HotelDTO;
 import com.bookmyhotel.dto.RoomDTO;
 import com.bookmyhotel.entity.Hotel;
@@ -27,6 +30,8 @@ import com.bookmyhotel.repository.UserRepository;
 @Service
 @Transactional
 public class HotelManagementService {
+
+    private static final Logger logger = LoggerFactory.getLogger(HotelManagementService.class);
 
     @Autowired
     private HotelRepository hotelRepository;
@@ -118,13 +123,16 @@ public class HotelManagementService {
     /**
      * Toggle hotel active status
      */
-    public HotelDTO toggleHotelStatus(Long hotelId) {
+    public HotelDTO toggleHotelStatus(Long hotelId, String reason) {
         Hotel hotel = hotelRepository.findById(hotelId)
                 .orElseThrow(() -> new ResourceNotFoundException("Hotel not found with id: " + hotelId));
 
-        // Toggle the active status
-        hotel.setIsActive(!Boolean.TRUE.equals(hotel.getIsActive()));
+        boolean wasActive = Boolean.TRUE.equals(hotel.getIsActive());
+        hotel.setIsActive(!wasActive);
         hotel = hotelRepository.save(hotel);
+
+        logger.info("Hotel '{}' (ID: {}) {} by admin. Reason: {}",
+                hotel.getName(), hotelId, wasActive ? "deactivated" : "activated", reason);
 
         return convertToDTO(hotel);
     }

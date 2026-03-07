@@ -29,7 +29,6 @@ import {
 import { formatDateForDisplay } from '../../utils/dateUtils';
 import {
   Visibility as VisibilityIcon,
-  Delete as DeleteIcon,
   Check as CheckInIcon,
   ExitToApp as CheckOutIcon,
   PersonOff as NoShowIcon,
@@ -57,7 +56,6 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
   const [search, setSearch] = useState('');
   const [selectedBooking, setSelectedBooking] = useState<FrontDeskBooking | null>(null);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
 
   // Memoize search handler to prevent input focus loss
@@ -186,41 +184,6 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
       setSnackbar({ 
         open: true, 
         message: 'Failed to update booking status', 
-        severity: 'error' 
-      });
-    }
-  };
-
-  // Handle booking deletion
-  const handleDeleteBooking = async () => {
-    if (!token || !selectedBooking) return;
-    
-    try {
-      const result = await frontDeskApiService.deleteBooking(token, selectedBooking.reservationId, tenantId);
-      
-      if (result.success) {
-        setSnackbar({ 
-          open: true, 
-          message: 'Booking deleted successfully', 
-          severity: 'success' 
-        });
-        setDeleteDialogOpen(false);
-        setSelectedBooking(null);
-        loadBookings();
-        onRefresh?.();
-        // Trigger notification refresh after booking deletion
-        BookingNotificationEvents.afterCancellation();
-      } else {
-        setSnackbar({ 
-          open: true, 
-          message: result.message || 'Failed to delete booking', 
-          severity: 'error' 
-        });
-      }
-    } catch (error) {
-      setSnackbar({ 
-        open: true, 
-        message: 'Failed to delete booking', 
         severity: 'error' 
       });
     }
@@ -567,18 +530,6 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
                             </>
                           )}
                           
-                          <Tooltip title="Delete Booking">
-                            <IconButton 
-                              size="small"
-                              onClick={() => {
-                                setSelectedBooking(booking);
-                                setDeleteDialogOpen(true);
-                              }}
-                              color="error"
-                            >
-                              <DeleteIcon />
-                            </IconButton>
-                          </Tooltip>
                         </Box>
                       </TableCell>
                     </TableRow>
@@ -652,23 +603,6 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
           <Button onClick={() => setViewDialogOpen(false)}>Close</Button>
         </DialogActions>
       </Dialog>
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
-        <DialogTitle>Confirm Deletion</DialogTitle>
-        <DialogContent>
-          <Typography>
-            Are you sure you want to delete the booking for {selectedBooking?.guestName}? 
-            This action cannot be undone.
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
-          <Button onClick={handleDeleteBooking} color="error" variant="contained">
-            Delete
-          </Button>
-        </DialogActions>
-      </Dialog>
-
       {/* Snackbar for notifications */}
       <Snackbar
         open={snackbar.open}

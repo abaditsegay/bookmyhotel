@@ -36,6 +36,33 @@ export const omTranslations = {
       registrationSuccess: "Galmaan galuun milkaa'e! Kallatti jijjiiraa...",
       loginFailed: "Seenan dadhabe",
       registrationFailed: "Galmaan galuun dadhabe"
+    },
+    forgotPassword: {
+      title: "Jecha Icciitii Dagattee",
+      subtitle: "Imeelii kee galchi, geessituu haaraa siif ergina",
+      sendButton: "Geessituu Ergii",
+      sending: "Ergaa irra...",
+      successMessage: "Imeelii sanaan herregni yoo jiraate, geessituun jecha icciitii haaraa ergameera.",
+      errorMessage: "Rakkoon uumameera. Maaloo irra deebi'ii yaali.",
+      invalidEmail: "Maaloo teessoo imeelii sirrii ta'e galchi.",
+      checkInbox: "Maaloo saanduqa imeelii kee (fi spam) ilaali.",
+      backToLogin: "Gara Seensaatti Deebi'i"
+    },
+    resetPassword: {
+      title: "Jecha Icciitii Haaraa",
+      subtitle: "Jecha icciitii haaraa kee armaan gaditti galchi",
+      newPasswordLabel: "Jecha Icciitii Haaraa",
+      confirmPasswordLabel: "Jecha Icciitii Haaraa Mirkaneessi",
+      resetButton: "Jecha Icciitii Jijjiiri",
+      resetting: "Jijjiirraa irra...",
+      successMessage: "Jecha icciitii kee milkaa'inaan jijjiirameera!",
+      errorMessage: "Jecha icciitii jijjiiruun dadhabe. Maaloo irra deebi'ii yaali.",
+      passwordTooShort: "Jecha icciitiin yoo xiqqaate arfii 8 qabaachuu qaba.",
+      passwordsNoMatch: "Jechoota icciitii wal hin simnu.",
+      invalidTokenTitle: "Geessituun Dogoggoraa ykn Yeroon Irra Darbee",
+      invalidTokenMessage: "Geessituun jecha icciitii haaraa kun dogoggoraa ykn yeroon irra darbeera.",
+      requestNewLink: "Geessituu Haaraa Gaafadhu",
+      goToLogin: "Gara Seensaatti Deemi"
     }
   },
 
@@ -2186,6 +2213,35 @@ export const omTranslations = {
     }
   },
   
+  landing: {
+    hero: {
+      title: "BookMyHotel",
+      subtitle: "Imala itti aanuuf hoteela mijataa argadhaa fi galmeessaa — saffisaa, nageenya qabu, fi salphaa."
+    },
+    search: {
+      title: "Hoteelota Barbaadi"
+    },
+    partner: {
+      title: "Nu Waliin Hojjedhaa",
+      description: "Hoteela keessan BookMyHotel irratti galmeessaatii imaltootaa kumaataman argadhaa. Marsariitiin keenya meeshaalee bulchiinsaa cimaa, beellama yeroo qabatamaa fi deeggarsa addaa dhiyeessa.",
+      benefit1: "Mul'ata hoteela keessanii namoota bal'aaf dabala",
+      benefit2: "Beellama fi daashboordii bulchiinsaa salphaa",
+      benefit3: "Deeggarsa galmeessuu fi itti fufiinsa addaa",
+      registerButton: "Hoteela Keessan Galmeessaa"
+    },
+    contact: {
+      title: "Nu Quunnamaa",
+      description: "Gaaffii qabduu ykn gargaarsa barbaadduu? Gareen keenya beellama, michummaa ykn gaaffii kamiifuu isin gargaaruuf qophiidha.",
+      emailLabel: "Imeelii",
+      email: "support@bookmyhotel.com",
+      phoneLabel: "Bilbila",
+      phone: "+251-911-000-000"
+    },
+    footer: {
+      tagline: "© 2026 BookMyHotel — Marsariitii beellama hoteelaa amanamaa keessan."
+    }
+  },
+
   language: {
     english: "Ingliziffaa",
     amharic: "Amaariffaa",

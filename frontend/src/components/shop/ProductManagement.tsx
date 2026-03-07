@@ -33,7 +33,6 @@ import {
 } from '@mui/material';
 import {
   Edit as EditIcon,
-  Delete as DeleteIcon,
   Search as SearchIcon,
   Warning as WarningIcon,
   CheckCircle as CheckCircleIcon,
@@ -69,10 +68,8 @@ const ProductManagement: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('ALL');
   const [openDialog, setOpenDialog] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [viewDetailsDialogOpen, setViewDetailsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [productToDelete, setProductToDelete] = useState<Product | null>(null);
   const [selectedViewProduct, setSelectedViewProduct] = useState<Product | null>(null);
   
   // Pagination state - matching FrontDesk Rooms tab style
@@ -211,30 +208,6 @@ const ProductManagement: React.FC = () => {
       triggerRefresh();
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to update product';
-      setError(errorMessage);
-      enqueueSnackbar(errorMessage, { variant: 'error' });
-    }
-  };
-
-  const handleDeleteProduct = (product: Product) => {
-    setProductToDelete(product);
-    setDeleteDialogOpen(true);
-  };
-
-  const confirmDeleteProduct = async () => {
-    if (!productToDelete || !hotelId) {
-      // console.error('Cannot delete product: Missing product or hotel ID');
-      return;
-    }
-    
-    try {
-      await shopApiService.deleteProduct(hotelId, productToDelete.id);
-      enqueueSnackbar(t('shop.products.productDeleted'), { variant: 'success' });
-      setDeleteDialogOpen(false);
-      setProductToDelete(null);
-      triggerRefresh();
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to delete product';
       setError(errorMessage);
       enqueueSnackbar(errorMessage, { variant: 'error' });
     }
@@ -575,15 +548,6 @@ const ProductManagement: React.FC = () => {
                       <EditIcon />
                     </IconButton>
                   </Tooltip>
-                  <Tooltip title={t('shop.products.deleteProduct')}>
-                    <IconButton
-                      size="small"
-                      color="error"
-                      onClick={() => handleDeleteProduct(product)}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  </Tooltip>
                 </TableCell>
               </TableRow>
             ))
@@ -782,44 +746,6 @@ const ProductManagement: React.FC = () => {
             }}
           >
             {editingProduct ? t('common.save') : t('common.add')}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>{t('shop.products.deleteProduct')}</DialogTitle>
-        <DialogContent>
-          {productToDelete && (
-            <Box sx={{ mt: 2 }}>
-              <Typography variant="body1" gutterBottom>
-                {t('shop.products.confirmDelete')}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
-                <strong>Product:</strong> {productToDelete.name}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
-                <strong>SKU:</strong> {productToDelete.sku}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
-                <strong>Category:</strong> {productToDelete.category.replace('_', ' ')}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
-                <strong>Price:</strong> {formatCurrencyWithDecimals(productToDelete.price || 0)}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
-                <strong>Stock:</strong> {productToDelete.stockQuantity} units
-              </Typography>
-              <Typography variant="body2" color="error" sx={{ mt: 2 }}>
-                This action cannot be undone.
-              </Typography>
-            </Box>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)}>{t('common.cancel')}</Button>
-          <Button onClick={confirmDeleteProduct} variant="contained" color="error">
-            {t('common.delete')}
           </Button>
         </DialogActions>
       </Dialog>

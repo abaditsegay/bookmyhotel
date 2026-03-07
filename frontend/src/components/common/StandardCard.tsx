@@ -98,7 +98,7 @@ const StandardCard: React.FC<StandardCardProps> = ({
   return (
     <Card
       sx={{
-        borderRadius: designSystem.borderRadius.none,
+        borderRadius: designSystem.borderRadius.md,
         overflow: 'hidden',
         ...getCardStyles(),
         ...sx,

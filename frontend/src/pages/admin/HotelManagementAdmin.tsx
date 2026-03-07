@@ -36,7 +36,6 @@ import {
   Edit as EditIcon, 
   ToggleOn as ToggleOnIcon, 
   ToggleOff as ToggleOffIcon, 
-  Delete as DeleteIcon,
   Add as AddIcon,
   Refresh as RefreshIcon,
   RateReview as ReviewIcon,
@@ -89,12 +88,14 @@ const HotelManagementAdmin: React.FC = () => {
   const [selectedRegistration, setSelectedRegistration] = useState<HotelRegistrationResponse | null>(null);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  // Delete functionality removed - use deactivation instead
   const [registerDialogOpen, setRegisterDialogOpen] = useState(false);
   const [registrationViewDialogOpen, setRegistrationViewDialogOpen] = useState(false);
   const [registrationEditMode, setRegistrationEditMode] = useState(false);
   const [approveDialogOpen, setApproveDialogOpen] = useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [toggleStatusDialogOpen, setToggleStatusDialogOpen] = useState(false);
+  const [toggleStatusReason, setToggleStatusReason] = useState('');
 
   // Approval/Rejection form state
   const [approvalComments, setApprovalComments] = useState('');
@@ -513,15 +514,13 @@ const HotelManagementAdmin: React.FC = () => {
 
 
   const handleApproveRegistration = async () => {
-    if (!selectedRegistration || !tenantId.trim()) {
-      setError('Tenant is required for approval');
+    if (!selectedRegistration) {
       return;
     }
 
     try {
       const request: ApproveRegistrationRequest = {
-        comments: approvalComments,
-        tenantId: tenantId
+        comments: approvalComments
       };
 
       await adminApiService.approveHotelRegistration(selectedRegistration.id, request);
@@ -530,8 +529,7 @@ const HotelManagementAdmin: React.FC = () => {
       setRegistrationViewDialogOpen(false);
       setSelectedRegistration(null);
       setApprovalComments('');
-      setTenantId('');
-      setSuccess('Hotel registration approved successfully! The hotel is now active and available in the Existing Hotels list.');
+      setSuccess('Hotel registration approved successfully! The hotel has been automatically assigned to the default tenant and is now active.');
       setTimeout(() => setSuccess(null), 5000);
       
       // Refresh both registrations and hotels list
@@ -648,8 +646,11 @@ const HotelManagementAdmin: React.FC = () => {
     
     try {
       setLoading(true);
-      await adminApiService.toggleHotelStatus(hotel.id);
-      loadHotels(); // Refresh the list
+      await adminApiService.toggleHotelStatus(hotel.id, toggleStatusReason);
+      setToggleStatusDialogOpen(false);
+      setToggleStatusReason('');
+      setSelectedHotel(null);
+      loadHotels();
       setError(null);
       setSuccess(`Hotel ${hotel.isActive ? 'deactivated' : 'activated'} successfully`);
       setTimeout(() => setSuccess(null), 3000);
@@ -661,43 +662,11 @@ const HotelManagementAdmin: React.FC = () => {
     }
   };
 
-  // Delete hotel functions
-  const openDeleteDialog = (hotel: Hotel) => {
-    setSelectedHotel(hotel);
-    setDeleteDialogOpen(true);
-  };
-
-  const handleDeleteHotel = async () => {
-    if (!selectedHotel || !token) return;
-
-    try {
-      setLoading(true);
-      await adminApiService.deleteHotel(selectedHotel.id);
-      setDeleteDialogOpen(false);
-      setSelectedHotel(null);
-      loadHotels(); // Refresh the list
-      setError(null);
-      setSuccess('Hotel deleted successfully');
-      setTimeout(() => setSuccess(null), 3000);
-    } catch (err) {
-      // console.error('Error deleting hotel:', err);
-      setError('Failed to delete hotel. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <Box sx={{ width: '100%', p: 3 }}>
       <Box sx={{ py: 4 }}>
         {/* Header */}
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-          <IconButton 
-            onClick={() => navigate('/system-dashboard')}
-            sx={{ mr: 2 }}
-          >
-            <ArrowBackIcon />
-          </IconButton>
           <Typography variant="h5" component="h1" sx={{ 
             flexGrow: 1,
             color: COLORS.PRIMARY,
@@ -881,19 +850,15 @@ const HotelManagementAdmin: React.FC = () => {
                               </IconButton>
                               <IconButton
                                 size="small"
-                                onClick={() => handleToggleHotelStatus(hotel)}
+                                onClick={() => {
+                                  setSelectedHotel(hotel);
+                                  setToggleStatusReason('');
+                                  setToggleStatusDialogOpen(true);
+                                }}
                                 title={hotel.isActive ? "Deactivate" : "Activate"}
                                 color={hotel.isActive ? "success" : "error"}
                               >
                                 {hotel.isActive ? <ToggleOnIcon /> : <ToggleOffIcon />}
-                              </IconButton>
-                              <IconButton
-                                size="small"
-                                onClick={() => openDeleteDialog(hotel)}
-                                title="Delete Hotel"
-                                color="error"
-                              >
-                                <DeleteIcon />
                               </IconButton>
                             </Box>
                           </TableCell>
@@ -1656,6 +1621,52 @@ const HotelManagementAdmin: React.FC = () => {
           </DialogActions>
         </Dialog>
 
+        {/* Toggle Status Confirmation Dialog */}
+        <Dialog
+          open={toggleStatusDialogOpen}
+          onClose={() => {
+            setToggleStatusDialogOpen(false);
+            setToggleStatusReason('');
+          }}
+          maxWidth="sm"
+          fullWidth
+        >
+          <DialogTitle>
+            {selectedHotel?.isActive ? 'Deactivate Hotel' : 'Activate Hotel'}
+          </DialogTitle>
+          <DialogContent>
+            <Typography sx={{ mb: 2 }}>
+              Are you sure you want to {selectedHotel?.isActive ? 'deactivate' : 'activate'} hotel "{selectedHotel?.name}"?
+            </Typography>
+            <PremiumTextField
+              label="Reason"
+              fullWidth
+              required
+              multiline
+              rows={3}
+              value={toggleStatusReason}
+              onChange={(e) => setToggleStatusReason(e.target.value)}
+              placeholder={`Enter reason for ${selectedHotel?.isActive ? 'deactivation' : 'activation'}...`}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => {
+              setToggleStatusDialogOpen(false);
+              setToggleStatusReason('');
+            }}>
+              Cancel
+            </Button>
+            <Button
+              onClick={() => selectedHotel && handleToggleHotelStatus(selectedHotel)}
+              variant="contained"
+              color={selectedHotel?.isActive ? 'error' : 'success'}
+              disabled={!toggleStatusReason.trim() || loading}
+            >
+              {loading ? <CircularProgress size={20} /> : (selectedHotel?.isActive ? 'Deactivate' : 'Activate')}
+            </Button>
+          </DialogActions>
+        </Dialog>
+
         {/* View Hotel Dialog */}
         <Dialog open={viewDialogOpen} onClose={handleCloseViewDialog} maxWidth="md" fullWidth>
           <DialogTitle>Hotel Details</DialogTitle>
@@ -1801,31 +1812,6 @@ const HotelManagementAdmin: React.FC = () => {
           loading={loading}
         />
 
-        {/* Delete Confirmation Dialog */}
-        <Dialog
-          open={deleteDialogOpen}
-          onClose={() => setDeleteDialogOpen(false)}
-        >
-          <DialogTitle>Confirm Delete</DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              Are you sure you want to delete the hotel "{selectedHotel?.name}"? This action cannot be undone.
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setDeleteDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              onClick={handleDeleteHotel}
-              color="error"
-              variant="contained"
-            >
-              Delete
-            </Button>
-          </DialogActions>
-        </Dialog>
-
         {/* Approve Registration Dialog */}
         <Dialog
           open={approveDialogOpen}
@@ -1846,32 +1832,9 @@ const HotelManagementAdmin: React.FC = () => {
           <DialogContent>
             <DialogContentText sx={{ mb: 2 }}>
               You are about to approve the registration for "{selectedRegistration?.hotelName}". 
-              This will create a new hotel in the system.
+              This will create a new hotel in the system and automatically assign it to the default tenant.
             </DialogContentText>
             <Grid container spacing={2}>
-              <Grid item xs={12}>
-                <PremiumSelect
-                  fullWidth
-                  required
-                  label="Tenant"
-                  value={tenantId}
-                  onChange={(e) => setTenantId(e.target.value)}
-                  disabled={tenantsLoading}
-                >
-                  {tenantsLoading ? (
-                    <MenuItem disabled>
-                      <CircularProgress size={20} sx={{ mr: 1 }} />
-                      Loading tenants...
-                    </MenuItem>
-                  ) : (
-                    tenants.map((tenant) => (
-                      <MenuItem key={tenant.id} value={tenant.id}>
-                        {tenant.name} ({tenant.tenantId})
-                      </MenuItem>
-                    ))
-                  )}
-                </PremiumSelect>
-              </Grid>
               <Grid item xs={12}>
                 <PremiumTextField
                   label="Approval Comments (Optional)"
@@ -1892,7 +1855,6 @@ const HotelManagementAdmin: React.FC = () => {
             <Button
               onClick={handleApproveRegistration}
               variant="contained"
-              disabled={!tenantId.trim()}
               sx={{
                   backgroundColor: COLORS.PRIMARY,
                 '&:hover': {
