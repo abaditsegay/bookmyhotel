@@ -18,7 +18,6 @@ import {
   Handshake as HandshakeIcon,
   Email as EmailIcon,
   Phone as PhoneIcon,
-  ArrowForward as ArrowForwardIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -198,29 +197,7 @@ const LandingPage: React.FC = () => {
                 overflow: 'hidden',
                 border: 'none',
                 borderRadius: 4,
-                background: theme.palette.mode === 'dark'
-                  ? `linear-gradient(145deg, ${COLORS.SLATE_900} 0%, ${addAlpha(COLORS.PRIMARY, 0.95)} 50%, ${COLORS.SLATE_800} 100%)`
-                  : `linear-gradient(145deg, ${COLORS.PRIMARY} 0%, ${COLORS.PRIMARY_HOVER} 40%, ${addAlpha(COLORS.SECONDARY, 0.3)} 100%)`,
-                '&::before': {
-                  content: '""',
-                  position: 'absolute',
-                  top: -60,
-                  right: -60,
-                  width: 180,
-                  height: 180,
-                  borderRadius: '50%',
-                  background: addAlpha(COLORS.SECONDARY, 0.15),
-                },
-                '&::after': {
-                  content: '""',
-                  position: 'absolute',
-                  bottom: -40,
-                  left: -40,
-                  width: 120,
-                  height: 120,
-                  borderRadius: '50%',
-                  background: addAlpha(COLORS.WHITE, 0.06),
-                },
+                background: `linear-gradient(145deg, ${COLORS.PRIMARY} 0%, ${COLORS.PRIMARY_HOVER} 50%, #1a3a5c 100%)`,
                 transition: 'transform 0.3s ease, box-shadow 0.3s ease',
                 '&:hover': {
                   transform: 'translateY(-4px)',
@@ -228,100 +205,55 @@ const LandingPage: React.FC = () => {
                 },
               }}
             >
-              <Box sx={{ p: isMobile ? 3 : 4, position: 'relative', zIndex: 1 }}>
-                {/* Badge ribbon */}
+              <Box sx={{ 
+                p: isMobile ? 4 : 5, 
+                display: 'flex', 
+                flexDirection: 'column', 
+                alignItems: 'center', 
+                textAlign: 'center',
+                position: 'relative', 
+                zIndex: 1 
+              }}>
                 <Box
                   sx={{
-                    display: 'inline-flex',
+                    display: 'flex',
                     alignItems: 'center',
-                    gap: 0.5,
-                    px: 1.5,
-                    py: 0.5,
-                    mb: 2,
-                    borderRadius: 6,
-                    backgroundColor: addAlpha(COLORS.SECONDARY, 0.2),
-                    border: `1px solid ${addAlpha(COLORS.SECONDARY, 0.4)}`,
+                    justifyContent: 'center',
+                    width: 56,
+                    height: 56,
+                    mb: 2.5,
                   }}
                 >
-                  <Typography variant="caption" sx={{ fontWeight: 700, color: COLORS.SECONDARY, letterSpacing: '0.08em', textTransform: 'uppercase', fontSize: '0.7rem' }}>
-                    Become a Partner
-                  </Typography>
+                  <HandshakeIcon sx={{ fontSize: 40, color: COLORS.WHITE }} />
                 </Box>
 
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      width: 52,
-                      height: 52,
-                      borderRadius: 3,
-                      mr: 2,
-                      background: `linear-gradient(135deg, ${COLORS.SECONDARY} 0%, ${COLORS.SECONDARY_HOVER} 100%)`,
-                      boxShadow: `0 4px 12px ${addAlpha(COLORS.SECONDARY, 0.35)}`,
-                    }}
-                  >
-                    <HandshakeIcon sx={{ fontSize: 28, color: COLORS.PRIMARY }} />
-                  </Box>
-                  <Typography variant="h5" sx={{ fontWeight: 800, color: COLORS.WHITE }}>
-                    {t('landing.partner.title')}
-                  </Typography>
-                </Box>
-                <Typography variant="body1" sx={{ mb: 3, lineHeight: 1.7, color: addAlpha(COLORS.WHITE, 0.85) }}>
+                <Typography variant="h5" sx={{ fontWeight: 800, color: COLORS.WHITE, mb: 2 }}>
+                  {t('landing.partner.title')}
+                </Typography>
+
+                <Typography variant="body1" sx={{ mb: 4, lineHeight: 1.7, color: addAlpha(COLORS.WHITE, 0.85), maxWidth: 400 }}>
                   {t('landing.partner.description')}
                 </Typography>
-                <Box sx={{ mb: 3 }}>
-                  {(['benefit1', 'benefit2', 'benefit3'] as const).map((key) => (
-                    <Box key={key} sx={{ display: 'flex', alignItems: 'center', mb: 1.2 }}>
-                      <Box
-                        sx={{
-                          width: 22,
-                          height: 22,
-                          borderRadius: '50%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          mr: 1.5,
-                          flexShrink: 0,
-                          backgroundColor: addAlpha(COLORS.SECONDARY, 0.2),
-                          border: `1px solid ${addAlpha(COLORS.SECONDARY, 0.5)}`,
-                          fontSize: '0.7rem',
-                          color: COLORS.SECONDARY,
-                          fontWeight: 700,
-                        }}
-                      >
-                        ✓
-                      </Box>
-                      <Typography variant="body2" sx={{ color: addAlpha(COLORS.WHITE, 0.8) }}>
-                        {t(`landing.partner.${key}`)}
-                      </Typography>
-                    </Box>
-                  ))}
-                </Box>
+
                 <StandardButton
                   variant="contained"
                   buttonSize="large"
                   fullWidth={isSmall}
                   onClick={() => navigate('/register-hotel')}
-                  endIcon={<ArrowForwardIcon />}
                   sx={{
-                    mt: 1,
                     py: 1.5,
+                    px: 5,
                     fontWeight: 700,
                     fontSize: '0.95rem',
-                    backgroundColor: `${COLORS.SECONDARY} !important`,
+                    backgroundColor: `${COLORS.WHITE} !important`,
                     color: `${COLORS.PRIMARY} !important`,
                     backgroundImage: 'none !important',
                     borderRadius: 3,
-                    boxShadow: `0 4px 16px ${addAlpha(COLORS.SECONDARY, 0.4)}`,
-                    '& .MuiButton-endIcon': {
-                      color: `${COLORS.PRIMARY} !important`,
-                    },
+                    boxShadow: `0 4px 16px ${addAlpha(COLORS.BLACK, 0.15)}`,
                     '&:hover': {
-                      backgroundColor: `${COLORS.SECONDARY_HOVER} !important`,
+                      backgroundColor: `${addAlpha(COLORS.WHITE, 0.9)} !important`,
                       backgroundImage: 'none !important',
-                      boxShadow: `0 6px 24px ${addAlpha(COLORS.SECONDARY, 0.5)}`,
+                      boxShadow: `0 6px 24px ${addAlpha(COLORS.BLACK, 0.2)}`,
                     },
                   }}
                 >

@@ -2380,11 +2380,8 @@ export const omTranslations = {
     },
     partner: {
       title: "Nu Waliin Hojjedhaa",
-      description: "Hoteela keessan BookMyHotel irratti galmeessaatii imaltootaa kumaataman argadhaa. Marsariitiin keenya meeshaalee bulchiinsaa cimaa, beellama yeroo qabatamaa fi deeggarsa addaa dhiyeessa.",
-      benefit1: "Mul'ata hoteela keessanii namoota bal'aaf dabala",
-      benefit2: "Beellama fi daashboordii bulchiinsaa salphaa",
-      benefit3: "Deeggarsa galmeessuu fi itti fufiinsa addaa",
-      registerButton: "Hoteela Keessan Galmeessaa"
+      description: "Hoteela daldalaa keessan guddifachuu barbaadduu? Marsariitii keenya irratti makamuu dabalaa, beellama dijitaalaan bulchaa, galii keessan guddifadhaa.",
+      registerButton: "Daldala Keessan Galmeessaa"
     },
     contact: {
       title: "Nu Quunnamaa",

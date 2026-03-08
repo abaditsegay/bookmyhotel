@@ -2430,11 +2430,8 @@ export const enTranslations = {
     },
     partner: {
       title: "Partner With Us",
-      description: "List your hotel on BookMyHotel and reach thousands of travelers. Our platform gives you powerful management tools, real-time booking, and dedicated support to grow your business.",
-      benefit1: "Increase your hotel's visibility to a wider audience",
-      benefit2: "Streamlined booking and management dashboard",
-      benefit3: "Dedicated onboarding and ongoing support",
-      registerButton: "Register Your Hotel"
+      description: "Are you a hotel looking to grow your business? Join our platform to reach more customers, manage bookings digitally, and increase your revenue.",
+      registerButton: "Register Your Business"
     },
     contact: {
       title: "Contact Us",
