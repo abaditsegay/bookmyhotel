@@ -175,12 +175,12 @@ public class BookingService {
             // Process payment if payment method provided
             if (request.getPaymentMethodId() != null) {
                 if ("pay_at_frontdesk".equals(request.getPaymentMethodId())) {
-                    // For pay at front desk, mark reservation as confirmed with payment pending
-                    reservation.setStatus(ReservationStatus.CONFIRMED);
+                    // For pay at front desk, mark reservation as booked with payment pending
+                    reservation.setStatus(ReservationStatus.BOOKED);
                     // No payment intent ID set, so payment status will be "PENDING"
                 } else if ("mock_payment_processed".equals(request.getPaymentMethodId())) {
                     // For mock payments already processed by frontend
-                    reservation.setStatus(ReservationStatus.CONFIRMED);
+                    reservation.setStatus(ReservationStatus.BOOKED);
                     // Use the transaction ID from the mock payment gateway
                     if (request.getTransactionId() != null) {
                         reservation.setPaymentIntentId(request.getTransactionId());
@@ -194,12 +194,12 @@ public class BookingService {
                         String paymentIntentId = processEthiopianPayment(totalAmount, request.getPaymentMethodId(),
                                 request.getGuestPhone(), reservation);
                         reservation.setPaymentIntentId(paymentIntentId);
-                        reservation.setStatus(ReservationStatus.CONFIRMED);
+                        reservation.setStatus(ReservationStatus.BOOKED);
                     } catch (Exception e) {
                         // If Ethiopian payment initiation fails, still confirm booking but mark payment
                         // as failed
-                        reservation.setStatus(ReservationStatus.CONFIRMED);
-                        logger.warn("Ethiopian payment processing failed for reservation, but booking confirmed: {}",
+                        reservation.setStatus(ReservationStatus.BOOKED);
+                        logger.warn("Ethiopian payment processing failed for reservation, but booking booked: {}",
                                 e.getMessage());
                         // Payment status will be determined by the absence of payment intent ID
                     }
@@ -208,18 +208,18 @@ public class BookingService {
                     try {
                         String paymentIntentId = processPayment(totalAmount, request.getPaymentMethodId());
                         reservation.setPaymentIntentId(paymentIntentId);
-                        reservation.setStatus(ReservationStatus.CONFIRMED);
+                        reservation.setStatus(ReservationStatus.BOOKED);
                     } catch (StripeException e) {
                         // Even if payment fails, confirm the booking but mark payment as failed
-                        reservation.setStatus(ReservationStatus.CONFIRMED);
-                        logger.warn("Payment processing failed for reservation, but booking confirmed: {}",
+                        reservation.setStatus(ReservationStatus.BOOKED);
+                        logger.warn("Payment processing failed for reservation, but booking booked: {}",
                                 e.getMessage());
                         // Payment status will be determined by the absence of payment intent ID
                     }
                 }
             } else {
                 // No payment method provided - still confirm the booking
-                reservation.setStatus(ReservationStatus.CONFIRMED);
+                reservation.setStatus(ReservationStatus.BOOKED);
             }
 
             // Generate a temporary confirmation number before first save
@@ -312,12 +312,12 @@ public class BookingService {
             // Process payment if payment method provided
             if (request.getPaymentMethodId() != null) {
                 if ("pay_at_frontdesk".equals(request.getPaymentMethodId())) {
-                    // For pay at front desk, mark reservation as confirmed with payment pending
-                    reservation.setStatus(ReservationStatus.CONFIRMED);
+                    // For pay at front desk, mark reservation as booked with payment pending
+                    reservation.setStatus(ReservationStatus.BOOKED);
                     // No payment intent ID set, so payment status will be "PENDING"
                 } else if ("mock_payment_processed".equals(request.getPaymentMethodId())) {
                     // For mock payments already processed by frontend
-                    reservation.setStatus(ReservationStatus.CONFIRMED);
+                    reservation.setStatus(ReservationStatus.BOOKED);
                     // Use the transaction ID from the mock payment gateway
                     if (request.getTransactionId() != null) {
                         reservation.setPaymentIntentId(request.getTransactionId());
@@ -329,18 +329,18 @@ public class BookingService {
                     try {
                         String paymentIntentId = processPayment(totalAmount, request.getPaymentMethodId());
                         reservation.setPaymentIntentId(paymentIntentId);
-                        reservation.setStatus(ReservationStatus.CONFIRMED);
+                        reservation.setStatus(ReservationStatus.BOOKED);
                     } catch (StripeException e) {
                         // Even if payment fails, confirm the booking but mark payment as failed
-                        reservation.setStatus(ReservationStatus.CONFIRMED);
-                        logger.warn("Payment processing failed for reservation, but booking confirmed: {}",
+                        reservation.setStatus(ReservationStatus.BOOKED);
+                        logger.warn("Payment processing failed for reservation, but booking booked: {}",
                                 e.getMessage());
                         // Payment status will be determined by the absence of payment intent ID
                     }
                 }
             } else {
                 // No payment method provided - still confirm the booking
-                reservation.setStatus(ReservationStatus.CONFIRMED);
+                reservation.setStatus(ReservationStatus.BOOKED);
             }
 
             // Generate a temporary confirmation number before first save
@@ -585,7 +585,7 @@ public class BookingService {
                 Reservation existingBooking = overlappingReservations.get(0);
                 throw new BookingException(
                         String.format(
-                                "You already have a confirmed booking (confirmation: %s) from %s to %s that overlaps with your selected dates. "
+                                "You already have a booked reservation (confirmation: %s) from %s to %s that overlaps with your selected dates. "
                                         +
                                         "Please choose different dates or contact the hotel to modify your existing booking.",
                                 existingBooking.getConfirmationNumber(),
@@ -732,7 +732,7 @@ public class BookingService {
                 Reservation existingBooking = overlappingReservations.get(0);
                 throw new BookingException(
                         String.format(
-                                "You already have a confirmed booking (confirmation: %s) from %s to %s that overlaps with your selected dates. "
+                                "You already have a booked reservation (confirmation: %s) from %s to %s that overlaps with your selected dates. "
                                         +
                                         "Please choose different dates or contact the hotel to modify your existing booking.",
                                 existingBooking.getConfirmationNumber(),
@@ -786,7 +786,7 @@ public class BookingService {
         reservation.setTotalAmount(totalAmount);
         reservation.setSpecialRequests(request.getSpecialRequests());
         reservation.setNumberOfGuests(request.getGuests()); // Set number of guests
-        reservation.setStatus(ReservationStatus.CONFIRMED); // Immediate confirmation
+        reservation.setStatus(ReservationStatus.BOOKED); // Immediate confirmation
 
         // Debug: Log payment method before setting it and truncate if needed
         String paymentMethodId = request.getPaymentMethodId();
@@ -842,7 +842,7 @@ public class BookingService {
         reservation.setTotalAmount(totalAmount);
         reservation.setSpecialRequests(request.getSpecialRequests());
         reservation.setNumberOfGuests(request.getGuests()); // Set number of guests
-        reservation.setStatus(ReservationStatus.CONFIRMED); // Immediate confirmation
+        reservation.setStatus(ReservationStatus.BOOKED); // Immediate confirmation
 
         // Debug: Log payment method before setting it and truncate if needed
         String paymentMethodId = request.getPaymentMethodId();
@@ -980,7 +980,7 @@ public class BookingService {
         reservation.setTotalAmount(totalAmount);
         reservation.setSpecialRequests(request.getSpecialRequests());
         reservation.setNumberOfGuests(request.getGuests()); // Set number of guests
-        reservation.setStatus(ReservationStatus.CONFIRMED); // Immediate confirmation
+        reservation.setStatus(ReservationStatus.BOOKED); // Immediate confirmation
 
         // Debug: Log payment method before setting it and truncate if needed
         String paymentMethodId = request.getPaymentMethodId();
@@ -1028,7 +1028,7 @@ public class BookingService {
         reservation.setTotalAmount(totalAmount);
         reservation.setSpecialRequests(request.getSpecialRequests());
         reservation.setNumberOfGuests(request.getGuests()); // Set number of guests
-        reservation.setStatus(ReservationStatus.CONFIRMED); // Immediate confirmation
+        reservation.setStatus(ReservationStatus.BOOKED); // Immediate confirmation
 
         // Debug: Log payment method before setting it and truncate if needed
         String paymentMethodId = request.getPaymentMethodId();
@@ -2292,7 +2292,7 @@ public class BookingService {
             Long excludeReservationId) {
         List<Reservation> conflictingReservations = reservationRepository.findConflictingReservationsExcluding(
                 roomId, checkIn, checkOut, excludeReservationId,
-                Set.of(ReservationStatus.CONFIRMED, ReservationStatus.CHECKED_IN));
+                Set.of(ReservationStatus.BOOKED, ReservationStatus.CHECKED_IN));
         return conflictingReservations.isEmpty();
     }
 

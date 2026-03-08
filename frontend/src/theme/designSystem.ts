@@ -239,7 +239,7 @@ export const designSystem = {
 // Status color mappings for consistent status displays
 export const statusColors = {
   booking: {
-    confirmed: 'primary',
+    booked: 'primary',
     'checked in': 'success', 
     'checked_in': 'success',
     'checked out': 'info',

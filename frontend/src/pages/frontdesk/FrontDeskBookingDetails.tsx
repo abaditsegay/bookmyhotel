@@ -148,7 +148,7 @@ const FrontDeskBookingDetails: React.FC = () => {
 
       // Check if room assignment changed for confirmed bookings
       if (booking && 
-          editedBooking.status?.toUpperCase() === 'CONFIRMED' &&
+          editedBooking.status?.toUpperCase() === 'BOOKED' &&
           (editedBooking.roomType !== booking.roomType || editedBooking.roomNumber !== booking.roomNumber)) {
         
         // For room assignment changes, we need to find the room ID
@@ -256,7 +256,7 @@ const FrontDeskBookingDetails: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'confirmed': return 'primary';
+      case 'booked': return 'primary';
       case 'checked in': 
       case 'checked_in': return 'success';
       case 'checked out': 
@@ -282,7 +282,7 @@ const FrontDeskBookingDetails: React.FC = () => {
     // Only allow modifications for certain statuses
     // Handle both API format (CHECKED_OUT) and display format (Checked Out)
     const normalizedStatus = status.toLowerCase().replace(/_/g, ' ');
-    const modifiableStatuses = ['confirmed', 'pending', 'checked in'];
+    const modifiableStatuses = ['booked', 'pending', 'checked in'];
     return modifiableStatuses.includes(normalizedStatus);
   };
 
@@ -434,7 +434,7 @@ const FrontDeskBookingDetails: React.FC = () => {
                         value={currentBooking?.status || ''}
                         onChange={(e) => handleFieldChange('status', e.target.value)}
                       >
-                        <MenuItem value="CONFIRMED">Confirmed</MenuItem>
+                        <MenuItem value="BOOKED">Booked</MenuItem>
                         <MenuItem value="CHECKED_IN">Checked In</MenuItem>
                         <MenuItem value="CHECKED_OUT">Checked Out</MenuItem>
                         <MenuItem value="CANCELLED">Cancelled</MenuItem>
@@ -497,7 +497,7 @@ const FrontDeskBookingDetails: React.FC = () => {
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    {isEditing && currentBooking?.status?.toUpperCase() === 'CONFIRMED' ? (
+                    {isEditing && currentBooking?.status?.toUpperCase() === 'BOOKED' ? (
                       <PremiumSelect
                         fullWidth
                         label="Room Type"
@@ -520,7 +520,7 @@ const FrontDeskBookingDetails: React.FC = () => {
                     )}
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    {isEditing && currentBooking?.status?.toUpperCase() === 'CONFIRMED' ? (
+                    {isEditing && currentBooking?.status?.toUpperCase() === 'BOOKED' ? (
                       <PremiumTextField
                         fullWidth
                         label="Room Number"

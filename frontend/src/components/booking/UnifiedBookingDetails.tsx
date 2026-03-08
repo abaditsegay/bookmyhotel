@@ -227,7 +227,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
     // Only allow modifications for certain statuses
     // Handle both API format (CHECKED_OUT) and display format (Checked Out)
     const normalizedStatus = status.toLowerCase().replace(/_/g, ' ');
-    const modifiableStatuses = ['confirmed', 'pending', 'checked in'];
+    const modifiableStatuses = ['booked', 'pending', 'checked in'];
     return modifiableStatuses.includes(normalizedStatus);
   };
 
@@ -724,7 +724,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'confirmed': return 'primary';
+      case 'booked': return 'primary';
       case 'checked in': 
       case 'checked_in': return 'success';
       case 'checked out': 
@@ -994,7 +994,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                         value={currentBooking?.status || ''}
                         onChange={(e) => handleFieldChange('status', e.target.value)}
                       >
-                        <MenuItem value="CONFIRMED">Confirmed</MenuItem>
+                        <MenuItem value="BOOKED">Booked</MenuItem>
                         <MenuItem value="CHECKED_IN">Checked In</MenuItem>
                         <MenuItem value="CHECKED_OUT">Checked Out</MenuItem>
                         <MenuItem value="CANCELLED">Cancelled</MenuItem>

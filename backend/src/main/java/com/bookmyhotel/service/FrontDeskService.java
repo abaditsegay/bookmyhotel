@@ -346,7 +346,7 @@ public class FrontDeskService {
 
             // Assign new room
             reservation.setAssignedRoom(newRoom);
-            if (reservation.getStatus() == ReservationStatus.CONFIRMED) {
+            if (reservation.getStatus() == ReservationStatus.BOOKED) {
                 newRoom.setStatus(RoomStatus.OCCUPIED);
                 roomRepository.save(newRoom);
             }
@@ -382,8 +382,8 @@ public class FrontDeskService {
                 .orElseThrow(() -> new ResourceNotFoundException("Room not found with id: " + roomId));
 
         // Validate that check-in is allowed (same validation as checkIn method)
-        if (reservation.getStatus() != ReservationStatus.CONFIRMED) {
-            throw new IllegalStateException("Only confirmed reservations can be checked in");
+        if (reservation.getStatus() != ReservationStatus.BOOKED) {
+            throw new IllegalStateException("Only booked reservations can be checked in");
         }
 
         if (reservation.getCheckInDate().isAfter(LocalDate.now().plusDays(1))) {
@@ -450,7 +450,7 @@ public class FrontDeskService {
         }
 
         // Make room available if it was reserved
-        if (reservation.getStatus() == ReservationStatus.CONFIRMED) {
+        if (reservation.getStatus() == ReservationStatus.BOOKED) {
             Room room = reservation.getRoom();
             room.setStatus(RoomStatus.AVAILABLE);
             roomRepository.save(room);
@@ -460,16 +460,16 @@ public class FrontDeskService {
     }
 
     /**
-     * Update booking room assignment (for confirmed bookings during check-in)
+     * Update booking room assignment (for booked bookings during check-in)
      */
     public BookingResponse updateBookingRoomAssignment(Long reservationId, Long newRoomId, String newRoomType) {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
 
-        // Allow room assignment updates for confirmed bookings and checked-in guests
-        if (reservation.getStatus() != ReservationStatus.CONFIRMED &&
+        // Allow room assignment updates for booked bookings and checked-in guests
+        if (reservation.getStatus() != ReservationStatus.BOOKED &&
                 reservation.getStatus() != ReservationStatus.CHECKED_IN) {
-            throw new IllegalStateException("Room assignment can only be updated for confirmed or checked-in bookings");
+            throw new IllegalStateException("Room assignment can only be updated for booked or checked-in bookings");
         }
 
         // Get the new room
@@ -508,7 +508,7 @@ public class FrontDeskService {
         Room previousRoom = reservation.getRoom();
         if (previousRoom != null) {
             // For checked-in guests, the previous room becomes available again
-            // For confirmed bookings, the room was already available, so just ensure it
+            // For booked bookings, the room was already available, so just ensure it
             // stays available
             previousRoom.setStatus(RoomStatus.AVAILABLE);
             roomRepository.save(previousRoom);
@@ -535,7 +535,7 @@ public class FrontDeskService {
             // For checked-in guests, immediately mark the new room as occupied
             newRoom.setStatus(RoomStatus.OCCUPIED);
         } else {
-            // For confirmed bookings, keep room available until actual check-in
+            // For booked bookings, keep room available until actual check-in
             newRoom.setStatus(RoomStatus.AVAILABLE);
         }
 
@@ -636,8 +636,8 @@ public class FrontDeskService {
                 .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
 
         // Validate that check-in is allowed
-        if (reservation.getStatus() != ReservationStatus.CONFIRMED) {
-            throw new IllegalStateException("Only confirmed reservations can be checked in");
+        if (reservation.getStatus() != ReservationStatus.BOOKED) {
+            throw new IllegalStateException("Only booked reservations can be checked in");
         }
 
         if (reservation.getCheckInDate().isAfter(LocalDate.now().plusDays(1))) {
@@ -792,8 +792,8 @@ public class FrontDeskService {
                 .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
 
         // Validate that no-show marking is allowed
-        if (reservation.getStatus() != ReservationStatus.CONFIRMED) {
-            throw new IllegalStateException("Only confirmed reservations can be marked as no-show");
+        if (reservation.getStatus() != ReservationStatus.BOOKED) {
+            throw new IllegalStateException("Only booked reservations can be marked as no-show");
         }
 
         // Check if it's past the check-in date
@@ -962,7 +962,7 @@ public class FrontDeskService {
         // Get bookings for this specific hotel by joining with rooms
         // Using existing repository methods with custom queries for hotel-specific data
         long todaysArrivals = reservationRepository.findByHotelId(hotel.getId()).stream()
-                .filter(r -> r.getCheckInDate().equals(today) && r.getStatus() == ReservationStatus.CONFIRMED)
+                .filter(r -> r.getCheckInDate().equals(today) && r.getStatus() == ReservationStatus.BOOKED)
                 .count();
         long todaysDepartures = reservationRepository.findByHotelId(hotel.getId()).stream()
                 .filter(r -> r.getCheckOutDate().equals(today) && r.getStatus() == ReservationStatus.CHECKED_IN)
@@ -1105,7 +1105,7 @@ public class FrontDeskService {
             // status would conflict
             LocalDate today = LocalDate.now();
             boolean hasActiveBookings = room.getReservations().stream()
-                    .anyMatch(reservation -> (reservation.getStatus() == ReservationStatus.CONFIRMED ||
+                    .anyMatch(reservation -> (reservation.getStatus() == ReservationStatus.BOOKED ||
                             reservation.getStatus() == ReservationStatus.CHECKED_IN) &&
                             !reservation.getCheckInDate().isAfter(today) &&
                             !reservation.getCheckOutDate().isBefore(today));
@@ -1147,7 +1147,7 @@ public class FrontDeskService {
         if (!available) {
             LocalDate today = LocalDate.now();
             boolean hasActiveBookings = room.getReservations().stream()
-                    .anyMatch(reservation -> (reservation.getStatus() == ReservationStatus.CONFIRMED ||
+                    .anyMatch(reservation -> (reservation.getStatus() == ReservationStatus.BOOKED ||
                             reservation.getStatus() == ReservationStatus.CHECKED_IN) &&
                             !reservation.getCheckInDate().isAfter(today) &&
                             !reservation.getCheckOutDate().isBefore(today));

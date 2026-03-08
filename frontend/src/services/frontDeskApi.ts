@@ -14,7 +14,7 @@ export interface FrontDeskBooking {
   roomType: string;
   checkInDate: string;
   checkOutDate: string;
-  status: 'PENDING' | 'CONFIRMED' | 'CHECKED_IN' | 'CHECKED_OUT' | 'CANCELLED' | 'NO_SHOW';
+  status: 'PENDING' | 'BOOKED' | 'CHECKED_IN' | 'CHECKED_OUT' | 'CANCELLED' | 'NO_SHOW';
   totalAmount: number;
   paymentStatus: string;
   confirmationNumber: string;

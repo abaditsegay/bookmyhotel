@@ -462,6 +462,9 @@ public class HotelAdminService {
             throw new RuntimeException("Hotel admin is not associated with any hotel");
         }
 
+        // Enforce room limit based on hotel registration
+        validateRoomLimit(hotel, 1);
+
         // Check if room number already exists for this hotel
         if (roomRepository.existsByHotelAndRoomNumber(hotel, roomDTO.getRoomNumber())) {
             throw new RuntimeException("Room number already exists in this hotel");
@@ -506,6 +509,13 @@ public class HotelAdminService {
         if (hotel == null) {
             throw new RuntimeException("Hotel admin is not associated with any hotel");
         }
+
+        // Enforce room limit based on hotel registration
+        int validRoomCount = (int) request.getRoomNumbers().stream()
+                .map(String::trim)
+                .filter(r -> !r.isEmpty())
+                .count();
+        validateRoomLimit(hotel, validRoomCount);
 
         List<RoomDTO> createdRooms = new ArrayList<>();
         List<BatchRoomCreateResponse.FailedRoom> failedRooms = new ArrayList<>();
@@ -725,7 +735,7 @@ public class HotelAdminService {
         // Check if room has active reservations
         List<Reservation> activeReservations = reservationRepository.findByAssignedRoomAndStatusIn(
                 room,
-                Arrays.asList(ReservationStatus.CONFIRMED, ReservationStatus.CHECKED_IN));
+                Arrays.asList(ReservationStatus.BOOKED, ReservationStatus.CHECKED_IN));
 
         // System.out.println("🔥 Active reservations found: " +
         // activeReservations.size());
@@ -789,7 +799,7 @@ public class HotelAdminService {
         if (!available) {
             LocalDate today = LocalDate.now();
             boolean hasActiveBookings = room.getReservations().stream()
-                    .anyMatch(reservation -> (reservation.getStatus() == ReservationStatus.CONFIRMED ||
+                    .anyMatch(reservation -> (reservation.getStatus() == ReservationStatus.BOOKED ||
                             reservation.getStatus() == ReservationStatus.CHECKED_IN) &&
                             !reservation.getCheckInDate().isAfter(today) &&
                             !reservation.getCheckOutDate().isBefore(today));
@@ -839,7 +849,7 @@ public class HotelAdminService {
         // status would conflict
         LocalDate today = LocalDate.now();
         boolean hasActiveBookings = room.getReservations().stream()
-                .anyMatch(reservation -> (reservation.getStatus() == ReservationStatus.CONFIRMED ||
+                .anyMatch(reservation -> (reservation.getStatus() == ReservationStatus.BOOKED ||
                         reservation.getStatus() == ReservationStatus.CHECKED_IN) &&
                         !reservation.getCheckInDate().isAfter(today) &&
                         !reservation.getCheckOutDate().isBefore(today));
@@ -895,10 +905,10 @@ public class HotelAdminService {
             // ", Check-in: " + r.getCheckInDate() + ", Check-out: " + r.getCheckOutDate());
         }
 
-        // Count confirmed bookings (CONFIRMED status or CHECKED_IN status)
-        // We want to count all CONFIRMED bookings that haven't checked out yet,
+        // Count booked bookings (BOOKED status or CHECKED_IN status)
+        // We want to count all BOOKED bookings that haven't checked out yet,
         // and all CHECKED_IN bookings regardless of dates
-        long confirmedBookings = allReservations.stream()
+        long bookedBookings = allReservations.stream()
                 .filter(r -> {
                     // System.out.println("🔍 Processing reservation " + r.getId() + " - Status: " +
                     // r.getStatus() +
@@ -911,14 +921,14 @@ public class HotelAdminService {
                         return true;
                     }
 
-                    // Count CONFIRMED bookings that haven't passed their checkout date
-                    if (r.getStatus() == ReservationStatus.CONFIRMED) {
+                    // Count BOOKED bookings that haven't passed their checkout date
+                    if (r.getStatus() == ReservationStatus.BOOKED) {
                         // Use isAfter instead of !isBefore to be more explicit
                         // A booking is still valid if checkout date is today or in the future
                         boolean isValidBooking = r.getCheckOutDate().isAfter(today)
                                 || r.getCheckOutDate().isEqual(today);
                         System.out
-                                .println("🔍 Reservation " + r.getId() + " - CONFIRMED booking, checkout date check: " +
+                                .println("🔍 Reservation " + r.getId() + " - BOOKED booking, checkout date check: " +
                                         r.getCheckOutDate() + " >= " + today + " = " + isValidBooking);
                         return isValidBooking;
                     }
@@ -929,8 +939,8 @@ public class HotelAdminService {
                 })
                 .count();
 
-        // System.out.println("🔍 Confirmed bookings calculated: " + confirmedBookings);
-        stats.put("confirmedBookings", confirmedBookings);
+        // System.out.println("🔍 Booked bookings calculated: " + bookedBookings);
+        stats.put("bookedBookings", bookedBookings);
 
         // Booked rooms: rooms with active reservations that have assigned rooms
         Set<Long> bookedRoomIds = allReservations.stream()
@@ -940,8 +950,8 @@ public class HotelAdminService {
                         return true;
                     }
 
-                    // Count CONFIRMED bookings that haven't passed their checkout date
-                    if (r.getStatus() == ReservationStatus.CONFIRMED) {
+                    // Count BOOKED bookings that haven't passed their checkout date
+                    if (r.getStatus() == ReservationStatus.BOOKED) {
                         return r.getCheckOutDate().isAfter(today) || r.getCheckOutDate().isEqual(today);
                     }
 
@@ -1010,6 +1020,47 @@ public class HotelAdminService {
         }
     }
 
+    /**
+     * Validates that adding the specified number of rooms would not exceed 
+     * the hotel's registered room limit (numberOfRooms from onboarding).
+     */
+    private void validateRoomLimit(Hotel hotel, int roomsToAdd) {
+        Integer registeredLimit = hotel.getNumberOfRooms();
+        if (registeredLimit != null && registeredLimit > 0) {
+            long currentRoomCount = roomRepository.countByHotel(hotel);
+            if (currentRoomCount + roomsToAdd > registeredLimit) {
+                throw new RuntimeException(
+                        String.format("Room limit exceeded. Your hotel is registered for %d rooms and currently has %d. " +
+                                "Cannot add %d more room(s). Please update your hotel information to increase the room limit.",
+                                registeredLimit, currentRoomCount, roomsToAdd));
+            }
+        }
+    }
+
+    /**
+     * Get room limit info for the hotel admin's hotel.
+     */
+    public Map<String, Object> getRoomLimitInfo(String adminEmail) {
+        User admin = getUserByEmail(adminEmail);
+        Hotel hotel = admin.getHotel();
+
+        if (hotel == null) {
+            throw new RuntimeException("Hotel admin is not associated with any hotel");
+        }
+
+        long currentRoomCount = roomRepository.countByHotel(hotel);
+        Integer registeredLimit = hotel.getNumberOfRooms();
+
+        Map<String, Object> info = new java.util.HashMap<>();
+        info.put("currentRoomCount", currentRoomCount);
+        info.put("registeredLimit", registeredLimit);
+        info.put("canAddRooms", registeredLimit == null || registeredLimit <= 0 || currentRoomCount < registeredLimit);
+        info.put("remainingSlots", registeredLimit != null && registeredLimit > 0 
+                ? Math.max(0, registeredLimit - currentRoomCount) 
+                : null);
+        return info;
+    }
+
     private HotelDTO convertToHotelDTO(Hotel hotel) {
         HotelDTO dto = new HotelDTO();
         dto.setId(hotel.getId());
@@ -1023,6 +1074,7 @@ public class HotelAdminService {
         dto.setMobilePaymentPhone2(hotel.getMobilePaymentPhone2());
         dto.setEmail(hotel.getEmail());
         dto.setIsActive(hotel.getIsActive());
+        dto.setNumberOfRooms(hotel.getNumberOfRooms());
         dto.setCreatedAt(hotel.getCreatedAt());
         dto.setUpdatedAt(hotel.getUpdatedAt());
 
@@ -1272,7 +1324,7 @@ public class HotelAdminService {
         LocalDate startOfYear = LocalDate.now().withDayOfYear(1);
         BigDecimal currentYearRevenue = allReservations.stream()
                 .filter(r -> r.getCheckInDate().isAfter(startOfYear.minusDays(1)))
-                .filter(r -> r.getStatus() == ReservationStatus.CONFIRMED
+                .filter(r -> r.getStatus() == ReservationStatus.BOOKED
                         || r.getStatus() == ReservationStatus.CHECKED_IN
                         || r.getStatus() == ReservationStatus.CHECKED_OUT)
                 .map(Reservation::getTotalAmount)
@@ -1292,7 +1344,7 @@ public class HotelAdminService {
         long upcomingCheckIns = allReservations.stream()
                 .filter(r -> r.getCheckInDate().isAfter(today.minusDays(1))
                         && r.getCheckInDate().isBefore(nextWeek.plusDays(1)))
-                .filter(r -> r.getStatus() == ReservationStatus.CONFIRMED)
+                .filter(r -> r.getStatus() == ReservationStatus.BOOKED)
                 .count();
         stats.put("upcomingCheckIns", upcomingCheckIns);
 
@@ -1543,8 +1595,8 @@ public class HotelAdminService {
                     // Check if room has any conflicting reservations for the date range
                     boolean hasConflicts = room.getReservations().stream()
                             .anyMatch(reservation -> {
-                                // Only consider active reservations (confirmed or checked-in)
-                                if (reservation.getStatus() != ReservationStatus.CONFIRMED &&
+                                // Only consider active reservations (booked or checked-in)
+                                if (reservation.getStatus() != ReservationStatus.BOOKED &&
                                         reservation.getStatus() != ReservationStatus.CHECKED_IN) {
                                     return false;
                                 }

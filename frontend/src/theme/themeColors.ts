@@ -35,7 +35,7 @@ export const COLORS = {
   SECONDARY_HOVER: '#F0C880',   // Light gold for secondary hover
   
   // Status colors - Professional hotel management colors
-  CONFIRMED: '#2196F3',         // Blue for confirmed bookings
+  BOOKED: '#2196F3',            // Blue for booked reservations
   PENDING: '#9E9E9E',           // Gray for pending
   SUCCESS: '#2e7d32',           // Forest green for success
   ERROR: '#d32f2f',             // Professional red for errors
@@ -132,9 +132,9 @@ export const getStatusColor = (status: string): string => {
   const normalizedStatus = status.toUpperCase().replace(/[\s_-]/g, '');
   
   switch (normalizedStatus) {
-    case 'CONFIRMED':
+    case 'BOOKED':
     case 'ACTIVE':
-      return COLORS.CONFIRMED;
+      return COLORS.BOOKED;
     case 'PENDING':
     case 'UNDERREVIEW':
       return COLORS.PENDING;
@@ -179,7 +179,7 @@ export const getStatusBgColor = (status: string): string => {
     case 'FAILED':
     case 'SUSPENDED':
       return COLORS.BG_ERROR_LIGHT;
-    case 'CONFIRMED':
+    case 'BOOKED':
     case 'CHECKEDOUT':
       return COLORS.BG_INFO_LIGHT;
     case 'CANCELLED':
@@ -265,7 +265,7 @@ export const getMuiColor = (colorName: keyof typeof COLORS): 'primary' | 'second
   // Map color names to Material-UI palette colors
   switch (colorName) {
     case 'PRIMARY':
-    case 'CONFIRMED':
+    case 'BOOKED':
     case 'CHECKED_OUT':
     case 'INPUT_FOCUS':
       return 'primary';
@@ -295,7 +295,7 @@ export const getMuiColor = (colorName: keyof typeof COLORS): 'primary' | 'second
  * sx={{ color: COLORS.PRIMARY }}
  * 
  * // For status-based colors:
- * sx={{ color: getStatusColor('confirmed') }}
+ * sx={{ color: getStatusColor('booked') }}
  * 
  * // For interactive states:
  * sx={{ 

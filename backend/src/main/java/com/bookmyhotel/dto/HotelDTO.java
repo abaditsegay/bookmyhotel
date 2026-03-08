@@ -45,6 +45,7 @@ public class HotelDTO {
     
     private String tenantId;
     private Boolean isActive;
+    private Integer numberOfRooms; // registered room limit from onboarding
     private Integer roomCount;
     private Integer totalRooms;
     private Integer availableRooms;
@@ -233,6 +234,14 @@ public class HotelDTO {
     
     public void setIsActive(Boolean isActive) {
         this.isActive = isActive;
+    }
+    
+    public Integer getNumberOfRooms() {
+        return numberOfRooms;
+    }
+    
+    public void setNumberOfRooms(Integer numberOfRooms) {
+        this.numberOfRooms = numberOfRooms;
     }
     
     public Integer getRoomCount() {

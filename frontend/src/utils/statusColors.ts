@@ -1,15 +1,15 @@
 import { STATUS_COLORS, StatusColorType } from '../theme/colorConstants';
 
 /**
- * Get Material-UI color for booking status following the confirmed = blue pattern
+ * Get Material-UI color for booking status following the booked = blue pattern
  * @param status - Booking status string
  * @returns Material-UI color name for Chip component
  */
 export const getBookingStatusColor = (status: string): StatusColorType | 'default' => {
   const normalizedStatus = status.toUpperCase();
   switch (normalizedStatus) {
-    case 'CONFIRMED':
-      return STATUS_COLORS.CONFIRMED; // 'primary' = blue
+    case 'BOOKED':
+      return STATUS_COLORS.BOOKED; // 'primary' = blue
     case 'PENDING':
       return STATUS_COLORS.PENDING;   // 'warning' = orange
     case 'CANCELLED':
@@ -60,9 +60,9 @@ export const getPaymentStatusColor = (status: string): StatusColorType | 'defaul
 export const getShopOrderStatusColor = (status: string): StatusColorType | 'default' => {
   const normalizedStatus = status.toUpperCase();
   switch (normalizedStatus) {
-    case 'CONFIRMED':
+    case 'BOOKED':
     case 'PAID':
-      return STATUS_COLORS.CONFIRMED; // Blue
+      return STATUS_COLORS.BOOKED; // Blue
     case 'PREPARING':
     case 'PROCESSING':
       return STATUS_COLORS.PROCESSING; // Orange
@@ -87,7 +87,7 @@ export const getShopOrderStatusColor = (status: string): StatusColorType | 'defa
 export const getLegacyStatusColor = (status: string): StatusColorType | 'default' => {
   const normalizedStatus = status.toUpperCase();
   switch (normalizedStatus) {
-    case 'CONFIRMED':
+    case 'BOOKED':
       return 'success'; // Green (legacy pattern)
     case 'PENDING':
       return STATUS_COLORS.PENDING;

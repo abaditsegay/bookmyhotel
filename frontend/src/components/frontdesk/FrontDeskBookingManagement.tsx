@@ -197,7 +197,7 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
   const getStatusColor = (status: string) => {
     switch (status.toUpperCase()) {
       case 'PENDING': return 'warning';
-      case 'CONFIRMED': return 'primary';
+      case 'BOOKED': return 'primary';
       case 'CHECKED_IN': return 'success';
       case 'CHECKED_OUT': return 'info';
       case 'CANCELLED': return 'error';
@@ -465,7 +465,7 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
                             </IconButton>
                           </Tooltip>
                           
-                          {booking.status === 'CONFIRMED' && (
+                          {booking.status === 'BOOKED' && (
                             <>
                               <Tooltip title="Check In" arrow>
                                 <IconButton 
@@ -507,7 +507,7 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
                             </Tooltip>
                           )}
                           
-                          {(booking.status === 'CONFIRMED' || booking.status === 'PENDING') && (
+                          {(booking.status === 'BOOKED' || booking.status === 'PENDING') && (
                             <>
                               <Tooltip title="Mark No Show">
                                 <IconButton 

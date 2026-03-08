@@ -35,7 +35,7 @@ export interface CachedBooking {
   pricePerNight: number;
   paymentMethod: 'CASH' | 'CARD' | 'PENDING';
   specialRequests?: string;
-  status: 'CONFIRMED' | 'CHECKED_IN' | 'CHECKED_OUT' | 'CANCELLED';
+  status: 'BOOKED' | 'CHECKED_IN' | 'CHECKED_OUT' | 'CANCELLED';
   source: 'ONLINE' | 'OFFLINE';
   syncStatus?: 'SYNCED' | 'PENDING_SYNC' | 'SYNC_FAILED';
   createdAt: string;

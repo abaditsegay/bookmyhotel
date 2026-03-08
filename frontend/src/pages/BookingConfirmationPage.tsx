@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { BookingService } from '../services/BookingService';
 import { useTranslation } from 'react-i18next';
 import { COLORS, addAlpha } from '../theme/themeColors';
 import PremiumTextField from '../components/common/PremiumTextField';
@@ -341,7 +342,7 @@ const BookingConfirmationPage: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'confirmed': return 'primary';
+      case 'booked': return 'primary';
       case 'pending': return 'warning';
       case 'cancelled': return 'error';
       case 'checked in': return 'info';
@@ -895,7 +896,7 @@ const BookingConfirmationPage: React.FC = () => {
                 {t('bookingConfirmation.status.bookingStatus')}
               </Typography>
               <Chip
-                label={booking.status.toUpperCase()}
+                label={BookingService.getStatusDisplayLabel(booking.status)}
                 color={getStatusColor(booking.status) as any}
                 variant="filled"
                 className="print-chip"
@@ -1499,7 +1500,7 @@ const BookingConfirmationPage: React.FC = () => {
             borderColor: COLORS.PRIMARY,
             color: COLORS.PRIMARY,
             '&:hover': {
-              borderColor: COLORS.CONFIRMED,
+              borderColor: COLORS.BOOKED,
               backgroundColor: addAlpha(COLORS.PRIMARY, 0.04),
             }
           }}
@@ -1595,9 +1596,9 @@ const BookingConfirmationPage: React.FC = () => {
               px: 4,
               minHeight: 48,
               width: isMobile ? '100%' : 'auto',
-              background: `linear-gradient(135deg, ${COLORS.PRIMARY} 0%, ${COLORS.CONFIRMED} 100%)`,
+              background: `linear-gradient(135deg, ${COLORS.PRIMARY} 0%, ${COLORS.BOOKED} 100%)`,
               '&:hover': {
-                background: `linear-gradient(135deg, ${COLORS.CONFIRMED} 0%, ${COLORS.PRIMARY} 100%)`,
+                background: `linear-gradient(135deg, ${COLORS.BOOKED} 0%, ${COLORS.PRIMARY} 100%)`,
               }
             }}
           >

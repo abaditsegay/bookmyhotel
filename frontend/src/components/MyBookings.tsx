@@ -191,8 +191,8 @@ const MyBookings: React.FC = () => {
     const now = new Date();
     const twentyFourHoursFromNow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
     
-    // Can cancel if booking is PENDING or CONFIRMED and check-in is at least 24 hours away
-    return (status === 'PENDING' || status === 'CONFIRMED') && checkInDate > twentyFourHoursFromNow;
+    // Can cancel if booking is PENDING or BOOKED and check-in is at least 24 hours away
+    return (status === 'PENDING' || status === 'BOOKED') && checkInDate > twentyFourHoursFromNow;
   };
 
   const canModifyBooking = (booking: BookingResponse): boolean => {
@@ -201,13 +201,13 @@ const MyBookings: React.FC = () => {
     const now = new Date();
     const twentyFourHoursFromNow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
     
-    // Can modify if booking is PENDING or CONFIRMED and check-in is at least 24 hours away
-    return (status === 'PENDING' || status === 'CONFIRMED') && checkInDate > twentyFourHoursFromNow;
+    // Can modify if booking is PENDING or BOOKED and check-in is at least 24 hours away
+    return (status === 'PENDING' || status === 'BOOKED') && checkInDate > twentyFourHoursFromNow;
   };
 
   const getStatusIcon = (status: string) => {
     switch (status.toUpperCase()) {
-      case 'CONFIRMED':
+      case 'BOOKED':
         return <CheckCircle color="success" />;
       case 'PENDING':
         return <Pending color="warning" />;
@@ -367,7 +367,7 @@ const MyBookings: React.FC = () => {
                       <Box display="flex" alignItems="center" gap={1} mb={1}>
                         {getStatusIcon(booking.status)}
                         <Chip 
-                          label={booking.status}
+                          label={BookingService.getStatusDisplayLabel(booking.status)}
                           color={BookingService.getStatusColor(booking.status)}
                           size="medium"
                           sx={{

@@ -214,7 +214,7 @@ const HotelBookings: React.FC<HotelBookingsProps> = ({
   // Get status color
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'confirmed':
+      case 'booked':
       case 'arriving':
         return 'primary';
       case 'checked-in':
@@ -378,7 +378,7 @@ const HotelBookings: React.FC<HotelBookingsProps> = ({
                           
                           {showCheckInOut && (
                             <>
-                              {(booking.status === 'confirmed' || booking.status === 'arriving') && (
+                              {(booking.status === 'booked' || booking.status === 'arriving') && (
                                 <Tooltip title="Check In">
                                   <IconButton 
                                     size="small" 
@@ -483,7 +483,7 @@ const HotelBookings: React.FC<HotelBookingsProps> = ({
           <Button onClick={() => setDetailsDialogOpen(false)}>Close</Button>
           {showCheckInOut && selectedBooking && (
             <>
-              {(selectedBooking.status === 'confirmed' || selectedBooking.status === 'arriving') && (
+              {(selectedBooking.status === 'booked' || selectedBooking.status === 'arriving') && (
                 <Button 
                   variant="contained" 
                   color="success"

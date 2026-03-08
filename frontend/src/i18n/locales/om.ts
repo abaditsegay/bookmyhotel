@@ -195,7 +195,7 @@ export const omTranslations = {
         teamMembers: "Miseensota Garee",
         occupancyRate: "Reeshoo Qubannoo",
         currentOccupancyRate: "Reeshoo Qubannoo Ammaa",
-        confirmedBookings: "Kutaalee Mirkanaa'an"
+        bookedBookings: "Kutaalee Qabaman"
       },
       
       // Kutaalee
@@ -643,6 +643,10 @@ export const omTranslations = {
           description: "Ibsa",
           cancel: "Dhiisuu",
           create: "Kutaa Uumuu"
+        },
+        roomLimit: {
+          status: "{{current}} / {{limit}} kutaalee",
+          exceeded: "Daangaan kutaalee irra ga'ameera. Lakkoofsa kutaalee dabaluuf odeeffannoo hooteela keessanii haaromsi."
         }
       }
     },
@@ -1006,7 +1010,7 @@ export const omTranslations = {
       sendConfirmation: "Mirkaneeffannaa Erguu",
       
       // Status Values
-      confirmed: "Mirkaneeffameera",
+      confirmed: "Qabameera",
       checkedIn: "Galeeraaa",
       checkedOut: "Ba'eeraa",
       cancelled: "Dhiifameera",
@@ -1113,7 +1117,7 @@ export const omTranslations = {
       // Status Filter
       statusFilter: {
         all: "Haala Hundaa",
-        confirmed: "Mirkaneeffameera",
+        confirmed: "Qabameera",
         checkedIn: "Galeeraaa",
         checkedOut: "Ba'eeraa",
         cancelled: "Dhiifameera",
@@ -2002,7 +2006,7 @@ export const omTranslations = {
     processing: "ADEEMSA KEESSA",
     completed: "XUMURAMEERA",
     pending: "EEGAA JIRA",
-    confirmed: "MIRKANEEFFAMEERA",
+    confirmed: "QABAMEERA",
     preparing: "QOPHEEFFAMAA JIRA",
     ready: "QOPHAA'EERA",
     cancelled: "DHIIFAMEERA",
@@ -2135,7 +2139,7 @@ export const omTranslations = {
     status: {
       bookingStatus: "HAALA BAKKA BUUSI",
       paymentStatus: "HAALA KAFFALTII",
-      confirmed: "MIRKANAA'E",
+      confirmed: "QABAMEERA",
       pending: "EEGAMAA",
       cancelled: "HAQAME",
       checkedIn: "SEENE",

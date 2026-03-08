@@ -43,7 +43,7 @@ import {
 import { useAuth } from '../../contexts/AuthContext';
 import { formatCurrency } from '../../utils/currencyUtils';
 import { buildApiUrl } from '../../config/apiConfig';
-import { hotelAdminApi, RoomCreateRequest } from '../../services/hotelAdminApi';
+import { hotelAdminApi, RoomCreateRequest, RoomLimitInfo } from '../../services/hotelAdminApi';
 import * as frontDeskApi from '../../services/frontDeskApi';
 import { ROOM_TYPES, getRoomTypeLabel } from '../../constants/roomTypes';
 import PremiumTextField from './PremiumTextField';
@@ -117,6 +117,9 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
     capacity: '',
     description: '',
   });
+
+  // Room limit state
+  const [roomLimit, setRoomLimit] = useState<RoomLimitInfo | null>(null);
 
   // Room status options
   const ROOM_STATUS_OPTIONS = [
@@ -198,9 +201,22 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
     }
   }, [token, page, rowsPerPage, searchTerm, statusFilter, roomTypeFilter, mode]);
 
+  const loadRoomLimit = useCallback(async () => {
+    if (!token || mode !== 'hotel-admin') return;
+    try {
+      const response = await hotelAdminApi.getRoomLimit(token);
+      if (response.success && response.data) {
+        setRoomLimit(response.data);
+      }
+    } catch {
+      // Non-critical — silently ignore
+    }
+  }, [token, mode]);
+
   useEffect(() => {
     loadRooms();
-  }, [loadRooms]);
+    loadRoomLimit();
+  }, [loadRooms, loadRoomLimit]);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);
@@ -321,6 +337,7 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
           setCreateDialogOpen(false);
           setRoomForm({ roomNumber: '', roomType: 'STANDARD', pricePerNight: '', capacity: '', description: '' });
           await loadRooms();
+          await loadRoomLimit();
           setError(null);
         } else {
           setError(response.message || 'Failed to create room. Please check the room number is unique.');
@@ -346,6 +363,7 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
             setError(`${data.created} room(s) created. ${data.failed} failed: ${failedList}`);
           }
           await loadRooms();
+          await loadRoomLimit();
         } else {
           setError(response.message || 'Failed to create rooms.');
         }
@@ -528,13 +546,37 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
             </Button>
 
             {mode === 'hotel-admin' && (
-              <Button
-                startIcon={<AddIcon />}
-                onClick={() => setCreateDialogOpen(true)}
-                variant="contained"
-              >
-                {t(`${translationPrefix}.actions.addRoom`)}
-              </Button>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                {roomLimit && roomLimit.registeredLimit != null && roomLimit.registeredLimit > 0 && (
+                  <Chip
+                    label={t(`${translationPrefix}.roomLimit.status`, {
+                      current: roomLimit.currentRoomCount,
+                      limit: roomLimit.registeredLimit
+                    })}
+                    color={roomLimit.canAddRooms ? 'info' : 'warning'}
+                    size="small"
+                    variant="outlined"
+                  />
+                )}
+                <Tooltip
+                  title={
+                    roomLimit && !roomLimit.canAddRooms
+                      ? t(`${translationPrefix}.roomLimit.exceeded`)
+                      : ''
+                  }
+                >
+                  <span>
+                    <Button
+                      startIcon={<AddIcon />}
+                      onClick={() => setCreateDialogOpen(true)}
+                      variant="contained"
+                      disabled={roomLimit !== null && !roomLimit.canAddRooms}
+                    >
+                      {t(`${translationPrefix}.actions.addRoom`)}
+                    </Button>
+                  </span>
+                </Tooltip>
+              </Box>
             )}
           </Box>
 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { BookingService } from '../../services/BookingService';
 import {
   Box,
   Typography,
@@ -462,7 +463,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
         const checkoutResponse = {
           booking: {
             reservationId: booking.reservationId,
-            status: booking.status as 'PENDING' | 'CONFIRMED' | 'CHECKED_IN' | 'CHECKED_OUT' | 'CANCELLED' | 'NO_SHOW',
+            status: booking.status as 'PENDING' | 'BOOKED' | 'CHECKED_IN' | 'CHECKED_OUT' | 'CANCELLED' | 'NO_SHOW',
             confirmationNumber: booking.confirmationNumber || '',
             checkInDate: booking.checkInDate,
             checkOutDate: booking.checkOutDate,
@@ -508,7 +509,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
   // Get status color
   const getStatusColor = (status: string) => {
     switch (status.toUpperCase()) {
-      case 'CONFIRMED':
+      case 'BOOKED':
       case 'ARRIVING':
         return 'info';
       case 'CHECKED_IN':
@@ -1115,7 +1116,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                     </TableCell>
                     <TableCell>
                       <Chip 
-                        label={booking.status.replace('_', ' ')} 
+                        label={BookingService.getStatusDisplayLabel(booking.status)} 
                         color={getStatusColor(booking.status)} 
                         size="small"
                         sx={{
@@ -1158,7 +1159,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                           
                           {showCheckInOut && (
                             <>
-                              {(booking.status.toUpperCase() === 'CONFIRMED' || booking.status.toUpperCase() === 'ARRIVING') && (
+                              {(booking.status.toUpperCase() === 'BOOKED' || booking.status.toUpperCase() === 'ARRIVING') && (
                                 <Tooltip title={t('booking.management.actions.checkIn')} arrow>
                                   <IconButton 
                                     size="small" 

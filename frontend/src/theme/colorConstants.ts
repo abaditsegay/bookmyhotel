@@ -1,6 +1,6 @@
 export const STATUS_COLORS = {
-  // Booking Status Colors (following confirmed = blue pattern)
-  CONFIRMED: 'primary',     // Blue
+  // Booking Status Colors (following booked = blue pattern)
+  BOOKED: 'primary',        // Blue
   PENDING: 'warning',       // Orange/Yellow
   CANCELLED: 'error',       // Red
   CHECKED_IN: 'success',    // Green

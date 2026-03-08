@@ -101,7 +101,7 @@ const EnhancedBookingManagementTable: React.FC<EnhancedBookingManagementTablePro
                 roomNumber: '101',
                 checkInDate: '2024-01-15',
                 checkOutDate: '2024-01-18',
-                status: 'CONFIRMED',
+                status: 'BOOKED',
                 totalAmount: 15750.00,
                 bookingDate: '2024-01-10',
                 guestPhone: '+251911234567',
@@ -200,7 +200,7 @@ const EnhancedBookingManagementTable: React.FC<EnhancedBookingManagementTablePro
   // Get status color based on booking status
   const getStatusColor = (status: string) => {
     switch (status?.toUpperCase()) {
-      case 'CONFIRMED':
+      case 'BOOKED':
         return 'success';
       case 'PENDING':
         return 'warning';
@@ -262,7 +262,7 @@ const EnhancedBookingManagementTable: React.FC<EnhancedBookingManagementTablePro
       icon: <CheckInIcon />,
       onClick: (row) => handleCheckIn(row),
       color: 'success',
-      disabled: (row) => !row || !showCheckInOut || row.status !== 'CONFIRMED'
+      disabled: (row) => !row || !showCheckInOut || row.status !== 'BOOKED'
     },
     {
       id: 'checkout',

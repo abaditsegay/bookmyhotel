@@ -203,9 +203,9 @@ export const bookingApiService = {
 
       // Mock modification options - in a real app, this would come from the backend
       const options = {
-        canModifyDates: searchResult.data.status === 'CONFIRMED',
-        canModifyRoomType: searchResult.data.status === 'CONFIRMED',
-        canCancel: ['CONFIRMED', 'PENDING'].includes(searchResult.data.status),
+        canModifyDates: searchResult.data.status === 'BOOKED',
+        canModifyRoomType: searchResult.data.status === 'BOOKED',
+        canCancel: ['BOOKED', 'PENDING'].includes(searchResult.data.status),
         modificationDeadline: new Date(searchResult.data.checkInDate),
         availableRoomTypes: ['Standard', 'Deluxe', 'Suite', 'Family'], // Would come from backend
         modificationFee: 25.00

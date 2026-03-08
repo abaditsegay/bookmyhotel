@@ -674,7 +674,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
                 size="medium" 
                 sx={{
                   backgroundColor: 
-                    booking.status === 'CONFIRMED' ? 'primary.main' :
+                    booking.status === 'BOOKED' ? 'primary.main' :
                     booking.status === 'CHECKED_IN' ? 'success.main' :
                     booking.status === 'CHECKED_OUT' ? 'info.main' :
                     booking.status === 'CANCELLED' ? 'error.main' :

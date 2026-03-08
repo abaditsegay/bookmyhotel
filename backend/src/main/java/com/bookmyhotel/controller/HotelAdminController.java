@@ -153,6 +153,12 @@ public class HotelAdminController {
         return ResponseEntity.ok(rooms);
     }
 
+    @GetMapping("/rooms/limit")
+    public ResponseEntity<Map<String, Object>> getRoomLimit(Authentication auth) {
+        Map<String, Object> limitInfo = hotelAdminService.getRoomLimitInfo(auth.getName());
+        return ResponseEntity.ok(limitInfo);
+    }
+
     @PostMapping("/rooms")
     public ResponseEntity<RoomDTO> addRoom(@Valid @RequestBody RoomDTO roomDTO, Authentication auth) {
         RoomDTO newRoom = hotelAdminService.addRoom(roomDTO, auth.getName());

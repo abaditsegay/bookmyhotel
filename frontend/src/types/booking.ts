@@ -38,7 +38,7 @@ export interface BookingModificationRequest {
 
 export enum BookingStatus {
   PENDING = 'PENDING',
-  CONFIRMED = 'CONFIRMED',
+  BOOKED = 'BOOKED',
   CANCELLED = 'CANCELLED',
   CHECKED_IN = 'CHECKED_IN',
   CHECKED_OUT = 'CHECKED_OUT',

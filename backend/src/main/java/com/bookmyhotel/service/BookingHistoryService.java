@@ -104,10 +104,10 @@ public class BookingHistoryService {
      */
     public void recordConfirmation(Reservation reservation, String changedBy, String changeReason) {
         Map<String, Object> newValues = Map.of(
-                "status", "CONFIRMED",
-                "confirmedAt", LocalDateTime.now());
+                "status", "BOOKED",
+                "bookedAt", LocalDateTime.now());
 
-        recordBookingAction(reservation, BookingActionType.CONFIRMED, changedBy,
+        recordBookingAction(reservation, BookingActionType.BOOKED, changedBy,
                 changeReason, null, newValues);
     }
 

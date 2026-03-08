@@ -62,7 +62,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
         */
        @Query("SELECT r FROM Reservation r " +
                      "WHERE r.checkInDate = :date " +
-                     "AND r.status = com.bookmyhotel.entity.ReservationStatus.CONFIRMED " +
+                     "AND r.status = com.bookmyhotel.entity.ReservationStatus.BOOKED " +
                      "AND r.hotel.id = :hotelId")
        List<Reservation> findUpcomingCheckInsByHotelId(@Param("date") LocalDate date,
                      @Param("hotelId") Long hotelId);
@@ -98,7 +98,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
         */
        @Query("SELECT r FROM Reservation r " +
                      "WHERE r.checkInDate = :date " +
-                     "AND r.status = com.bookmyhotel.entity.ReservationStatus.CONFIRMED")
+                     "AND r.status = com.bookmyhotel.entity.ReservationStatus.BOOKED")
        List<Reservation> findUpcomingCheckIns(@Param("date") LocalDate date);
 
        /**
@@ -218,7 +218,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
         */
        @Query("SELECT r FROM Reservation r " +
                      "WHERE r.guestInfo.email = :email " +
-                     "AND r.status IN ('CONFIRMED', 'CHECKED_IN') " +
+                     "AND r.status IN ('BOOKED', 'CHECKED_IN') " +
                      "AND NOT (r.checkOutDate <= :newCheckInDate OR r.checkInDate >= :newCheckOutDate)")
        List<Reservation> findOverlappingActiveReservations(
                      @Param("email") String email,

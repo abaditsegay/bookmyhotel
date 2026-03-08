@@ -106,7 +106,7 @@ public class FrontDeskController {
     }
 
     /**
-     * Update booking room assignment (for confirmed bookings during check-in)
+     * Update booking room assignment (for booked reservations during check-in)
      */
     @PutMapping("/bookings/{reservationId}/room-assignment")
     public ResponseEntity<BookingResponse> updateBookingRoomAssignment(

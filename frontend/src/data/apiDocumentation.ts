@@ -1024,7 +1024,7 @@ export const bookingEndpoints: APIEndpoint[] = [
     category: 'Booking',
     request: {
       query: {
-        status: 'PENDING | CONFIRMED | CHECKED_IN | CHECKED_OUT | CANCELLED (optional)',
+        status: 'PENDING | BOOKED | CHECKED_IN | CHECKED_OUT | CANCELLED (optional)',
         hotelId: 'number (optional)',
         checkInDate: 'string (optional)',
         checkOutDate: 'string (optional)',
@@ -1044,7 +1044,7 @@ export const bookingEndpoints: APIEndpoint[] = [
           hotelName: 'Grand Plaza Hotel',
           roomNumber: '205',
           roomType: 'DELUXE',
-          status: 'CONFIRMED',
+          status: 'BOOKED',
           checkInDate: '2025-10-25',
           checkOutDate: '2025-10-27',
           guests: 2,
@@ -1091,7 +1091,7 @@ export const bookingEndpoints: APIEndpoint[] = [
           roomId: 45,
           guestName: 'John Doe',
           guestEmail: 'john@example.com',
-          status: 'CONFIRMED',
+          status: 'BOOKED',
           checkInDate: '2025-10-25',
           checkOutDate: '2025-10-27',
           totalAmount: 599.98,
@@ -1134,7 +1134,7 @@ export const bookingEndpoints: APIEndpoint[] = [
           type: 'DELUXE',
           description: 'Deluxe King Room with City View'
         },
-        status: 'CONFIRMED',
+        status: 'BOOKED',
         checkInDate: '2025-10-25',
         checkOutDate: '2025-10-27',
         nights: 2,
@@ -1177,7 +1177,7 @@ export const bookingEndpoints: APIEndpoint[] = [
         booking: {
           id: 1,
           confirmationNumber: 'CONF-ABC123',
-          status: 'CONFIRMED',
+          status: 'BOOKED',
           checkInDate: '2025-10-26',
           checkOutDate: '2025-10-28',
           adults: 3,
@@ -1244,7 +1244,7 @@ export const bookingEndpoints: APIEndpoint[] = [
           hotelName: 'Grand Plaza Hotel',
           checkInDate: '2025-10-25',
           checkOutDate: '2025-10-27',
-          status: 'CONFIRMED',
+          status: 'BOOKED',
           totalAmount: 599.98,
           relevanceScore: 0.95
         }],
@@ -1545,7 +1545,7 @@ export const frontDeskEndpoints: APIEndpoint[] = [
     request: {
       params: { id: 'number' },
       body: {
-        status: 'CONFIRMED | CHECKED_IN | CHECKED_OUT | NO_SHOW | CANCELLED',
+        status: 'BOOKED | CHECKED_IN | CHECKED_OUT | NO_SHOW | CANCELLED',
         notes: 'Guest called to confirm late arrival',
         estimatedArrival: '2025-10-22T18:00:00Z (optional)',
         specialInstructions: 'Hold room until 11 PM',
@@ -1557,17 +1557,17 @@ export const frontDeskEndpoints: APIEndpoint[] = [
         booking: {
           id: 1,
           confirmationNumber: 'CONF-ABC123',
-          previousStatus: 'CONFIRMED',
-          newStatus: 'CONFIRMED',
+          previousStatus: 'BOOKED',
+          newStatus: 'BOOKED',
           statusUpdatedAt: '2025-10-22T14:30:00Z',
           notes: 'Guest called to confirm late arrival'
         },
         statusHistory: [{
-          status: 'CONFIRMED',
+          status: 'BOOKED',
           timestamp: '2025-10-22T10:30:00Z',
           updatedBy: 'System'
         }, {
-          status: 'CONFIRMED',
+          status: 'BOOKED',
           timestamp: '2025-10-22T14:30:00Z',
           updatedBy: 'Sarah Johnson',
           notes: 'Guest called to confirm late arrival'
@@ -2109,7 +2109,7 @@ export const hotelAdminEndpoints: APIEndpoint[] = [
     category: 'Hotel Admin',
     request: {
       query: {
-        status: 'ALL | CONFIRMED | CHECKED_IN | CHECKED_OUT | CANCELLED (optional)',
+        status: 'ALL | BOOKED | CHECKED_IN | CHECKED_OUT | CANCELLED (optional)',
         dateFrom: '2025-10-01 (optional)',
         dateTo: '2025-10-31 (optional)',
         roomType: 'STANDARD | DELUXE | SUITE (optional)',

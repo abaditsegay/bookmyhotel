@@ -164,10 +164,10 @@ public class AutomatedRoomStatusService {
                         .anyMatch(reservation -> reservation.getStatus() == ReservationStatus.CHECKED_IN &&
                                 reservation.getCheckOutDate().isAfter(today));
 
-        // Check if room has future confirmed booking for today
-        boolean hasTodayConfirmedBooking = room.getReservations() != null &&
+        // Check if room has future booked reservation for today
+        boolean hasTodayBookedReservation = room.getReservations() != null &&
                 room.getReservations().stream()
-                        .anyMatch(reservation -> reservation.getStatus() == ReservationStatus.CONFIRMED &&
+                        .anyMatch(reservation -> reservation.getStatus() == ReservationStatus.BOOKED &&
                                 !reservation.getCheckInDate().isAfter(today) &&
                                 !reservation.getCheckOutDate().isBefore(today));
 
@@ -182,10 +182,10 @@ public class AutomatedRoomStatusService {
 
         } else if (!hasCheckedInGuest && room.getStatus() == RoomStatus.OCCUPIED && room.getIsAvailable()) {
             // If room is marked as occupied but has no checked-in guest
-            if (hasTodayConfirmedBooking) {
-                // Keep as occupied if there's a confirmed booking for today (guest might be
+            if (hasTodayBookedReservation) {
+                // Keep as occupied if there's a booked reservation for today (guest might be
                 // arriving)
-                logger.debug("🔍 Room {} stays OCCUPIED (confirmed booking for today)", room.getRoomNumber());
+                logger.debug("🔍 Room {} stays OCCUPIED (booked reservation for today)", room.getRoomNumber());
             } else {
                 // Set to AVAILABLE if no active reservations
                 room.setStatus(RoomStatus.AVAILABLE);

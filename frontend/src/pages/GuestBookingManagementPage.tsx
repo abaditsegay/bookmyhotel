@@ -503,7 +503,7 @@ const GuestBookingManagementPage: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'confirmed': return 'primary';
+      case 'booked': return 'primary';
       case 'pending': return 'warning';
       case 'cancelled': return 'error';
       case 'checked in': return 'info';
@@ -530,14 +530,14 @@ const GuestBookingManagementPage: React.FC = () => {
     const now = new Date();
     const daysBefore = (checkInDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
     
-    return booking.status.toLowerCase() === 'confirmed' && daysBefore >= 1;
+    return booking.status.toLowerCase() === 'booked' && daysBefore >= 1;
   };
 
   const canCancelBooking = () => {
     const checkInDate = new Date(booking.checkInDate);
     const now = new Date();
     
-    return booking.status.toLowerCase() === 'confirmed' && checkInDate > now;
+    return booking.status.toLowerCase() === 'booked' && checkInDate > now;
   };
 
   // Email authentication for modify/cancel actions
@@ -941,7 +941,7 @@ const GuestBookingManagementPage: React.FC = () => {
           </Alert>
         )}
 
-            {!canModifyBooking() && booking.status.toLowerCase() === 'confirmed' && (
+            {!canModifyBooking() && booking.status.toLowerCase() === 'booked' && (
               <Alert 
                 severity="info" 
                 sx={{ 

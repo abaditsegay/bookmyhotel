@@ -243,7 +243,7 @@ export const amTranslations = {
         teamMembers: "የቡድን አባላት",
         occupancyRate: "ተሳፋሪነት መጠን",
         currentOccupancyRate: "የአሁኑ ተሳፋሪነት መጠን",
-        confirmedBookings: "የተረጋገጡ ቦታ ማስያዞች"
+        bookedBookings: "የተያዙ ቦታ ማስያዞች"
       },
       
       // Sections
@@ -698,6 +698,10 @@ export const amTranslations = {
           description: "መግለጫ",
           cancel: "ሰርዝ",
           create: "ክፍል ፍጠር"
+        },
+        roomLimit: {
+          status: "{{current}} / {{limit}} ክፍሎች",
+          exceeded: "የክፍሎች ገደብ ላይ ደርሷል። የክፍሎችን ቁጥር ለመጨመር የሆቴል መረጃዎን ያዘምኑ።"
         }
       }
     }
@@ -944,7 +948,7 @@ export const amTranslations = {
       sendConfirmation: "ማረጋገጫ ላክ",
       
       // Status
-      confirmed: "ተረጋግጧል",
+      confirmed: "ተይዟል",
       checkedIn: "ወደ ሆቴል ገብቷል",
       checkedOut: "ከሆቴል ወጥቷል",
       cancelled: "ተሰርዟል",
@@ -1023,7 +1027,7 @@ export const amTranslations = {
       // Status Filter
       statusFilter: {
         all: "ሁሉም ሁኔታዎች",
-        confirmed: "ተረጋግጧል",
+        confirmed: "ተይዟል",
         checkedIn: "ወደ ሆቴል ገብቷል",
         checkedOut: "ከሆቴል ወጥቷል",
         cancelled: "ተሰርዟል",
@@ -1917,7 +1921,7 @@ export const amTranslations = {
     processing: "በሂደት ላይ",
     completed: "ተጠናቅቋል",
     pending: "በመጠባበቅ ላይ",
-    confirmed: "ተረጋግጧል",
+    confirmed: "ተይዟል",
     preparing: "በዝግጅት ላይ",
     ready: "ዝግጁ",
     cancelled: "ተሰርዟል",
@@ -2042,7 +2046,7 @@ export const amTranslations = {
     status: {
       bookingStatus: "የማስያዝ ሁኔታ",
       paymentStatus: "የክፍያ ሁኔታ",
-      confirmed: "ተረጋግጧል",
+      confirmed: "ተይዟል",
       pending: "በመጠባበቅ ላይ",
       cancelled: "ተሰርዟል",
       checkedIn: "ገብቷል",

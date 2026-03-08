@@ -208,11 +208,11 @@ const NotificationsPage: React.FC = () => {
               key={notification.id}
               sx={{ 
                 '&:last-child td, &:last-child th': { border: 0 },
-                backgroundColor: notification.status === 'UNREAD' ? addAlpha(COLORS.CONFIRMED, 0.1) : 'inherit',
+                backgroundColor: notification.status === 'UNREAD' ? addAlpha(COLORS.BOOKED, 0.1) : 'inherit',
                 opacity: notification.status === 'ARCHIVED' ? 0.6 : 1,
                 cursor: 'pointer',
                 transition: 'background-color 0.2s',
-                '&:hover': { backgroundColor: notification.status === 'UNREAD' ? addAlpha(COLORS.CONFIRMED, 0.15) : 'action.hover' }
+                '&:hover': { backgroundColor: notification.status === 'UNREAD' ? addAlpha(COLORS.BOOKED, 0.15) : 'action.hover' }
               }}
               onClick={() => openDetails(notification)}
             >

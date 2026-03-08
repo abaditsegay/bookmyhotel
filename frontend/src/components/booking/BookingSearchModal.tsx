@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { BookingService } from '../../services/BookingService';
 import {
   Dialog,
   DialogTitle,
@@ -92,7 +93,7 @@ const BookingSearchModal: React.FC<BookingSearchModalProps> = ({ open, onClose }
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'confirmed': return 'primary';
+      case 'booked': return 'primary';
       case 'checked in': return 'info';
       case 'checked out': return 'default';
       case 'cancelled': return 'error';
@@ -271,7 +272,7 @@ const BookingSearchModal: React.FC<BookingSearchModalProps> = ({ open, onClose }
                 </Box>
                 <Box sx={{ display: 'flex', gap: 1, flexDirection: 'column', alignItems: 'flex-end' }}>
                   <Chip
-                    label={booking.status}
+                    label={BookingService.getStatusDisplayLabel(booking.status)}
                     color={getStatusColor(booking.status) as any}
                     variant="filled"
                     size="small"

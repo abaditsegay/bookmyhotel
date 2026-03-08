@@ -245,6 +245,21 @@ public class RoomBulkUploadService {
             return result;
         }
 
+        // Enforce room limit based on hotel registration
+        Integer registeredLimit = hotel.getNumberOfRooms();
+        if (registeredLimit != null && registeredLimit > 0) {
+            long currentRoomCount = roomRepository.countByHotel(hotel);
+            int roomsToAdd = successfulRooms.size();
+            if (currentRoomCount + roomsToAdd > registeredLimit) {
+                result.put("success", false);
+                result.put("message", String.format(
+                        "Room limit exceeded. Your hotel is registered for %d rooms and currently has %d. " +
+                        "Cannot add %d more room(s). Please update your hotel information to increase the room limit.",
+                        registeredLimit, currentRoomCount, roomsToAdd));
+                return result;
+            }
+        }
+
         // System.out.println("🔥 Found hotel: " + hotel.getName());
 
         List<Room> importedRooms = new ArrayList<>();

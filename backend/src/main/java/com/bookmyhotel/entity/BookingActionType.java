@@ -7,7 +7,7 @@ public enum BookingActionType {
     CREATED("Booking Created"),
     MODIFIED("Booking Modified"),
     CANCELLED("Booking Cancelled"),
-    CONFIRMED("Booking Confirmed"),
+    BOOKED("Booking Booked"),
     CHECKED_IN("Checked In"),
     CHECKED_OUT("Checked Out");
     

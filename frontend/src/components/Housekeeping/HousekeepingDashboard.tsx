@@ -1019,7 +1019,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                           fontWeight: 600,
                           width: 'fit-content',
                           backgroundColor: selectedTask.status.toLowerCase() === 'completed' ? COLORS.SUCCESS :
-                                         selectedTask.status.toLowerCase() === 'in_progress' ? COLORS.CONFIRMED :
+                                         selectedTask.status.toLowerCase() === 'in_progress' ? COLORS.BOOKED :
                                          selectedTask.status.toLowerCase() === 'pending' ? COLORS.WARNING : COLORS.TEXT_SECONDARY,
                           color: COLORS.WHITE
                         }}
@@ -1181,7 +1181,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                   variant="contained"
                   startIcon={<PlayArrowIcon />}
                   sx={{
-                    backgroundColor: COLORS.CONFIRMED,
+                    backgroundColor: COLORS.BOOKED,
                     color: COLORS.WHITE,
                     fontWeight: 600,
                     px: 3,

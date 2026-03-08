@@ -495,7 +495,7 @@ const BookingViewEdit: React.FC = () => {
     // Handle both API format (CHECKED_OUT) and display format (Checked Out)
     const normalizedStatus = status.toLowerCase().replace(/_/g, ' ');
     switch (normalizedStatus) {
-      case 'confirmed': return 'primary';
+      case 'booked': return 'primary';
       case 'checked in': return 'success';
       case 'checked out': return 'info';
       case 'cancelled': return 'error';
@@ -519,7 +519,7 @@ const BookingViewEdit: React.FC = () => {
     // Only allow modifications for certain statuses
     // Handle both API format (CHECKED_OUT) and display format (Checked Out)
     const normalizedStatus = status.toLowerCase().replace(/_/g, ' ');
-    const modifiableStatuses = ['confirmed', 'pending', 'checked in'];
+    const modifiableStatuses = ['booked', 'pending', 'checked in'];
     return modifiableStatuses.includes(normalizedStatus);
   };
 
@@ -679,7 +679,7 @@ const BookingViewEdit: React.FC = () => {
                         value={currentBooking?.status || ''}
                         onChange={(e: SelectChangeEvent<string>) => handleFieldChange('status', e.target.value as string)}
                       >
-                        <MenuItem value="CONFIRMED">Confirmed</MenuItem>
+                        <MenuItem value="BOOKED">Booked</MenuItem>
                         <MenuItem value="CHECKED_IN">Checked In</MenuItem>
                         <MenuItem value="CHECKED_OUT">Checked Out</MenuItem>
                         <MenuItem value="CANCELLED">Cancelled</MenuItem>

@@ -48,7 +48,7 @@ export interface BookingStats {
 export interface HotelStatistics {
   totalRooms: number;
   availableRooms: number;
-  confirmedBookings: number;
+  bookedBookings: number;
   bookedRooms: number;
   totalStaff: number;
   activeStaff: number;
@@ -110,6 +110,13 @@ export interface RoomUpdateRequest {
   pricePerNight: number;
   capacity: number;
   description?: string;
+}
+
+export interface RoomLimitInfo {
+  currentRoomCount: number;
+  registeredLimit: number | null;
+  canAddRooms: boolean;
+  remainingSlots: number | null;
 }
 
 // Hotel Image Management Interfaces
@@ -638,6 +645,31 @@ export const hotelAdminApi = {
       return {
         success: false,
         message: error instanceof Error ? error.message : 'Failed to create rooms'
+      };
+    }
+  },
+
+  // Get room limit info for the hotel
+  getRoomLimit: async (
+    token: string
+  ): Promise<{ success: boolean; data?: RoomLimitInfo; message?: string }> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/hotel-admin/rooms/limit`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to fetch room limit');
+      }
+
+      const data = await response.json();
+      return { success: true, data };
+    } catch (error) {
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : 'Failed to fetch room limit'
       };
     }
   },

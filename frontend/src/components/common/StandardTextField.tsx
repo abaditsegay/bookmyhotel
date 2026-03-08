@@ -87,7 +87,7 @@ const StandardTextField: React.FC<StandardTextFieldProps> = ({
           // Focus state
           '&.Mui-focused fieldset': {
             borderWidth: '2px',
-            boxShadow: `0 0 0 1px ${addAlpha(COLORS.CONFIRMED, 0.2)}`,
+            boxShadow: `0 0 0 1px ${addAlpha(COLORS.BOOKED, 0.2)}`,
           },
           
           // Error state

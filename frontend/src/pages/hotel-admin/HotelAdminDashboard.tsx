@@ -377,7 +377,7 @@ const HotelAdminDashboard: React.FC = () => {
     name: hotel.name || user?.hotelName || 'Loading...',
     totalRooms: reportsData.hotelStats?.totalRooms || hotel.totalRooms || 0,
     availableRooms: reportsData.hotelStats?.availableRooms || hotel.availableRooms || 0,
-    confirmedBookings: reportsData.hotelStats?.confirmedBookings || 0,
+    bookedBookings: reportsData.hotelStats?.bookedBookings || 0,
     bookedRooms: reportsData.hotelStats?.bookedRooms || hotel.bookedRooms || 0,
     totalStaff: reportsData.hotelStats?.totalStaff || hotel.totalStaff || 0,
     activeStaff: reportsData.hotelStats?.activeStaff || hotel.totalStaff || 0,
@@ -385,7 +385,7 @@ const HotelAdminDashboard: React.FC = () => {
     name: user?.hotelName || (hotelLoading ? t('dashboard.hotelAdmin.loadingHotel') : t('dashboard.hotelAdmin.hotelInfoNotAvailable')),
     totalRooms: reportsData.hotelStats?.totalRooms || 0,
     availableRooms: reportsData.hotelStats?.availableRooms || 0,
-    confirmedBookings: reportsData.hotelStats?.confirmedBookings || 0,
+    bookedBookings: reportsData.hotelStats?.bookedBookings || 0,
     bookedRooms: reportsData.hotelStats?.bookedRooms || 0,
     totalStaff: reportsData.hotelStats?.totalStaff || 0,
     activeStaff: reportsData.hotelStats?.activeStaff || 0,
@@ -403,8 +403,8 @@ const HotelAdminDashboard: React.FC = () => {
       color: 'success',
     },
     {
-      title: t('dashboard.hotelAdmin.metrics.confirmedBookings'),
-      value: hotelData.confirmedBookings,
+      title: t('dashboard.hotelAdmin.metrics.bookedBookings'),
+      value: hotelData.bookedBookings,
       color: 'warning',
     },
     {
@@ -1132,7 +1132,7 @@ const HotelAdminDashboard: React.FC = () => {
                       }
                     }}>
                       <CardContent sx={{ textAlign: 'center', py: 2 }}>
-                        <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 1, color: COLORS.CONFIRMED }}>
+                        <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 1, color: COLORS.BOOKED }}>
                           {reportsData.bookingStats?.totalBookings || 0}
                         </Typography>
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 1, fontWeight: 600 }}>
@@ -1331,7 +1331,7 @@ const HotelAdminDashboard: React.FC = () => {
                                 transform: 'translateY(-2px)'
                               }
                             }}>
-                              <Typography variant="h6" sx={{ fontWeight: 'bold', color: COLORS.CONFIRMED }}>
+                              <Typography variant="h6" sx={{ fontWeight: 'bold', color: COLORS.BOOKED }}>
                                 {reportsData.bookingStats?.upcomingCheckOuts || 0}
                               </Typography>
                               <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>
@@ -1444,7 +1444,7 @@ const HotelAdminDashboard: React.FC = () => {
                           {t('dashboard.hotelAdmin.reports.comprehensiveBookingMetrics')}
                         </Typography>
                         <Box sx={{ mb: 2 }}>
-                          <Typography variant="h4" sx={{ fontWeight: 'bold', color: COLORS.CONFIRMED }}>
+                          <Typography variant="h4" sx={{ fontWeight: 'bold', color: COLORS.BOOKED }}>
                             {reportsData.bookingStats?.totalBookings || 0}
                           </Typography>
                           <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>
@@ -1633,7 +1633,7 @@ const HotelAdminDashboard: React.FC = () => {
                         </Box>
                         <Box>
                           <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>{t('dashboard.hotelAdmin.reports.upcomingCheckOutsWeek')}</Typography>
-                          <Typography variant="h6" sx={{ fontWeight: 'bold', color: COLORS.CONFIRMED }}>
+                          <Typography variant="h6" sx={{ fontWeight: 'bold', color: COLORS.BOOKED }}>
                             {t('dashboard.hotelAdmin.reports.guestsCount', { count: reportsData.bookingStats?.upcomingCheckOuts || 0 })}
                           </Typography>
                         </Box>
@@ -1665,7 +1665,7 @@ const HotelAdminDashboard: React.FC = () => {
                         </Box>
                         <Box sx={{ mb: 2 }}>
                           <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>{t('dashboard.hotelAdmin.reports.todaysCheckOuts')}</Typography>
-                          <Typography variant="h6" sx={{ fontWeight: 'bold', color: COLORS.CONFIRMED }}>
+                          <Typography variant="h6" sx={{ fontWeight: 'bold', color: COLORS.BOOKED }}>
                             {t('dashboard.hotelAdmin.reports.expectedCount', { count: Math.round((reportsData.bookingStats?.upcomingCheckOuts || 0) / 7) })}
                           </Typography>
                         </Box>
@@ -1730,7 +1730,7 @@ const HotelAdminDashboard: React.FC = () => {
                                 transform: 'translateY(-2px)'
                               }
                             }}>
-                              <Typography variant="h4" sx={{ fontWeight: 'bold', color: COLORS.CONFIRMED }}>
+                              <Typography variant="h4" sx={{ fontWeight: 'bold', color: COLORS.BOOKED }}>
                                 {reportsData.bookingStats?.upcomingCheckOuts || 0}
                               </Typography>
                               <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600 }}>

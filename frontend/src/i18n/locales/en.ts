@@ -195,7 +195,7 @@ export const enTranslations = {
         teamMembers: "Team Members",
         occupancyRate: "Occupancy Rate",
         currentOccupancyRate: "Current Occupancy Rate",
-        confirmedBookings: "Confirmed Bookings"
+        bookedBookings: "Booked Bookings"
       },
       
       // Sections
@@ -643,6 +643,10 @@ export const enTranslations = {
           description: "Description",
           cancel: "Cancel",
           create: "Create Room"
+        },
+        roomLimit: {
+          status: "{{current}} / {{limit}} rooms",
+          exceeded: "Room limit reached. Update your hotel information to increase the number of rooms."
         }
       }
     },
@@ -1006,7 +1010,7 @@ export const enTranslations = {
       sendConfirmation: "Send Confirmation",
       
       // Status Values
-      confirmed: "Confirmed",
+      confirmed: "Booked",
       checkedIn: "Checked In",
       checkedOut: "Checked Out",
       cancelled: "Cancelled",
@@ -1113,7 +1117,7 @@ export const enTranslations = {
       // Status Filter
       statusFilter: {
         all: "All Statuses",
-        confirmed: "Confirmed",
+        confirmed: "Booked",
         checkedIn: "Checked In",
         checkedOut: "Checked Out",
         cancelled: "Cancelled",
@@ -2038,7 +2042,7 @@ export const enTranslations = {
     processing: "PROCESSING",
     completed: "COMPLETED",
     pending: "PENDING",
-    confirmed: "CONFIRMED",
+    confirmed: "BOOKED",
     preparing: "PREPARING",
     ready: "READY",
     cancelled: "CANCELLED",
@@ -2163,7 +2167,7 @@ export const enTranslations = {
     status: {
       bookingStatus: "BOOKING STATUS",
       paymentStatus: "PAYMENT STATUS",
-      confirmed: "CONFIRMED",
+      confirmed: "BOOKED",
       pending: "PENDING",
       cancelled: "CANCELLED",
       checkedIn: "CHECKED IN",

@@ -32,13 +32,13 @@ const floatAnimation = keyframes`
 
 const pulseGlow = keyframes`
   0% {
-    box-shadow: 0 0 0 0 ${addAlpha(COLORS.CONFIRMED, 0.4)};
+    box-shadow: 0 0 0 0 ${addAlpha(COLORS.BOOKED, 0.4)};
   }
   70% {
-    box-shadow: 0 0 0 10px ${addAlpha(COLORS.CONFIRMED, 0)};
+    box-shadow: 0 0 0 10px ${addAlpha(COLORS.BOOKED, 0)};
   }
   100% {
-    box-shadow: 0 0 0 0 ${addAlpha(COLORS.CONFIRMED, 0)};
+    box-shadow: 0 0 0 0 ${addAlpha(COLORS.BOOKED, 0)};
   }
 `;
 
@@ -150,7 +150,7 @@ const InteractiveCard: React.FC<InteractiveCardProps> = ({
       height: ${size}px;
       left: ${x}px;
       top: ${y}px;
-      background: ${addAlpha(COLORS.CONFIRMED, 0.3)};
+      background: ${addAlpha(COLORS.BOOKED, 0.3)};
       border-radius: 50%;
       pointer-events: none;
       animation: ${rippleAnimation} 0.6s ease-out;

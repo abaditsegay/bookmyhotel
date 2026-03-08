@@ -110,9 +110,28 @@ export class BookingService {
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   }
 
+  static getStatusDisplayLabel(status: string): string {
+    switch (status.toUpperCase()) {
+      case 'BOOKED':
+        return 'BOOKED';
+      case 'CHECKED_IN':
+        return 'CHECKED IN';
+      case 'CHECKED_OUT':
+        return 'CHECKED OUT';
+      case 'CANCELLED':
+        return 'CANCELLED';
+      case 'PENDING':
+        return 'PENDING';
+      case 'NO_SHOW':
+        return 'NO SHOW';
+      default:
+        return status.replace('_', ' ');
+    }
+  }
+
   static getStatusColor(status: string): 'primary' | 'success' | 'warning' | 'error' | 'default' {
     switch (status.toUpperCase()) {
-      case 'CONFIRMED':
+      case 'BOOKED':
         return 'primary';
       case 'PENDING':
         return 'warning';
