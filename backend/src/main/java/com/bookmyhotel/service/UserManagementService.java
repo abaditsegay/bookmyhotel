@@ -47,7 +47,7 @@ public class UserManagementService {
     @Qualifier("emailTemplateEngine")
     private TemplateEngine templateEngine;
 
-    @Value("${app.email.from:noreply@bookmyhotel.com}")
+    @Value("${app.email.from:noreply@shegersolutions.com}")
     private String fromEmail;
 
     @Value("${app.name:BookMyHotel}")

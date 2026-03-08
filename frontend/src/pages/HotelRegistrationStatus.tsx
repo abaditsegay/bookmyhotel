@@ -289,7 +289,7 @@ const HotelRegistrationStatus: React.FC = () => {
             • Check your spam/junk folder for notification emails
           </Typography>
           <Typography variant="body2">
-            • Contact our support team at support@bookmyhotel.com
+            • Contact our support team at support@shegersolutions.com
           </Typography>
         </CardContent>
       </Card>

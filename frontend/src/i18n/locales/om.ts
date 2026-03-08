@@ -2390,7 +2390,7 @@ export const omTranslations = {
       title: "Nu Quunnamaa",
       description: "Gaaffii qabduu ykn gargaarsa barbaadduu? Gareen keenya beellama, michummaa ykn gaaffii kamiifuu isin gargaaruuf qophiidha.",
       emailLabel: "Imeelii",
-      email: "support@bookmyhotel.com",
+      email: "support@shegersolutions.com",
       phoneLabel: "Bilbila",
       phone: "+251-911-000-000"
     },

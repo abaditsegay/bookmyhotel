@@ -501,7 +501,7 @@ const MyBookings: React.FC = () => {
                     variant="outlined"
                     size="medium" 
                     startIcon={<Email />}
-                    href={`mailto:support@bookmyhotel.com?subject=Booking Inquiry - ${booking.confirmationNumber}`}
+                    href={`mailto:support@shegersolutions.com?subject=Booking Inquiry - ${booking.confirmationNumber}`}
                     sx={{
                       borderRadius: 2,
                       borderWidth: 1.5,

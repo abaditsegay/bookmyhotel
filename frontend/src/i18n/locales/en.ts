@@ -2440,7 +2440,7 @@ export const enTranslations = {
       title: "Contact Us",
       description: "Have questions or need assistance? Our team is here to help you with bookings, partnerships, or any inquiries.",
       emailLabel: "Email",
-      email: "support@bookmyhotel.com",
+      email: "support@shegersolutions.com",
       phoneLabel: "Phone",
       phone: "+251-911-000-000"
     },

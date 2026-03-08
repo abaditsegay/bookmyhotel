@@ -2305,7 +2305,7 @@ export const amTranslations = {
       title: "ያግኙን",
       description: "ጥያቄዎች አሉዎት ወይም እርዳታ ይፈልጋሉ? ቡድናችን ለቦታ ማስያዝ፣ ለሽርክና ወይም ለማንኛውም ጥያቄ ለመርዳት ዝግጁ ነው።",
       emailLabel: "ኢሜይል",
-      email: "support@bookmyhotel.com",
+      email: "support@shegersolutions.com",
       phoneLabel: "ስልክ",
       phone: "+251-911-000-000"
     },

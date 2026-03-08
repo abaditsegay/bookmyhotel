@@ -52,7 +52,7 @@ public class PasswordResetService {
     @Value("${app.url:http://localhost:3000}")
     private String appUrl;
 
-    @Value("${app.email.from:noreply@bookmyhotel.com}")
+    @Value("${app.email.from:noreply@shegersolutions.com}")
     private String fromEmail;
 
     @Value("${app.name:BookMyHotel}")
