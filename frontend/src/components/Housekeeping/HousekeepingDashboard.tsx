@@ -48,6 +48,7 @@ import {
 import { housekeepingSupervisorApi } from '../../services/housekeepingSupervisorApi';
 import { HousekeepingTask, HousekeepingStaff, HousekeepingTaskType, TaskPriority, CreateHousekeepingTaskRequest, HousekeepingTaskStatus } from '../../types/operations';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTranslation } from 'react-i18next';
 
 interface HousekeepingDashboardProps {
   userRole?: string;
@@ -56,8 +57,44 @@ interface HousekeepingDashboardProps {
 
 const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole, userId }) => {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
+  const translateTaskType = (type: string): string => {
+    const map: Record<string, string> = {
+      ROOM_CLEANING: t('dashboard.housekeepingDashboard.roomCleaning'),
+      DEEP_CLEANING: t('dashboard.housekeepingDashboard.deepCleaning'),
+      LAUNDRY: t('dashboard.housekeepingDashboard.laundry'),
+      PUBLIC_AREA_CLEANING: t('dashboard.housekeepingDashboard.publicAreaCleaning'),
+      INVENTORY_CHECK: t('dashboard.housekeepingDashboard.inventoryCheck'),
+      MAINTENANCE_REQUEST: t('dashboard.housekeepingDashboard.maintenanceRequest'),
+    };
+    return map[type] || type.replace(/_/g, ' ');
+  };
+
+  const translatePriority = (priority: string): string => {
+    const map: Record<string, string> = {
+      LOW: t('dashboard.housekeepingDashboard.low'),
+      NORMAL: t('dashboard.housekeepingDashboard.normal'),
+      HIGH: t('dashboard.housekeepingDashboard.high'),
+      URGENT: t('dashboard.housekeepingDashboard.urgent'),
+      CRITICAL: t('dashboard.housekeepingDashboard.critical'),
+    };
+    return map[priority] || priority;
+  };
+
+  const translateStatus = (status: string): string => {
+    const map: Record<string, string> = {
+      PENDING: t('dashboard.housekeepingDashboard.statusPending'),
+      ASSIGNED: t('dashboard.housekeepingDashboard.statusAssigned'),
+      IN_PROGRESS: t('dashboard.housekeepingDashboard.statusInProgress'),
+      COMPLETED: t('dashboard.housekeepingDashboard.statusCompleted'),
+      ON_HOLD: t('dashboard.housekeepingDashboard.statusOnHold'),
+      CANCELLED: t('dashboard.housekeepingDashboard.statusCancelled'),
+    };
+    return map[status] || status.replace(/_/g, ' ');
+  };
   
   const [tasks, setTasks] = useState<HousekeepingTask[]>([]);
   const [loading, setLoading] = useState(false);
@@ -143,7 +180,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
       }
     } catch (error) {
       // console.error('🔄 loadTasks: Error loading tasks:', error);
-      setError('Failed to load tasks');
+      setError(t('dashboard.housekeepingDashboard.failedToLoadTasks'));
       setTasks([]);
     } finally {
       setLoading(false);
@@ -187,7 +224,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
       setNotes('');
       loadTasks();
     } catch (err) {
-      setError('Failed to update task status');
+      setError(t('dashboard.housekeepingDashboard.failedToUpdateStatus'));
       // console.error('Update status error:', err);
     }
   };
@@ -198,7 +235,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
       setAvailableStaff(staff);
     } catch (err) {
       // console.error('❌ Failed to load staff:', err);
-      setError('Failed to load staff members');
+      setError(t('dashboard.housekeepingDashboard.failedToLoadStaff'));
     }
   }, []);
 
@@ -212,7 +249,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
       setSelectedStaffId('');
       loadTasks();
     } catch (err) {
-      setError('Failed to assign task');
+      setError(t('dashboard.housekeepingDashboard.failedToAssignTask'));
       // console.error('Assign task error:', err);
     }
   };
@@ -223,19 +260,19 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
       
       // Validate required fields
       if (!newStaff.email.trim()) {
-        setError('Email is required');
+        setError(t('dashboard.housekeepingDashboard.emailRequired'));
         return;
       }
       if (!newStaff.firstName.trim()) {
-        setError('First name is required');
+        setError(t('dashboard.housekeepingDashboard.firstNameRequired'));
         return;
       }
       if (!newStaff.lastName.trim()) {
-        setError('Last name is required');
+        setError(t('dashboard.housekeepingDashboard.lastNameRequired'));
         return;
       }
       if (!newStaff.employeeId.trim()) {
-        setError('Employee ID is required');
+        setError(t('dashboard.housekeepingDashboard.employeeIdRequired'));
         return;
       }
 
@@ -260,7 +297,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
       
     } catch (err) {
       // console.error('❌ Error creating staff member:', err);
-      setError('Failed to create staff member');
+      setError(t('dashboard.housekeepingDashboard.failedToCreateStaff'));
     } finally {
       setLoading(false);
     }
@@ -324,19 +361,19 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
       
       // Validate required fields
       if (!newTask.title.trim()) {
-        setError('Task title is required');
+        setError(t('dashboard.housekeepingDashboard.taskTitleRequired'));
         return;
       }
       if (!newTask.description.trim()) {
-        setError('Task description is required');
+        setError(t('dashboard.housekeepingDashboard.taskDescriptionRequired'));
         return;
       }
       if (!newTask.dueDate) {
-        setError('Due date is required');
+        setError(t('dashboard.housekeepingDashboard.dueDateRequired'));
         return;
       }
       if (!newTask.roomNumber || !newTask.roomNumber.trim()) {
-        setError('Room number is required');
+        setError(t('dashboard.housekeepingDashboard.roomNumberRequired'));
         return;
       }
 
@@ -363,7 +400,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
       
     } catch (err) {
       // console.error('❌ Error creating task:', err);
-      setError('Failed to create task');
+      setError(t('dashboard.housekeepingDashboard.failedToCreateTask'));
     } finally {
       setLoading(false);
     }
@@ -392,7 +429,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
           textAlign: { xs: 'center', sm: 'left' }
         }}
       >
-        {isHousekeepingStaff() ? 'My Tasks' : 'Tasks Overview'}
+        {isHousekeepingStaff() ? t('dashboard.housekeepingDashboard.myTasks') : t('dashboard.housekeepingDashboard.tasksOverview')}
       </Typography>
 
       {error && (
@@ -415,7 +452,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                 variant={isMobile ? "caption" : "body2"}
                 sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' } }}
               >
-                Total Tasks
+                {t('dashboard.housekeepingDashboard.totalTasks')}
               </Typography>
               <Typography variant={isMobile ? "h6" : "h4"}>
                 {stats.total}
@@ -435,7 +472,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                 variant={isMobile ? "caption" : "body2"}
                 sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' } }}
               >
-                Completed
+                {t('dashboard.housekeepingDashboard.completed')}
               </Typography>
               <Typography variant={isMobile ? "h6" : "h4"} color="success.main">
                 {stats.completed}
@@ -455,7 +492,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                 variant={isMobile ? "caption" : "body2"}
                 sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' } }}
               >
-                In Progress
+                {t('dashboard.housekeepingDashboard.inProgress')}
               </Typography>
               <Typography variant={isMobile ? "h6" : "h4"} color="info.main">
                 {stats.inProgress}
@@ -475,7 +512,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                 variant={isMobile ? "caption" : "body2"}
                 sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' } }}
               >
-                Pending
+                {t('dashboard.housekeepingDashboard.pending')}
               </Typography>
               <Typography variant={isMobile ? "h6" : "h4"} color="warning.main">
                 {stats.pending}
@@ -506,7 +543,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
               variant={isMobile ? "h6" : "h5"}
               sx={{ mb: { xs: 1, sm: 0 }, fontWeight: 700, color: COLORS.TEXT_PRIMARY }}
             >
-              {isHousekeepingStaff() ? 'My Tasks' : 'All Tasks'} ({filteredTasks.length} of {tasks.length} tasks)
+              {isHousekeepingStaff() ? t('dashboard.housekeepingDashboard.myTasks') : t('dashboard.housekeepingDashboard.allTasks')} ({filteredTasks.length} of {tasks.length} tasks)
             </Typography>
             <Box sx={{ 
               display: 'flex', 
@@ -531,7 +568,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                       }
                     }}
                   >
-                    Add Task
+                    {t('dashboard.housekeepingDashboard.addTask')}
                   </Button>
                   <Button 
                     variant="outlined"
@@ -548,7 +585,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                       }
                     }}
                   >
-                    Manage Staff
+                    {t('dashboard.housekeepingDashboard.manageStaff')}
                   </Button>
                 </>
               )}
@@ -566,7 +603,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                   }
                 }}
               >
-                Refresh
+                {t('dashboard.housekeepingDashboard.refresh')}
               </Button>
             </Box>
           </Box>
@@ -597,17 +634,17 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                 }}
               >
                 <FilterListIcon fontSize="small" />
-                Filters:
+                {t('dashboard.housekeepingDashboard.filters')}
               </Typography>
               
               <PremiumSelect
                 value={filterAssignedTo}
-                label="Assigned To"
+                label={t('dashboard.housekeepingDashboard.assignedTo')}
                 onChange={(e) => setFilterAssignedTo(e.target.value)}
                 sx={{ minWidth: { xs: 140, md: 180 } }}
               >
-                <MenuItem value="all">All Tasks</MenuItem>
-                <MenuItem value="unassigned">Unassigned</MenuItem>
+                <MenuItem value="all">{t('dashboard.housekeepingDashboard.allTasksFilter')}</MenuItem>
+                <MenuItem value="unassigned">{t('dashboard.housekeepingDashboard.unassigned')}</MenuItem>
                 {availableStaff.map((staff) => (
                   <MenuItem key={staff.id} value={staff.id.toString()}>
                     {staff.user ? 
@@ -620,17 +657,17 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
 
               <PremiumSelect
                 value={filterStatus}
-                label="Status"
+                label={t('dashboard.housekeepingDashboard.status')}
                 onChange={(e) => setFilterStatus(e.target.value)}
                 sx={{ minWidth: { xs: 140, md: 180 } }}
               >
-                <MenuItem value="all">All Status</MenuItem>
-                <MenuItem value={HousekeepingTaskStatus.PENDING}>Pending</MenuItem>
-                <MenuItem value={HousekeepingTaskStatus.ASSIGNED}>Assigned</MenuItem>
-                <MenuItem value={HousekeepingTaskStatus.IN_PROGRESS}>In Progress</MenuItem>
-                <MenuItem value={HousekeepingTaskStatus.COMPLETED}>Completed</MenuItem>
-                <MenuItem value={HousekeepingTaskStatus.ON_HOLD}>On Hold</MenuItem>
-                <MenuItem value={HousekeepingTaskStatus.CANCELLED}>Cancelled</MenuItem>
+                <MenuItem value="all">{t('dashboard.housekeepingDashboard.allStatus')}</MenuItem>
+                <MenuItem value={HousekeepingTaskStatus.PENDING}>{t('dashboard.housekeepingDashboard.statusPending')}</MenuItem>
+                <MenuItem value={HousekeepingTaskStatus.ASSIGNED}>{t('dashboard.housekeepingDashboard.statusAssigned')}</MenuItem>
+                <MenuItem value={HousekeepingTaskStatus.IN_PROGRESS}>{t('dashboard.housekeepingDashboard.statusInProgress')}</MenuItem>
+                <MenuItem value={HousekeepingTaskStatus.COMPLETED}>{t('dashboard.housekeepingDashboard.statusCompleted')}</MenuItem>
+                <MenuItem value={HousekeepingTaskStatus.ON_HOLD}>{t('dashboard.housekeepingDashboard.statusOnHold')}</MenuItem>
+                <MenuItem value={HousekeepingTaskStatus.CANCELLED}>{t('dashboard.housekeepingDashboard.statusCancelled')}</MenuItem>
               </PremiumSelect>
 
               <Button
@@ -653,7 +690,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                   }
                 }}
               >
-                Clear Filters
+                {t('dashboard.housekeepingDashboard.clearFilters')}
               </Button>
             </Box>
           )}
@@ -661,17 +698,17 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
           {/* Show filtering info */}
           {isHousekeepingStaff() && (
             <Alert severity="info" sx={{ mb: 2 }}>
-              Showing only tasks assigned to you (User ID: {currentUserId})
+              {t('dashboard.housekeepingDashboard.showingMyTasks')} (User ID: {currentUserId})
             </Alert>
           )}
           
           {filteredTasks.length === 0 ? (
             <Alert severity="info">
               {isHousekeepingStaff() 
-                ? "No tasks assigned to you at the moment."
+                ? t('dashboard.housekeepingDashboard.noTasksAssigned')
                 : tasks.length === 0 
-                  ? "No tasks available."
-                  : "No tasks match the current filters."}
+                  ? t('dashboard.housekeepingDashboard.noTasksAvailable')
+                  : t('dashboard.housekeepingDashboard.noTasksMatchFilter')}
             </Alert>
           ) : (
             <>
@@ -689,7 +726,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                             {task.title}
                           </Typography>
                           <Chip 
-                            label={task.status} 
+                            label={translateStatus(task.status)} 
                             color={getStatusColor(task.status)} 
                             size="small" 
                           />
@@ -702,22 +739,22 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                         )}
                         
                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 1 }}>
-                          <Chip label={task.taskType} variant="outlined" size="small" />
-                          <Chip label={task.priority} color={getStatusColor(task.priority)} size="small" />
+                          <Chip label={translateTaskType(task.taskType)} variant="outlined" size="small" />
+                          <Chip label={translatePriority(task.priority)} color={getStatusColor(task.priority)} size="small" />
                           {task.roomNumber && (
-                            <Chip label={`Room ${task.roomNumber}`} variant="outlined" size="small" />
+                            <Chip label={`${t('dashboard.housekeepingDashboard.room')} ${task.roomNumber}`} variant="outlined" size="small" />
                           )}
                         </Box>
                         
                         {task.dueDate && (
                           <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
-                            Due: {new Date(task.dueDate).toLocaleDateString()}
+                            {t('dashboard.housekeepingDashboard.dueLabel', { date: new Date(task.dueDate).toLocaleDateString() })}
                           </Typography>
                         )}
                         
                         {isManagementRole() && task.assignedUser && (
                           <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
-                            Assigned to: {task.assignedUser.firstName} {task.assignedUser.lastName}
+                            {t('dashboard.housekeepingDashboard.assignedToLabel', { name: `${task.assignedUser.firstName} ${task.assignedUser.lastName}` })}
                           </Typography>
                         )}
                         
@@ -734,7 +771,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                             disabled={task.status.toLowerCase() === 'completed'}
                             startIcon={getActionIcon(task.status)}
                           >
-                            Update Status
+                          {t('dashboard.housekeepingDashboard.updateStatus')}
                           </Button>
                           
                           {/* Assignment Action - Only for management roles */}
@@ -751,7 +788,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                               disabled={task.status.toLowerCase() === 'completed'}
                               startIcon={<AssignmentIcon />}
                             >
-                              Assign
+                              {t('dashboard.housekeepingDashboard.assignTask')}
                             </Button>
                           )}
                         </Box>
@@ -794,14 +831,14 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                           }
                         }}
                       >
-                        <TableCell>Title</TableCell>
-                        <TableCell>Type</TableCell>
-                        <TableCell>Room</TableCell>
-                        {isManagementRole() && <TableCell>Assigned To</TableCell>}
-                        <TableCell>Priority</TableCell>
-                        <TableCell>Status</TableCell>
-                        <TableCell>Due Date</TableCell>
-                        <TableCell>Actions</TableCell>
+                        <TableCell>{t('dashboard.housekeepingDashboard.title')}</TableCell>
+                        <TableCell>{t('dashboard.housekeepingDashboard.type')}</TableCell>
+                        <TableCell>{t('dashboard.housekeepingDashboard.room')}</TableCell>
+                        {isManagementRole() && <TableCell>{t('dashboard.housekeepingDashboard.assignedTo')}</TableCell>}
+                        <TableCell>{t('dashboard.housekeepingDashboard.priority')}</TableCell>
+                        <TableCell>{t('dashboard.housekeepingDashboard.status')}</TableCell>
+                        <TableCell>{t('dashboard.housekeepingDashboard.dueDate')}</TableCell>
+                        <TableCell>{t('dashboard.housekeepingDashboard.actions')}</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -819,36 +856,36 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                           </Typography>
                         )}
                       </TableCell>
-                      <TableCell>{task.taskType}</TableCell>
-                      <TableCell>{task.roomNumber || 'N/A'}</TableCell>
+                      <TableCell>{translateTaskType(task.taskType)}</TableCell>
+                      <TableCell>{task.roomNumber || t('dashboard.housekeepingDashboard.na')}</TableCell>
                       {isManagementRole() && (
                         <TableCell>
                           {task.assignedUser?.firstName && task.assignedUser?.lastName 
                             ? `${task.assignedUser.firstName} ${task.assignedUser.lastName}`
-                            : 'Unassigned'}
+                            : t('dashboard.housekeepingDashboard.unassigned')}
                         </TableCell>
                       )}
                       <TableCell>
                         <Chip 
-                          label={task.priority} 
+                          label={translatePriority(task.priority)} 
                           color={getStatusColor(task.priority)} 
                           size="small" 
                         />
                       </TableCell>
                       <TableCell>
                         <Chip 
-                          label={task.status} 
+                          label={translateStatus(task.status)} 
                           color={getStatusColor(task.status)} 
                           size="small" 
                         />
                       </TableCell>
                       <TableCell>
-                        {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'N/A'}
+                        {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : t('dashboard.housekeepingDashboard.na')}
                       </TableCell>
                       <TableCell>
                         <Box sx={{ display: 'flex', gap: 1 }}>
                           {/* Status Update Action */}
-                          <Tooltip title="Update Status">
+                          <Tooltip title={t('dashboard.housekeepingDashboard.updateStatus')}>
                             <span>
                               <IconButton 
                                 size="small" 
@@ -867,7 +904,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
 
                           {/* Assignment Action - Only for management roles */}
                           {isManagementRole() && (
-                            <Tooltip title="Assign Task">
+                            <Tooltip title={t('dashboard.housekeepingDashboard.assignTask')}>
                               <span>
                                 <IconButton 
                                   size="small" 
@@ -886,7 +923,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                           )}
 
                           {/* View Details Action */}
-                          <Tooltip title="View Details">
+                          <Tooltip title={t('dashboard.housekeepingDashboard.viewDetails')}>
                             <IconButton 
                               size="small" 
                               onClick={() => {
@@ -966,10 +1003,10 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
             <AssignmentIcon sx={{ fontSize: 28, color: COLORS.SECONDARY }} />
             <Typography variant="h5" sx={{ fontWeight: 700, color: COLORS.TEXT_PRIMARY }}>
               {isViewOnlyMode 
-                ? 'Task Details'
+                ? t('dashboard.housekeepingDashboard.taskDetails')
                 : isHousekeepingStaff() 
-                  ? 'Update Task Status' 
-                  : 'Task Details & Status'
+                  ? t('dashboard.housekeepingDashboard.updateTaskStatus') 
+                  : t('dashboard.housekeepingDashboard.taskDetailsAndStatus')
               }
             </Typography>
           </Box>
@@ -988,10 +1025,10 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                   <Grid item xs={12} sm={6}>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                       <Typography variant="caption" sx={{ color: 'text.secondary', textTransform: 'uppercase', fontWeight: 600 }}>
-                        Room Number
+                        {t('dashboard.housekeepingDashboard.roomNumber')}
                       </Typography>
                       <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                        {selectedTask.roomNumber || 'N/A'}
+                        {selectedTask.roomNumber || t('dashboard.housekeepingDashboard.na')}
                       </Typography>
                     </Box>
                   </Grid>
@@ -999,10 +1036,10 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                   <Grid item xs={12} sm={6}>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                       <Typography variant="caption" sx={{ color: 'text.secondary', textTransform: 'uppercase', fontWeight: 600 }}>
-                        Task Type
+                        {t('dashboard.housekeepingDashboard.taskType')}
                       </Typography>
                       <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                        {selectedTask.taskType.replace(/_/g, ' ')}
+                        {translateTaskType(selectedTask.taskType)}
                       </Typography>
                     </Box>
                   </Grid>
@@ -1010,10 +1047,10 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                   <Grid item xs={12}>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                       <Typography variant="caption" sx={{ color: 'text.secondary', textTransform: 'uppercase', fontWeight: 600 }}>
-                        Current Status
+                        {t('dashboard.housekeepingDashboard.currentStatus')}
                       </Typography>
                       <Chip 
-                        label={selectedTask.status}
+                        label={translateStatus(selectedTask.status)}
                         size="small"
                         sx={{ 
                           fontWeight: 600,
@@ -1031,7 +1068,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
               {/* Additional Information */}
               <Box sx={{ mb: 3 }}>
                 <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', mb: 2 }}>
-                  Additional Information
+                  {t('dashboard.housekeepingDashboard.additionalInfo')}
                 </Typography>
                 <Divider sx={{ mb: 2 }} />
                 
@@ -1040,7 +1077,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                     <Grid item xs={12}>
                       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                         <Typography variant="caption" sx={{ color: 'text.secondary', textTransform: 'uppercase', fontWeight: 600 }}>
-                          Description
+                          {t('dashboard.housekeepingDashboard.description')}
                         </Typography>
                         <Typography variant="body2" sx={{ lineHeight: 1.6 }}>
                           {selectedTask.description}
@@ -1053,7 +1090,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                     <Grid item xs={12} sm={6}>
                       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                         <Typography variant="caption" sx={{ color: 'text.secondary', textTransform: 'uppercase', fontWeight: 600 }}>
-                          Assigned To
+                          {t('dashboard.housekeepingDashboard.assignedTo')}
                         </Typography>
                         <Typography variant="body2" sx={{ fontWeight: 600 }}>
                           {selectedTask.assignedUser.firstName && selectedTask.assignedUser.lastName ? 
@@ -1069,7 +1106,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                     <Grid item xs={12} sm={6}>
                       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                         <Typography variant="caption" sx={{ color: 'text.secondary', textTransform: 'uppercase', fontWeight: 600 }}>
-                          Due Date
+                          {t('dashboard.housekeepingDashboard.dueDate')}
                         </Typography>
                         <Typography variant="body2" sx={{ fontWeight: 600 }}>
                           {new Date(selectedTask.dueDate).toLocaleString()}
@@ -1085,7 +1122,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                !['completed', 'cancelled'].includes(selectedTask.status.toLowerCase()) && (
                 <Box sx={{ mb: 3 }}>
                   <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', mb: 2 }}>
-                    {isHousekeepingStaff() ? 'Update Your Task Progress' : 'Update Task Status'}
+                    {isHousekeepingStaff() ? t('dashboard.housekeepingDashboard.updateYourProgress') : t('dashboard.housekeepingDashboard.updateTaskStatusLabel')}
                   </Typography>
                   <Divider sx={{ mb: 2 }} />
                   
@@ -1094,7 +1131,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                     <PremiumSelect
                       fullWidth
                       value=""
-                      label="Change Status To"
+                      label={t('dashboard.housekeepingDashboard.changeStatusTo')}
                       onChange={(e) => {
                         if (e.target.value) {
                           handleUpdateStatus(e.target.value);
@@ -1102,19 +1139,19 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                       }}
                     >
                       {selectedTask.status.toLowerCase() !== 'pending' && (
-                        <MenuItem value="PENDING">Mark as Pending</MenuItem>
+                        <MenuItem value="PENDING">{t('dashboard.housekeepingDashboard.markAsPending')}</MenuItem>
                       )}
                       {selectedTask.status.toLowerCase() !== 'assigned' && selectedTask.assignedUser && (
-                        <MenuItem value="ASSIGNED">Mark as Assigned</MenuItem>
+                        <MenuItem value="ASSIGNED">{t('dashboard.housekeepingDashboard.markAsAssigned')}</MenuItem>
                       )}
                       {selectedTask.status.toLowerCase() !== 'in_progress' && (
-                        <MenuItem value="IN_PROGRESS">Mark as In Progress</MenuItem>
+                        <MenuItem value="IN_PROGRESS">{t('dashboard.housekeepingDashboard.markAsInProgress')}</MenuItem>
                       )}
                       {selectedTask.status.toLowerCase() !== 'completed' && (
-                        <MenuItem value="COMPLETED">Mark as Completed</MenuItem>
+                        <MenuItem value="COMPLETED">{t('dashboard.housekeepingDashboard.markAsCompleted')}</MenuItem>
                       )}
                       {selectedTask.status.toLowerCase() !== 'cancelled' && (
-                        <MenuItem value="CANCELLED">Cancel Task</MenuItem>
+                        <MenuItem value="CANCELLED">{t('dashboard.housekeepingDashboard.cancelTask')}</MenuItem>
                       )}
                     </PremiumSelect>
                   )}
@@ -1127,12 +1164,12 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                     fullWidth
                     multiline
                     rows={4}
-                    label="Notes (optional)"
+                    label={t('dashboard.housekeepingDashboard.notesOptional')}
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     placeholder={isHousekeepingStaff() 
-                      ? "Add any notes about your progress or issues encountered..."
-                      : "Add notes about this task..."
+                      ? t('dashboard.housekeepingDashboard.notesPlaceholderStaff')
+                      : t('dashboard.housekeepingDashboard.notesPlaceholderAdmin')
                     }
                   />
                 </Box>
@@ -1142,7 +1179,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
               {isViewOnlyMode && selectedTask.notes && (
                 <Box sx={{ mb: 2 }}>
                   <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', mb: 2 }}>
-                    Notes
+                    {t('dashboard.housekeepingDashboard.notes')}
                   </Typography>
                   <Divider sx={{ mb: 2 }} />
                   <Typography variant="body2" sx={{ lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
@@ -1169,7 +1206,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
               }
             }}
           >
-            {isViewOnlyMode ? 'Close' : isHousekeepingStaff() ? 'Cancel' : 'Close'}
+            {isViewOnlyMode ? t('dashboard.housekeepingDashboard.close') : isHousekeepingStaff() ? t('dashboard.housekeepingDashboard.cancel') : t('dashboard.housekeepingDashboard.close')}
           </Button>
           
           {/* Quick Action buttons for Housekeeping Staff */}
@@ -1190,7 +1227,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                     }
                   }}
                 >
-                  Start Task
+                  {t('dashboard.housekeepingDashboard.startTask')}
                 </Button>
               )}
               {(selectedTask.status.toLowerCase() === 'in_progress') && (
@@ -1208,7 +1245,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                     }
                   }}
                 >
-                  Complete Task
+                  {t('dashboard.housekeepingDashboard.completeTask')}
                 </Button>
               )}
             </>
@@ -1228,7 +1265,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                     loadStaff();
                   }}
                 >
-                  Update Status
+                  {t('dashboard.housekeepingDashboard.updateStatus')}
                 </Button>
               )}
               {selectedTask.status.toLowerCase() === 'in_progress' && (
@@ -1237,7 +1274,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                   variant="contained" 
                   color="success"
                 >
-                  Mark Complete
+                  {t('dashboard.housekeepingDashboard.markComplete')}
                 </Button>
               )}
             </>
@@ -1267,7 +1304,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
             <AddTaskIcon sx={{ fontSize: 28, color: COLORS.SECONDARY }} />
             <Typography variant="h5" sx={{ fontWeight: 700, color: COLORS.TEXT_PRIMARY }}>
-              Create New Housekeeping Task
+              {t('dashboard.housekeepingDashboard.createNewTask')}
             </Typography>
           </Box>
         </DialogTitle>
@@ -1276,28 +1313,28 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
             {/* Basic Information */}
             <Box>
               <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', mb: 2 }}>
-                Basic Information
+                {t('dashboard.housekeepingDashboard.basicInfo')}
               </Typography>
               <Divider sx={{ mb: 2.5 }} />
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
                 <PremiumTextField
-                  label="Task Title"
+                  label={t('dashboard.housekeepingDashboard.taskTitle')}
                   value={newTask.title}
                   onChange={(e) => handleTaskFieldChange('title', e.target.value)}
                   fullWidth
                   required
-                  placeholder="Enter a clear, descriptive title for the task"
+                  placeholder={t('dashboard.housekeepingDashboard.taskTitlePlaceholder')}
                 />
                 
                 <PremiumTextField
-                  label="Description"
+                  label={t('dashboard.housekeepingDashboard.descriptionLabel')}
                   value={newTask.description}
                   onChange={(e) => handleTaskFieldChange('description', e.target.value)}
                   fullWidth
                   multiline
                   rows={3}
                   required
-                  placeholder="Provide detailed description of what needs to be done"
+                  placeholder={t('dashboard.housekeepingDashboard.descriptionPlaceholder')}
                 />
               </Box>
             </Box>
@@ -1305,7 +1342,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
             {/* Task Classification */}
             <Box>
               <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', mb: 2 }}>
-                Task Classification
+                {t('dashboard.housekeepingDashboard.taskClassification')}
               </Typography>
               <Divider sx={{ mb: 2.5 }} />
               <Grid container spacing={2.5}>
@@ -1313,15 +1350,15 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                   <PremiumSelect
                     fullWidth
                     value={newTask.taskType}
-                    label="Task Type"
+                    label={t('dashboard.housekeepingDashboard.taskTypeLabel')}
                     onChange={(e) => handleTaskFieldChange('taskType', e.target.value)}
                   >
-                    <MenuItem value={HousekeepingTaskType.ROOM_CLEANING}>Room Cleaning</MenuItem>
-                    <MenuItem value={HousekeepingTaskType.DEEP_CLEANING}>Deep Cleaning</MenuItem>
-                    <MenuItem value={HousekeepingTaskType.LAUNDRY}>Laundry</MenuItem>
-                    <MenuItem value={HousekeepingTaskType.PUBLIC_AREA_CLEANING}>Public Area Cleaning</MenuItem>
-                    <MenuItem value={HousekeepingTaskType.INVENTORY_CHECK}>Inventory Check</MenuItem>
-                    <MenuItem value={HousekeepingTaskType.MAINTENANCE_REQUEST}>Maintenance Request</MenuItem>
+                    <MenuItem value={HousekeepingTaskType.ROOM_CLEANING}>{t('dashboard.housekeepingDashboard.roomCleaning')}</MenuItem>
+                    <MenuItem value={HousekeepingTaskType.DEEP_CLEANING}>{t('dashboard.housekeepingDashboard.deepCleaning')}</MenuItem>
+                    <MenuItem value={HousekeepingTaskType.LAUNDRY}>{t('dashboard.housekeepingDashboard.laundry')}</MenuItem>
+                    <MenuItem value={HousekeepingTaskType.PUBLIC_AREA_CLEANING}>{t('dashboard.housekeepingDashboard.publicAreaCleaning')}</MenuItem>
+                    <MenuItem value={HousekeepingTaskType.INVENTORY_CHECK}>{t('dashboard.housekeepingDashboard.inventoryCheck')}</MenuItem>
+                    <MenuItem value={HousekeepingTaskType.MAINTENANCE_REQUEST}>{t('dashboard.housekeepingDashboard.maintenanceRequest')}</MenuItem>
                   </PremiumSelect>
                 </Grid>
                 
@@ -1329,14 +1366,14 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                   <PremiumSelect
                     fullWidth
                     value={newTask.priority}
-                    label="Priority"
+                    label={t('dashboard.housekeepingDashboard.priorityLabel')}
                     onChange={(e) => handleTaskFieldChange('priority', e.target.value)}
                   >
-                    <MenuItem value={TaskPriority.LOW}>Low</MenuItem>
-                    <MenuItem value={TaskPriority.NORMAL}>Normal</MenuItem>
-                    <MenuItem value={TaskPriority.HIGH}>High</MenuItem>
-                    <MenuItem value={TaskPriority.URGENT}>Urgent</MenuItem>
-                    <MenuItem value={TaskPriority.CRITICAL}>Critical</MenuItem>
+                    <MenuItem value={TaskPriority.LOW}>{t('dashboard.housekeepingDashboard.low')}</MenuItem>
+                    <MenuItem value={TaskPriority.NORMAL}>{t('dashboard.housekeepingDashboard.normal')}</MenuItem>
+                    <MenuItem value={TaskPriority.HIGH}>{t('dashboard.housekeepingDashboard.high')}</MenuItem>
+                    <MenuItem value={TaskPriority.URGENT}>{t('dashboard.housekeepingDashboard.urgent')}</MenuItem>
+                    <MenuItem value={TaskPriority.CRITICAL}>{t('dashboard.housekeepingDashboard.critical')}</MenuItem>
                   </PremiumSelect>
                 </Grid>
               </Grid>
@@ -1345,29 +1382,29 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
             {/* Location Details */}
             <Box>
               <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', mb: 2 }}>
-                Location Details
+                {t('dashboard.housekeepingDashboard.locationDetails')}
               </Typography>
               <Divider sx={{ mb: 2.5 }} />
               <Grid container spacing={2.5}>
                 <Grid item xs={12} sm={6}>
                   <PremiumTextField
-                    label="Room Number"
+                    label={t('dashboard.housekeepingDashboard.roomNumberLabel')}
                     value={newTask.roomNumber}
                     onChange={(e) => handleTaskFieldChange('roomNumber', e.target.value)}
                     fullWidth
                     required
-                    placeholder="e.g., 101, 205"
+                    placeholder={t('dashboard.housekeepingDashboard.roomNumberPlaceholder')}
                   />
                 </Grid>
                 
                 <Grid item xs={12} sm={6}>
                   <PremiumTextField
-                    label="Floor Number"
+                    label={t('dashboard.housekeepingDashboard.floorNumber')}
                     type="number"
                     value={newTask.floorNumber || ''}
                     onChange={(e) => handleTaskFieldChange('floorNumber', e.target.value ? parseInt(e.target.value) : undefined)}
                     fullWidth
-                    placeholder="Optional"
+                    placeholder={t('dashboard.housekeepingDashboard.optional')}
                   />
                 </Grid>
               </Grid>
@@ -1376,13 +1413,13 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
             {/* Scheduling */}
             <Box>
               <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', mb: 2 }}>
-                Scheduling
+                {t('dashboard.housekeepingDashboard.scheduling')}
               </Typography>
               <Divider sx={{ mb: 2.5 }} />
               <Grid container spacing={2.5}>
                 <Grid item xs={12} sm={6}>
                   <PremiumTextField
-                    label="Estimated Duration (minutes)"
+                    label={t('dashboard.housekeepingDashboard.estimatedDuration')}
                     type="number"
                     value={newTask.estimatedDuration}
                     onChange={(e) => handleTaskFieldChange('estimatedDuration', parseInt(e.target.value) || 60)}
@@ -1394,7 +1431,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                 
                 <Grid item xs={12} sm={6}>
                   <PremiumDatePicker
-                    label="Due Date & Time"
+                    label={t('dashboard.housekeepingDashboard.dueDateTime')}
                     value={newTask.dueDate ? new Date(newTask.dueDate) : null}
                     onChange={(date) => {
                       if (date) {
@@ -1416,17 +1453,17 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
             {/* Additional Information */}
             <Box>
               <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', mb: 2 }}>
-                Additional Information
+                {t('dashboard.housekeepingDashboard.additionalInfo')}
               </Typography>
               <Divider sx={{ mb: 2.5 }} />
               <PremiumTextField
-                label="Additional Notes"
+                label={t('dashboard.housekeepingDashboard.additionalNotes')}
                 value={newTask.notes}
                 onChange={(e) => handleTaskFieldChange('notes', e.target.value)}
                 fullWidth
                 multiline
                 rows={3}
-                placeholder="Add any special instructions or requirements"
+                placeholder={t('dashboard.housekeepingDashboard.additionalNotesPlaceholder')}
               />
             </Box>
           </Box>
@@ -1444,7 +1481,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
               }
             }}
           >
-            Cancel
+            {t('dashboard.housekeepingDashboard.cancel')}
           </Button>
           <Button 
             onClick={handleCreateTask}
@@ -1465,7 +1502,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
               }
             }}
           >
-            Create Task
+            {t('dashboard.housekeepingDashboard.createTask')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -1492,7 +1529,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
             <PersonAddIcon sx={{ fontSize: 28, color: COLORS.SECONDARY }} />
             <Typography variant="h5" sx={{ fontWeight: 700, color: COLORS.TEXT_PRIMARY }}>
-              Assign Task to Staff Member
+              {t('dashboard.housekeepingDashboard.assignTaskToStaff')}
             </Typography>
           </Box>
         </DialogTitle>
@@ -1509,21 +1546,21 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
             }}
           >
             <Typography variant="subtitle2" sx={{ fontWeight: 700, color: COLORS.TEXT_PRIMARY, mb: 2, textTransform: 'uppercase', fontSize: '0.75rem' }}>
-              Select Staff Member
+              {t('dashboard.housekeepingDashboard.selectStaffMember')}
             </Typography>
             <PremiumSelect
               fullWidth
               value={selectedStaffId}
-              label="Staff Member"
+              label={t('dashboard.housekeepingDashboard.staffMember')}
               onChange={(e) => setSelectedStaffId(e.target.value)}
             >
               <MenuItem value="">
-                <em>Unassigned</em>
+                <em>{t('dashboard.housekeepingDashboard.unassigned')}</em>
               </MenuItem>
               {availableStaff.length === 0 ? (
                 <>
                   <MenuItem disabled>
-                    <em>No staff members available</em>
+                    <em>{t('dashboard.housekeepingDashboard.noStaffAvailable')}</em>
                   </MenuItem>
                   <MenuItem onClick={() => {
                     setAssignDialog(false);
@@ -1531,7 +1568,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                   }}>
                     <Box sx={{ color: COLORS.SECONDARY, fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: 1 }}>
                       <PersonAddIcon fontSize="small" />
-                      Create New Staff Member
+                      {t('dashboard.housekeepingDashboard.createNewStaffMember')}
                     </Box>
                   </MenuItem>
                 </>
@@ -1561,7 +1598,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
               }
             }}
           >
-            Cancel
+            {t('dashboard.housekeepingDashboard.cancel')}
           </Button>
           <Button 
             onClick={handleAssignTask}
@@ -1581,7 +1618,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
               }
             }}
           >
-            Assign Task
+            {t('dashboard.housekeepingDashboard.assignTask')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -1608,7 +1645,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
             <PersonAddIcon sx={{ fontSize: 28, color: COLORS.SECONDARY }} />
             <Typography variant="h5" sx={{ fontWeight: 700, color: COLORS.TEXT_PRIMARY }}>
-              Add Housekeeping Staff Member
+              {t('dashboard.housekeepingDashboard.addStaffMember')}
             </Typography>
           </Box>
         </DialogTitle>
@@ -1616,12 +1653,12 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             <Box>
               <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', mb: 2 }}>
-                Contact Information
+                {t('dashboard.housekeepingDashboard.contactInfo')}
               </Typography>
               <Divider sx={{ mb: 2.5 }} />
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
                 <PremiumTextField
-                  label="Email"
+                  label={t('dashboard.housekeepingDashboard.email')}
                   type="email"
                   value={newStaff.email}
                   onChange={(e) => handleStaffFieldChange('email', e.target.value)}
@@ -1631,7 +1668,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                 />
                 
                 <PremiumTextField
-                  label="Phone Number"
+                  label={t('dashboard.housekeepingDashboard.phoneNumber')}
                   value={newStaff.phone}
                   onChange={(e) => handleStaffFieldChange('phone', e.target.value)}
                   fullWidth
@@ -1642,13 +1679,13 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
             
             <Box>
               <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', mb: 2 }}>
-                Personal Details
+                {t('dashboard.housekeepingDashboard.personalDetails')}
               </Typography>
               <Divider sx={{ mb: 2.5 }} />
               <Grid container spacing={2.5}>
                 <Grid item xs={12} sm={6}>
                   <PremiumTextField
-                    label="First Name"
+                    label={t('dashboard.housekeepingDashboard.firstName')}
                     value={newStaff.firstName}
                     onChange={(e) => handleStaffFieldChange('firstName', e.target.value)}
                     fullWidth
@@ -1657,7 +1694,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <PremiumTextField
-                    label="Last Name"
+                    label={t('dashboard.housekeepingDashboard.lastName')}
                     value={newStaff.lastName}
                     onChange={(e) => handleStaffFieldChange('lastName', e.target.value)}
                     fullWidth
@@ -1669,13 +1706,13 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
             
             <Box>
               <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'text.secondary', mb: 2 }}>
-                Employment Details
+                {t('dashboard.housekeepingDashboard.employmentDetails')}
               </Typography>
               <Divider sx={{ mb: 2.5 }} />
               <Grid container spacing={2.5}>
                 <Grid item xs={12} sm={6}>
                   <PremiumTextField
-                    label="Employee ID"
+                    label={t('dashboard.housekeepingDashboard.employeeId')}
                     value={newStaff.employeeId}
                     onChange={(e) => handleStaffFieldChange('employeeId', e.target.value)}
                     fullWidth
@@ -1687,12 +1724,12 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                   <PremiumSelect
                     fullWidth
                     value={newStaff.shiftType}
-                    label="Shift Type"
+                    label={t('dashboard.housekeepingDashboard.shiftType')}
                     onChange={(e) => handleStaffFieldChange('shiftType', e.target.value)}
                   >
-                    <MenuItem value="DAY">Day Shift</MenuItem>
-                    <MenuItem value="NIGHT">Night Shift</MenuItem>
-                    <MenuItem value="ROTATING">Rotating Shift</MenuItem>
+                    <MenuItem value="DAY">{t('dashboard.housekeepingDashboard.dayShift')}</MenuItem>
+                    <MenuItem value="NIGHT">{t('dashboard.housekeepingDashboard.nightShift')}</MenuItem>
+                    <MenuItem value="ROTATING">{t('dashboard.housekeepingDashboard.rotatingShift')}</MenuItem>
                   </PremiumSelect>
                 </Grid>
               </Grid>
@@ -1712,7 +1749,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
               }
             }}
           >
-            Cancel
+            {t('dashboard.housekeepingDashboard.cancel')}
           </Button>
           <Button 
             onClick={handleCreateStaff}
@@ -1733,7 +1770,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
               }
             }}
           >
-            Create Staff Member
+            {t('dashboard.housekeepingDashboard.createStaffMember')}
           </Button>
         </DialogActions>
       </Dialog>
