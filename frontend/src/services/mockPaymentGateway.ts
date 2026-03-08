@@ -44,16 +44,16 @@ export interface MockPaymentResponse {
   paymentMethod: PaymentMethod;
 }
 
-// Mock test data for different payment methods
-export const MOCK_PAYMENT_TEST_DATA = {
+// Test data for payment methods - only available in development
+const MOCK_PAYMENT_TEST_DATA = process.env.NODE_ENV === 'development' ? {
   CARD: {
-    cardNumber: '4111 1111 1111 1111', // Valid Visa test card
+    cardNumber: '4111 1111 1111 1111',
     expiryDate: '12/27',
     cvv: '123',
     cardHolderName: 'John Doe',
   },
   CREDIT_CARD: {
-    cardNumber: '5555 5555 5555 4444', // Valid MasterCard test card
+    cardNumber: '5555 5555 5555 4444',
     expiryDate: '06/28',
     cvv: '456',
     cardHolderName: 'Jane Smith',
@@ -88,7 +88,7 @@ export const MOCK_PAYMENT_TEST_DATA = {
   PAY_AT_FRONTDESK: {
     description: 'Payment at front desk',
   },
-};
+} : null;
 
 class MockPaymentGateway {
   private static instance: MockPaymentGateway;

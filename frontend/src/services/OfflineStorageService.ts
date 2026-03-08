@@ -1585,7 +1585,8 @@ export const offlineStorage = new OfflineStorageService();
 // Export types
 export type { OfflineBooking, RoomAvailability, GuestInfo };
 
-// Global debugging functions for browser console
+// Debug functions - only available in development mode
+if (process.env.NODE_ENV === 'development') {
 (window as any).debugOfflineStorage = async () => {
   // console.log('🔍 Offline Storage Debug Information:');
   try {
@@ -1815,3 +1816,4 @@ export type { OfflineBooking, RoomAvailability, GuestInfo };
     return { success: false, error };
   }
 };
+} // end development-only debug functions

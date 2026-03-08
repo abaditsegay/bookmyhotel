@@ -1925,7 +1925,7 @@ export const hotelAdminEndpoints: APIEndpoint[] = [
           keyCardAccess: ['FRONT_DESK', 'BREAK_ROOM'],
           systemAccess: {
             username: 'mchen',
-            temporaryPassword: 'TempPass123!',
+            temporaryPassword: '(auto-generated)',
             mustChangePassword: true
           }
         }
@@ -3394,7 +3394,7 @@ export const staffEndpoints: APIEndpoint[] = [
         },
         credentials: {
           username: 'alex.thompson',
-          temporaryPassword: 'TempPass123!',
+          temporaryPassword: '(auto-generated)',
           mustChangePassword: true
         }
       }
