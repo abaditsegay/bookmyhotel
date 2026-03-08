@@ -18,6 +18,7 @@ public class BookingResponse {
     private String paymentStatus;
     private String paymentIntentId;
     private String paymentReference;
+    private String paymentType;
     private LocalDateTime createdAt;
 
     // Hotel and room details
@@ -225,5 +226,13 @@ public class BookingResponse {
 
     public void setAssignedRoomId(Long assignedRoomId) {
         this.assignedRoomId = assignedRoomId;
+    }
+
+    public String getPaymentType() {
+        return paymentType;
+    }
+
+    public void setPaymentType(String paymentType) {
+        this.paymentType = paymentType;
     }
 }

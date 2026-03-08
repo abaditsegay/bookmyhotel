@@ -131,6 +131,30 @@ public class FrontDeskController {
     }
 
     /**
+     * Update booking payment status
+     */
+    @PutMapping("/bookings/{reservationId}/payment-status")
+    public ResponseEntity<BookingResponse> updateBookingPaymentStatus(
+            @PathVariable Long reservationId,
+            @RequestParam String paymentStatus) {
+
+        BookingResponse booking = frontDeskService.updateBookingPaymentStatus(reservationId, paymentStatus);
+        return ResponseEntity.ok(booking);
+    }
+
+    /**
+     * Update booking payment type (CASH, BANK, MOBILE)
+     */
+    @PutMapping("/bookings/{reservationId}/payment-type")
+    public ResponseEntity<BookingResponse> updateBookingPaymentType(
+            @PathVariable Long reservationId,
+            @RequestParam String paymentType) {
+
+        BookingResponse booking = frontDeskService.updateBookingPaymentType(reservationId, paymentType);
+        return ResponseEntity.ok(booking);
+    }
+
+    /**
      * Update full booking details
      */
     @PutMapping("/bookings/{reservationId}")

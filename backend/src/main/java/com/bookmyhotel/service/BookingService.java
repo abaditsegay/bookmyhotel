@@ -1152,6 +1152,9 @@ public class BookingService {
         // Payment status - use the actual payment status from the entity
         response.setPaymentStatus(reservation.getPaymentStatusString());
 
+        // Payment type (method) - CASH, BANK, MOBILE, etc.
+        response.setPaymentType(reservation.getPaymentMethod());
+
         return response;
     }
 

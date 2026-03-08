@@ -960,6 +960,17 @@ export const enTranslations = {
       confirmationNumber: "Confirmation Number",
       status: "Status",
       paymentStatus: "Payment Status",
+      paymentType: "Payment Type",
+      
+      // Payment Actions
+      payment: {
+        markCompleted: "Mark as Completed",
+        refund: "Refund",
+        forfeit: "Forfeit",
+        cash: "Cash",
+        bank: "Bank Transfer",
+        mobile: "Mobile Payment"
+      },
       
       // Hotel & Room Information Fields
       hotelName: "Hotel Name",
@@ -1035,7 +1046,9 @@ export const enTranslations = {
         datesAndGuestUpdated: "Booking dates and guest information updated successfully",
         roomTypeUpdated: "Room type updated successfully",
         datesUpdated: "Booking dates updated successfully",
-        guestInfoUpdated: "Guest information updated successfully"
+        guestInfoUpdated: "Guest information updated successfully",
+        paymentStatusUpdated: "Payment status updated successfully",
+        paymentTypeUpdated: "Payment type updated successfully"
       },
       
       // Error Messages
@@ -1046,7 +1059,9 @@ export const enTranslations = {
         hotelIdNotAvailable: "Hotel ID not available in user context. Please ensure you are properly logged in as a hotel user.",
         failedToLoad: "Failed to load booking details",
         failedToUpdate: "Failed to update booking",
-        failedToLoadRooms: "Failed to load available rooms"
+        failedToLoadRooms: "Failed to load available rooms",
+        failedToUpdatePaymentStatus: "Failed to update payment status",
+        failedToUpdatePaymentType: "Failed to update payment type"
       },
       
       // Alerts
@@ -1078,6 +1093,7 @@ export const enTranslations = {
         checkOut: "Check-out",
         paymentRef: "Payment Ref",
         paymentStatus: "Payment Status",
+        paymentType: "Payment Type",
         status: "Status",
         actions: "Actions"
       },
@@ -1554,7 +1570,8 @@ export const enTranslations = {
       capacity: 'Capacity',
       capacityText: '{{count}} guest',
       capacityTextPlural: '{{count}} guests',
-      perNightShort: '/night'
+      perNightShort: '/night',
+      allTypes: 'All Types'
     },
     confirmation: {
       title: 'Booking Confirmation',
@@ -1603,6 +1620,9 @@ export const enTranslations = {
       loadingRooms: 'Loading Rooms...'
     },
     validationErrors: {
+      fillAllFields: 'Please fill in all required fields',
+      invalidEmail: 'Please provide a valid email address',
+      selectRoom: 'Please select a room',
       firstNameRequired: 'First name is required',
       lastNameRequired: 'Last name is required',
       emailRequired: 'Email is required',

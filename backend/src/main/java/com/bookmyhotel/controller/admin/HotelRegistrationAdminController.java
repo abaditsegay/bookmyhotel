@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.bookmyhotel.dto.admin.ApproveRegistrationRequest;
 import com.bookmyhotel.dto.admin.HotelRegistrationRequest;
 import com.bookmyhotel.dto.admin.HotelRegistrationResponse;
+import com.bookmyhotel.dto.admin.HotelRegistrationSubmitResponse;
 import com.bookmyhotel.dto.admin.RejectRegistrationRequest;
 import com.bookmyhotel.entity.RegistrationStatus;
 import com.bookmyhotel.service.HotelRegistrationService;
@@ -46,10 +47,10 @@ public class HotelRegistrationAdminController {
      * Submit new hotel registration
      */
     @PostMapping
-    public ResponseEntity<HotelRegistrationResponse> submitRegistration(
+    public ResponseEntity<HotelRegistrationSubmitResponse> submitRegistration(
             @Valid @RequestBody HotelRegistrationRequest request) {
         try {
-            HotelRegistrationResponse response = registrationService.submitRegistration(request);
+            HotelRegistrationSubmitResponse response = registrationService.submitRegistration(request);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();

@@ -242,6 +242,34 @@ public class FrontDeskService {
     }
 
     /**
+     * Update booking payment status (PENDING -> COMPLETED -> REFUNDED/FORFEITED)
+     */
+    @Transactional
+    public BookingResponse updateBookingPaymentStatus(Long reservationId, String paymentStatus) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
+
+        reservation.setPaymentStatusFromString(paymentStatus);
+        reservation = reservationRepository.save(reservation);
+
+        return convertToBookingResponse(reservation);
+    }
+
+    /**
+     * Update booking payment type (CASH, BANK, MOBILE)
+     */
+    @Transactional
+    public BookingResponse updateBookingPaymentType(Long reservationId, String paymentType) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
+
+        reservation.setPaymentMethod(paymentType);
+        reservation = reservationRepository.save(reservation);
+
+        return convertToBookingResponse(reservation);
+    }
+
+    /**
      * Update full booking details
      */
     @CacheEvict(value = CacheConfig.AVAILABLE_ROOMS_CACHE, allEntries = true)

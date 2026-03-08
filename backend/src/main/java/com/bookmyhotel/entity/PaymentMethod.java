@@ -8,6 +8,7 @@ public enum PaymentMethod {
     ROOM_CHARGE("Room Charge"),
     CASH("Cash"),
     CARD("Card"),
+    BANK("Bank Transfer"),
     MOBILE("Mobile Payment"),
     CREDIT_CARD("Credit Card"),
     MOBILE_MONEY("Mobile Money"),
@@ -35,6 +36,7 @@ public enum PaymentMethod {
             case "room_charge" -> ROOM_CHARGE;
             case "cash" -> CASH;
             case "card", "card_payment" -> CARD;
+            case "bank", "bank_transfer" -> BANK;
             case "mobile", "mbirr", "telebirr" -> MOBILE;
             case "credit_card" -> CREDIT_CARD;
             case "mobile_money" -> MOBILE_MONEY;
@@ -52,6 +54,7 @@ public enum PaymentMethod {
             case ROOM_CHARGE -> "room_charge";
             case CASH -> "cash";
             case CARD -> "card";
+            case BANK -> "bank";
             case MOBILE -> "mobile";
             case CREDIT_CARD -> "credit_card";
             case MOBILE_MONEY -> "mobile_money";

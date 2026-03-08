@@ -648,10 +648,8 @@ const PricingConfigurationComponent: React.FC = () => {
                   <PremiumTextField
                     fullWidth
                     label={t('dashboard.hotelAdmin.pricingConfiguration.taxConfiguration.vatRate')}
-                    type="number"
                     value={config.vatRate}
                     onChange={(e) => handleInputChange('vatRate', parseFloat(e.target.value) || 0)}
-                    inputProps={{ min: 0, max: 100, step: 0.1 }}
                     helperText={t('dashboard.hotelAdmin.pricingConfiguration.taxConfiguration.vatRateHelper', { rate: calculateTaxPercentage(config.vatRate) })}
                   />
                 </Grid>
@@ -659,10 +657,8 @@ const PricingConfigurationComponent: React.FC = () => {
                   <PremiumTextField
                     fullWidth
                     label={t('dashboard.hotelAdmin.pricingConfiguration.taxConfiguration.serviceTaxRate')}
-                    type="number"
                     value={config.serviceTaxRate}
                     onChange={(e) => handleInputChange('serviceTaxRate', parseFloat(e.target.value) || 0)}
-                    inputProps={{ min: 0, max: 100, step: 0.1 }}
                     helperText={t('dashboard.hotelAdmin.pricingConfiguration.taxConfiguration.serviceTaxRateHelper', { rate: calculateTaxPercentage(config.serviceTaxRate) })}
                   />
                 </Grid>
@@ -670,10 +666,8 @@ const PricingConfigurationComponent: React.FC = () => {
                   <PremiumTextField
                     fullWidth
                     label={t('dashboard.hotelAdmin.pricingConfiguration.taxConfiguration.cityTaxRate')}
-                    type="number"
                     value={config.cityTaxRate}
                     onChange={(e) => handleInputChange('cityTaxRate', parseFloat(e.target.value) || 0)}
-                    inputProps={{ min: 0, max: 100, step: 0.1 }}
                     helperText={t('dashboard.hotelAdmin.pricingConfiguration.taxConfiguration.cityTaxRateHelper', { rate: calculateTaxPercentage(config.cityTaxRate) })}
                   />
                 </Grid>
@@ -735,22 +729,18 @@ const PricingConfigurationComponent: React.FC = () => {
                   <PremiumTextField
                     fullWidth
                     label={t('dashboard.hotelAdmin.pricingConfiguration.seasonalMultipliers.peakSeasonMultiplier')}
-                    type="number"
                     value={config.peakSeasonMultiplier}
                     onChange={(e) => handleInputChange('peakSeasonMultiplier', parseFloat(e.target.value) || 1)}
-                    inputProps={{ min: 0.1, step: 0.1 }}
-                    helperText={t('dashboard.hotelAdmin.pricingConfiguration.seasonalMultipliers.peakSeasonHelper', { value: config.peakSeasonMultiplier.toFixed(1), percentage: calculatePercentageChange(config.peakSeasonMultiplier) })}
+                    helperText={t('dashboard.hotelAdmin.pricingConfiguration.seasonalMultipliers.peakSeasonHelper', { value: Number(config.peakSeasonMultiplier).toFixed(1), percentage: calculatePercentageChange(config.peakSeasonMultiplier) })}
                   />
                 </Grid>
                 <Grid item xs={12} md={6}>
                   <PremiumTextField
                     fullWidth
                     label={t('dashboard.hotelAdmin.pricingConfiguration.seasonalMultipliers.offSeasonMultiplier')}
-                    type="number"
                     value={config.offSeasonMultiplier}
                     onChange={(e) => handleInputChange('offSeasonMultiplier', parseFloat(e.target.value) || 1)}
-                    inputProps={{ min: 0.1, step: 0.1 }}
-                    helperText={t('dashboard.hotelAdmin.pricingConfiguration.seasonalMultipliers.offSeasonHelper', { value: config.offSeasonMultiplier.toFixed(1), percentage: calculatePercentageChange(config.offSeasonMultiplier) })}
+                    helperText={t('dashboard.hotelAdmin.pricingConfiguration.seasonalMultipliers.offSeasonHelper', { value: Number(config.offSeasonMultiplier).toFixed(1), percentage: calculatePercentageChange(config.offSeasonMultiplier) })}
                   />
                 </Grid>
               </Grid>
@@ -797,30 +787,24 @@ const PricingConfigurationComponent: React.FC = () => {
                   <PremiumTextField
                     fullWidth
                     label={t('dashboard.hotelAdmin.pricingConfiguration.bookingRules.minimumStayNights')}
-                    type="number"
                     value={config.minimumStayNights}
                     onChange={(e) => handleInputChange('minimumStayNights', parseInt(e.target.value) || 1)}
-                    inputProps={{ min: 1 }}
                   />
                 </Grid>
                 <Grid item xs={12} md={4}>
                   <PremiumTextField
                     fullWidth
                     label={t('dashboard.hotelAdmin.pricingConfiguration.bookingRules.minimumAdvanceBookingHours')}
-                    type="number"
                     value={config.minimumAdvanceBookingHours}
                     onChange={(e) => handleInputChange('minimumAdvanceBookingHours', parseInt(e.target.value) || 0)}
-                    inputProps={{ min: 0 }}
                   />
                 </Grid>
                 <Grid item xs={12} md={4}>
                   <PremiumTextField
                     fullWidth
                     label={t('dashboard.hotelAdmin.pricingConfiguration.bookingRules.maximumAdvanceBookingDays')}
-                    type="number"
                     value={config.maximumAdvanceBookingDays}
                     onChange={(e) => handleInputChange('maximumAdvanceBookingDays', parseInt(e.target.value) || 365)}
-                    inputProps={{ min: 1 }}
                   />
                 </Grid>
               </Grid>
@@ -866,10 +850,8 @@ const PricingConfigurationComponent: React.FC = () => {
                   <PremiumTextField
                     fullWidth
                     label={t('dashboard.hotelAdmin.pricingConfiguration.discountsFees.earlyBookingDaysThreshold')}
-                    type="number"
                     value={config.earlyBookingDaysThreshold}
                     onChange={(e) => handleInputChange('earlyBookingDaysThreshold', parseInt(e.target.value) || 30)}
-                    inputProps={{ min: 1 }}
                     helperText={t('dashboard.hotelAdmin.pricingConfiguration.discountsFees.earlyBookingDaysHelperText')}
                   />
                 </Grid>
@@ -877,55 +859,45 @@ const PricingConfigurationComponent: React.FC = () => {
                   <PremiumTextField
                     fullWidth
                     label={t('dashboard.hotelAdmin.pricingConfiguration.discountsFees.earlyBookingDiscountRate')}
-                    type="number"
                     value={config.earlyBookingDiscountRate}
                     onChange={(e) => handleInputChange('earlyBookingDiscountRate', parseFloat(e.target.value) || 0)}
-                    inputProps={{ min: 0, max: 100, step: 0.1 }}
-                    helperText={t('dashboard.hotelAdmin.pricingConfiguration.discountsFees.discountHelper', { value: config.earlyBookingDiscountRate.toFixed(1), percentage: calculateDiscountPercentage(config.earlyBookingDiscountRate) })}
+                    helperText={t('dashboard.hotelAdmin.pricingConfiguration.discountsFees.discountHelper', { value: Number(config.earlyBookingDiscountRate).toFixed(1), percentage: calculateDiscountPercentage(config.earlyBookingDiscountRate) })}
                   />
                 </Grid>
                 <Grid item xs={12} md={6}>
                   <PremiumTextField
                     fullWidth
                     label={t('dashboard.hotelAdmin.pricingConfiguration.discountsFees.loyaltyDiscountRate')}
-                    type="number"
                     value={config.loyaltyDiscountRate}
                     onChange={(e) => handleInputChange('loyaltyDiscountRate', parseFloat(e.target.value) || 0)}
-                    inputProps={{ min: 0, max: 100, step: 0.1 }}
-                    helperText={t('dashboard.hotelAdmin.pricingConfiguration.discountsFees.discountHelper', { value: config.loyaltyDiscountRate.toFixed(1), percentage: calculateDiscountPercentage(config.loyaltyDiscountRate) })}
+                    helperText={t('dashboard.hotelAdmin.pricingConfiguration.discountsFees.discountHelper', { value: Number(config.loyaltyDiscountRate).toFixed(1), percentage: calculateDiscountPercentage(config.loyaltyDiscountRate) })}
                   />
                 </Grid>
                 <Grid item xs={12} md={6}>
                   <PremiumTextField
                     fullWidth
                     label={t('dashboard.hotelAdmin.pricingConfiguration.discountsFees.cancellationFeeRate')}
-                    type="number"
                     value={config.cancellationFeeRate}
                     onChange={(e) => handleInputChange('cancellationFeeRate', parseFloat(e.target.value) || 0)}
-                    inputProps={{ min: 0, max: 100, step: 0.1 }}
-                    helperText={t('dashboard.hotelAdmin.pricingConfiguration.discountsFees.feeHelper', { value: config.cancellationFeeRate.toFixed(1), percentage: calculateFeePercentage(config.cancellationFeeRate) })}
+                    helperText={t('dashboard.hotelAdmin.pricingConfiguration.discountsFees.feeHelper', { value: Number(config.cancellationFeeRate).toFixed(1), percentage: calculateFeePercentage(config.cancellationFeeRate) })}
                   />
                 </Grid>
                 <Grid item xs={12} md={6}>
                   <PremiumTextField
                     fullWidth
                     label={t('dashboard.hotelAdmin.pricingConfiguration.discountsFees.modificationFeeRate')}
-                    type="number"
                     value={config.modificationFeeRate}
                     onChange={(e) => handleInputChange('modificationFeeRate', parseFloat(e.target.value) || 0)}
-                    inputProps={{ min: 0, max: 100, step: 0.1 }}
-                    helperText={t('dashboard.hotelAdmin.pricingConfiguration.discountsFees.feeHelper', { value: config.modificationFeeRate.toFixed(1), percentage: calculateFeePercentage(config.modificationFeeRate) })}
+                    helperText={t('dashboard.hotelAdmin.pricingConfiguration.discountsFees.feeHelper', { value: Number(config.modificationFeeRate).toFixed(1), percentage: calculateFeePercentage(config.modificationFeeRate) })}
                   />
                 </Grid>
                 <Grid item xs={12} md={6}>
                   <PremiumTextField
                     fullWidth
                     label={t('dashboard.hotelAdmin.pricingConfiguration.discountsFees.noShowPenaltyRate')}
-                    type="number"
                     value={config.noShowPenaltyRate}
                     onChange={(e) => handleInputChange('noShowPenaltyRate', parseFloat(e.target.value) || 1)}
-                    inputProps={{ min: 0, max: 100, step: 0.1 }}
-                    helperText={t('dashboard.hotelAdmin.pricingConfiguration.discountsFees.penaltyHelper', { value: config.noShowPenaltyRate.toFixed(1), percentage: calculateFeePercentage(config.noShowPenaltyRate) })}
+                    helperText={t('dashboard.hotelAdmin.pricingConfiguration.discountsFees.penaltyHelper', { value: Number(config.noShowPenaltyRate).toFixed(1), percentage: calculateFeePercentage(config.noShowPenaltyRate) })}
                   />
                 </Grid>
               </Grid>
@@ -985,10 +957,8 @@ const PricingConfigurationComponent: React.FC = () => {
                   <PremiumTextField
                     fullWidth
                     label={t('dashboard.hotelAdmin.pricingConfiguration.cancellationRefundPolicies.refund7PlusDays')}
-                    type="number"
                     value={config.refundPolicy7PlusDays ?? 100}
                     onChange={(e) => handleInputChange('refundPolicy7PlusDays', parseFloat(e.target.value) || 0)}
-                    inputProps={{ min: 0, max: 100, step: 1 }}
                     helperText={t('dashboard.hotelAdmin.pricingConfiguration.cancellationRefundPolicies.refundHelper7Plus', { value: config.refundPolicy7PlusDays ?? 100 })}
                   />
                 </Grid>
@@ -996,10 +966,8 @@ const PricingConfigurationComponent: React.FC = () => {
                   <PremiumTextField
                     fullWidth
                     label={t('dashboard.hotelAdmin.pricingConfiguration.cancellationRefundPolicies.refund3To7Days')}
-                    type="number"
                     value={config.refundPolicy3To7Days ?? 50}
                     onChange={(e) => handleInputChange('refundPolicy3To7Days', parseFloat(e.target.value) || 0)}
-                    inputProps={{ min: 0, max: 100, step: 1 }}
                     helperText={t('dashboard.hotelAdmin.pricingConfiguration.cancellationRefundPolicies.refundHelper3To7', { value: config.refundPolicy3To7Days ?? 50 })}
                   />
                 </Grid>
@@ -1007,10 +975,8 @@ const PricingConfigurationComponent: React.FC = () => {
                   <PremiumTextField
                     fullWidth
                     label={t('dashboard.hotelAdmin.pricingConfiguration.cancellationRefundPolicies.refund1To2Days')}
-                    type="number"
                     value={config.refundPolicy1To2Days ?? 25}
                     onChange={(e) => handleInputChange('refundPolicy1To2Days', parseFloat(e.target.value) || 0)}
-                    inputProps={{ min: 0, max: 100, step: 1 }}
                     helperText={t('dashboard.hotelAdmin.pricingConfiguration.cancellationRefundPolicies.refundHelper1To2', { value: config.refundPolicy1To2Days ?? 25 })}
                   />
                 </Grid>
@@ -1018,10 +984,8 @@ const PricingConfigurationComponent: React.FC = () => {
                   <PremiumTextField
                     fullWidth
                     label={t('dashboard.hotelAdmin.pricingConfiguration.cancellationRefundPolicies.refundSameDay')}
-                    type="number"
                     value={config.refundPolicySameDay ?? 0}
                     onChange={(e) => handleInputChange('refundPolicySameDay', parseFloat(e.target.value) || 0)}
-                    inputProps={{ min: 0, max: 100, step: 1 }}
                     helperText={t('dashboard.hotelAdmin.pricingConfiguration.cancellationRefundPolicies.refundHelperSameDay', { value: config.refundPolicySameDay ?? 0 })}
                   />
                 </Grid>

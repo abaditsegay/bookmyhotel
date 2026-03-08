@@ -924,6 +924,17 @@ export const amTranslations = {
       bookingDate: "የመያዣ ቀን",
       paymentIntentId: "የክፍያ ማንነት ID",
       paymentStatus: "የክፍያ ሁኔታ",
+      paymentType: "የክፍያ አይነት",
+      
+      // Payment Actions
+      payment: {
+        markCompleted: "ክፍያ ተጠናቋል ምልክት አድርግ",
+        refund: "ተመላሽ ክፍያ",
+        forfeit: "መብት ማጣት",
+        cash: "ጥሬ ገንዘብ",
+        bank: "ባንክ ዝውውር",
+        mobile: "ሞባይል ክፍያ"
+      },
       
       // Actions
       checkIn: "ወደ ሆቴል ይግቡ",
@@ -937,7 +948,39 @@ export const amTranslations = {
       checkedIn: "ወደ ሆቴል ገብቷል",
       checkedOut: "ከሆቴል ወጥቷል",
       cancelled: "ተሰርዟል",
-      pending: "በመጠባበቅ ላይ"
+      pending: "በመጠባበቅ ላይ",
+      
+      // Success Messages
+      success: {
+        statusUpdated: "የመያዣ ሁኔታ በተሳካ ሁኔታ ተዘምኗል",
+        roomAssignmentUpdated: "የክፍል ምደባ በተሳካ ሁኔታ ተዘምኗል",
+        roomDetailsUpdated: "የክፍል ዝርዝሮች በተሳካ ሁኔታ ተዘምነዋል",
+        statusAndRoomUpdated: "የመያዣ ሁኔታ እና የክፍል ዝርዝሮች በተሳካ ሁኔታ ተዘምነዋል",
+        bookingUpdated: "መያዣ በተሳካ ሁኔታ ተዘምኗል",
+        noChanges: "ምንም ለውጥ አልተገኘም",
+        roomTypeAndDatesAndGuestUpdated: "የክፍል አይነት፣ የመያዣ ቀኖች እና የእንግዳ መረጃ በተሳካ ሁኔታ ተዘምነዋል",
+        roomTypeAndDatesUpdated: "የክፍል አይነት እና የመያዣ ቀኖች በተሳካ ሁኔታ ተዘምነዋል",
+        roomTypeAndGuestUpdated: "የክፍል አይነት እና የእንግዳ መረጃ በተሳካ ሁኔታ ተዘምነዋል",
+        datesAndGuestUpdated: "የመያዣ ቀኖች እና የእንግዳ መረጃ በተሳካ ሁኔታ ተዘምነዋል",
+        roomTypeUpdated: "የክፍል አይነት በተሳካ ሁኔታ ተዘምኗል",
+        datesUpdated: "የመያዣ ቀኖች በተሳካ ሁኔታ ተዘምነዋል",
+        guestInfoUpdated: "የእንግዳ መረጃ በተሳካ ሁኔታ ተዘምኗል",
+        paymentStatusUpdated: "የክፍያ ሁኔታ በተሳካ ሁኔታ ተዘምኗል",
+        paymentTypeUpdated: "የክፍያ አይነት በተሳካ ሁኔታ ተዘምኗል"
+      },
+      
+      // Error Messages
+      errors: {
+        cannotModifyStatus: "ይህን መያዣ በ{{status}} ሁኔታ መቀየር አይቻልም።",
+        selectRoomTypeFirst: "እባክዎ መጀመሪያ የክፍል አይነት ይምረጡ",
+        roomNotAvailable: "የተመረጠው ክፍል ለቦታ ማስያዣ ቀኖች ({{checkIn}} ወደ {{checkOut}}) አይገኝም።",
+        hotelIdNotAvailable: "የሆቴል ማንነት በተጠቃሚ ዐውድ ውስጥ አይገኝም።",
+        failedToLoad: "የመያዣ ዝርዝሮችን መጫን አልተሳካም",
+        failedToUpdate: "መያዣን ማዘመን አልተሳካም",
+        failedToLoadRooms: "የሚገኙ ክፍሎችን መጫን አልተሳካም",
+        failedToUpdatePaymentStatus: "የክፍያ ሁኔታን ማዘመን አልተሳካም",
+        failedToUpdatePaymentType: "የክፍያ አይነትን ማዘመን አልተሳካም"
+      }
     },
     
     // Booking Management Table
@@ -960,6 +1003,7 @@ export const amTranslations = {
         checkOut: "መውጣት",
         paymentRef: "የክፍያ ማመሳከሪያ",
         paymentStatus: "የክፍያ ሁኔታ",
+        paymentType: "የክፍያ ዓይነት",
         status: "ሁኔታ",
         actions: "ድርጊቶች"
       },
@@ -1431,7 +1475,8 @@ export const amTranslations = {
       capacity: 'አቅም',
       capacityText: '{{count}} እንግዳ',
       capacityTextPlural: '{{count}} እንግዶች',
-      perNightShort: '/ሌሊት'
+      perNightShort: '/ሌሊት',
+      allTypes: 'ሁሉም አይነት'
     },
     confirmation: {
       title: 'የመያዣ ማረጋገጫ',
@@ -1476,6 +1521,9 @@ export const amTranslations = {
       loadingRooms: 'ክፍሎች በመጫን ሂደት ላይ...'
     },
     validationErrors: {
+      fillAllFields: 'እባክዎ ሁሉንም አስፈላጊ መስኮች ይሞሉ',
+      invalidEmail: 'እባክዎ ትክክለኛ የኢሜይል አድራሻ ያስገቡ',
+      selectRoom: 'እባክዎ ክፍል ይምረጡ',
       firstNameRequired: 'የመጀመሪያ ስም ያስፈልጋል',
       lastNameRequired: 'የአባት ስም ያስፈልጋል',
       emailRequired: 'ኢሜይል ያስፈልጋል',

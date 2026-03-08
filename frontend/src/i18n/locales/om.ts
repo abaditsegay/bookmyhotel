@@ -960,6 +960,17 @@ export const omTranslations = {
       confirmationNumber: "Lakkoofsa Mirkaneeffannaa",
       status: "Haala",
       paymentStatus: "Haala Kaffaltii",
+      paymentType: "Gosa Kaffaltii",
+      
+      // Payment Actions
+      payment: {
+        markCompleted: "Akka Xumurameetti Mallatteessi",
+        refund: "Deebisuu",
+        forfeit: "Dhorkuu",
+        cash: "Qarshii",
+        bank: "Dabarsaa Baankii",
+        mobile: "Kaffaltii Mobaayilaa"
+      },
       
       // Hotel & Room Information Fields
       hotelName: "Maqaa Hotela",
@@ -1035,7 +1046,9 @@ export const omTranslations = {
         datesAndGuestUpdated: "Guyyoota buufataa fi odeeffannoon keessummaa milkaa'inaan haaromfameera",
         roomTypeUpdated: "Gosni kutaa milkaa'inaan haaromfameera",
         datesUpdated: "Guyyoota buufataa milkaa'inaan haaromfameera",
-        guestInfoUpdated: "Odeeffannoon keessummaa milkaa'inaan haaromfameera"
+        guestInfoUpdated: "Odeeffannoon keessummaa milkaa'inaan haaromfameera",
+        paymentStatusUpdated: "Haalli kaffaltii milkaa'inaan haaromfameera",
+        paymentTypeUpdated: "Gosni kaffaltii milkaa'inaan haaromfameera"
       },
       
       // Error Messages
@@ -1046,7 +1059,9 @@ export const omTranslations = {
         hotelIdNotAvailable: "ID Hotela haala fayyadamaa keessatti hin jiru. Maaloo akka fayyadamaa hotela ta'een sirritti galuu mirkaneeffattaa.",
         failedToLoad: "Bal'ina buufataa fe'uun dadhabee",
         failedToUpdate: "Buufata haaromsuun dadhabee",
-        failedToLoadRooms: "Kuteewwan jiran fe'uun dadhabee"
+        failedToLoadRooms: "Kuteewwan jiran fe'uun dadhabee",
+        failedToUpdatePaymentStatus: "Haala kaffaltii haaromsuun dadhabee",
+        failedToUpdatePaymentType: "Gosa kaffaltii haaromsuun dadhabee"
       },
       
       // Alerts
@@ -1078,6 +1093,7 @@ export const omTranslations = {
         checkOut: "Ba'uu",
         paymentRef: "Wabii Kaffaltii",
         paymentStatus: "Haala Kaffaltii",
+        paymentType: "Gosa Kaffaltii",
         status: "Haala",
         actions: "Gochaalee"
       },
@@ -1528,7 +1544,8 @@ export const omTranslations = {
       capacity: 'Dandeettii',
       capacityText: 'Keessummaa {{count}}',
       capacityTextPlural: 'Keessummoota {{count}}',
-      perNightShort: '/halkan'
+      perNightShort: '/halkan',
+      allTypes: 'Gosa Hunda'
     },
     confirmation: {
       title: 'Mirkaneeffannaa Buufataa',
@@ -1573,6 +1590,9 @@ export const omTranslations = {
       loadingRooms: 'Kuteewwan Fe\'aa jira...'
     },
     validationErrors: {
+      fillAllFields: 'Maaloo dirreewwan barbaachisoo hunda guutaa',
+      invalidEmail: 'Maaloo teessoo imeelii sirrii galchaa',
+      selectRoom: 'Maaloo kutaa filadhaa',
       firstNameRequired: 'Maqaan jalqabaa barbaachisaa dha',
       lastNameRequired: 'Maqaan maatii barbaachisaa dha',
       emailRequired: 'Imeeliin barbaachisaa dha',

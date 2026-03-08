@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { normalizeEthiopianPhone } from '../utils/phoneUtils';
 import { useNavigate } from 'react-router-dom';
 import {
   Container,
@@ -8,8 +7,9 @@ import {
   Button,
   Paper,
   Alert,
-  Grid
+  Grid,
 } from '@mui/material';
+import { Login, CheckCircle } from '@mui/icons-material';
 import PremiumTextField from '../components/common/PremiumTextField';
 import { API_CONFIG } from '../config/apiConfig';
 
@@ -17,27 +17,17 @@ const PublicHotelRegistration: React.FC = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  const [submitted, setSubmitted] = useState(false);
+  const [submittedEmail, setSubmittedEmail] = useState('');
+  const [submittedHotelName, setSubmittedHotelName] = useState('');
 
-  // Registration form state - same as admin
   const [registrationForm, setRegistrationForm] = useState({
     hotelName: '',
-    description: '',
+    contactPerson: '',
+    contactEmail: '',
     address: '',
     city: '',
-    country: '',
-    phone: '',
-    mobilePaymentPhone: '',
-    mobilePaymentPhone2: '',
-    contactEmail: '',
-    contactPerson: '',
-    licenseNumber: '',
-    taxId: '',
-    websiteUrl: '',
-    facilityAmenities: '',
-    numberOfRooms: '',
-    checkInTime: '15:00',
-    checkOutTime: '11:00'
+    country: 'Ethiopia'
   });
 
   const handleRegistrationFormChange = (field: string, value: string) => {
@@ -59,60 +49,42 @@ const PublicHotelRegistration: React.FC = () => {
         },
         body: JSON.stringify({
           hotelName: registrationForm.hotelName,
-          description: registrationForm.description,
           address: registrationForm.address,
           city: registrationForm.city,
           country: registrationForm.country,
-          phone: normalizeEthiopianPhone(registrationForm.phone),
-          mobilePaymentPhone: normalizeEthiopianPhone(registrationForm.mobilePaymentPhone),
-          mobilePaymentPhone2: normalizeEthiopianPhone(registrationForm.mobilePaymentPhone2),
           contactEmail: registrationForm.contactEmail,
-          contactPerson: registrationForm.contactPerson,
-          licenseNumber: registrationForm.licenseNumber,
-          taxId: registrationForm.taxId,
-          websiteUrl: registrationForm.websiteUrl,
-          facilityAmenities: registrationForm.facilityAmenities,
-          numberOfRooms: registrationForm.numberOfRooms ? parseInt(registrationForm.numberOfRooms) : null,
-          checkInTime: registrationForm.checkInTime,
-          checkOutTime: registrationForm.checkOutTime
+          contactPerson: registrationForm.contactPerson
         })
       });
 
       if (response.ok) {
-        setRegistrationForm({
-          hotelName: '',
-          description: '',
-          address: '',
-          city: '',
-          country: '',
-          phone: '',
-          mobilePaymentPhone: '',
-          mobilePaymentPhone2: '',
-          contactEmail: '',
-          contactPerson: '',
-          licenseNumber: '',
-          taxId: '',
-          websiteUrl: '',
-          facilityAmenities: '',
-          numberOfRooms: '',
-          checkInTime: '15:00',
-          checkOutTime: '11:00'
-        });
-        setSuccess('Hotel registration submitted successfully! We will review your application and contact you soon.');
+        const data = await response.json();
+        setSubmittedEmail(data.loginEmail);
+        setSubmittedHotelName(data.hotelName);
+        setSubmitted(true);
       } else {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.message || 'Failed to submit registration');
       }
     } catch (err) {
-      // console.error('Error submitting registration:', err);
       setError(err instanceof Error ? err.message : 'Failed to submit hotel registration. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
+  const handleGoToLogin = () => {
+    navigate('/login');
+  };
+
+  const isFormValid = registrationForm.hotelName.trim() !== '' &&
+    registrationForm.contactPerson.trim() !== '' &&
+    registrationForm.contactEmail.trim() !== '' &&
+    registrationForm.address.trim() !== '' &&
+    registrationForm.city.trim() !== '';
+
   return (
-    <Container maxWidth="md">
+    <Container maxWidth="sm">
       <Box sx={{ py: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom>
           Register Your Hotel
@@ -124,244 +96,149 @@ const PublicHotelRegistration: React.FC = () => {
           </Alert>
         )}
 
-        {success && (
-          <Alert severity="success" sx={{ mb: 3 }}>
-            {success}
-          </Alert>
-        )}
-
-        {/* Registration Form */}
-        <Paper sx={{ p: 4 }}>
-          <Typography variant="h6" gutterBottom>
-            Hotel Information
-          </Typography>
-          <Typography variant="body2" color="text.secondary" paragraph>
-            Fill out the form below to register your hotel with our platform.
-          </Typography>
-
-          <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid item xs={12} sm={6}>
-              <PremiumTextField
-                label="Hotel Name"
-                fullWidth
-                required
-                value={registrationForm.hotelName}
-                onChange={(e) => handleRegistrationFormChange('hotelName', e.target.value)}
-                placeholder="Enter your hotel name"
-              />
-            </Grid>
-            
-            <Grid item xs={12} sm={6}>
-              <PremiumTextField
-                label="Contact Person"
-                fullWidth
-                required
-                value={registrationForm.contactPerson}
-                onChange={(e) => handleRegistrationFormChange('contactPerson', e.target.value)}
-                placeholder="Enter contact person name"
-              />
-            </Grid>
-            
-            <Grid item xs={12}>
-              <PremiumTextField
-                label="Description"
-                multiline
-                rows={3}
-                fullWidth
-                value={registrationForm.description}
-                onChange={(e) => handleRegistrationFormChange('description', e.target.value)}
-                placeholder="Describe your hotel"
-              />
-            </Grid>
-            
-            <Grid item xs={12}>
-              <PremiumTextField
-                label="Address"
-                fullWidth
-                required
-                value={registrationForm.address}
-                onChange={(e) => handleRegistrationFormChange('address', e.target.value)}
-                placeholder="Enter your hotel address"
-              />
-            </Grid>
-            
-            <Grid item xs={12} sm={6}>
-              <PremiumTextField
-                label="City"
-                fullWidth
-                required
-                value={registrationForm.city}
-                onChange={(e) => handleRegistrationFormChange('city', e.target.value)}
-                placeholder="Enter city"
-              />
-            </Grid>
-
-            <Grid item xs={12} sm={6}>
-              <PremiumTextField
-                label="Country"
-                fullWidth
-                required
-                value={registrationForm.country}
-                onChange={(e) => handleRegistrationFormChange('country', e.target.value)}
-                placeholder="Enter country"
-              />
-            </Grid>
-            
-            <Grid item xs={12} sm={6}>
-              <PremiumTextField
-                label="Phone (Communication)"
-                fullWidth
-                required
-                value={registrationForm.phone}
-                onChange={(e) => handleRegistrationFormChange('phone', e.target.value)}
-                placeholder="Enter communication phone number"
-                helperText="Primary phone for general communication"
-              />
-            </Grid>
-
-            <Grid item xs={12} sm={6}>
-              <PremiumTextField
-                label="Mobile Payment Phone"
-                fullWidth
-                required
-                value={registrationForm.mobilePaymentPhone}
-                onChange={(e) => handleRegistrationFormChange('mobilePaymentPhone', e.target.value)}
-                placeholder="Enter mobile payment phone number"
-                helperText="Primary mobile money account for payments"
-              />
-            </Grid>
-
-            <Grid item xs={12} sm={6}>
-              <PremiumTextField
-                label="Mobile Payment Phone 2 (Optional)"
-                fullWidth
-                value={registrationForm.mobilePaymentPhone2}
-                onChange={(e) => handleRegistrationFormChange('mobilePaymentPhone2', e.target.value)}
-                placeholder="Enter secondary mobile payment phone"
-                helperText="Optional secondary mobile money account"
-              />
-            </Grid>
-
-            <Grid item xs={12} sm={6}>
-              <PremiumTextField
-                label="Contact Email"
-                type="email"
-                fullWidth
-                required
-                value={registrationForm.contactEmail}
-                onChange={(e) => handleRegistrationFormChange('contactEmail', e.target.value)}
-                placeholder="Please fill out this field"
-              />
-            </Grid>
-
-            <Grid item xs={12} sm={6}>
-              <PremiumTextField
-                label="License Number"
-                fullWidth
-                value={registrationForm.licenseNumber}
-                onChange={(e) => handleRegistrationFormChange('licenseNumber', e.target.value)}
-                placeholder="Enter license number"
-              />
-            </Grid>
-
-            <Grid item xs={12} sm={6}>
-              <PremiumTextField
-                label="Tax ID"
-                fullWidth
-                value={registrationForm.taxId}
-                onChange={(e) => handleRegistrationFormChange('taxId', e.target.value)}
-                placeholder="Enter tax ID"
-              />
-            </Grid>
-
-            <Grid item xs={12}>
-              <PremiumTextField
-                label="Website URL"
-                fullWidth
-                value={registrationForm.websiteUrl}
-                onChange={(e) => handleRegistrationFormChange('websiteUrl', e.target.value)}
-                placeholder="Enter website URL"
-              />
-            </Grid>
-
-            <Grid item xs={12}>
-              <PremiumTextField
-                label="Facility Amenities"
-                multiline
-                rows={2}
-                fullWidth
-                value={registrationForm.facilityAmenities}
-                onChange={(e) => handleRegistrationFormChange('facilityAmenities', e.target.value)}
-                placeholder="WiFi, Pool, Spa, Restaurant, etc."
-              />
-            </Grid>
-
-            <Grid item xs={12} sm={4}>
-              <PremiumTextField
-                label="Number of Rooms"
-                type="number"
-                fullWidth
-                value={registrationForm.numberOfRooms}
-                onChange={(e) => handleRegistrationFormChange('numberOfRooms', e.target.value)}
-                placeholder="Enter number"
-              />
-            </Grid>
-
-            <Grid item xs={12} sm={4}>
-              <PremiumTextField
-                label="Check-in Time"
-                type="time"
-                fullWidth
-                value={registrationForm.checkInTime}
-                onChange={(e) => handleRegistrationFormChange('checkInTime', e.target.value)}
-              />
-            </Grid>
-
-            <Grid item xs={12} sm={4}>
-              <PremiumTextField
-                label="Check-out Time"
-                type="time"
-                fullWidth
-                value={registrationForm.checkOutTime}
-                onChange={(e) => handleRegistrationFormChange('checkOutTime', e.target.value)}
-              />
-            </Grid>
-          </Grid>
-
-          {/* Action Buttons */}
-          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 4 }}>
-            <Button 
-              variant="outlined" 
-              onClick={() => navigate('/')}
-              disabled={loading}
-            >
-              Cancel
-            </Button>
-            <Button 
-              variant="contained" 
-              onClick={handleRegistrationSubmit}
-              disabled={!registrationForm.hotelName || !registrationForm.contactPerson || !registrationForm.contactEmail || !registrationForm.mobilePaymentPhone || loading}
-              size="large"
-            >
-              {loading ? 'Submitting...' : 'Submit Registration'}
-            </Button>
-          </Box>
-
-          {/* Benefits Section */}
-          <Box sx={{ mt: 4, p: 3, bgcolor: 'grey.50', borderRadius: 2 }}>
-            <Typography variant="h6" gutterBottom>
-              What you'll get:
+        {submitted ? (
+          <Paper sx={{ p: 4, textAlign: 'center' }}>
+            <CheckCircle sx={{ fontSize: 64, color: 'success.main', mb: 2 }} />
+            <Typography variant="h5" gutterBottom sx={{ fontWeight: 600 }}>
+              Registration Successful!
             </Typography>
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
-              <Typography variant="body2">• Access to our booking platform</Typography>
-              <Typography variant="body2">• Real-time reservation management</Typography>
-              <Typography variant="body2">• Professional hotel profile</Typography>
-              <Typography variant="body2">• 24/7 customer support</Typography>
-              <Typography variant="body2">• Marketing and promotional tools</Typography>
-              <Typography variant="body2">• Detailed analytics and reporting</Typography>
+            <Typography variant="body1" color="text.secondary" paragraph>
+              Your hotel <strong>{submittedHotelName}</strong> has been registered successfully.
+            </Typography>
+            <Alert severity="info" sx={{ mb: 3, textAlign: 'left' }}>
+              An email with your temporary login credentials has been sent to <strong>{submittedEmail}</strong>.
+              Please check your inbox (and spam folder) for the login details.
+            </Alert>
+
+            <Box sx={{ mt: 3, p: 3, bgcolor: 'grey.50', borderRadius: 2, textAlign: 'left' }}>
+              <Typography variant="subtitle2" gutterBottom>
+                What happens next?
+              </Typography>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                <Typography variant="body2">1. Check your email for temporary login credentials</Typography>
+                <Typography variant="body2">2. Log in to complete your hotel profile</Typography>
+                <Typography variant="body2">3. Our team will review and approve your registration</Typography>
+                <Typography variant="body2">4. Start managing your hotel on our platform</Typography>
+              </Box>
             </Box>
-          </Box>
-        </Paper>
+
+            <Button
+              variant="contained"
+              startIcon={<Login />}
+              onClick={handleGoToLogin}
+              size="large"
+              sx={{ mt: 3 }}
+            >
+              Go to Login
+            </Button>
+          </Paper>
+        ) : (
+          <Paper sx={{ p: 4 }}>
+            <Typography variant="h6" gutterBottom>
+              Hotel Information
+            </Typography>
+            <Typography variant="body2" color="text.secondary" paragraph>
+              Provide basic details to get started. You can complete your hotel profile after logging in.
+            </Typography>
+
+            <Grid container spacing={2} sx={{ mt: 1 }}>
+              <Grid item xs={12}>
+                <PremiumTextField
+                  label="Hotel Name"
+                  fullWidth
+                  required
+                  value={registrationForm.hotelName}
+                  onChange={(e) => handleRegistrationFormChange('hotelName', e.target.value)}
+                  placeholder="Enter your hotel name"
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <PremiumTextField
+                  label="Contact Person"
+                  fullWidth
+                  required
+                  value={registrationForm.contactPerson}
+                  onChange={(e) => handleRegistrationFormChange('contactPerson', e.target.value)}
+                  placeholder="Enter contact person name"
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <PremiumTextField
+                  label="Contact Email"
+                  type="email"
+                  fullWidth
+                  required
+                  value={registrationForm.contactEmail}
+                  onChange={(e) => handleRegistrationFormChange('contactEmail', e.target.value)}
+                  placeholder="Enter contact email"
+                />
+              </Grid>
+
+              <Grid item xs={12}>
+                <PremiumTextField
+                  label="Address"
+                  fullWidth
+                  required
+                  value={registrationForm.address}
+                  onChange={(e) => handleRegistrationFormChange('address', e.target.value)}
+                  placeholder="Enter your hotel address"
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <PremiumTextField
+                  label="City"
+                  fullWidth
+                  required
+                  value={registrationForm.city}
+                  onChange={(e) => handleRegistrationFormChange('city', e.target.value)}
+                  placeholder="Enter city"
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <PremiumTextField
+                  label="Country"
+                  fullWidth
+                  value={registrationForm.country}
+                  disabled
+                />
+              </Grid>
+            </Grid>
+
+            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 4 }}>
+              <Button
+                variant="outlined"
+                onClick={() => navigate('/')}
+                disabled={loading}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="contained"
+                onClick={handleRegistrationSubmit}
+                disabled={!isFormValid || loading}
+                size="large"
+              >
+                {loading ? 'Submitting...' : 'Submit Registration'}
+              </Button>
+            </Box>
+
+            <Box sx={{ mt: 4, p: 3, bgcolor: 'grey.50', borderRadius: 2 }}>
+              <Typography variant="h6" gutterBottom>
+                What happens next?
+              </Typography>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Typography variant="body2">1. An email with temporary login credentials will be sent to you</Typography>
+                <Typography variant="body2">2. Log in to complete your hotel profile</Typography>
+                <Typography variant="body2">3. Our team will review and approve your registration</Typography>
+                <Typography variant="body2">4. Start managing your hotel on our platform</Typography>
+              </Box>
+            </Box>
+          </Paper>
+        )}
       </Box>
     </Container>
   );

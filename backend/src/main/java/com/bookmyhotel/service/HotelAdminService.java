@@ -1333,6 +1333,20 @@ public class HotelAdminService {
     }
 
     /**
+     * Update booking payment type (e.g., CASH, BANK, MOBILE)
+     */
+    @Transactional
+    public BookingResponse updateBookingPaymentType(Long reservationId, String paymentType) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new RuntimeException("Reservation not found with id: " + reservationId));
+
+        reservation.setPaymentMethod(paymentType);
+        reservation = reservationRepository.save(reservation);
+
+        return convertToBookingResponse(reservation);
+    }
+
+    /**
      * Modify booking (admin version)
      */
     @Transactional
@@ -1490,6 +1504,9 @@ public class HotelAdminService {
 
         // Payment status - use the actual payment status from the entity
         response.setPaymentStatus(reservation.getPaymentStatusString());
+
+        // Payment type (method) - CASH, BANK, MOBILE, etc.
+        response.setPaymentType(reservation.getPaymentMethod());
 
         return response;
     }

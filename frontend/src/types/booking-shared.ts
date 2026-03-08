@@ -16,6 +16,7 @@ export interface Booking {
   nights?: number;
   paymentStatus?: string;
   paymentReference?: string;
+  paymentType?: string;
   // Additional fields for check-in functionality
   pricePerNight?: number;
   hotelName?: string;

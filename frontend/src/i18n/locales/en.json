@@ -262,5 +262,84 @@
     "SOUVENIRS": "Souvenirs",
     "TOILETRIES": "Toiletries",
     "OTHER": "Other"
+  },
+  "walkInBooking": {
+    "title": "Walk-In Booking",
+    "subtitle": "Create a booking for a walk-in guest",
+    "steps": {
+      "guestInformation": "Guest Information",
+      "roomSelection": "Room Selection",
+      "confirmation": "Confirmation"
+    },
+    "guestInformation": {
+      "title": "Guest Information",
+      "description": "Enter the guest's personal details",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "email": "Email Address",
+      "phone": "Phone Number"
+    },
+    "stayDetails": {
+      "title": "Stay Details",
+      "description": "Select check-in and check-out dates",
+      "checkInDate": "Check-in Date",
+      "checkOutDate": "Check-out Date",
+      "numberOfGuests": "Number of Guests"
+    },
+    "roomSelection": {
+      "title": "Room Selection",
+      "description": "Select a room for {{checkIn}} to {{checkOut}}",
+      "loadingRooms": "Loading available rooms...",
+      "noRoomsAvailable": "No rooms available for the selected dates ({{checkIn}} - {{checkOut}})",
+      "roomNumber": "Room",
+      "capacity": "Capacity",
+      "capacityText": "{{count}} guest",
+      "capacityTextPlural": "{{count}} guests",
+      "perNightShort": "/night",
+      "specialRequests": "Special Requests",
+      "specialRequestsPlaceholder": "Any special requests or notes for this booking..."
+    },
+    "confirmation": {
+      "bookingConfirmationTitle": "Booking Confirmation",
+      "reviewDetails": "Please review the booking details before confirming",
+      "guestInformation": "Guest Information",
+      "fullName": "Full Name",
+      "emailAddress": "Email Address",
+      "phoneNumber": "Phone Number",
+      "stayDetails": "Stay Details",
+      "room": "Room",
+      "checkInCheckOut": "Check-in / Check-out",
+      "guests": "Guests",
+      "guest": "guest",
+      "guestPlural": "guests",
+      "specialRequests": "Special Requests",
+      "pricingSummary": "Pricing Summary",
+      "subtotal": "Subtotal",
+      "perNight": "/night",
+      "night": "night",
+      "nightPlural": "nights",
+      "vat": "VAT",
+      "serviceTax": "Service Tax",
+      "totalAmount": "Total Amount",
+      "paymentNote": "Payment will be collected at the front desk"
+    },
+    "validationErrors": {
+      "fillAllFields": "Please fill in all required guest information fields",
+      "invalidEmail": "Please enter a valid email address",
+      "selectRoom": "Please select a room"
+    },
+    "messages": {
+      "failedToLoadHotelPermissions": "Failed to load hotel permissions",
+      "failedToLoadHotel": "Failed to load hotel information",
+      "failedToLoadRooms": "Failed to load available rooms",
+      "creatingBooking": "Creating booking..."
+    },
+    "actions": {
+      "cancel": "Cancel",
+      "back": "Back",
+      "next": "Next",
+      "loadingRooms": "Loading Rooms...",
+      "confirm": "Confirm Booking"
+    }
   }
 }

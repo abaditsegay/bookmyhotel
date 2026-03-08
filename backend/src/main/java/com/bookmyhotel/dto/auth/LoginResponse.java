@@ -20,6 +20,7 @@ public class LoginResponse {
     private Long hotelId;
     private String hotelName;
     private String tenantId;
+    private boolean needsOnboarding;
 
     // Constructors
     public LoginResponse() {
@@ -160,5 +161,13 @@ public class LoginResponse {
 
     public void setTenantId(String tenantId) {
         this.tenantId = tenantId;
+    }
+
+    public boolean isNeedsOnboarding() {
+        return needsOnboarding;
+    }
+
+    public void setNeedsOnboarding(boolean needsOnboarding) {
+        this.needsOnboarding = needsOnboarding;
     }
 }

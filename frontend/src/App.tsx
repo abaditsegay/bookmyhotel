@@ -58,11 +58,11 @@ const AdminDashboard = lazyWithRetry(() => import('./pages/admin/AdminDashboard'
 const HotelRegistrationAdmin = lazyWithRetry(() => import('./pages/admin/HotelRegistrationAdmin'));
 const HotelRegistrationForm = lazyWithRetry(() => import('./pages/admin/HotelRegistrationForm'));
 const HotelManagementAdmin = lazyWithRetry(() => import('./pages/admin/HotelManagementAdmin'));
-const TenantManagementAdmin = lazyWithRetry(() => import('./pages/admin/TenantManagementAdmin'));
 const UserManagementAdmin = lazyWithRetry(() => import('./pages/admin/UserManagementAdmin'));
 const UserRegistrationForm = lazyWithRetry(() => import('./pages/admin/UserRegistrationForm'));
 const UserViewEdit = lazyWithRetry(() => import('./pages/admin/UserViewEdit'));
 const HotelViewEdit = lazyWithRetry(() => import('./pages/admin/HotelViewEdit'));
+const HotelOnboarding = lazyWithRetry(() => import('./pages/HotelOnboarding'));
 
 // Hotel Admin pages
 const HotelAdminDashboard = lazyWithRetry(() => import('./pages/hotel-admin/HotelAdminDashboard'));
@@ -291,6 +291,11 @@ function App() {
         <Route path="/register-hotel" element={<PublicHotelRegistration />} />
         {/* Business onboarding — shared by system admin, not linked from public nav */}
         <Route path="/business-onboarding" element={<PublicHotelRegistration />} />
+        <Route path="/hotel-onboarding" element={
+          <ProtectedRoute>
+            <HotelOnboarding />
+          </ProtectedRoute>
+        } />
         <Route path="/register-hotel-admin" element={
           <PlaceholderPage 
             title="Admin Hotel Registration" 
@@ -336,13 +341,6 @@ function App() {
           <ProtectedRoute requiredRole="ADMIN">
             <AdminLayout>
               <HotelManagementAdmin />
-            </AdminLayout>
-          </ProtectedRoute>
-        } />
-        <Route path="/system/tenants" element={
-          <ProtectedRoute requiredRole="ADMIN">
-            <AdminLayout>
-              <TenantManagementAdmin />
             </AdminLayout>
           </ProtectedRoute>
         } />

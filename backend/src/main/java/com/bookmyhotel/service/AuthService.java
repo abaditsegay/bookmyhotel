@@ -11,9 +11,12 @@ import org.springframework.stereotype.Service;
 import com.bookmyhotel.dto.auth.LoginRequest;
 import com.bookmyhotel.dto.auth.LoginResponse;
 import com.bookmyhotel.dto.auth.RegisterRequest;
+import com.bookmyhotel.entity.HotelRegistration;
+import com.bookmyhotel.entity.RegistrationStatus;
 import com.bookmyhotel.entity.User;
 import com.bookmyhotel.entity.UserRole;
 import com.bookmyhotel.exception.ResourceAlreadyExistsException;
+import com.bookmyhotel.repository.HotelRegistrationRepository;
 import com.bookmyhotel.repository.UserRepository;
 import com.bookmyhotel.util.JwtUtil;
 
@@ -43,6 +46,9 @@ public class AuthService {
 
     @Autowired
     private PasswordSecurityService passwordSecurityService;
+
+    @Autowired
+    private HotelRegistrationRepository hotelRegistrationRepository;
 
     /**
      * Register a new customer user (system-wide registered users)
@@ -156,7 +162,18 @@ public class AuthService {
             hotelName = user.getHotel().getName();
         }
 
-        return new LoginResponse(
+        // Check if HOTEL_ADMIN user needs onboarding (no hotel assigned, has pending registration)
+        boolean needsOnboarding = false;
+        if (user.getHotel() == null && user.getRoles().contains(UserRole.HOTEL_ADMIN)) {
+            java.util.Optional<HotelRegistration> pendingRegistration = hotelRegistrationRepository
+                    .findByContactEmail(user.getEmail());
+            if (pendingRegistration.isPresent()) {
+                RegistrationStatus status = pendingRegistration.get().getStatus();
+                needsOnboarding = (status == RegistrationStatus.PENDING || status == RegistrationStatus.UNDER_REVIEW);
+            }
+        }
+
+        LoginResponse loginResponse = new LoginResponse(
                 token,
                 refreshToken,
                 user.getId(),
@@ -167,6 +184,9 @@ public class AuthService {
                 hotelId,
                 hotelName,
                 user.getTenantId());
+        loginResponse.setNeedsOnboarding(needsOnboarding);
+
+        return loginResponse;
     }
 
     /**

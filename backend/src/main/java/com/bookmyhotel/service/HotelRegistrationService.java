@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.bookmyhotel.dto.admin.ApproveRegistrationRequest;
 import com.bookmyhotel.dto.admin.HotelRegistrationRequest;
 import com.bookmyhotel.dto.admin.HotelRegistrationResponse;
+import com.bookmyhotel.dto.admin.HotelRegistrationSubmitResponse;
 import com.bookmyhotel.dto.admin.RejectRegistrationRequest;
 import com.bookmyhotel.entity.Hotel;
 import com.bookmyhotel.entity.HotelRegistration;
@@ -64,13 +65,19 @@ public class HotelRegistrationService {
 
     /**
      * Submit a new hotel registration
+     * Creates the registration record and a user account with temporary credentials
      */
-    public HotelRegistrationResponse submitRegistration(HotelRegistrationRequest request) {
+    public HotelRegistrationSubmitResponse submitRegistration(HotelRegistrationRequest request) {
         // Check if email is already registered
         java.util.Optional<HotelRegistration> existing = registrationRepository
                 .findByContactEmail(request.getContactEmail());
         if (existing.isPresent()) {
             throw new RuntimeException("Hotel registration with this email already exists");
+        }
+
+        // Check if user with this email already exists
+        if (userRepository.findByEmail(request.getContactEmail()).isPresent()) {
+            throw new RuntimeException("A user account with this email already exists");
         }
 
         HotelRegistration registration = new HotelRegistration();
@@ -95,6 +102,85 @@ public class HotelRegistrationService {
         registration.setCheckOutTime(request.getCheckOutTime());
 
         registration = registrationRepository.save(registration);
+
+        // Generate 6-digit temporary password and create user account
+        String temporaryPassword = generateSixDigitPassword();
+        User registrationUser = createRegistrationUser(registration, temporaryPassword);
+
+        logger.info("Hotel registration submitted with user account created: {} (user ID: {})",
+                registration.getContactEmail(), registrationUser.getId());
+
+        // Send welcome email with temporary credentials
+        try {
+            emailService.sendHotelAdminWelcomeEmail(
+                    registration.getContactEmail(),
+                    extractFirstName(registration.getContactPerson()),
+                    registration.getHotelName(),
+                    temporaryPassword);
+            logger.info("Registration welcome email sent to: {}", registration.getContactEmail());
+        } catch (Exception e) {
+            logger.error("Failed to send registration welcome email to: {}", registration.getContactEmail(), e);
+            // Don't fail registration if email fails
+        }
+
+        // Build submit response (no credentials exposed — sent via email)
+        HotelRegistrationSubmitResponse response = new HotelRegistrationSubmitResponse();
+        response.setRegistrationId(registration.getId());
+        response.setHotelName(registration.getHotelName());
+        response.setContactPerson(registration.getContactPerson());
+        response.setLoginEmail(registration.getContactEmail());
+        response.setStatus(registration.getStatus().name());
+        response.setMessage("Registration submitted successfully. A welcome email with your login credentials has been sent to your email address.");
+
+        return response;
+    }
+
+    /**
+     * Generate a 6-digit numeric temporary password
+     */
+    private String generateSixDigitPassword() {
+        SecureRandom random = new SecureRandom();
+        int password = 100000 + random.nextInt(900000);
+        return String.valueOf(password);
+    }
+
+    /**
+     * Create user account for hotel registration (no hotel assigned yet)
+     */
+    private User createRegistrationUser(HotelRegistration registration, String temporaryPassword) {
+        User user = new User();
+        user.setEmail(registration.getContactEmail());
+        user.setFirstName(extractFirstName(registration.getContactPerson()));
+        user.setLastName(extractLastName(registration.getContactPerson()));
+        user.setPassword(passwordEncoder.encode(temporaryPassword));
+        user.setRoles(Set.of(UserRole.HOTEL_ADMIN));
+        user.setIsActive(true);
+        // No hotel assigned - will be assigned after admin approval
+        return userRepository.save(user);
+    }
+
+    /**
+     * Update registration with onboarding data (additional fields)
+     */
+    public HotelRegistrationResponse completeOnboarding(String email, HotelRegistrationRequest request) {
+        HotelRegistration registration = registrationRepository.findByContactEmail(email)
+                .orElseThrow(() -> new RuntimeException("No registration found for email: " + email));
+
+        // Update with additional onboarding fields
+        if (request.getDescription() != null) registration.setDescription(request.getDescription());
+        if (request.getPhone() != null) registration.setPhone(request.getPhone());
+        if (request.getMobilePaymentPhone() != null) registration.setMobilePaymentPhone(request.getMobilePaymentPhone());
+        if (request.getMobilePaymentPhone2() != null) registration.setMobilePaymentPhone2(request.getMobilePaymentPhone2());
+        if (request.getLicenseNumber() != null) registration.setLicenseNumber(request.getLicenseNumber());
+        if (request.getTaxId() != null) registration.setTaxId(request.getTaxId());
+        if (request.getWebsiteUrl() != null) registration.setWebsiteUrl(request.getWebsiteUrl());
+        if (request.getFacilityAmenities() != null) registration.setFacilityAmenities(request.getFacilityAmenities());
+        if (request.getNumberOfRooms() != null) registration.setNumberOfRooms(request.getNumberOfRooms());
+        if (request.getCheckInTime() != null) registration.setCheckInTime(request.getCheckInTime());
+        if (request.getCheckOutTime() != null) registration.setCheckOutTime(request.getCheckOutTime());
+
+        registration = registrationRepository.save(registration);
+        logger.info("Onboarding completed for registration: {}", email);
 
         return convertToResponse(registration);
     }
@@ -174,9 +260,12 @@ public class HotelRegistrationService {
         // Create the hotel
         Hotel hotel = createHotelFromRegistration(registration, resolvedTenantId);
 
-        // Generate temporary password and create hotel admin user
-        String temporaryPassword = generateTemporaryPassword();
-        User hotelAdmin = createHotelAdminUser(registration, resolvedTenantId, temporaryPassword, hotel);
+        // Assign existing user to the hotel (user was created during registration submission)
+        String contactEmail = registration.getContactEmail();
+        User hotelAdmin = userRepository.findByEmail(contactEmail)
+                .orElseThrow(() -> new RuntimeException("User account not found for: " + contactEmail));
+        hotelAdmin.setHotel(hotel);
+        userRepository.save(hotelAdmin);
 
         // Update registration status
         registration.setStatus(RegistrationStatus.APPROVED);
@@ -188,9 +277,9 @@ public class HotelRegistrationService {
 
         registration = registrationRepository.save(registration);
 
-        // Send approval email with credentials
+        // Send approval email
         try {
-            sendHotelApprovalEmail(registration, hotel, hotelAdmin, temporaryPassword);
+            sendHotelApprovalEmail(registration, hotel, hotelAdmin);
             logger.info("Hotel approval email sent successfully to: {}", registration.getContactEmail());
         } catch (Exception e) {
             logger.error("Failed to send hotel approval email to: {}", registration.getContactEmail(), e);
@@ -333,34 +422,7 @@ public class HotelRegistrationService {
         return password.toString();
     }
 
-    /**
-     * Create hotel admin user account
-     */
-    private User createHotelAdminUser(HotelRegistration registration, String tenantId, String temporaryPassword,
-            Hotel hotel) {
-        // Set tenant context for user creation
-        TenantContext.setTenantId(tenantId);
 
-        try {
-            // Check if user already exists
-            if (userRepository.findByEmail(registration.getContactEmail()).isPresent()) {
-                throw new RuntimeException("User with email " + registration.getContactEmail() + " already exists");
-            }
-
-            User hotelAdmin = new User();
-            hotelAdmin.setEmail(registration.getContactEmail());
-            hotelAdmin.setFirstName(extractFirstName(registration.getContactPerson()));
-            hotelAdmin.setLastName(extractLastName(registration.getContactPerson()));
-            hotelAdmin.setPassword(passwordEncoder.encode(temporaryPassword));
-            hotelAdmin.setRoles(Set.of(UserRole.HOTEL_ADMIN));
-            hotelAdmin.setIsActive(true);
-            hotelAdmin.setHotel(hotel); // Associate user with the hotel
-
-            return userRepository.save(hotelAdmin);
-        } finally {
-            TenantContext.clear();
-        }
-    }
 
     /**
      * Extract first name from full name
@@ -388,16 +450,15 @@ public class HotelRegistrationService {
     }
 
     /**
-     * Send hotel approval email with login credentials
+     * Send hotel approval email (no credentials - user was created at registration)
      */
-    private void sendHotelApprovalEmail(HotelRegistration registration, Hotel hotel, User hotelAdmin,
-            String temporaryPassword) {
+    private void sendHotelApprovalEmail(HotelRegistration registration, Hotel hotel, User hotelAdmin) {
         try {
             emailService.sendHotelRegistrationApprovalEmail(
                     registration.getContactEmail(),
                     hotelAdmin.getFirstName(),
                     registration.getHotelName(),
-                    temporaryPassword);
+                    null);
         } catch (IllegalStateException e) {
             logger.warn("Email service not configured - hotel approval email not sent: {}", e.getMessage());
         } catch (Exception e) {

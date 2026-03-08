@@ -36,7 +36,10 @@ import {
   Print as PrintIcon,
   Edit as EditIcon,
   Cancel as CancelIcon,
-  FileDownload as FileDownloadIcon
+  FileDownload as FileDownloadIcon,
+  CheckCircle as CheckCircleIcon,
+  MoneyOff as MoneyOffIcon,
+  Block as BlockIcon
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { useTenant } from '../../contexts/TenantContext';
@@ -532,7 +535,12 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
 
     setUpdatingPaymentStatus(true);
     try {
-      const result = await hotelAdminApi.updateBookingPaymentStatus(token, bookingId, newStatus);
+      let result: any;
+      if (mode === 'front-desk') {
+        result = await frontDeskApiService.updatePaymentStatus(token, bookingId, newStatus);
+      } else {
+        result = await hotelAdminApi.updateBookingPaymentStatus(token, bookingId, newStatus, tenantId || undefined);
+      }
       
       if (result.success) {
         // Update the booking in local state
@@ -632,6 +640,62 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
       return normalized;
     }
     return 'PENDING';
+  };
+
+  // Get available payment status actions based on current status
+  const getPaymentStatusActions = (currentStatus: string) => {
+    const normalized = normalizePaymentStatus(currentStatus);
+    switch (normalized) {
+      case 'PENDING':
+      case 'PROCESSING':
+        return [{ action: 'COMPLETED', label: t('booking.details.payment.markCompleted'), icon: <CheckCircleIcon fontSize="small" />, color: 'success' as const }];
+      case 'COMPLETED':
+        return [
+          { action: 'REFUNDED', label: t('booking.details.payment.refund'), icon: <MoneyOffIcon fontSize="small" />, color: 'warning' as const },
+          { action: 'FORFEITED', label: t('booking.details.payment.forfeit'), icon: <BlockIcon fontSize="small" />, color: 'error' as const }
+        ];
+      default:
+        return [];
+    }
+  };
+
+  // Handle payment type change
+  const handlePaymentTypeChange = async (bookingId: number, newPaymentType: string) => {
+    if (!token) return;
+
+    try {
+      let result: any;
+      if (mode === 'front-desk') {
+        result = await frontDeskApiService.updatePaymentType(token, bookingId, newPaymentType);
+      } else {
+        result = await hotelAdminApi.updateBookingPaymentType(token, bookingId, newPaymentType, tenantId || undefined);
+      }
+
+      if (result.success) {
+        setBookings(prev => prev.map(booking =>
+          booking.reservationId === bookingId
+            ? { ...booking, paymentType: newPaymentType }
+            : booking
+        ));
+        setSnackbar({
+          open: true,
+          message: t('booking.success.paymentTypeUpdated') || 'Payment type updated successfully',
+          severity: 'success'
+        });
+      } else {
+        setSnackbar({
+          open: true,
+          message: result.message || t('booking.errors.failedToUpdatePaymentType') || 'Failed to update payment type',
+          severity: 'error'
+        });
+      }
+    } catch (error) {
+      setSnackbar({
+        open: true,
+        message: t('booking.errors.failedToUpdatePaymentType') || 'Failed to update payment type',
+        severity: 'error'
+      });
+    }
   };
 
   // Format date - using centralized utility to ensure consistency
@@ -854,6 +918,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                 <TableCell><strong>{t('booking.management.headers.checkOut')}</strong></TableCell>
                 <TableCell><strong>{t('booking.management.headers.paymentRef')}</strong></TableCell>
                 <TableCell><strong>{t('booking.management.headers.paymentStatus')}</strong></TableCell>
+                <TableCell><strong>{t('booking.management.headers.paymentType') || 'Payment Type'}</strong></TableCell>
                 <TableCell><strong>{t('booking.management.headers.status')}</strong></TableCell>
                 {showActions && <TableCell><strong>{t('booking.management.headers.actions')}</strong></TableCell>}
               </TableRow>
@@ -862,11 +927,11 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
               {loading ? (
                 // Show skeleton loaders while loading
                 Array.from({ length: size }).map((_, index) => (
-                  <TableRowSkeleton key={index} columns={showActions ? 9 : 8} />
+                  <TableRowSkeleton key={index} columns={showActions ? 10 : 9} />
                 ))
               ) : bookings.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={showActions ? 9 : 8}>
+                  <TableCell colSpan={showActions ? 10 : 9}>
                     <NoBookings />
                   </TableCell>
                 </TableRow>
@@ -983,104 +1048,70 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                       </Typography>
                     </TableCell>
                     <TableCell>
-                      {mode === 'hotel-admin' && editingPaymentStatus === booking.reservationId ? (
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <PremiumSelect
-                            label="Payment Status"
-                            value={normalizePaymentStatus(booking.paymentStatus || 'PENDING')}
-                            onChange={(e) => {
-                              const newStatus = e.target.value;
-                              const currentStatus = normalizePaymentStatus(booking.paymentStatus || 'PENDING');
-                              if (newStatus !== currentStatus) {
-                                handlePaymentStatusConfirm(
-                                  booking.reservationId,
-                                  currentStatus,
-                                  newStatus,
-                                  booking.guestName
-                                );
-                              }
-                            }}
-                            disabled={updatingPaymentStatus}
-                            formControlProps={{
-                              sx: {
-                                minWidth: 170,
-                                '& .MuiFormLabel-root': {
-                                  textTransform: 'uppercase',
-                                  fontSize: '0.65rem',
-                                  fontWeight: 700,
-                                  letterSpacing: '0.5px'
-                                }
-                              },
-                            }}
-                            sx={{
-                              '& .MuiSelect-select': {
-                                padding: '8px 10px',
-                                fontSize: '0.85rem',
-                                fontWeight: 700,
-                                color: COLORS.PRIMARY,
-                              },
-                              '& .MuiOutlinedInput-root': {
-                                height: 40,
-                                backgroundColor: COLORS.BG_LIGHT,
-                              },
-                            }}
-                          >
-                            <MenuItem value="PENDING">PENDING</MenuItem>
-                            <MenuItem value="PROCESSING">PROCESSING</MenuItem>
-                            <MenuItem value="COMPLETED">COMPLETED</MenuItem>
-                            <MenuItem value="REFUNDED">REFUNDED</MenuItem>
-                            <MenuItem value="PARTIALLY_REFUNDED">PARTIALLY REFUNDED</MenuItem>
-                            <MenuItem value="FAILED">FAILED</MenuItem>
-                            <MenuItem value="CANCELLED">CANCELLED</MenuItem>
-                            <MenuItem value="FORFEITED">FORFEITED</MenuItem>
-                          </PremiumSelect>
-                          <IconButton
-                            size="small"
-                            onClick={handlePaymentStatusCancel}
-                            disabled={updatingPaymentStatus}
-                            sx={{
-                              color: muiTheme.palette.error.main,
-                              '&:hover': {
-                                backgroundColor: addAlpha(muiTheme.palette.error.main, 0.1)
-                              }
-                            }}
-                          >
-                            <CancelIcon fontSize="small" />
-                          </IconButton>
-                        </Box>
-                      ) : (
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Chip 
-                            label={normalizePaymentStatus(booking.paymentStatus || 'PENDING')} 
-                            color={getPaymentStatusColor(booking.paymentStatus || 'PENDING')} 
-                            size="small"
-                            sx={{
-                              fontWeight: 600,
-                              fontSize: '0.85rem',
-                              height: '28px',
-                              borderRadius: '14px'
-                            }}
-                          />
-                          {mode === 'hotel-admin' && (
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap' }}>
+                        <Chip 
+                          label={normalizePaymentStatus(booking.paymentStatus || 'PENDING')} 
+                          color={getPaymentStatusColor(booking.paymentStatus || 'PENDING')} 
+                          size="small"
+                          sx={{
+                            fontWeight: 600,
+                            fontSize: '0.8rem',
+                            height: '26px',
+                            borderRadius: '13px'
+                          }}
+                        />
+                        {getPaymentStatusActions(booking.paymentStatus || 'PENDING').map(({ action, label, icon, color }) => (
+                          <Tooltip key={action} title={label} arrow>
                             <IconButton
                               size="small"
-                              onClick={() => handlePaymentStatusEdit(booking.reservationId)}
+                              disabled={updatingPaymentStatus}
+                              onClick={() => handlePaymentStatusConfirm(
+                                booking.reservationId,
+                                normalizePaymentStatus(booking.paymentStatus || 'PENDING'),
+                                action,
+                                booking.guestName
+                              )}
                               sx={{
-                                color: muiTheme.palette.text.secondary,
-                                padding: '4px',
+                                color: muiTheme.palette[color].main,
+                                padding: '3px',
                                 '&:hover': {
-                                  color: muiTheme.palette.primary.main,
-                                  backgroundColor: themeMode === 'dark' 
-                                    ? addAlpha(COLORS.WHITE, 0.08) 
-                                    : muiTheme.palette.action.hover
+                                  backgroundColor: addAlpha(muiTheme.palette[color].main, 0.12),
+                                  transform: 'scale(1.1)'
                                 }
                               }}
                             >
-                              <EditIcon fontSize="small" />
+                              {icon}
                             </IconButton>
-                          )}
-                        </Box>
-                      )}
+                          </Tooltip>
+                        ))}
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      <PremiumSelect
+                        label=""
+                        value={booking.paymentType || 'CASH'}
+                        onChange={(e) => handlePaymentTypeChange(booking.reservationId, e.target.value)}
+                        formControlProps={{
+                          sx: {
+                            minWidth: 120,
+                            '& .MuiFormLabel-root': { display: 'none' }
+                          },
+                        }}
+                        sx={{
+                          '& .MuiSelect-select': {
+                            padding: '6px 8px',
+                            fontSize: '0.8rem',
+                            fontWeight: 600,
+                          },
+                          '& .MuiOutlinedInput-root': {
+                            height: 32,
+                          },
+                        }}
+                      >
+                        <MenuItem value="CASH">{t('booking.details.payment.cash')}</MenuItem>
+                        <MenuItem value="BANK">{t('booking.details.payment.bank')}</MenuItem>
+                        <MenuItem value="MOBILE">{t('booking.details.payment.mobile')}</MenuItem>
+                      </PremiumSelect>
                     </TableCell>
                     <TableCell>
                       <Chip 

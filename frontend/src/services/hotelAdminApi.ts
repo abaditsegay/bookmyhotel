@@ -329,11 +329,12 @@ export const hotelAdminApi = {
   updateBookingPaymentStatus: async (
     token: string,
     reservationId: number, 
-    paymentStatus: string
+    paymentStatus: string,
+    tenantId: string | null = null
   ): Promise<{ success: boolean; data?: BookingResponse; message?: string }> => {
     try {
       const response = await fetch(
-        `${API_BASE_URL}/hotel-admin/bookings/${reservationId}/payment-status?paymentStatus=${paymentStatus}`,
+        `${API_BASE_URL}/hotel-admin/bookings/${reservationId}/payment-status?paymentStatus=${encodeURIComponent(paymentStatus)}`,
         {
           method: 'PUT',
           headers: getAuthHeaders(),
@@ -348,10 +349,42 @@ export const hotelAdminApi = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      // console.error('Payment status update error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to update payment status' 
+      };
+    }
+  },
+
+  /**
+   * Update booking payment type (CASH, BANK, MOBILE)
+   */
+  updateBookingPaymentType: async (
+    token: string,
+    reservationId: number,
+    paymentType: string,
+    tenantId: string | null = null
+  ): Promise<{ success: boolean; data?: BookingResponse; message?: string }> => {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/hotel-admin/bookings/${reservationId}/payment-type?paymentType=${encodeURIComponent(paymentType)}`,
+        {
+          method: 'PUT',
+          headers: getAuthHeaders(),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to update payment type');
+      }
+
+      const data = await response.json();
+      return { success: true, data };
+    } catch (error) {
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : 'Failed to update payment type'
       };
     }
   },

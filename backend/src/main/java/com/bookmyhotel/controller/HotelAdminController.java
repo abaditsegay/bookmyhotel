@@ -353,6 +353,21 @@ public class HotelAdminController {
     }
 
     /**
+     * Update booking payment type
+     */
+    @PutMapping("/bookings/{reservationId}/payment-type")
+    public ResponseEntity<BookingResponse> updateBookingPaymentType(
+            @PathVariable Long reservationId,
+            @RequestParam String paymentType,
+            Authentication auth) {
+
+        HotelDTO hotel = hotelAdminService.getMyHotel(auth.getName());
+
+        BookingResponse updated = hotelAdminService.updateBookingPaymentType(reservationId, paymentType);
+        return ResponseEntity.ok(updated);
+    }
+
+    /**
      * Modify booking details (admin version)
      */
     @PutMapping("/bookings/{reservationId}")

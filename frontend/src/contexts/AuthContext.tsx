@@ -21,6 +21,7 @@ interface User {
   createdAt?: string;
   lastLogin?: string;
   isActive?: boolean;
+  needsOnboarding?: boolean; // true if hotel admin needs to complete profile
   // Helper properties
   isSystemWide?: boolean; // true if tenantId is null
   isTenantBound?: boolean; // true if tenantId is not null
@@ -256,6 +257,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
         createdAt: new Date().toISOString(),
         lastLogin: new Date().toISOString(),
         isActive: true,
+        needsOnboarding: loginData.needsOnboarding || false,
         // Helper properties
         isSystemWide: (loginData.tenantId === null || loginData.tenantId === undefined) && 
                       (Array.isArray(loginData.roles) ? loginData.roles : [loginData.roles])
@@ -519,6 +521,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
       
       // Tenant-bound users - priority order
       if (normalizedRoles.includes('HOTEL_ADMIN')) {
+        // Redirect to onboarding if hotel admin needs to complete profile
+        if (user.needsOnboarding) {
+          return '/hotel-onboarding';
+        }
         return '/hotel-admin/dashboard';
       }
       

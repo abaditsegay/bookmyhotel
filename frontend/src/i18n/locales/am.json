@@ -171,5 +171,84 @@
       "nightSingle": "ሌሊት",
       "nightPlural": "ሌሊቶች"
     }
+  },
+  "walkInBooking": {
+    "title": "የእግር እንግዳ ማስያዝ",
+    "subtitle": "ለእግር እንግዳ ማስያዝ ይፍጠሩ",
+    "steps": {
+      "guestInformation": "የእንግዳ መረጃ",
+      "roomSelection": "ክፍል ምርጫ",
+      "confirmation": "ማረጋገጫ"
+    },
+    "guestInformation": {
+      "title": "የእንግዳ መረጃ",
+      "description": "የእንግዳውን ግላዊ ዝርዝሮች ያስገቡ",
+      "firstName": "ስም",
+      "lastName": "የአባት ስም",
+      "email": "ኢሜይል አድራሻ",
+      "phone": "ስልክ ቁጥር"
+    },
+    "stayDetails": {
+      "title": "የቆይታ ዝርዝሮች",
+      "description": "የመግቢያ እና የመውጫ ቀናትን ይምረጡ",
+      "checkInDate": "የመግቢያ ቀን",
+      "checkOutDate": "የመውጫ ቀን",
+      "numberOfGuests": "የእንግዶች ቁጥር"
+    },
+    "roomSelection": {
+      "title": "ክፍል ምርጫ",
+      "description": "ከ{{checkIn}} እስከ {{checkOut}} ክፍል ይምረጡ",
+      "loadingRooms": "ክፍሎችን እየጫነ...",
+      "noRoomsAvailable": "ለተመረጡት ቀናት ክፍሎች አይገኙም ({{checkIn}} - {{checkOut}})",
+      "roomNumber": "ክፍል",
+      "capacity": "አቅም",
+      "capacityText": "{{count}} እንግዳ",
+      "capacityTextPlural": "{{count}} እንግዶች",
+      "perNightShort": "/ሌሊት",
+      "specialRequests": "ልዩ ጥያቄዎች",
+      "specialRequestsPlaceholder": "ለዚህ ማስያዝ ማንኛውም ልዩ ጥያቄዎች ወይም ማስታወሻዎች..."
+    },
+    "confirmation": {
+      "bookingConfirmationTitle": "የማስያዝ ማረጋገጫ",
+      "reviewDetails": "ከማረጋገጥ በፊት የማስያዝ ዝርዝሮችን ይገምግሙ",
+      "guestInformation": "የእንግዳ መረጃ",
+      "fullName": "ሙሉ ስም",
+      "emailAddress": "ኢሜይል አድራሻ",
+      "phoneNumber": "ስልክ ቁጥር",
+      "stayDetails": "የቆይታ ዝርዝሮች",
+      "room": "ክፍል",
+      "checkInCheckOut": "መግቢያ / መውጫ",
+      "guests": "እንግዶች",
+      "guest": "እንግዳ",
+      "guestPlural": "እንግዶች",
+      "specialRequests": "ልዩ ጥያቄዎች",
+      "pricingSummary": "የዋጋ ማጠቃለያ",
+      "subtotal": "ድምር",
+      "perNight": "/ሌሊት",
+      "night": "ሌሊት",
+      "nightPlural": "ሌሊቶች",
+      "vat": "ተ.እ.ታ",
+      "serviceTax": "የአገልግሎት ግብር",
+      "totalAmount": "ጠቅላላ መጠን",
+      "paymentNote": "ክፍያ በፊት ዴስክ ላይ ይሰበሰባል"
+    },
+    "validationErrors": {
+      "fillAllFields": "እባክዎ ሁሉንም አስፈላጊ የእንግዳ መረጃ ቦታዎችን ይሙሉ",
+      "invalidEmail": "እባክዎ ትክክለኛ ኢሜይል አድራሻ ያስገቡ",
+      "selectRoom": "እባክዎ ክፍል ይምረጡ"
+    },
+    "messages": {
+      "failedToLoadHotelPermissions": "የሆቴል ፈቃዶችን መጫን አልተሳካም",
+      "failedToLoadHotel": "የሆቴል መረጃን መጫን አልተሳካም",
+      "failedToLoadRooms": "ያሉ ክፍሎችን መጫን አልተሳካም",
+      "creatingBooking": "ማስያዝ እየተፈጠረ..."
+    },
+    "actions": {
+      "cancel": "ይቅር",
+      "back": "ተመለስ",
+      "next": "ቀጣይ",
+      "loadingRooms": "ክፍሎችን እየጫነ...",
+      "confirm": "ማስያዝ ያረጋግጡ"
+    }
   }
 }

@@ -27,6 +27,9 @@ import {
   Save as SaveIcon,
   Cancel as CancelIcon,
   Room as RoomIcon,
+  CheckCircle as CheckCircleIcon,
+  MoneyOff as MoneyOffIcon,
+  Block as BlockIcon,
 } from '@mui/icons-material';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -59,6 +62,7 @@ export interface BookingData {
   createdAt: string;
   paymentStatus: string;
   paymentIntentId?: string;
+  paymentType?: string;
 }
 
 interface UnifiedBookingDetailsProps {
@@ -108,6 +112,9 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
   // New state to track if prices have been modified during editing session
   const [pricesModified, setPricesModified] = useState(false);
   const [originalPricing, setOriginalPricing] = useState<{pricePerNight: number, totalAmount: number} | null>(null);
+  
+  // Payment action loading state
+  const [paymentActionLoading, setPaymentActionLoading] = useState(false);
 
   // Helper function to show error in dialog
   const showErrorDialog = (errorMessage: string) => {
@@ -158,7 +165,8 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
             status: responseData.status,
             createdAt: responseData.createdAt,
             paymentStatus: responseData.paymentStatus,
-            paymentIntentId: responseData.paymentIntentId
+            paymentIntentId: responseData.paymentIntentId,
+            paymentType: responseData.paymentType,
           };
           
           // console.log('🔍 UnifiedBookingDetails - Raw API response:', responseData);
@@ -321,7 +329,8 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
               status: apiBooking.status,
               createdAt: apiBooking.createdAt,
               paymentStatus: apiBooking.paymentStatus,
-              paymentIntentId: apiBooking.paymentIntentId
+              paymentIntentId: apiBooking.paymentIntentId,
+              paymentType: apiBooking.paymentType,
             };
             hasUpdates = true;
             // console.log('✅ Status updated successfully');
@@ -363,7 +372,8 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
               status: result.data.status,
               createdAt: result.data.createdAt,
               paymentStatus: result.data.paymentStatus,
-              paymentIntentId: result.data.paymentIntentId
+              paymentIntentId: result.data.paymentIntentId,
+              paymentType: result.data.paymentType,
             };
             
             // console.log('✅ Room assignment successful:', updatedBooking);
@@ -441,7 +451,8 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
               status: result.data.status,
               createdAt: result.data.createdAt,
               paymentStatus: result.data.paymentStatus,
-              paymentIntentId: result.data.paymentIntentId
+              paymentIntentId: result.data.paymentIntentId,
+              paymentType: result.data.paymentType,
             };
             
             // console.log('✅ Comprehensive booking update successful:', updatedBooking);
@@ -724,6 +735,83 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
     }
   };
 
+  // Payment status action handler
+  const handlePaymentStatusAction = async (newStatus: string) => {
+    if (!booking || !token) return;
+    setPaymentActionLoading(true);
+    try {
+      const result = mode === 'front-desk'
+        ? await frontDeskApiService.updatePaymentStatus(token, booking.reservationId, newStatus, tenant?.id || null)
+        : await hotelAdminApi.updateBookingPaymentStatus(token, booking.reservationId, newStatus, tenant?.id || null);
+
+      if (result.success && result.data) {
+        const responseData = result.data as any;
+        const updatedBooking: BookingData = {
+          ...booking,
+          paymentStatus: responseData.paymentStatus || newStatus,
+          paymentType: responseData.paymentType || booking.paymentType,
+        };
+        setBooking(updatedBooking);
+        setEditedBooking({ ...updatedBooking });
+        setSuccess(t('booking.details.success.paymentStatusUpdated'));
+      } else {
+        setError(result.message || t('booking.details.errors.failedToUpdatePaymentStatus'));
+        setErrorDialogOpen(true);
+      }
+    } catch (err) {
+      setError(t('booking.details.errors.failedToUpdatePaymentStatus'));
+      setErrorDialogOpen(true);
+    } finally {
+      setPaymentActionLoading(false);
+    }
+  };
+
+  // Payment type action handler
+  const handlePaymentTypeChange = async (newType: string) => {
+    if (!booking || !token) return;
+    setPaymentActionLoading(true);
+    try {
+      const result = mode === 'front-desk'
+        ? await frontDeskApiService.updatePaymentType(token, booking.reservationId, newType, tenant?.id || null)
+        : await hotelAdminApi.updateBookingPaymentType(token, booking.reservationId, newType, tenant?.id || null);
+
+      if (result.success && result.data) {
+        const responseData = result.data as any;
+        const updatedBooking: BookingData = {
+          ...booking,
+          paymentType: responseData.paymentType || newType,
+        };
+        setBooking(updatedBooking);
+        setEditedBooking({ ...updatedBooking });
+        setSuccess(t('booking.details.success.paymentTypeUpdated'));
+      } else {
+        setError(result.message || t('booking.details.errors.failedToUpdatePaymentType'));
+        setErrorDialogOpen(true);
+      }
+    } catch (err) {
+      setError(t('booking.details.errors.failedToUpdatePaymentType'));
+      setErrorDialogOpen(true);
+    } finally {
+      setPaymentActionLoading(false);
+    }
+  };
+
+  // Get available payment status actions based on current status
+  const getPaymentStatusActions = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case 'pending':
+      case 'pay_at_frontdesk':
+        return [{ label: t('booking.details.payment.markCompleted'), value: 'COMPLETED', icon: <CheckCircleIcon fontSize="small" />, color: 'success' as const }];
+      case 'completed':
+        return [
+          { label: t('booking.details.payment.refund'), value: 'REFUNDED', icon: <MoneyOffIcon fontSize="small" />, color: 'info' as const },
+          { label: t('booking.details.payment.forfeit'), value: 'FORFEITED', icon: <BlockIcon fontSize="small" />, color: 'warning' as const },
+        ];
+      default:
+        return []; // REFUNDED, FORFEITED, FAILED, CANCELLED are terminal states
+    }
+  };
+
   const getPaymentStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case 'paid':
@@ -930,11 +1018,45 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                       <Typography variant="caption" display="block" color="text.secondary">
                         {t('booking.details.paymentStatus')}
                       </Typography>
-                      <Chip
-                        label={currentBooking?.paymentStatus}
-                        color={getPaymentStatusColor(currentBooking?.paymentStatus || '') as any}
-                        variant="outlined"
-                      />
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap', mt: 0.5 }}>
+                        <Chip
+                          label={currentBooking?.paymentStatus?.replace('_', ' ')}
+                          color={getPaymentStatusColor(currentBooking?.paymentStatus || '') as any}
+                          variant="outlined"
+                        />
+                        {getPaymentStatusActions(currentBooking?.paymentStatus || '').map((action) => (
+                          <Button
+                            key={action.value}
+                            size="small"
+                            variant="outlined"
+                            color={action.color}
+                            startIcon={action.icon}
+                            disabled={paymentActionLoading}
+                            onClick={() => handlePaymentStatusAction(action.value)}
+                            sx={{ textTransform: 'none', fontSize: '0.75rem' }}
+                          >
+                            {action.label}
+                          </Button>
+                        ))}
+                      </Box>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <Box>
+                      <Typography variant="caption" display="block" color="text.secondary">
+                        {t('booking.details.paymentType')}
+                      </Typography>
+                      <PremiumSelect
+                        fullWidth
+                        value={currentBooking?.paymentType || ''}
+                        onChange={(e) => handlePaymentTypeChange(e.target.value as string)}
+                        disabled={paymentActionLoading}
+                        size="small"
+                      >
+                        <MenuItem value="cash">{t('booking.details.payment.cash')}</MenuItem>
+                        <MenuItem value="bank">{t('booking.details.payment.bank')}</MenuItem>
+                        <MenuItem value="mobile">{t('booking.details.payment.mobile')}</MenuItem>
+                      </PremiumSelect>
                     </Box>
                   </Grid>
                 </Grid>

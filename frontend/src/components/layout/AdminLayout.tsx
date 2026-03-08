@@ -17,7 +17,6 @@ import {
   Dashboard,
   Hotel,
   People,
-  Business,
   BarChart as BarChartIcon,
   Settings,
   Menu as MenuIcon,
@@ -49,11 +48,6 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       label: t('dashboard.system.title', 'Dashboard'),
       icon: <Dashboard />,
       path: '/system-dashboard',
-    },
-    {
-      label: t('admin.tenant.title', 'Tenant Management'),
-      icon: <Business />,
-      path: '/system/tenants',
     },
     {
       label: t('admin.hotel.title', 'Hotel Management'),

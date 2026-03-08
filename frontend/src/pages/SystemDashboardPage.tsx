@@ -110,7 +110,6 @@ export const SystemDashboardPage: React.FC = () => {
   const [stats, setStats] = useState({
     totalHotels: 0,
     totalUsers: 0,
-    totalTenants: 0,
     totalBookings: 1247,
     revenue: 'ETB 124,750',
     loading: true
@@ -148,12 +147,8 @@ export const SystemDashboardPage: React.FC = () => {
         // Fetch users count  
         const usersResponse = await apiClient.get(API_ENDPOINTS.SYSTEM.USERS);
 
-        // Fetch tenants count
-        const tenantsResponse = await apiClient.get(API_ENDPOINTS.SYSTEM.TENANTS);
-
         let hotelsCount = 0;
         let usersCount = 0;
-        let tenantsCount = 0;
 
         if (hotelsResponse.success && hotelsResponse.data) {
           const hotelsData = hotelsResponse.data;
@@ -165,15 +160,9 @@ export const SystemDashboardPage: React.FC = () => {
           usersCount = Array.isArray(usersData) ? usersData.length : (usersData.totalElements || usersData.content?.length || 0);
         }
 
-        if (tenantsResponse.success && tenantsResponse.data) {
-          const tenantsData = tenantsResponse.data;
-          tenantsCount = Array.isArray(tenantsData) ? tenantsData.length : (tenantsData.totalElements || tenantsData.content?.length || 0);
-        }
-
         setStats({
           totalHotels: hotelsCount,
           totalUsers: usersCount,
-          totalTenants: tenantsCount,
           totalBookings: 1247, // Enhanced with sample data
           revenue: 'ETB 124,750', // Enhanced with sample data
           loading: false
@@ -208,11 +197,9 @@ export const SystemDashboardPage: React.FC = () => {
 
         const hotelsResponse = await apiClient.get(API_ENDPOINTS.SYSTEM.HOTELS);
         const usersResponse = await apiClient.get(API_ENDPOINTS.SYSTEM.USERS);
-        const tenantsResponse = await apiClient.get(API_ENDPOINTS.SYSTEM.TENANTS);
 
         let hotelsCount = 0;
         let usersCount = 0;
-        let tenantsCount = 0;
 
         if (hotelsResponse.success && hotelsResponse.data) {
           const hotelsData = hotelsResponse.data;
@@ -224,15 +211,9 @@ export const SystemDashboardPage: React.FC = () => {
           usersCount = Array.isArray(usersData) ? usersData.length : (usersData.totalElements || usersData.content?.length || 0);
         }
 
-        if (tenantsResponse.success && tenantsResponse.data) {
-          const tenantsData = tenantsResponse.data;
-          tenantsCount = Array.isArray(tenantsData) ? tenantsData.length : (tenantsData.totalElements || tenantsData.content?.length || 0);
-        }
-
         setStats({
           totalHotels: hotelsCount,
           totalUsers: usersCount,
-          totalTenants: tenantsCount,
           totalBookings: 1247,
           revenue: 'ETB 124,750',
           loading: false
@@ -413,16 +394,7 @@ export const SystemDashboardPage: React.FC = () => {
         {/* Summary Stats */}
         {isSystemAdmin && (
           <Grid container spacing={3} sx={{ mb: 4 }} data-testid="stats-cards">
-            <Grid item xs={12} sm={6} md={3}>
-              <MetricCard
-                title={t('dashboard.system.activeTenants', 'Active Tenants')}
-                value={stats.totalTenants}
-                icon={<Business />}
-                color="info"
-                data-testid="total-tenants"
-              />
-            </Grid>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid item xs={12} sm={6} md={4}>
               <MetricCard
                 title={t('dashboard.system.totalHotels', 'Total Hotels')}
                 value={stats.totalHotels}
@@ -431,7 +403,7 @@ export const SystemDashboardPage: React.FC = () => {
                 data-testid="total-hotels"
               />
             </Grid>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid item xs={12} sm={6} md={4}>
               <MetricCard
                 title={t('dashboard.system.totalUsers', 'Total Users')}
                 value={stats.totalUsers}
@@ -440,7 +412,7 @@ export const SystemDashboardPage: React.FC = () => {
                 data-testid="total-users"
               />
             </Grid>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid item xs={12} sm={6} md={4}>
               <MetricCard
                 title={t('dashboard.system.totalBookings', 'Total Bookings')}
                 value={stats.totalBookings}
@@ -461,16 +433,6 @@ export const SystemDashboardPage: React.FC = () => {
                   {t('dashboard.system.systemOverview')}
                 </Typography>
                 <List dense>
-                  <ListItem>
-                    <ListItemIcon>
-                      <Business sx={{ color: 'info.main' }} />
-                    </ListItemIcon>
-                    <ListItemText 
-                      primary={t('dashboard.system.tenantManagement')} 
-                      secondary={t('dashboard.system.tenantManagementDesc')}
-                    />
-                  </ListItem>
-                  <Divider />
                   <ListItem>
                     <ListItemIcon>
                       <Hotel sx={{ color: 'primary.main' }} />
@@ -525,13 +487,6 @@ export const SystemDashboardPage: React.FC = () => {
                       <ListItemText 
                         primary={t('dashboard.system.hotelRegistrationReview')}
                         secondary={t('dashboard.system.hotelRegistrationReviewDesc')}
-                      />
-                    </ListItem>
-                    <Divider />
-                    <ListItem>
-                      <ListItemText 
-                        primary={t('dashboard.system.tenantManagementActivity')}
-                        secondary={t('dashboard.system.tenantManagementActivityDesc')}
                       />
                     </ListItem>
                     <Divider />

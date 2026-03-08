@@ -104,6 +104,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
   const [availableRooms, setAvailableRooms] = useState<AvailableRoom[]>([]);
   const [selectedRoom, setSelectedRoom] = useState<AvailableRoom | null>(null);
   const [roomsLoading, setRoomsLoading] = useState(false);
+  const [roomTypeFilter, setRoomTypeFilter] = useState<string>('ALL');
   
   // Hotel information (we'll need to get this from the backend)
   const [hotelId, setHotelId] = useState<number | null>(null);
@@ -188,6 +189,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
       setSpecialRequests('');
       setSelectedRoom(null);
       setAvailableRooms([]);
+      setRoomTypeFilter('ALL');
       setError(null);
       
       // Get hotel ID from user context - we'll need to add this to the front desk API
@@ -701,6 +703,32 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
               })}
             </Typography>
             
+            {/* Room Type Filter */}
+            {!roomsLoading && availableRooms.length > 0 && (() => {
+              const roomTypes = Array.from(new Set(availableRooms.map(r => r.roomType)));
+              return roomTypes.length > 1 ? (
+                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 1, mb: 1 }}>
+                  <Chip
+                    label={t('walkInBooking.roomSelection.allTypes') || 'All Types'}
+                    onClick={() => setRoomTypeFilter('ALL')}
+                    color={roomTypeFilter === 'ALL' ? 'primary' : 'default'}
+                    variant={roomTypeFilter === 'ALL' ? 'filled' : 'outlined'}
+                    sx={{ fontWeight: 600 }}
+                  />
+                  {roomTypes.map(type => (
+                    <Chip
+                      key={type}
+                      label={type.toUpperCase()}
+                      onClick={() => setRoomTypeFilter(type)}
+                      color={roomTypeFilter === type ? 'primary' : 'default'}
+                      variant={roomTypeFilter === type ? 'filled' : 'outlined'}
+                      sx={{ fontWeight: 600 }}
+                    />
+                  ))}
+                </Box>
+              ) : null;
+            })()}
+            
             {roomsLoading ? (
               <Box sx={{ textAlign: 'center', py: 4 }}>
                 <CircularProgress size={40} />
@@ -719,7 +747,9 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
               </Alert>
             ) : (
               <Grid container spacing={2} sx={{ mt: 1 }}>
-                {availableRooms.map((room) => (
+                {availableRooms
+                  .filter(room => roomTypeFilter === 'ALL' || room.roomType === roomTypeFilter)
+                  .map((room) => (
                   <Grid item xs={12} sm={6} md={4} key={room.id}>
                     <Card 
                       sx={{ 

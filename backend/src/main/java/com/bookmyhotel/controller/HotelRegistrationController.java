@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.bookmyhotel.dto.admin.HotelRegistrationRequest;
 import com.bookmyhotel.dto.admin.HotelRegistrationResponse;
+import com.bookmyhotel.dto.admin.HotelRegistrationSubmitResponse;
 import com.bookmyhotel.service.HotelRegistrationService;
 
 import jakarta.validation.Valid;
@@ -32,10 +33,10 @@ public class HotelRegistrationController {
      * Allows hotels to register themselves without requiring authentication
      */
     @PostMapping("/submit")
-    public ResponseEntity<HotelRegistrationResponse> submitRegistration(
+    public ResponseEntity<HotelRegistrationSubmitResponse> submitRegistration(
             @Valid @RequestBody HotelRegistrationRequest request) {
         try {
-            HotelRegistrationResponse response = registrationService.submitRegistration(request);
+            HotelRegistrationSubmitResponse response = registrationService.submitRegistration(request);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (RuntimeException e) {
             // Return more detailed error information for public endpoint

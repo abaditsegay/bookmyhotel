@@ -28,7 +28,11 @@ import {
   Tabs,
   Tab,
   Card,
-  CardContent
+  CardContent,
+  Stepper,
+  Step,
+  StepLabel,
+  Divider
 } from '@mui/material';
 import { 
   ArrowBack as ArrowBackIcon, 
@@ -40,7 +44,9 @@ import {
   Refresh as RefreshIcon,
   RateReview as ReviewIcon,
   CheckCircle as ApproveIcon,
-  Cancel as RejectIcon
+  Cancel as RejectIcon,
+  NavigateNext,
+  NavigateBefore
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { adminApiService, HotelDTO, UpdateHotelRequest, TenantDTO, ApproveRegistrationRequest, HotelRegistrationResponse } from '../../services/adminApi';
@@ -92,6 +98,9 @@ const HotelManagementAdmin: React.FC = () => {
   const [registerDialogOpen, setRegisterDialogOpen] = useState(false);
   const [registrationViewDialogOpen, setRegistrationViewDialogOpen] = useState(false);
   const [registrationEditMode, setRegistrationEditMode] = useState(false);
+  const [registrationWizardStep, setRegistrationWizardStep] = useState(0);
+
+  const wizardSteps = ['Hotel & Admin Info', 'Additional Details'];
   const [approveDialogOpen, setApproveDialogOpen] = useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [toggleStatusDialogOpen, setToggleStatusDialogOpen] = useState(false);
@@ -384,6 +393,7 @@ const HotelManagementAdmin: React.FC = () => {
   const viewRegistration = (registration: HotelRegistrationResponse) => {
     setSelectedRegistration(registration);
     setRegistrationEditMode(false);
+    setRegistrationWizardStep(0);
     // Reset approval/rejection fields
     setApprovalComments('');
     setRejectionReason('');
@@ -1222,7 +1232,7 @@ const HotelManagementAdmin: React.FC = () => {
           </DialogActions>
         </Dialog>
 
-        {/* Registration View Dialog */}
+        {/* Registration View Dialog - 2-Step Wizard */}
         <Dialog open={registrationViewDialogOpen} onClose={() => setRegistrationViewDialogOpen(false)} maxWidth="md" fullWidth>
           <DialogTitle
             sx={{
@@ -1246,188 +1256,44 @@ const HotelManagementAdmin: React.FC = () => {
               )}
             </Box>
           </DialogTitle>
+          <Box sx={{ px: 3, pt: 2 }}>
+            <Stepper activeStep={registrationWizardStep} alternativeLabel>
+              {wizardSteps.map((label) => (
+                <Step key={label}>
+                  <StepLabel>{label}</StepLabel>
+                </Step>
+              ))}
+            </Stepper>
+          </Box>
           <DialogContent>
             {selectedRegistration && (
-              <Grid container spacing={2} sx={{ mt: 1 }}>
-                <Grid item xs={12} sm={6}>
-                  {registrationEditMode ? (
-                    <PremiumTextField
-                      label="Hotel Name"
-                      fullWidth
-                      value={editRegistrationForm.hotelName}
-                      onChange={(e) => handleEditRegistrationFormChange('hotelName', e.target.value)}
-                      required
-                    />
-                  ) : (
-                    <Box>
-                      <Typography variant="caption" sx={{ color: COLORS.TEXT_SECONDARY, mb: 0.5, display: 'block', fontSize: '0.75rem' }}>
-                        Hotel Name
+              <Box sx={{ mt: 1 }}>
+                {/* Step 1: Hotel & Admin Info */}
+                {registrationWizardStep === 0 && (
+                  <Grid container spacing={2}>
+                    <Grid item xs={12}>
+                      <Typography variant="subtitle1" fontWeight={600} color="primary" sx={{ mb: 1 }}>
+                        Hotel Information
                       </Typography>
-                      <Box sx={{
-                        p: 1.5,
-                        border: `1px solid ${COLORS.BORDER_LIGHT}`,
-                        borderRadius: 1,
-                        backgroundColor: COLORS.BG_LIGHT,
-                        borderLeft: `3px solid ${COLORS.SECONDARY}`
-                      }}>
-                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                          {selectedRegistration.hotelName}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  )}
-                </Grid>
-                
-                <Grid item xs={12} sm={6}>
-                  {registrationEditMode ? (
-                    <PremiumTextField
-                      label="Contact Person"
-                      fullWidth
-                      value={editRegistrationForm.contactPerson}
-                      onChange={(e) => handleEditRegistrationFormChange('contactPerson', e.target.value)}
-                      required
-                    />
-                  ) : (
-                    <Box>
-                      <Typography variant="caption" sx={{ color: COLORS.TEXT_SECONDARY, mb: 0.5, display: 'block', fontSize: '0.75rem' }}>
-                        Contact Person
-                      </Typography>
-                      <Box sx={{
-                        p: 1.5,
-                        border: `1px solid ${COLORS.BORDER_LIGHT}`,
-                        borderRadius: 1,
-                        backgroundColor: COLORS.BG_LIGHT,
-                        borderLeft: `3px solid ${COLORS.SECONDARY}`
-                      }}>
-                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                          {selectedRegistration.contactPerson}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  )}
-                </Grid>
-                
-                <Grid item xs={12}>
-                  {registrationEditMode ? (
-                    <PremiumTextField
-                      label="Description"
-                      multiline
-                      rows={3}
-                      fullWidth
-                      value={editRegistrationForm.description}
-                      onChange={(e) => handleEditRegistrationFormChange('description', e.target.value)}
-                    />
-                  ) : (
-                    <Box>
-                      <Typography variant="caption" sx={{ color: COLORS.TEXT_SECONDARY, mb: 0.5, display: 'block', fontSize: '0.75rem' }}>
-                        Description
-                      </Typography>
-                      <Box sx={{
-                        p: 1.5,
-                        border: `1px solid ${COLORS.BORDER_LIGHT}`,
-                        borderRadius: 1,
-                        backgroundColor: COLORS.BG_LIGHT,
-                        borderLeft: `3px solid ${COLORS.SECONDARY}`,
-                        minHeight: '80px'
-                      }}>
-                        <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>
-                          {selectedRegistration.description}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  )}
-                </Grid>
-                
-                <Grid item xs={12}>
-                  {registrationEditMode ? (
-                    <PremiumTextField
-                      label="Address"
-                      fullWidth
-                      value={editRegistrationForm.address}
-                      onChange={(e) => handleEditRegistrationFormChange('address', e.target.value)}
-                      required
-                    />
-                  ) : (
-                    <Box>
-                      <Typography variant="caption" sx={{ color: COLORS.TEXT_SECONDARY, mb: 0.5, display: 'block', fontSize: '0.75rem' }}>
-                        Address
-                      </Typography>
-                      <Box sx={{
-                        p: 1.5,
-                        border: `1px solid ${COLORS.BORDER_LIGHT}`,
-                        borderRadius: 1,
-                        backgroundColor: COLORS.BG_LIGHT,
-                        borderLeft: `3px solid ${COLORS.SECONDARY}`
-                      }}>
-                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                          {selectedRegistration.address}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  )}
-                </Grid>
-                
-                <Grid item xs={12} sm={6}>
-                  <PremiumDisplayField
-                    label="City"
-                    value={registrationEditMode ? editRegistrationForm.city : selectedRegistration.city}
-                    isEditMode={registrationEditMode}
-                    onChange={(value) => handleEditRegistrationFormChange('city', value)}
-                    required
-                  />
-                </Grid>
-                
-                <Grid item xs={12} sm={6}>
-                  <PremiumDisplayField
-                    label="Country"
-                    value={registrationEditMode ? editRegistrationForm.country : selectedRegistration.country}
-                    isEditMode={registrationEditMode}
-                    onChange={(value) => handleEditRegistrationFormChange('country', value)}
-                    required
-                  />
-                </Grid>
-
-                <Grid item xs={12} sm={6}>
-                  <PremiumDisplayField
-                    label="State"
-                    value={registrationEditMode ? editRegistrationForm.state : (selectedRegistration.state || '')}
-                    isEditMode={registrationEditMode}
-                    onChange={(value) => handleEditRegistrationFormChange('state', value)}
-                  />
-                </Grid>
-
-                <Grid item xs={12} sm={6}>
-                  <PremiumDisplayField
-                    label="Zip Code"
-                    value={registrationEditMode ? editRegistrationForm.zipCode : (selectedRegistration.zipCode || '')}
-                    isEditMode={registrationEditMode}
-                    onChange={(value) => handleEditRegistrationFormChange('zipCode', value)}
-                  />
-                </Grid>
-                
-                <Grid item xs={12} sm={6}>
-                  <PremiumDisplayField
-                    label="Phone"
-                    value={registrationEditMode ? editRegistrationForm.phone : selectedRegistration.phone}
-                    isEditMode={registrationEditMode}
-                    onChange={(value) => handleEditRegistrationFormChange('phone', value)}
-                    required
-                  />
-                </Grid>
-
-                <Grid item xs={12} sm={6}>
-                  <PremiumDisplayField
-                    label="Contact Email"
-                    value={registrationEditMode ? editRegistrationForm.contactEmail : selectedRegistration.contactEmail}
-                    isEditMode={registrationEditMode}
-                    onChange={(value) => handleEditRegistrationFormChange('contactEmail', value)}
-                    type="email"
-                    required
-                  />
-                </Grid>
-
-                {!registrationEditMode && (
-                  <>
+                      <Divider sx={{ mb: 2 }} />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      {registrationEditMode ? (
+                        <PremiumTextField
+                          label="Hotel Name"
+                          fullWidth
+                          value={editRegistrationForm.hotelName}
+                          onChange={(e) => handleEditRegistrationFormChange('hotelName', e.target.value)}
+                          required
+                        />
+                      ) : (
+                        <PremiumDisplayField
+                          label="Hotel Name"
+                          value={selectedRegistration.hotelName}
+                          isEditMode={false}
+                        />
+                      )}
+                    </Grid>
                     <Grid item xs={12} sm={6}>
                       <PremiumDisplayField
                         label="Status"
@@ -1435,7 +1301,41 @@ const HotelManagementAdmin: React.FC = () => {
                         isEditMode={false}
                       />
                     </Grid>
-
+                    <Grid item xs={12}>
+                      {registrationEditMode ? (
+                        <PremiumTextField
+                          label="Address"
+                          fullWidth
+                          value={editRegistrationForm.address}
+                          onChange={(e) => handleEditRegistrationFormChange('address', e.target.value)}
+                          required
+                        />
+                      ) : (
+                        <PremiumDisplayField
+                          label="Address"
+                          value={selectedRegistration.address}
+                          isEditMode={false}
+                        />
+                      )}
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <PremiumDisplayField
+                        label="City"
+                        value={registrationEditMode ? editRegistrationForm.city : selectedRegistration.city}
+                        isEditMode={registrationEditMode}
+                        onChange={(value) => handleEditRegistrationFormChange('city', value)}
+                        required
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <PremiumDisplayField
+                        label="Country"
+                        value={registrationEditMode ? editRegistrationForm.country : selectedRegistration.country}
+                        isEditMode={registrationEditMode}
+                        onChange={(value) => handleEditRegistrationFormChange('country', value)}
+                        required
+                      />
+                    </Grid>
                     <Grid item xs={12} sm={6}>
                       <PremiumDisplayField
                         label="Submitted At"
@@ -1443,180 +1343,309 @@ const HotelManagementAdmin: React.FC = () => {
                         isEditMode={false}
                       />
                     </Grid>
-                  </>
-                )}
+                    {selectedRegistration.reviewedAt && (
+                      <Grid item xs={12} sm={6}>
+                        <PremiumDisplayField
+                          label="Reviewed At"
+                          value={formatDate(selectedRegistration.reviewedAt)}
+                          isEditMode={false}
+                        />
+                      </Grid>
+                    )}
 
-                {(selectedRegistration.licenseNumber || registrationEditMode) && (
-                  <Grid item xs={12} sm={6}>
-                    <PremiumDisplayField
-                      label="License Number"
-                      value={registrationEditMode ? editRegistrationForm.licenseNumber : (selectedRegistration.licenseNumber || '')}
-                      isEditMode={registrationEditMode}
-                      onChange={(value) => handleEditRegistrationFormChange('licenseNumber', value)}
-                    />
+                    <Grid item xs={12}>
+                      <Typography variant="subtitle1" fontWeight={600} color="primary" sx={{ mt: 1, mb: 1 }}>
+                        Registered Hotel Admin
+                      </Typography>
+                      <Divider sx={{ mb: 2 }} />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      {registrationEditMode ? (
+                        <PremiumTextField
+                          label="Contact Person"
+                          fullWidth
+                          value={editRegistrationForm.contactPerson}
+                          onChange={(e) => handleEditRegistrationFormChange('contactPerson', e.target.value)}
+                          required
+                        />
+                      ) : (
+                        <PremiumDisplayField
+                          label="Contact Person"
+                          value={selectedRegistration.contactPerson}
+                          isEditMode={false}
+                        />
+                      )}
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <PremiumDisplayField
+                        label="Contact Email"
+                        value={registrationEditMode ? editRegistrationForm.contactEmail : selectedRegistration.contactEmail}
+                        isEditMode={registrationEditMode}
+                        onChange={(value) => handleEditRegistrationFormChange('contactEmail', value)}
+                        type="email"
+                        required
+                      />
+                    </Grid>
                   </Grid>
                 )}
 
-                {(selectedRegistration.taxId || registrationEditMode) && (
-                  <Grid item xs={12} sm={6}>
-                    <PremiumDisplayField
-                      label="Tax ID"
-                      value={registrationEditMode ? editRegistrationForm.taxId : (selectedRegistration.taxId || '')}
-                      isEditMode={registrationEditMode}
-                      onChange={(value) => handleEditRegistrationFormChange('taxId', value)}
-                    />
-                  </Grid>
-                )}
+                {/* Step 2: Additional Details */}
+                {registrationWizardStep === 1 && (
+                  <Grid container spacing={2}>
+                    <Grid item xs={12}>
+                      <Typography variant="subtitle1" fontWeight={600} color="primary" sx={{ mb: 1 }}>
+                        Business Details
+                      </Typography>
+                      <Divider sx={{ mb: 2 }} />
+                    </Grid>
+                    <Grid item xs={12}>
+                      {registrationEditMode ? (
+                        <PremiumTextField
+                          label="Description"
+                          multiline
+                          rows={3}
+                          fullWidth
+                          value={editRegistrationForm.description}
+                          onChange={(e) => handleEditRegistrationFormChange('description', e.target.value)}
+                        />
+                      ) : (
+                        <PremiumDisplayField
+                          label="Description"
+                          value={selectedRegistration.description}
+                          isEditMode={false}
+                          multiline
+                          rows={3}
+                        />
+                      )}
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <PremiumDisplayField
+                        label="Phone"
+                        value={registrationEditMode ? editRegistrationForm.phone : selectedRegistration.phone}
+                        isEditMode={registrationEditMode}
+                        onChange={(value) => handleEditRegistrationFormChange('phone', value)}
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <PremiumDisplayField
+                        label="Website URL"
+                        value={registrationEditMode ? editRegistrationForm.websiteUrl : (selectedRegistration.websiteUrl || '')}
+                        isEditMode={registrationEditMode}
+                        onChange={(value) => handleEditRegistrationFormChange('websiteUrl', value)}
+                      />
+                    </Grid>
 
-                {(selectedRegistration.websiteUrl || registrationEditMode) && (
-                  <Grid item xs={12}>
-                    <PremiumDisplayField
-                      label="Website URL"
-                      value={registrationEditMode ? editRegistrationForm.websiteUrl : (selectedRegistration.websiteUrl || '')}
-                      isEditMode={registrationEditMode}
-                      onChange={(value) => handleEditRegistrationFormChange('websiteUrl', value)}
-                    />
-                  </Grid>
-                )}
+                    <Grid item xs={12}>
+                      <Typography variant="subtitle1" fontWeight={600} color="primary" sx={{ mt: 1, mb: 1 }}>
+                        Payment Information
+                      </Typography>
+                      <Divider sx={{ mb: 2 }} />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <PremiumDisplayField
+                        label="Mobile Payment Phone"
+                        value={registrationEditMode ? editRegistrationForm.mobilePaymentPhone : (selectedRegistration.mobilePaymentPhone || '')}
+                        isEditMode={registrationEditMode}
+                        onChange={(value) => handleEditRegistrationFormChange('mobilePaymentPhone', value)}
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <PremiumDisplayField
+                        label="Mobile Payment Phone 2"
+                        value={registrationEditMode ? editRegistrationForm.mobilePaymentPhone2 : (selectedRegistration.mobilePaymentPhone2 || '')}
+                        isEditMode={registrationEditMode}
+                        onChange={(value) => handleEditRegistrationFormChange('mobilePaymentPhone2', value)}
+                      />
+                    </Grid>
 
-                {(selectedRegistration.facilityAmenities || registrationEditMode) && (
-                  <Grid item xs={12}>
-                    <PremiumDisplayField
-                      label="Facility Amenities"
-                      value={registrationEditMode ? editRegistrationForm.facilityAmenities : (selectedRegistration.facilityAmenities || '')}
-                      isEditMode={registrationEditMode}
-                      onChange={(value) => handleEditRegistrationFormChange('facilityAmenities', value)}
-                      multiline
-                      rows={2}
-                      placeholder="WiFi, Pool, Spa, Restaurant, etc."
-                    />
-                  </Grid>
-                )}
+                    <Grid item xs={12}>
+                      <Typography variant="subtitle1" fontWeight={600} color="primary" sx={{ mt: 1, mb: 1 }}>
+                        Tax & License
+                      </Typography>
+                      <Divider sx={{ mb: 2 }} />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <PremiumDisplayField
+                        label="License Number"
+                        value={registrationEditMode ? editRegistrationForm.licenseNumber : (selectedRegistration.licenseNumber || '')}
+                        isEditMode={registrationEditMode}
+                        onChange={(value) => handleEditRegistrationFormChange('licenseNumber', value)}
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <PremiumDisplayField
+                        label="Tax ID"
+                        value={registrationEditMode ? editRegistrationForm.taxId : (selectedRegistration.taxId || '')}
+                        isEditMode={registrationEditMode}
+                        onChange={(value) => handleEditRegistrationFormChange('taxId', value)}
+                      />
+                    </Grid>
 
-                {(selectedRegistration.numberOfRooms || registrationEditMode) && (
-                  <Grid item xs={12} sm={4}>
-                    <PremiumDisplayField
-                      label="Number of Rooms"
-                      value={registrationEditMode ? editRegistrationForm.numberOfRooms : (selectedRegistration.numberOfRooms?.toString() || '')}
-                      isEditMode={registrationEditMode}
-                      onChange={(value) => handleEditRegistrationFormChange('numberOfRooms', value)}
-                      placeholder="Enter number of rooms"
-                    />
-                  </Grid>
-                )}
+                    <Grid item xs={12}>
+                      <Typography variant="subtitle1" fontWeight={600} color="primary" sx={{ mt: 1, mb: 1 }}>
+                        Facility Information
+                      </Typography>
+                      <Divider sx={{ mb: 2 }} />
+                    </Grid>
+                    <Grid item xs={12}>
+                      <PremiumDisplayField
+                        label="Facility Amenities"
+                        value={registrationEditMode ? editRegistrationForm.facilityAmenities : (selectedRegistration.facilityAmenities || '')}
+                        isEditMode={registrationEditMode}
+                        onChange={(value) => handleEditRegistrationFormChange('facilityAmenities', value)}
+                        multiline
+                        rows={2}
+                        placeholder="WiFi, Pool, Spa, Restaurant, etc."
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={4}>
+                      <PremiumDisplayField
+                        label="Number of Rooms"
+                        value={registrationEditMode ? editRegistrationForm.numberOfRooms : (selectedRegistration.numberOfRooms?.toString() || '')}
+                        isEditMode={registrationEditMode}
+                        onChange={(value) => handleEditRegistrationFormChange('numberOfRooms', value)}
+                        placeholder="Enter number of rooms"
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={4}>
+                      <PremiumDisplayField
+                        label="Check-in Time"
+                        value={registrationEditMode ? editRegistrationForm.checkInTime : (selectedRegistration.checkInTime || '')}
+                        isEditMode={registrationEditMode}
+                        onChange={(value) => handleEditRegistrationFormChange('checkInTime', value)}
+                        type="time"
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={4}>
+                      <PremiumDisplayField
+                        label="Check-out Time"
+                        value={registrationEditMode ? editRegistrationForm.checkOutTime : (selectedRegistration.checkOutTime || '')}
+                        isEditMode={registrationEditMode}
+                        onChange={(value) => handleEditRegistrationFormChange('checkOutTime', value)}
+                        type="time"
+                      />
+                    </Grid>
 
-                {(selectedRegistration.checkInTime || registrationEditMode) && (
-                  <Grid item xs={12} sm={4}>
-                    <PremiumDisplayField
-                      label="Check-in Time"
-                      value={registrationEditMode ? editRegistrationForm.checkInTime : (selectedRegistration.checkInTime || '')}
-                      isEditMode={registrationEditMode}
-                      onChange={(value) => handleEditRegistrationFormChange('checkInTime', value)}
-                      type="time"
-                    />
+                    {!registrationEditMode && selectedRegistration.reviewComments && (
+                      <>
+                        <Grid item xs={12}>
+                          <Divider sx={{ my: 1 }} />
+                        </Grid>
+                        <Grid item xs={12}>
+                          <PremiumDisplayField
+                            label="Review Comments"
+                            value={selectedRegistration.reviewComments}
+                            isEditMode={false}
+                            multiline
+                            rows={3}
+                          />
+                        </Grid>
+                      </>
+                    )}
                   </Grid>
                 )}
-
-                {(selectedRegistration.checkOutTime || registrationEditMode) && (
-                  <Grid item xs={12} sm={4}>
-                    <PremiumDisplayField
-                      label="Check-out Time"
-                      value={registrationEditMode ? editRegistrationForm.checkOutTime : (selectedRegistration.checkOutTime || '')}
-                      isEditMode={registrationEditMode}
-                      onChange={(value) => handleEditRegistrationFormChange('checkOutTime', value)}
-                      type="time"
-                    />
-                  </Grid>
-                )}
-
-                {!registrationEditMode && selectedRegistration.reviewedAt && (
-                  <Grid item xs={12} sm={6}>
-                    <PremiumDisplayField
-                      label="Reviewed At"
-                      value={formatDate(selectedRegistration.reviewedAt)}
-                      isEditMode={false}
-                    />
-                  </Grid>
-                )}
-
-                {!registrationEditMode && selectedRegistration.reviewComments && (
-                  <Grid item xs={12}>
-                    <PremiumDisplayField
-                      label="Review Comments"
-                      value={selectedRegistration.reviewComments}
-                      isEditMode={false}
-                      multiline
-                      rows={3}
-                    />
-                  </Grid>
-                )}
-
-                {!registrationEditMode && selectedRegistration.tenantId && (
-                  <Grid item xs={12} sm={6}>
-                    <PremiumDisplayField
-                      label="Tenant ID"
-                      value={selectedRegistration.tenantId}
-                      isEditMode={false}
-                    />
-                  </Grid>
-                )}
-              </Grid>
+              </Box>
             )}
           </DialogContent>
           <DialogActions sx={{ px: 3, py: 2, borderTop: `1px solid ${COLORS.BORDER_LIGHT}` }}>
             {registrationEditMode ? (
               <>
                 <Button onClick={handleCancelRegistrationEdit}>Cancel</Button>
-                <Button 
-                  variant="contained" 
-                  onClick={handleSaveRegistrationEdit}
-                  disabled={!editRegistrationForm.hotelName || !editRegistrationForm.contactPerson || !editRegistrationForm.contactEmail}
-                >
-                  Save Changes
-                </Button>
-              </>
-            ) : (
-              <>
-                <Button 
-                  onClick={() => setRegistrationViewDialogOpen(false)}
-                  sx={{ color: COLORS.TEXT_SECONDARY }}
-                >
-                  Close
-                </Button>
-                {selectedRegistration?.status === 'PENDING' && (
+                <Box sx={{ flex: 1 }} />
+                {registrationWizardStep === 0 ? (
+                  <Button
+                    variant="contained"
+                    endIcon={<NavigateNext />}
+                    onClick={() => setRegistrationWizardStep(1)}
+                  >
+                    Next
+                  </Button>
+                ) : (
                   <>
                     <Button
-                      variant="outlined"
-                      color="error"
-                      startIcon={<RejectIcon />}
-                      onClick={() => openRejectionDialog(selectedRegistration)}
-                      sx={{
-                        borderColor: COLORS.ERROR,
-                        '&:hover': {
-                          backgroundColor: COLORS.BG_ERROR_LIGHT,
-                          borderColor: COLORS.ERROR
-                        }
-                      }}
+                      startIcon={<NavigateBefore />}
+                      onClick={() => setRegistrationWizardStep(0)}
                     >
-                      Reject
+                      Back
                     </Button>
-                    <Button
-                      variant="contained"
-                      color="success"
-                      startIcon={<ApproveIcon />}
-                      onClick={() => openApprovalDialog(selectedRegistration)}
-                      sx={{
-                        backgroundColor: (theme) => theme.palette.success.main,
-                        '&:hover': {
-                          backgroundColor: (theme) => theme.palette.success.dark
-                        }
-                      }}
+                    <Button 
+                      variant="contained" 
+                      onClick={handleSaveRegistrationEdit}
+                      disabled={!editRegistrationForm.hotelName || !editRegistrationForm.contactPerson || !editRegistrationForm.contactEmail}
                     >
-                      Approve
+                      Save Changes
                     </Button>
                   </>
                 )}
               </>
+            ) : (
+              registrationWizardStep === 0 ? (
+                <>
+                  <Button 
+                    onClick={() => setRegistrationViewDialogOpen(false)}
+                    sx={{ color: COLORS.TEXT_SECONDARY }}
+                  >
+                    Cancel
+                  </Button>
+                  <Box sx={{ flex: 1 }} />
+                  <Button
+                    variant="contained"
+                    endIcon={<NavigateNext />}
+                    onClick={() => setRegistrationWizardStep(1)}
+                  >
+                    Next
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button
+                    startIcon={<NavigateBefore />}
+                    onClick={() => setRegistrationWizardStep(0)}
+                  >
+                    Back
+                  </Button>
+                  <Box sx={{ flex: 1 }} />
+                  <Button 
+                    onClick={() => setRegistrationViewDialogOpen(false)}
+                    sx={{ color: COLORS.TEXT_SECONDARY }}
+                  >
+                    Cancel
+                  </Button>
+                  {selectedRegistration?.status === 'PENDING' && (
+                    <>
+                      <Button
+                        variant="outlined"
+                        color="error"
+                        startIcon={<RejectIcon />}
+                        onClick={() => openRejectionDialog(selectedRegistration)}
+                        sx={{
+                          borderColor: COLORS.ERROR,
+                          '&:hover': {
+                            backgroundColor: COLORS.BG_ERROR_LIGHT,
+                            borderColor: COLORS.ERROR
+                          }
+                        }}
+                      >
+                        Reject
+                      </Button>
+                      <Button
+                        variant="contained"
+                        color="success"
+                        startIcon={<ApproveIcon />}
+                        onClick={() => openApprovalDialog(selectedRegistration)}
+                        sx={{
+                          backgroundColor: (theme) => theme.palette.success.main,
+                          '&:hover': {
+                            backgroundColor: (theme) => theme.palette.success.dark
+                          }
+                        }}
+                      >
+                        Approve
+                      </Button>
+                    </>
+                  )}
+                </>
+              )
             )}
           </DialogActions>
         </Dialog>

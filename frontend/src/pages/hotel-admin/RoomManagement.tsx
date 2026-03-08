@@ -96,20 +96,20 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
   const [automationStatus, setAutomationStatus] = useState<any>(null);
 
   // Form states
-  const [roomForm, setRoomForm] = useState<RoomCreateRequest>({
+  const [roomForm, setRoomForm] = useState({
     roomNumber: '',
     roomType: 'STANDARD',
-    pricePerNight: 0,
-    capacity: 1,
+    pricePerNight: '',
+    capacity: '',
     description: '',
   });
   const [bulkCreateProgress, setBulkCreateProgress] = useState<{ created: string[]; failed: { room: string; error: string }[] } | null>(null);
 
-  const [editForm, setEditForm] = useState<RoomUpdateRequest>({
+  const [editForm, setEditForm] = useState({
     roomNumber: '',
     roomType: 'STANDARD',
-    pricePerNight: 0,
-    capacity: 1,
+    pricePerNight: '',
+    capacity: '',
     description: '',
   });
 
@@ -373,12 +373,15 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
       if (roomNumbers.length === 1) {
         // Single room — use existing endpoint
         const response = await hotelAdminApi.createRoom(token, {
-          ...roomForm,
           roomNumber: roomNumbers[0],
+          roomType: roomForm.roomType as any,
+          pricePerNight: parseFloat(roomForm.pricePerNight) || 0,
+          capacity: parseInt(roomForm.capacity) || 1,
+          description: roomForm.description,
         });
         if (response.success) {
           setCreateDialogOpen(false);
-          setRoomForm({ roomNumber: '', roomType: 'STANDARD', pricePerNight: 0, capacity: 1, description: '' });
+          setRoomForm({ roomNumber: '', roomType: 'STANDARD', pricePerNight: '', capacity: '', description: '' });
           setBulkCreateProgress(null);
           setError(null);
         } else {
@@ -388,9 +391,9 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
         // Multiple rooms — use batch endpoint
         const response = await hotelAdminApi.createRoomsBatch(token, {
           roomNumbers,
-          roomType: roomForm.roomType,
-          pricePerNight: roomForm.pricePerNight,
-          capacity: roomForm.capacity,
+          roomType: roomForm.roomType as any,
+          pricePerNight: parseFloat(roomForm.pricePerNight) || 0,
+          capacity: parseInt(roomForm.capacity) || 1,
           description: roomForm.description,
         });
 
@@ -398,7 +401,7 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
           const { data } = response;
           if (data.failed === 0) {
             setCreateDialogOpen(false);
-            setRoomForm({ roomNumber: '', roomType: 'STANDARD', pricePerNight: 0, capacity: 1, description: '' });
+            setRoomForm({ roomNumber: '', roomType: 'STANDARD', pricePerNight: '', capacity: '', description: '' });
             setBulkCreateProgress(null);
             setError(null);
           } else {
@@ -426,7 +429,13 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
     
     try {
       setLoading(true);
-      const response = await hotelAdminApi.updateRoom(token, selectedRoom.id, editForm);
+      const response = await hotelAdminApi.updateRoom(token, selectedRoom.id, {
+        roomNumber: editForm.roomNumber,
+        roomType: editForm.roomType as any,
+        pricePerNight: parseFloat(editForm.pricePerNight) || 0,
+        capacity: parseInt(editForm.capacity) || 1,
+        description: editForm.description,
+      });
       if (response.success) {
         setEditDialogOpen(false);
         setSelectedRoom(null);
@@ -888,22 +897,18 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
                 <PremiumTextField
                   fullWidth
                   label="Price per Night"
-                  type="number"
                   value={roomForm.pricePerNight}
-                  onChange={(e) => setRoomForm({ ...roomForm, pricePerNight: parseFloat(e.target.value) })}
+                  onChange={(e) => setRoomForm({ ...roomForm, pricePerNight: e.target.value })}
                   required
-                  inputProps={{ min: 0, step: 0.01 }}
                 />
               </Grid>
               <Grid item xs={12} md={6}>
                 <PremiumTextField
                   fullWidth
                   label="Capacity"
-                  type="number"
                   value={roomForm.capacity}
-                  onChange={(e) => setRoomForm({ ...roomForm, capacity: parseInt(e.target.value) })}
+                  onChange={(e) => setRoomForm({ ...roomForm, capacity: e.target.value })}
                   required
-                  inputProps={{ min: 1, max: 10 }}
                 />
               </Grid>
               <Grid item xs={12}>
@@ -981,22 +986,18 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
                   <PremiumTextField
                     fullWidth
                     label="Price per Night"
-                    type="number"
                     value={editForm.pricePerNight}
-                    onChange={(e) => setEditForm({ ...editForm, pricePerNight: parseFloat(e.target.value) })}
+                    onChange={(e) => setEditForm({ ...editForm, pricePerNight: e.target.value })}
                     required
-                    inputProps={{ min: 0, step: 0.01 }}
                   />
                 </Grid>
                 <Grid item xs={12} md={6}>
                   <PremiumTextField
                     fullWidth
                     label="Capacity"
-                    type="number"
                     value={editForm.capacity}
-                    onChange={(e) => setEditForm({ ...editForm, capacity: parseInt(e.target.value) })}
+                    onChange={(e) => setEditForm({ ...editForm, capacity: e.target.value })}
                     required
-                    inputProps={{ min: 1, max: 10 }}
                   />
                 </Grid>
                 <Grid item xs={12}>

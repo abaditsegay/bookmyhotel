@@ -110,11 +110,11 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
   
   // Create room dialog state
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [roomForm, setRoomForm] = useState<RoomCreateRequest>({
+  const [roomForm, setRoomForm] = useState({
     roomNumber: '',
     roomType: 'STANDARD',
-    pricePerNight: 0,
-    capacity: 1,
+    pricePerNight: '',
+    capacity: '',
     description: '',
   });
 
@@ -311,12 +311,15 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
       if (roomNumbers.length === 1) {
         // Single room — use existing endpoint
         const response = await hotelAdminApi.createRoom(token, {
-          ...roomForm,
           roomNumber: roomNumbers[0],
+          roomType: roomForm.roomType as any,
+          pricePerNight: parseFloat(roomForm.pricePerNight) || 0,
+          capacity: parseInt(roomForm.capacity) || 1,
+          description: roomForm.description,
         });
         if (response.success) {
           setCreateDialogOpen(false);
-          setRoomForm({ roomNumber: '', roomType: 'STANDARD', pricePerNight: 0, capacity: 1, description: '' });
+          setRoomForm({ roomNumber: '', roomType: 'STANDARD', pricePerNight: '', capacity: '', description: '' });
           await loadRooms();
           setError(null);
         } else {
@@ -326,9 +329,9 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
         // Multiple rooms — use batch endpoint
         const response = await hotelAdminApi.createRoomsBatch(token, {
           roomNumbers,
-          roomType: roomForm.roomType,
-          pricePerNight: roomForm.pricePerNight,
-          capacity: roomForm.capacity,
+          roomType: roomForm.roomType as any,
+          pricePerNight: parseFloat(roomForm.pricePerNight) || 0,
+          capacity: parseInt(roomForm.capacity) || 1,
           description: roomForm.description,
         });
 
@@ -336,7 +339,7 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
           const { data } = response;
           if (data.failed === 0) {
             setCreateDialogOpen(false);
-            setRoomForm({ roomNumber: '', roomType: 'STANDARD', pricePerNight: 0, capacity: 1, description: '' });
+            setRoomForm({ roomNumber: '', roomType: 'STANDARD', pricePerNight: '', capacity: '', description: '' });
             setError(null);
           } else {
             const failedList = data.failedRooms.map(f => `${f.roomNumber}: ${f.error}`).join(', ');
@@ -673,20 +676,16 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
             <PremiumTextField
               fullWidth
               label={t(`${translationPrefix}.createRoom.pricePerNight`)}
-              type="number"
               value={roomForm.pricePerNight}
-              onChange={(e) => setRoomForm({ ...roomForm, pricePerNight: parseFloat(e.target.value) || 0 })}
+              onChange={(e) => setRoomForm({ ...roomForm, pricePerNight: e.target.value })}
               required
-              inputProps={{ min: 0, step: 0.01 }}
             />
             <PremiumTextField
               fullWidth
               label={t(`${translationPrefix}.createRoom.capacity`)}
-              type="number"
               value={roomForm.capacity}
-              onChange={(e) => setRoomForm({ ...roomForm, capacity: parseInt(e.target.value) || 1 })}
+              onChange={(e) => setRoomForm({ ...roomForm, capacity: e.target.value })}
               required
-              inputProps={{ min: 1, max: 10 }}
             />
             <PremiumTextField
               fullWidth

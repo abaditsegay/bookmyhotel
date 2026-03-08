@@ -1148,4 +1148,70 @@ export const frontDeskApiService = {
       };
     }
   },
+
+  /**
+   * Update booking payment status (e.g., PENDING → COMPLETED → REFUNDED/FORFEITED)
+   */
+  updatePaymentStatus: async (
+    token: string,
+    reservationId: number,
+    paymentStatus: string,
+    tenantId: string | null = null
+  ): Promise<{ success: boolean; data?: FrontDeskBooking; message?: string }> => {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/front-desk/bookings/${reservationId}/payment-status?paymentStatus=${encodeURIComponent(paymentStatus)}`,
+        {
+          method: 'PUT',
+          headers: getAuthHeaders(token, tenantId),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to update payment status');
+      }
+
+      const data = await response.json();
+      return { success: true, data };
+    } catch (error) {
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : 'Failed to update payment status'
+      };
+    }
+  },
+
+  /**
+   * Update booking payment type (CASH, BANK, MOBILE)
+   */
+  updatePaymentType: async (
+    token: string,
+    reservationId: number,
+    paymentType: string,
+    tenantId: string | null = null
+  ): Promise<{ success: boolean; data?: FrontDeskBooking; message?: string }> => {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/front-desk/bookings/${reservationId}/payment-type?paymentType=${encodeURIComponent(paymentType)}`,
+        {
+          method: 'PUT',
+          headers: getAuthHeaders(token, tenantId),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to update payment type');
+      }
+
+      const data = await response.json();
+      return { success: true, data };
+    } catch (error) {
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : 'Failed to update payment type'
+      };
+    }
+  },
 };
