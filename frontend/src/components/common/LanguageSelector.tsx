@@ -7,11 +7,9 @@ import {
   Typography,
   Tooltip,
 } from '@mui/material';
-import {
-  Language as LanguageIcon,
-} from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { saveLanguage, getCurrentLanguage, isSupportedLanguage } from '../../utils/languageUtils';
+import { useCalendarStore } from '../../contexts/store';
 
 interface LanguageSelectorProps {
   variant?: 'icon' | 'text';
@@ -23,6 +21,7 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({
   size = 'medium'
 }) => {
   const { i18n, t } = useTranslation();
+  const { setCalendarType } = useCalendarStore();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
@@ -45,7 +44,6 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({
   const handleLanguageChange = (languageCode: string) => {
     // Validate language code
     if (!isSupportedLanguage(languageCode)) {
-      // console.warn(`Unsupported language code: ${languageCode}`);
       return;
     }
     
@@ -53,25 +51,28 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({
     i18n.changeLanguage(languageCode);
     saveLanguage(languageCode);
     
+    // Auto-switch calendar: Amharic → Ethiopian, others → Gregorian
+    setCalendarType(languageCode === 'am' ? 'ethiopian' : 'gregorian');
+    
     handleClose();
   };
 
   const currentLanguage = i18n.language || 'en';
   
   const languages = [
-    { code: 'en', name: t('language.english'), flag: '🇺🇸' },
-    { code: 'am', name: t('language.amharic'), flag: '🇪🇹' },
-    { code: 'om', name: t('language.oromo'), flag: '🇪🇹' },
+    { code: 'en', abbr: 'EN', name: t('language.english') },
+    { code: 'am', abbr: 'AM', name: t('language.amharic') },
+    { code: 'om', abbr: 'OR', name: t('language.oromo') },
   ];
+
+  const getCurrentAbbr = () => {
+    const lang = languages.find(l => l.code === currentLanguage);
+    return lang ? lang.abbr : 'EN';
+  };
 
   const getCurrentLanguageName = () => {
     const lang = languages.find(l => l.code === currentLanguage);
     return lang ? lang.name : 'English';
-  };
-
-  const getCurrentLanguageFlag = () => {
-    const lang = languages.find(l => l.code === currentLanguage);
-    return lang ? lang.flag : '🇺🇸';
   };
 
   if (variant === 'text') {
@@ -95,11 +96,11 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({
             variant="body2"
             sx={{
               fontSize: size === 'small' ? '0.75rem' : '0.875rem',
-              fontWeight: 500,
+              fontWeight: 700,
               mr: 0.5,
             }}
           >
-            {getCurrentLanguageFlag()}
+            {getCurrentAbbr()}
           </Typography>
           <Typography
             variant="body2"
@@ -131,8 +132,8 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({
               selected={currentLanguage === language.code}
               sx={{ minWidth: 140 }}
             >
-              <Typography sx={{ mr: 1, fontSize: '1.1rem' }}>
-                {language.flag}
+              <Typography sx={{ mr: 1.5, fontWeight: 700, fontSize: '0.85rem', minWidth: 24 }}>
+                {language.abbr}
               </Typography>
               <Typography variant="body2">
                 {language.name}
@@ -144,7 +145,7 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({
     );
   }
 
-  // Icon variant
+  // Icon variant — shows language abbreviation (EN, AM, OR) as a button
   return (
     <Box>
       <Tooltip title={t('language.changeLanguage')}>
@@ -153,39 +154,24 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({
           size={size}
           color="inherit"
           sx={{
+            borderRadius: 2,
+            px: 1,
             '&:hover': {
               backgroundColor: 'action.hover',
             },
           }}
         >
-          <Box
+          <Typography
             sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              position: 'relative',
+              fontSize: size === 'small' ? '0.8rem' : '0.9rem',
+              fontWeight: 700,
+              color: 'inherit',
+              lineHeight: 1,
+              letterSpacing: '0.05em',
             }}
           >
-            <LanguageIcon 
-              sx={{ 
-                fontSize: size === 'small' ? '1.25rem' : '1.5rem',
-              }} 
-            />
-            <Typography
-              sx={{
-                position: 'absolute',
-                fontSize: '0.6rem',
-                fontWeight: 'bold',
-                color: 'inherit',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                lineHeight: 1,
-              }}
-            >
-              {currentLanguage.toUpperCase()}
-            </Typography>
-          </Box>
+            {getCurrentAbbr()}
+          </Typography>
         </IconButton>
       </Tooltip>
       <Menu
@@ -206,10 +192,10 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({
             key={language.code}
             onClick={() => handleLanguageChange(language.code)}
             selected={currentLanguage === language.code}
-            sx={{ minWidth: 140 }}
+            sx={{ minWidth: 160 }}
           >
-            <Typography sx={{ mr: 1, fontSize: '1.1rem' }}>
-              {language.flag}
+            <Typography sx={{ mr: 1.5, fontWeight: 700, fontSize: '0.85rem', minWidth: 24 }}>
+              {language.abbr}
             </Typography>
             <Typography variant="body2">
               {language.name}

@@ -28,13 +28,14 @@ import {
   Store as StoreIcon,
   Notifications as NotificationsIcon,
   Home as HomeIcon,
+  Apartment as ApartmentIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../hooks/useNotifications';
 import NetworkStatusIndicator from '../NetworkStatusIndicator';
 import LanguageSelector from '../common/LanguageSelector';
-import CalendarSelector from '../common/CalendarSelector';
+
 import { COLORS, addAlpha } from '../../theme/themeColors';
 
 const Navbar: React.FC = () => {
@@ -338,6 +339,22 @@ const Navbar: React.FC = () => {
               </ListItemIcon>
               <ListItemText primary="Home" />
             </ListItem>
+            <ListItem onClick={() => {
+              toggleMobileDrawer();
+              if (location.pathname === '/') {
+                document.getElementById('partner-section')?.scrollIntoView({ behavior: 'smooth' });
+              } else {
+                navigate('/');
+                setTimeout(() => {
+                  document.getElementById('partner-section')?.scrollIntoView({ behavior: 'smooth' });
+                }, 500);
+              }
+            }} sx={{ cursor: 'pointer' }}>
+              <ListItemIcon>
+                <ApartmentIcon />
+              </ListItemIcon>
+              <ListItemText primary="Hotel Registration" />
+            </ListItem>
             <ListItem onClick={() => handleNavigation('/find-booking')} sx={{ cursor: 'pointer' }}>
               <ListItemIcon>
                 <BusinessIcon />
@@ -481,9 +498,6 @@ const Navbar: React.FC = () => {
             {/* Language Selector - After mobile menu */}
             <LanguageSelector variant="icon" size="small" />
             
-            {/* Calendar Selector - Next to Language Selector */}
-            <CalendarSelector variant="icon" size="small" />
-            
             {/* Dashboard Link - Only for logged-in users */}
             {user && (
               <Box 
@@ -621,6 +635,29 @@ const Navbar: React.FC = () => {
                       }}
                     >
                       Home
+                    </Button>
+                    <Button
+                      color="inherit"
+                      onClick={() => {
+                        if (location.pathname === '/') {
+                          document.getElementById('partner-section')?.scrollIntoView({ behavior: 'smooth' });
+                        } else {
+                          navigate('/');
+                          setTimeout(() => {
+                            document.getElementById('partner-section')?.scrollIntoView({ behavior: 'smooth' });
+                          }, 500);
+                        }
+                      }}
+                      startIcon={<ApartmentIcon />}
+                      sx={{
+                        borderRadius: 2,
+                        fontSize: '0.8rem',
+                        fontWeight: 'normal',
+                        textTransform: 'none',
+                        '&:hover': { backgroundColor: getHoverBackground() },
+                      }}
+                    >
+                      Hotel Registration
                     </Button>
                     <Button
                       color="inherit"
