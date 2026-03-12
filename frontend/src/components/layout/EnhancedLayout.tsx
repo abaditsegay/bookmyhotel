@@ -11,8 +11,7 @@ import {
 import { 
   Menu as MenuIcon, 
   Close as CloseIcon,
-  ChevronLeft as ChevronLeftIcon,
-  ChevronRight as ChevronRightIcon
+  ChevronLeft as ChevronLeftIcon
 } from '@mui/icons-material';
 import Navbar from './Navbar';
 import { SystemWideNavbar } from './SystemWideNavbar';
@@ -46,12 +45,8 @@ const EnhancedLayout: React.FC<EnhancedLayoutProps> = ({
   // Sidebar state for mobile/tablet
   const [sidebarOpen, setSidebarOpen] = useState(false);
   
-  // Add state for toggling sidebar visibility
-  const [sidebarVisible, setSidebarVisible] = useState(true);
-  
   // Show sidebar only for authenticated users, when not hidden, and not for CUSTOMER/GUEST roles
-  const showSidebar = isAuthenticated && !hideSidebar && user?.roles && 
-    !user.roles.includes('CUSTOMER') && !user.roles.includes('GUEST') && sidebarVisible;
+  const showSidebar = false; // sidebar permanently hidden (calendar/todos widgets disabled)
   
   // Determine which navbar to render
   const renderNavbar = () => {
@@ -123,12 +118,6 @@ const EnhancedLayout: React.FC<EnhancedLayoutProps> = ({
             display: 'flex',
             flexDirection: 'column',
             minWidth: 0, // Prevent flex item from overflowing
-            // Adjust width based on sidebar presence
-            ...(isAuthenticated && !hideSidebar && user?.roles && 
-                !user.roles.includes('CUSTOMER') && !user.roles.includes('GUEST') && 
-                isDesktop && sidebarVisible && {
-              marginRight: '350px', // Make room for fixed sidebar
-            }),
           }}
         >
           <Container
@@ -152,36 +141,8 @@ const EnhancedLayout: React.FC<EnhancedLayoutProps> = ({
           </Container>
         </Box>
         
-        {/* Desktop Sidebar Toggle Button */}
-        {isAuthenticated && !hideSidebar && user?.roles && 
-         !user.roles.includes('CUSTOMER') && !user.roles.includes('GUEST') && isDesktop && (
-          <IconButton
-            onClick={() => setSidebarVisible(!sidebarVisible)}
-            sx={{
-              position: 'fixed',
-              top: 80,
-              right: sidebarVisible ? 360 : 16,
-              zIndex: 1000,
-              bgcolor: 'error.main',
-              color: 'white',
-              boxShadow: 2,
-              border: 1,
-              borderColor: 'error.main',
-              '&:hover': {
-                bgcolor: 'error.dark',
-                boxShadow: 3,
-              },
-              transition: 'all 0.3s ease',
-            }}
-            size="small"
-          >
-            {sidebarVisible ? <ChevronRightIcon /> : <ChevronLeftIcon />}
-          </IconButton>
-        )}
-        
-        {/* Desktop Sidebar - Fixed position */}
-        {isAuthenticated && !hideSidebar && user?.roles && 
-         !user.roles.includes('CUSTOMER') && !user.roles.includes('GUEST') && isDesktop && (
+        {/* Desktop Sidebar - hidden, widgets disabled */}
+        {false && (
           <Box
             sx={{
               position: 'fixed',
