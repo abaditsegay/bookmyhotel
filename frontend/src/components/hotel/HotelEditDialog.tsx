@@ -85,11 +85,11 @@ const HotelEditDialog: React.FC<HotelEditDialogProps> = ({
       adminApiService.setToken(token);
       
       // Check if user has permission to access tenants
-      const hasSystemAdminRole = user?.roles?.includes('SYSTEM_ADMIN') || user?.roles?.includes('ADMIN');
+      const hasSystemAdminRole = user?.roles?.includes('SUPER_ADMIN') || user?.roles?.includes('ADMIN');
       
       if (!hasSystemAdminRole) {
         // For hotel admins, they should edit their own hotel without tenant selection
-        const isHotelAdmin = user?.roles?.includes('HOTEL_ADMIN') || user?.roles?.includes('HOTEL_MANAGER');
+        const isHotelAdmin = user?.roles?.includes('HOTEL_ADMIN');
         
         if (isHotelAdmin && user?.tenantId) {
           // Auto-populate tenant for hotel admins
@@ -252,7 +252,7 @@ const HotelEditDialog: React.FC<HotelEditDialogProps> = ({
                 fullWidth
                 value={formData.tenantId || ''}
                 onChange={handleTenantChange}
-                disabled={saving || loadingTenants || (user?.roles?.includes('HOTEL_ADMIN') || user?.roles?.includes('HOTEL_MANAGER'))}
+                disabled={saving || loadingTenants || user?.roles?.includes('HOTEL_ADMIN')}
               >
                 <MenuItem value="">
                   <em>Select a tenant</em>
@@ -263,7 +263,7 @@ const HotelEditDialog: React.FC<HotelEditDialogProps> = ({
                   </MenuItem>
                 ))}
               </PremiumSelect>
-              {(user?.roles?.includes('HOTEL_ADMIN') || user?.roles?.includes('HOTEL_MANAGER')) && (
+              {user?.roles?.includes('HOTEL_ADMIN') && (
                 <FormHelperText>Hotel admins can only edit their own hotel</FormHelperText>
               )}
             </Grid>

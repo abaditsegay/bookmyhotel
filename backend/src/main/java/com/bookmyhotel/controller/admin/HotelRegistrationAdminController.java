@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
  */
 @RestController
 @RequestMapping("/api/admin/hotel-registrations")
-@PreAuthorize("hasRole('ADMIN') or hasRole('SYSTEM_ADMIN')")
+@PreAuthorize("hasRole('ADMIN') or hasRole('SUPER_ADMIN')")
 public class HotelRegistrationAdminController {
 
     private static final Logger logger = LoggerFactory.getLogger(HotelRegistrationAdminController.class);

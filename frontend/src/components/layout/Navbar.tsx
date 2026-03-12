@@ -95,16 +95,15 @@ const Navbar: React.FC = () => {
   // Helper function to get user role display name
   const getRoleDisplayName = (role: string) => {
     const roleMap: { [key: string]: string } = {
-      'SYSTEM_ADMIN': 'System Admin',
-      'ADMIN': 'System Administrator',
+      'SUPER_ADMIN': 'Super Administrator',
+      'ADMIN': 'Administrator',
       'HOTEL_ADMIN': 'Hotel Administrator',
+      'OPERATIONAL_ADMIN': 'Operational Administrator',
       'FRONTDESK': 'Front Desk Staff',
-      'CUSTOMER': 'Customer', // Registered users with accounts
-      'HOTEL_MANAGER': 'Hotel Manager',
       'HOUSEKEEPING': 'Housekeeping Staff',
-      'OPERATIONS_SUPERVISOR': 'Operations Supervisor',
       'MAINTENANCE': 'Maintenance Staff',
-      'GUEST': 'Guest' // Anonymous users (rarely seen in UI)
+      'CUSTOMER': 'Customer',
+      'GUEST': 'Guest'
     };
     return roleMap[role] || role;
   };
@@ -112,16 +111,15 @@ const Navbar: React.FC = () => {
   // Helper function to get role color
   const getRoleColor = (role: string) => {
     const colorMap: { [key: string]: 'primary' | 'secondary' | 'success' | 'warning' | 'info' | 'error' } = {
-      'SYSTEM_ADMIN': 'error',
+      'SUPER_ADMIN': 'error',
       'ADMIN': 'error',
       'HOTEL_ADMIN': 'primary',
+      'OPERATIONAL_ADMIN': 'primary',
       'FRONTDESK': 'info',
-      'CUSTOMER': 'success', // Registered customers
-      'HOTEL_MANAGER': 'secondary',
       'HOUSEKEEPING': 'warning',
-      'OPERATIONS_SUPERVISOR': 'primary',
       'MAINTENANCE': 'warning',
-      'GUEST': 'secondary' // Anonymous guests
+      'CUSTOMER': 'success',
+      'GUEST': 'secondary'
     };
     return colorMap[role] || 'primary';
   };
@@ -130,7 +128,7 @@ const Navbar: React.FC = () => {
   const shouldShowHotelName = () => {
     // Hide hotel name for system admin and customer users
     if (!user) return true; // Show for anonymous users
-    return user.role !== 'SYSTEM_ADMIN' && user.role !== 'ADMIN' && user.role !== 'CUSTOMER';
+    return user.role !== 'SUPER_ADMIN' && user.role !== 'ADMIN' && user.role !== 'CUSTOMER';
   };
 
   // Navigation items based on user role
@@ -176,9 +174,9 @@ const Navbar: React.FC = () => {
         return [...baseItems, ...frontdeskItems];
       }
 
-      // For operations supervisor, don't show operations dashboard link since it's their landing page
-      if (user.role === 'OPERATIONS_SUPERVISOR') {
-        // Operations supervisors land directly on their dashboard, no additional nav needed
+      // For operational admin, don't show operations dashboard link since it's their landing page
+      if (user.role === 'OPERATIONAL_ADMIN') {
+        // Operational admins land directly on their dashboard, no additional nav needed
         return [...baseItems];
       }
 
@@ -200,7 +198,7 @@ const Navbar: React.FC = () => {
         return [...baseItems, ...customerItems];
       }
 
-      // For other roles (like HOUSEKEEPING, HOTEL_MANAGER), show only base items
+      // For other roles (like HOUSEKEEPING), show only base items
       return [...baseItems];
     }
 
@@ -604,7 +602,7 @@ const Navbar: React.FC = () => {
                 />
                 
                 {/* Network Status Indicator - Only for staff/admin roles */}
-                {user.roles && user.roles.some(role => ['HOTEL_ADMIN', 'ADMIN', 'FRONTDESK', 'HOUSEKEEPING', 'MAINTENANCE', 'OPERATIONS_SUPERVISOR', 'SYSTEM_ADMIN'].includes(role)) && (
+                {user.roles && user.roles.some(role => ['HOTEL_ADMIN', 'ADMIN', 'SUPER_ADMIN', 'FRONTDESK', 'HOUSEKEEPING', 'MAINTENANCE', 'OPERATIONAL_ADMIN'].includes(role)) && (
                   <NetworkStatusIndicator 
                     variant="minimal" 
                     className="network-status-navbar"

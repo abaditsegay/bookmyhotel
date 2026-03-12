@@ -123,7 +123,7 @@ const HousekeepingDashboard: React.FC = () => {
   const [selectedTask, setSelectedTask] = useState<HousekeepingTask | null>(null);
 
   // Get current user role (from auth context)
-  const currentUserRole = 'OPERATIONS_SUPERVISOR'; // This would come from auth context
+  const currentUserRole = 'OPERATIONAL_ADMIN'; // This would come from auth context
 
   useEffect(() => {
     loadTasks();
@@ -650,7 +650,7 @@ const HousekeepingDashboard: React.FC = () => {
                     )}
                     
                     {/* Reassign button for assigned or in-progress tasks */}
-                    {currentUserRole === 'OPERATIONS_SUPERVISOR' && 
+                    {currentUserRole === 'OPERATIONAL_ADMIN' && 
                      (task.status === 'assigned' || task.status === 'ASSIGNED' || 
                       task.status === 'in_progress' || task.status === 'IN_PROGRESS') && (
                       <Tooltip title="Reassign Task">
@@ -664,7 +664,7 @@ const HousekeepingDashboard: React.FC = () => {
                       </Tooltip>
                     )}
                     
-                    {currentUserRole === 'OPERATIONS_SUPERVISOR' && (
+                    {currentUserRole === 'OPERATIONAL_ADMIN' && (
                       <Tooltip title="Edit Task">
                         <IconButton 
                           size="small"
@@ -831,7 +831,7 @@ const HousekeepingDashboard: React.FC = () => {
       <Dialog open={taskDetailOpen} onClose={() => setTaskDetailOpen(false)} maxWidth="md" fullWidth>
         <DialogTitle>
           Task Details
-          {!isEditingTask && currentUserRole === 'OPERATIONS_SUPERVISOR' && (
+          {!isEditingTask && currentUserRole === 'OPERATIONAL_ADMIN' && (
             <Button 
               startIcon={<EditIcon />} 
               onClick={handleEditTask}
@@ -952,7 +952,7 @@ const HousekeepingDashboard: React.FC = () => {
             </>
           ) : (
             <>
-              {selectedTask && currentUserRole === 'OPERATIONS_SUPERVISOR' && (
+              {selectedTask && currentUserRole === 'OPERATIONAL_ADMIN' && (
                 <Button 
                   onClick={() => {
                     setTaskDetailOpen(false);

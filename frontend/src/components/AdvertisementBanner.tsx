@@ -115,7 +115,7 @@ export default function AdvertisementBanner({ maxAds = 5 }: AdvertisementBannerP
   }, [fetchHotels]);
 
   // Hide advertisement banner for operations users
-  const isOperationsUser = user?.role === 'OPERATIONS_SUPERVISOR' || 
+  const isOperationsUser = user?.role === 'OPERATIONAL_ADMIN' || 
                            user?.role === 'HOUSEKEEPING' || 
                            user?.role === 'MAINTENANCE';
 

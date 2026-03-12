@@ -48,7 +48,7 @@ public class TodoService {
         User user = userOpt.get();
 
         // For system admin users, get their personal todos (not hotel-scoped)
-        if (user.getRoles().contains(UserRole.SYSTEM_ADMIN)) {
+        if (user.getRoles().contains(UserRole.SUPER_ADMIN)) {
             return todoRepository.findByCreatedByOrderByCreatedAtDesc(user);
         }
 
@@ -68,7 +68,7 @@ public class TodoService {
         User user = userOpt.get();
 
         // For system admin users, get their personal todos (not hotel-scoped)
-        if (user.getRoles().contains(UserRole.SYSTEM_ADMIN)) {
+        if (user.getRoles().contains(UserRole.SUPER_ADMIN)) {
             // Note: We'd need a custom repository method for this, for now return empty
             // list
             return List.of(); // TODO: implement findByCreatedByAndSeverityOrderByCreatedAtDesc
@@ -89,7 +89,7 @@ public class TodoService {
         User user = userOpt.get();
 
         // For system admin users, get their personal todos (not hotel-scoped)
-        if (user.getRoles().contains(UserRole.SYSTEM_ADMIN)) {
+        if (user.getRoles().contains(UserRole.SUPER_ADMIN)) {
             // Note: We'd need a custom repository method for this, for now return empty
             // page
             return Page.empty(); // TODO: implement findByCreatedBy with pagination
@@ -121,7 +121,7 @@ public class TodoService {
         todo.setCreatedAt(LocalDateTime.now());
 
         // For system admin users, create personal todos (not hotel-scoped)
-        if (user.getRoles().contains(UserRole.SYSTEM_ADMIN)) {
+        if (user.getRoles().contains(UserRole.SUPER_ADMIN)) {
             // System admin todos are not associated with any hotel
             todo.setHotel(null);
         } else {
@@ -146,7 +146,7 @@ public class TodoService {
                 .orElseThrow(() -> new RuntimeException("Todo not found"));
 
         // Security check: Ensure user can only update their own todos
-        if (user.getRoles().contains(UserRole.SYSTEM_ADMIN)) {
+        if (user.getRoles().contains(UserRole.SUPER_ADMIN)) {
             // System admin can only update their own personal todos
             if (!todo.getCreatedBy().equals(user)) {
                 throw new RuntimeException("Access denied: You can only update your own todos");
@@ -185,7 +185,7 @@ public class TodoService {
                 .orElseThrow(() -> new RuntimeException("Todo not found"));
 
         // Security check: Ensure user can only update their own todos
-        if (user.getRoles().contains(UserRole.SYSTEM_ADMIN)) {
+        if (user.getRoles().contains(UserRole.SUPER_ADMIN)) {
             // System admin can only update their own personal todos
             if (!todo.getCreatedBy().equals(user)) {
                 throw new RuntimeException("Access denied: You can only update your own todos");
@@ -217,7 +217,7 @@ public class TodoService {
                 .orElseThrow(() -> new RuntimeException("Todo not found"));
 
         // Security check: Ensure user can only delete their own todos
-        if (user.getRoles().contains(UserRole.SYSTEM_ADMIN)) {
+        if (user.getRoles().contains(UserRole.SUPER_ADMIN)) {
             // System admin can only delete their own personal todos
             if (!todo.getCreatedBy().equals(user)) {
                 throw new RuntimeException("Access denied: You can only delete your own todos");

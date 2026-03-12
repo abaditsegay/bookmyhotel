@@ -174,7 +174,7 @@ public class DataInitializer implements CommandLineRunner {
         systemAdmin.setFirstName("System");
         systemAdmin.setLastName("Administrator");
         systemAdmin.setIsActive(true);
-        systemAdmin.setRoles(Set.of(UserRole.SYSTEM_ADMIN));
+        systemAdmin.setRoles(Set.of(UserRole.SUPER_ADMIN));
         // Leave hotel as null for system-wide admin
 
         try {

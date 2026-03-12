@@ -114,16 +114,16 @@ public class SecurityConfig {
                                                 // Auth endpoints that require authentication
                                                 .requestMatchers("/api/auth/logout").authenticated()
 
-                                                // Admin endpoints
-                                                .requestMatchers("/api/admin/**").hasAnyRole("ADMIN", "SYSTEM_ADMIN")
+                                                // Admin endpoints (SUPER_ADMIN and ADMIN are both global admins)
+                                                .requestMatchers("/api/admin/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
 
                                                 // Hotel admin endpoints
                                                 .requestMatchers("/api/hotel-admin/**")
-                                                .hasAnyRole("HOTEL_ADMIN", "ADMIN")
+                                                .hasAnyRole("HOTEL_ADMIN", "ADMIN", "SUPER_ADMIN")
 
-                                                // Supervisor endpoints
+                                                // Operational admin / supervisor endpoints
                                                 .requestMatchers("/api/supervisor/**")
-                                                .hasAnyRole("OPERATIONS_SUPERVISOR", "HOTEL_ADMIN", "ADMIN")
+                                                .hasAnyRole("OPERATIONAL_ADMIN", "HOTEL_ADMIN", "ADMIN", "SUPER_ADMIN")
 
                                                 // User endpoints (authenticated users only)
                                                 .requestMatchers("/api/users/**").authenticated()

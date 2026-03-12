@@ -84,8 +84,8 @@ export const useNotifications = () => {
       setLoading(true);
       setError(null);
       
-      // Skip notifications for system admin users - they don't have access
-      if (hasRole('SYSTEM_ADMIN')) {
+      // Skip notifications for super admin users - they don't have access
+      if (hasRole('SUPER_ADMIN')) {
         // console.log('🔑 System admin detected - skipping notifications API call');
         setNotifications([]);
         setStats({ totalUnread: 0, unreadCancellations: 0, unreadModifications: 0 });
@@ -121,8 +121,8 @@ export const useNotifications = () => {
   }, [hasRole]);
 
   const markAsRead = async (notificationId: number) => {
-    // Skip for system admin or users without proper roles
-    if (hasRole('SYSTEM_ADMIN') || (!hasRole('HOTEL_ADMIN') && !hasRole('FRONTDESK'))) {
+    // Skip for super admin or users without proper roles
+    if (hasRole('SUPER_ADMIN') || (!hasRole('HOTEL_ADMIN') && !hasRole('FRONTDESK'))) {
       // console.log('🚫 User does not have permission to mark notifications as read');
       return false;
     }
@@ -152,8 +152,8 @@ export const useNotifications = () => {
   };
 
   const markAllAsRead = async () => {
-    // Skip for system admin or users without proper roles
-    if (hasRole('SYSTEM_ADMIN') || (!hasRole('HOTEL_ADMIN') && !hasRole('FRONTDESK'))) {
+    // Skip for super admin or users without proper roles
+    if (hasRole('SUPER_ADMIN') || (!hasRole('HOTEL_ADMIN') && !hasRole('FRONTDESK'))) {
       // console.log('🚫 User does not have permission to mark all notifications as read');
       return false;
     }
@@ -181,8 +181,8 @@ export const useNotifications = () => {
   };
 
   const archiveNotification = async (notificationId: number) => {
-    // Skip for system admin or users without proper roles
-    if (hasRole('SYSTEM_ADMIN') || (!hasRole('HOTEL_ADMIN') && !hasRole('FRONTDESK'))) {
+    // Skip for super admin or users without proper roles
+    if (hasRole('SUPER_ADMIN') || (!hasRole('HOTEL_ADMIN') && !hasRole('FRONTDESK'))) {
       // console.log('🚫 User does not have permission to archive notifications');
       return false;
     }
@@ -212,8 +212,8 @@ export const useNotifications = () => {
   };
 
   const getUnreadCount = async (): Promise<number> => {
-    // Skip for system admin or users without proper roles
-    if (hasRole('SYSTEM_ADMIN') || (!hasRole('HOTEL_ADMIN') && !hasRole('FRONTDESK'))) {
+    // Skip for super admin or users without proper roles
+    if (hasRole('SUPER_ADMIN') || (!hasRole('HOTEL_ADMIN') && !hasRole('FRONTDESK'))) {
       return 0;
     }
     

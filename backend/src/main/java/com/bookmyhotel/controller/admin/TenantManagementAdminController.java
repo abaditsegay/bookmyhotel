@@ -22,7 +22,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/admin/tenants")
-@PreAuthorize("hasRole('SYSTEM_ADMIN') or hasRole('ADMIN')")
+@PreAuthorize("hasRole('SUPER_ADMIN') or hasRole('ADMIN')")
 public class TenantManagementAdminController {
 
     @Autowired

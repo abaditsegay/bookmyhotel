@@ -86,7 +86,7 @@ export const SystemWideNavbar: React.FC = () => {
     return null;
   }
 
-  const isSystemAdmin = user.roles.includes('ADMIN');
+  const isSystemAdmin = user.roles.includes('SUPER_ADMIN') || user.roles.includes('ADMIN');
   const isSystemCustomer = user.roles.includes('CUSTOMER');
 
   return (

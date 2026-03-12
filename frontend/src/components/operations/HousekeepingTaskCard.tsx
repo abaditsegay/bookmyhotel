@@ -96,10 +96,10 @@ const HousekeepingTaskCard: React.FC<HousekeepingTaskCardProps> = ({
   onViewDetails,
   currentUserRole
 }) => {
-  const canAssign = currentUserRole === 'OPERATIONS_SUPERVISOR' && task.status === 'PENDING';
-  const canStart = (currentUserRole === 'HOUSEKEEPING' || currentUserRole === 'OPERATIONS_SUPERVISOR') && 
+  const canAssign = currentUserRole === 'OPERATIONAL_ADMIN' && task.status === 'PENDING';
+  const canStart = (currentUserRole === 'HOUSEKEEPING' || currentUserRole === 'OPERATIONAL_ADMIN') && 
                    task.status === 'ASSIGNED';
-  const canComplete = (currentUserRole === 'HOUSEKEEPING' || currentUserRole === 'OPERATIONS_SUPERVISOR') && 
+  const canComplete = (currentUserRole === 'HOUSEKEEPING' || currentUserRole === 'OPERATIONAL_ADMIN') && 
                       task.status === 'IN_PROGRESS';
 
   return (

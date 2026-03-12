@@ -150,7 +150,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
   const currentUserId = userId || user?.id;
   
   const isManagementRole = () => {
-    const managementRoles = ['HOTEL_ADMIN', 'FRONTDESK', 'OPERATIONS_SUPERVISOR'];
+    const managementRoles = ['HOTEL_ADMIN', 'FRONTDESK', 'OPERATIONAL_ADMIN'];
     return managementRoles.includes(currentRole || '');
   };
   

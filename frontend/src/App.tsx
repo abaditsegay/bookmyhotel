@@ -134,13 +134,13 @@ const RoleBasedRouter: React.FC = () => {
   
   // If user is authenticated, check their roles and redirect to appropriate dashboard
   if (isAuthenticated && user?.roles) {
-    // System-wide users (no tenant binding) - SYSTEM_ADMIN or ADMIN without tenantId
-    if (user.roles.includes('SYSTEM_ADMIN') || (user.roles.includes('ADMIN') && !user.tenantId)) {
+    // System-wide users (no tenant binding) - SUPER_ADMIN or ADMIN without tenantId
+    if (user.roles.includes('SUPER_ADMIN') || (user.roles.includes('ADMIN') && !user.tenantId)) {
       return <Navigate to="/system-dashboard" replace />;
     }
     
     // Tenant-bound users - redirect to their respective dashboards
-    // Priority order: HOTEL_ADMIN > ADMIN (tenant-bound) > FRONTDESK > OPERATIONS_SUPERVISOR > HOUSEKEEPING/MAINTENANCE
+    // Priority order: HOTEL_ADMIN > ADMIN (tenant-bound) > FRONTDESK > OPERATIONAL_ADMIN > HOUSEKEEPING/MAINTENANCE
     if (user.roles.includes('HOTEL_ADMIN')) {
       return <Navigate to="/hotel-admin/dashboard" replace />;
     }
@@ -153,7 +153,7 @@ const RoleBasedRouter: React.FC = () => {
       return <Navigate to="/frontdesk/dashboard" replace />;
     }
     
-    if (user.roles.includes('OPERATIONS_SUPERVISOR')) {
+    if (user.roles.includes('OPERATIONAL_ADMIN')) {
       return <Navigate to="/operations/dashboard" replace />;
     }
     
@@ -162,7 +162,7 @@ const RoleBasedRouter: React.FC = () => {
     }
     
     // Legacy single role handling for backward compatibility
-    if (user.role === 'SYSTEM_ADMIN') {
+    if (user.role === 'SUPER_ADMIN') {
       return <Navigate to="/system-dashboard" replace />;
     }
     
@@ -182,7 +182,7 @@ const RoleBasedRouter: React.FC = () => {
       return <Navigate to="/frontdesk/dashboard" replace />;
     }
     
-    if (user.role === 'OPERATIONS_SUPERVISOR') {
+    if (user.role === 'OPERATIONAL_ADMIN') {
       return <Navigate to="/operations/dashboard" replace />;
     }
     
@@ -494,7 +494,7 @@ function App() {
           </ProtectedRoute>
         } />
         <Route path="/hotel-admin/housekeeping" element={
-          <ProtectedRoute requiredRoles={['HOTEL_ADMIN', 'FRONTDESK', 'HOUSEKEEPING', 'OPERATIONS_SUPERVISOR']}>
+          <ProtectedRoute requiredRoles={['HOTEL_ADMIN', 'FRONTDESK', 'HOUSEKEEPING', 'OPERATIONAL_ADMIN']}>
             <HousekeepingPage />
           </ProtectedRoute>
         } />
@@ -526,7 +526,7 @@ function App() {
           </ProtectedRoute>
         } />
         <Route path="/frontdesk/housekeeping" element={
-          <ProtectedRoute requiredRoles={['HOTEL_ADMIN', 'FRONTDESK', 'HOUSEKEEPING', 'OPERATIONS_SUPERVISOR']}>
+          <ProtectedRoute requiredRoles={['HOTEL_ADMIN', 'FRONTDESK', 'HOUSEKEEPING', 'OPERATIONAL_ADMIN']}>
             <HousekeepingPage />
           </ProtectedRoute>
         } />
@@ -559,29 +559,29 @@ function App() {
         
         {/* Operations Routes */}
         <Route path="/operations" element={
-          <ProtectedRoute requiredRoles={['OPERATIONS_SUPERVISOR', 'MAINTENANCE']}>
+          <ProtectedRoute requiredRoles={['OPERATIONAL_ADMIN', 'MAINTENANCE']}>
             <Navigate to="/operations/dashboard" replace />
           </ProtectedRoute>
         } />
         <Route path="/operations/dashboard" element={
-          <ProtectedRoute requiredRoles={['OPERATIONS_SUPERVISOR', 'MAINTENANCE']}>
+          <ProtectedRoute requiredRoles={['OPERATIONAL_ADMIN', 'MAINTENANCE']}>
             <OperationsPage />
           </ProtectedRoute>
         } />
         
         {/* Housekeeping Routes - Accessible by Hotel Admin, Front Desk, and Housekeeping Staff */}
         <Route path="/housekeeping" element={
-          <ProtectedRoute requiredRoles={['HOTEL_ADMIN', 'FRONTDESK', 'HOUSEKEEPING', 'OPERATIONS_SUPERVISOR']}>
+          <ProtectedRoute requiredRoles={['HOTEL_ADMIN', 'FRONTDESK', 'HOUSEKEEPING', 'OPERATIONAL_ADMIN']}>
             <Navigate to="/housekeeping/dashboard" replace />
           </ProtectedRoute>
         } />
         <Route path="/housekeeping/dashboard" element={
-          <ProtectedRoute requiredRoles={['HOTEL_ADMIN', 'FRONTDESK', 'HOUSEKEEPING', 'OPERATIONS_SUPERVISOR']}>
+          <ProtectedRoute requiredRoles={['HOTEL_ADMIN', 'FRONTDESK', 'HOUSEKEEPING', 'OPERATIONAL_ADMIN']}>
             <HousekeepingPage />
           </ProtectedRoute>
         } />
         <Route path="/housekeeping/schedules" element={
-          <ProtectedRoute requiredRoles={['HOTEL_ADMIN', 'FRONTDESK', 'HOUSEKEEPING', 'OPERATIONS_SUPERVISOR']}>
+          <ProtectedRoute requiredRoles={['HOTEL_ADMIN', 'FRONTDESK', 'HOUSEKEEPING', 'OPERATIONAL_ADMIN']}>
             <StaffScheduleDashboard />
           </ProtectedRoute>
         } />

@@ -26,7 +26,7 @@ import com.bookmyhotel.service.ShopOrderService.OrderStatistics;
  */
 @RestController
 @RequestMapping("/api/hotels/{hotelId}/shop/dashboard")
-@PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('FRONTDESK') or hasRole('SYSTEM_ADMIN')")
+@PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('FRONTDESK') or hasRole('SUPER_ADMIN')")
 public class ShopDashboardController {
 
     @Autowired

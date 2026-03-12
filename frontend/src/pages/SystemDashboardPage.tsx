@@ -235,7 +235,7 @@ export const SystemDashboardPage: React.FC = () => {
     return null;
   }
 
-  const isSystemAdmin = user.roles.includes('ADMIN') || user.roles.includes('SYSTEM_ADMIN') || user.role === 'ADMIN' || user.role === 'SYSTEM_ADMIN';
+  const isSystemAdmin = user.roles.includes('SUPER_ADMIN') || user.roles.includes('ADMIN') || user.role === 'SUPER_ADMIN' || user.role === 'ADMIN';
   const isSystemCustomer = user.roles.includes('CUSTOMER');
 
   // If statistics are still loading, show loading indicator

@@ -24,7 +24,7 @@ import jakarta.validation.Valid;
  */
 @RestController
 @RequestMapping("/api/hotels/{hotelId}/shop/orders")
-@PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('FRONTDESK') or hasRole('SYSTEM_ADMIN')")
+@PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('FRONTDESK') or hasRole('SUPER_ADMIN')")
 public class ShopOrderController {
 
     @Autowired

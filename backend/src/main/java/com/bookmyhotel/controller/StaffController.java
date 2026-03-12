@@ -69,7 +69,7 @@ public class StaffController {
 
     // Get current staff profile
     @GetMapping("/profile")
-    @PreAuthorize("hasAnyRole('HOUSEKEEPING', 'MAINTENANCE', 'STAFF', 'OPERATIONS_SUPERVISOR')")
+    @PreAuthorize("hasAnyRole('HOUSEKEEPING', 'MAINTENANCE', 'STAFF', 'OPERATIONAL_ADMIN')")
     public ResponseEntity<?> getCurrentUserProfile(Authentication authentication) {
         try {
             String username = authentication.getName();
@@ -112,7 +112,7 @@ public class StaffController {
 
     // Housekeeping Staff Endpoints
     @GetMapping("/housekeeping/my-tasks")
-    @PreAuthorize("hasAnyRole('HOUSEKEEPING', 'STAFF', 'OPERATIONS_SUPERVISOR')")
+    @PreAuthorize("hasAnyRole('HOUSEKEEPING', 'STAFF', 'OPERATIONAL_ADMIN')")
     public ResponseEntity<?> getMyHousekeepingTasks(
             Authentication authentication,
             @RequestParam(defaultValue = "0") int page,
@@ -142,7 +142,7 @@ public class StaffController {
     }
 
     @PutMapping("/housekeeping/tasks/{taskId}/status")
-    @PreAuthorize("hasAnyRole('HOUSEKEEPING', 'STAFF', 'OPERATIONS_SUPERVISOR')")
+    @PreAuthorize("hasAnyRole('HOUSEKEEPING', 'STAFF', 'OPERATIONAL_ADMIN')")
     public ResponseEntity<?> updateHousekeepingTaskStatus(
             @PathVariable Long taskId,
             @RequestBody TaskUpdateRequest updateRequest,
@@ -165,7 +165,7 @@ public class StaffController {
             // Check if user has management role or if the task is assigned to them
             boolean isManagementRole = user.getRoles().stream()
                     .anyMatch(role -> role == UserRole.HOTEL_ADMIN ||
-                            role == UserRole.OPERATIONS_SUPERVISOR ||
+                            role == UserRole.OPERATIONAL_ADMIN ||
                             role == UserRole.FRONTDESK);
 
             boolean isTaskAssignedToUser = task.getAssignedUser() != null &&
@@ -202,7 +202,7 @@ public class StaffController {
     }
 
     @PutMapping("/housekeeping/tasks/{taskId}/start")
-    @PreAuthorize("hasAnyRole('HOUSEKEEPING', 'STAFF', 'OPERATIONS_SUPERVISOR')")
+    @PreAuthorize("hasAnyRole('HOUSEKEEPING', 'STAFF', 'OPERATIONAL_ADMIN')")
     public ResponseEntity<?> startHousekeepingTask(@PathVariable Long taskId, Authentication authentication) {
         try {
             String username = authentication.getName();
@@ -235,7 +235,7 @@ public class StaffController {
     }
 
     @PutMapping("/housekeeping/tasks/{taskId}/complete")
-    @PreAuthorize("hasAnyRole('HOUSEKEEPING', 'STAFF', 'OPERATIONS_SUPERVISOR')")
+    @PreAuthorize("hasAnyRole('HOUSEKEEPING', 'STAFF', 'OPERATIONAL_ADMIN')")
     public ResponseEntity<?> completeHousekeepingTask(
             @PathVariable Long taskId,
             @RequestBody(required = false) Map<String, String> request,
@@ -505,7 +505,7 @@ public class StaffController {
 
     // Common Stats Endpoints
     @GetMapping("/housekeeping/stats")
-    @PreAuthorize("hasAnyRole('HOUSEKEEPING', 'STAFF', 'OPERATIONS_SUPERVISOR')")
+    @PreAuthorize("hasAnyRole('HOUSEKEEPING', 'STAFF', 'OPERATIONAL_ADMIN')")
     public ResponseEntity<?> getHousekeepingStats(Authentication authentication) {
         try {
             String username = authentication.getName();

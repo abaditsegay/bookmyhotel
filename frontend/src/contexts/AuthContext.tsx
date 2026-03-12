@@ -13,7 +13,7 @@ interface User {
   firstName?: string;
   lastName?: string;
   phone?: string;
-  role: 'ADMIN' | 'HOTEL_ADMIN' | 'HOTEL_MANAGER' | 'FRONTDESK' | 'HOUSEKEEPING' | 'OPERATIONS_SUPERVISOR' | 'MAINTENANCE' | 'CUSTOMER' | 'GUEST' | 'SYSTEM_ADMIN';
+  role: 'SUPER_ADMIN' | 'ADMIN' | 'HOTEL_ADMIN' | 'OPERATIONAL_ADMIN' | 'FRONTDESK' | 'HOUSEKEEPING' | 'MAINTENANCE' | 'CUSTOMER' | 'GUEST';
   roles: string[]; // Support multiple roles
   tenantId?: string | null; // null for system-wide users
   hotelId?: string;
@@ -261,7 +261,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
         // Helper properties
         isSystemWide: (loginData.tenantId === null || loginData.tenantId === undefined) && 
                       (Array.isArray(loginData.roles) ? loginData.roles : [loginData.roles])
-                      .some((role: string) => ['SYSTEM_ADMIN', 'ADMIN', 'GUEST', 'CUSTOMER'].includes(role)), // true if no tenant AND has system-wide role
+                      .some((role: string) => ['SUPER_ADMIN', 'ADMIN', 'GUEST', 'CUSTOMER'].includes(role)), // true if no tenant AND has system-wide role
         isTenantBound: (loginData.tenantId !== null && loginData.tenantId !== undefined), // true if user has a tenant assignment
       };
 
@@ -305,7 +305,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
         
         // Cache room data immediately after successful login for hotel staff
         const userRoles = Array.isArray(loginData.roles) ? loginData.roles : [loginData.roles];
-        const isHotelStaff = userRoles.some((role: string) => ['HOTEL_ADMIN', 'FRONTDESK', 'HOUSEKEEPING', 'OPERATIONS_SUPERVISOR'].includes(role));
+        const isHotelStaff = userRoles.some((role: string) => ['HOTEL_ADMIN', 'FRONTDESK', 'HOUSEKEEPING', 'OPERATIONAL_ADMIN'].includes(role));
         
         
         if (loginData.hotelId && isHotelStaff) {
@@ -515,7 +515,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
     // Check normalized roles
     if (normalizedRoles.length > 0) {
       // System-wide users
-      if (normalizedRoles.includes('SYSTEM_ADMIN') || (normalizedRoles.includes('ADMIN') && !user.tenantId)) {
+      if (normalizedRoles.includes('SUPER_ADMIN') || (normalizedRoles.includes('ADMIN') && !user.tenantId)) {
         return '/system-dashboard';
       }
       
@@ -536,7 +536,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
         return '/frontdesk/dashboard';
       }
       
-      if (normalizedRoles.includes('OPERATIONS_SUPERVISOR')) {
+      if (normalizedRoles.includes('OPERATIONAL_ADMIN')) {
         return '/operations/dashboard';
       }
       

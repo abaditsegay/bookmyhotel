@@ -24,8 +24,8 @@ const OperationsPage: React.FC = () => {
     // For demo purposes, using mock data
     const mockUser: User = {
       id: 1,
-      username: 'operations_supervisor',
-      role: 'OPERATIONS_SUPERVISOR',
+      username: 'operational_admin',
+      role: 'OPERATIONAL_ADMIN',
       permissions: [
         'MANAGE_HOUSEKEEPING_TASKS',
         'ASSIGN_HOUSEKEEPING_TASKS',

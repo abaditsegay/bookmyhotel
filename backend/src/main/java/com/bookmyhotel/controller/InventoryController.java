@@ -19,7 +19,7 @@ import com.bookmyhotel.service.ProductService;
  */
 @RestController
 @RequestMapping("/api/hotels/{hotelId}/shop/inventory")
-@PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('FRONTDESK') or hasRole('SYSTEM_ADMIN')")
+@PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('FRONTDESK') or hasRole('SUPER_ADMIN')")
 public class InventoryController {
 
     @Autowired

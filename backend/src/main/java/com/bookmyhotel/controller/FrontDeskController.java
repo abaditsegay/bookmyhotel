@@ -48,7 +48,7 @@ import jakarta.validation.Valid;
  */
 @RestController
 @RequestMapping("/api/front-desk")
-@PreAuthorize("hasRole('FRONTDESK') or hasRole('HOTEL_ADMIN') or hasRole('SYSTEM_ADMIN')")
+@PreAuthorize("hasRole('FRONTDESK') or hasRole('HOTEL_ADMIN') or hasRole('SUPER_ADMIN')")
 public class FrontDeskController {
 
     private static final Logger logger = LoggerFactory.getLogger(FrontDeskController.class);
@@ -419,7 +419,7 @@ public class FrontDeskController {
      * Get hotel information for the front desk
      */
     @GetMapping("/hotel")
-    @PreAuthorize("hasRole('FRONTDESK') or hasRole('HOTEL_ADMIN') or hasRole('SYSTEM_ADMIN')")
+    @PreAuthorize("hasRole('FRONTDESK') or hasRole('HOTEL_ADMIN') or hasRole('SUPER_ADMIN')")
     public ResponseEntity<HotelDTO> getHotelInfo() {
         HotelDTO hotel = frontDeskService.getHotelInfo();
         return ResponseEntity.ok(hotel);
@@ -436,7 +436,7 @@ public class FrontDeskController {
      * booking confirmation details for their records.
      */
     @PostMapping("/walk-in-booking")
-    @PreAuthorize("hasRole('FRONTDESK') or hasRole('HOTEL_ADMIN') or hasRole('SYSTEM_ADMIN')")
+    @PreAuthorize("hasRole('FRONTDESK') or hasRole('HOTEL_ADMIN') or hasRole('SUPER_ADMIN')")
     public ResponseEntity<BookingResponse> createWalkInBooking(
             @Valid @RequestBody BookingRequest request,
             Authentication auth) {

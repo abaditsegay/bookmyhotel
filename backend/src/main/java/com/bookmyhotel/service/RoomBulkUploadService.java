@@ -254,7 +254,7 @@ public class RoomBulkUploadService {
                 result.put("success", false);
                 result.put("message", String.format(
                         "Room limit exceeded. Your hotel is registered for %d rooms and currently has %d. " +
-                        "Cannot add %d more room(s). Please update your hotel information to increase the room limit.",
+                                "Cannot add %d more room(s). Please update your hotel information to increase the room limit.",
                         registeredLimit, currentRoomCount, roomsToAdd));
                 return result;
             }

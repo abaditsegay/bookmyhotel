@@ -565,7 +565,7 @@ const MaintenanceDashboard: React.FC = () => {
           >
             Refresh
           </Button>
-          {currentUserRole === 'OPERATIONS_SUPERVISOR' && (
+          {currentUserRole === 'OPERATIONAL_ADMIN' && (
             <Button
               variant="contained"
               startIcon={<AddIcon />}
@@ -752,7 +752,7 @@ const MaintenanceDashboard: React.FC = () => {
                     )}
                     
                     {/* Reassign button for assigned or in-progress tasks */}
-                    {currentUserRole === 'OPERATIONS_SUPERVISOR' && 
+                    {currentUserRole === 'OPERATIONAL_ADMIN' && 
                      (task.status === 'ASSIGNED' || task.status === 'assigned' || 
                       task.status === 'IN_PROGRESS' || task.status === 'in_progress') && (
                       <Tooltip title="Reassign Task">
@@ -790,7 +790,7 @@ const MaintenanceDashboard: React.FC = () => {
                       </Tooltip>
                     )}
                     
-                    {currentUserRole === 'OPERATIONS_SUPERVISOR' && (
+                    {currentUserRole === 'OPERATIONAL_ADMIN' && (
                       <Tooltip title="Edit Task">
                         <IconButton 
                           size="small"
@@ -980,7 +980,7 @@ const MaintenanceDashboard: React.FC = () => {
       <Dialog open={taskDetailOpen} onClose={() => setTaskDetailOpen(false)} maxWidth="md" fullWidth>
         <DialogTitle>
           Task Details
-          {!isEditingTask && currentUserRole === 'OPERATIONS_SUPERVISOR' && (
+          {!isEditingTask && currentUserRole === 'OPERATIONAL_ADMIN' && (
             <Button 
               startIcon={<EditIcon />} 
               onClick={handleEditTask}
@@ -1131,7 +1131,7 @@ const MaintenanceDashboard: React.FC = () => {
             </>
           ) : (
             <>
-              {selectedTask && currentUserRole === 'OPERATIONS_SUPERVISOR' && (
+              {selectedTask && currentUserRole === 'OPERATIONAL_ADMIN' && (
                 <Button 
                   onClick={() => {
                     setTaskDetailOpen(false);

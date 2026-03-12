@@ -332,8 +332,8 @@ const UserViewEdit: React.FC = () => {
                       )}
                     >
                       <MenuItem value="ADMIN">System Admin</MenuItem>
-                      <MenuItem value="HOTEL_MANAGER">Hotel Manager</MenuItem>
-                      <MenuItem value="HOTEL_STAFF">Hotel Staff</MenuItem>
+                      <MenuItem value="HOTEL_ADMIN">Hotel Admin</MenuItem>
+                      <MenuItem value="OPERATIONAL_ADMIN">Operational Admin</MenuItem>
                       <MenuItem value="CUSTOMER">Customer</MenuItem>
                     </Select>
                   </FormControl>

@@ -56,7 +56,7 @@ interface UserFilters {
 }
 
 const UserManagementAdmin: React.FC = () => {
-  const { token } = useAuth();
+  const { token, user: currentUser } = useAuth();
   const navigate = useNavigate();
   const [users, setUsers] = useState<UserManagementResponse[]>([]);
   const [loading, setLoading] = useState(true);
@@ -110,7 +110,21 @@ const UserManagementAdmin: React.FC = () => {
   const [loadingHotels, setLoadingHotels] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const roleOptions = ['SYSTEM_ADMIN', 'HOTEL_MANAGER', 'HOTEL_ADMIN', 'FRONTDESK', 'HOUSEKEEPING', 'CUSTOMER'];
+  const allRoleOptions = ['SUPER_ADMIN', 'ADMIN', 'HOTEL_ADMIN', 'OPERATIONAL_ADMIN', 'FRONTDESK', 'HOUSEKEEPING', 'MAINTENANCE', 'CUSTOMER'];
+
+  // Roles visible in the filter dropdown — ADMIN cannot see SUPER_ADMIN
+  const callerRoleForFilter = currentUser?.role || (currentUser?.roles?.[0] ?? '');
+  const roleOptions = callerRoleForFilter === 'ADMIN'
+    ? allRoleOptions.filter(r => r !== 'SUPER_ADMIN')
+    : allRoleOptions;
+
+  // Roles this user is permitted to assign when creating/editing users
+  const creatableRoleOptions = (() => {
+    const callerRole = currentUser?.role || (currentUser?.roles?.[0] ?? '');
+    if (callerRole === 'SUPER_ADMIN') return ['ADMIN', 'HOTEL_ADMIN'];
+    if (callerRole === 'ADMIN') return ['HOTEL_ADMIN'];
+    return roleOptions;
+  })();
   const statusOptions = [
     { value: '', label: 'All Status' },
     { value: 'ACTIVE', label: 'Active' },
@@ -346,12 +360,15 @@ const UserManagementAdmin: React.FC = () => {
 
   const getRoleColor = (role: string) => {
     switch (role) {
-      case 'SYSTEM_ADMIN': return 'error';
-      case 'HOTEL_MANAGER': return 'warning';
-      case 'HOTEL_ADMIN': return 'info';
-      case 'FRONTDESK': return 'success';
-      case 'HOUSEKEEPING': return 'primary';
+      case 'SUPER_ADMIN': return 'error';
+      case 'ADMIN': return 'primary';
+      case 'HOTEL_ADMIN': return 'secondary';
+      case 'OPERATIONAL_ADMIN': return 'primary';
+      case 'FRONTDESK': return 'info';
+      case 'HOUSEKEEPING': return 'success';
+      case 'MAINTENANCE': return 'warning';
       case 'CUSTOMER': return 'default';
+      case 'GUEST': return 'default';
       default: return 'default';
     }
   };
@@ -628,7 +645,7 @@ const UserManagementAdmin: React.FC = () => {
                   });
                 }}
               >
-                {roleOptions.map((role) => (
+                {creatableRoleOptions.map((role) => (
                   <MenuItem key={role} value={role}>
                     {role.replace('_', ' ')}
                   </MenuItem>
@@ -756,7 +773,7 @@ const UserManagementAdmin: React.FC = () => {
                 value={editForm.roles.length > 0 ? editForm.roles[0] : ''}
                 onChange={(e) => setEditForm({ ...editForm, roles: [e.target.value as string] })}
               >
-                {roleOptions.map((role) => (
+                {creatableRoleOptions.map((role) => (
                   <MenuItem key={role} value={role}>
                     {role.replace('_', ' ')}
                   </MenuItem>

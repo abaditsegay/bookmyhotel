@@ -27,7 +27,7 @@ import java.util.ArrayList;
  */
 @RestController
 @RequestMapping("/api/supervisor")
-@PreAuthorize("hasRole('OPERATIONS_SUPERVISOR')")
+@PreAuthorize("hasRole('OPERATIONAL_ADMIN')")
 public class SupervisorController {
 
     private static final Logger logger = LoggerFactory.getLogger(SupervisorController.class);
@@ -160,7 +160,7 @@ public class SupervisorController {
      * Get recent activity for dashboard
      */
     @GetMapping("/dashboard/recent-activity")
-    @PreAuthorize("hasRole('OPERATIONS_SUPERVISOR')")
+    @PreAuthorize("hasRole('OPERATIONAL_ADMIN')")
     public ResponseEntity<?> getRecentActivity() {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -281,7 +281,7 @@ public class SupervisorController {
             List<Map<String, Object>> maintenanceStaff = new ArrayList<>();
 
             // 1. Get staff from users table (created by hotel admin)
-            List<UserRole> staffRoles = Arrays.asList(UserRole.OPERATIONS_SUPERVISOR, UserRole.HOUSEKEEPING,
+            List<UserRole> staffRoles = Arrays.asList(UserRole.OPERATIONAL_ADMIN, UserRole.HOUSEKEEPING,
                     UserRole.MAINTENANCE);
 
             List<User> allUsers = new ArrayList<>();
@@ -312,8 +312,8 @@ public class SupervisorController {
                 if (user.getRoles() != null && !user.getRoles().isEmpty()) {
                     // Find the staff role (prioritize OPERATIONS_SUPERVISOR, then HOUSEKEEPING,
                     // then MAINTENANCE)
-                    if (user.getRoles().contains(UserRole.OPERATIONS_SUPERVISOR)) {
-                        primaryRole = UserRole.OPERATIONS_SUPERVISOR;
+                    if (user.getRoles().contains(UserRole.OPERATIONAL_ADMIN)) {
+                        primaryRole = UserRole.OPERATIONAL_ADMIN;
                     } else if (user.getRoles().contains(UserRole.HOUSEKEEPING)) {
                         primaryRole = UserRole.HOUSEKEEPING;
                     } else if (user.getRoles().contains(UserRole.MAINTENANCE)) {
@@ -327,7 +327,7 @@ public class SupervisorController {
                     staffMap.put("role", primaryRole.toString());
 
                     switch (primaryRole) {
-                        case OPERATIONS_SUPERVISOR:
+                        case OPERATIONAL_ADMIN:
                             operationsSupervisorStaff.add(staffMap);
                             break;
                         case HOUSEKEEPING:
@@ -386,7 +386,7 @@ public class SupervisorController {
      * Get tasks list - simplified version
      */
     @GetMapping("/tasks")
-    @PreAuthorize("hasRole('OPERATIONS_SUPERVISOR')")
+    @PreAuthorize("hasRole('OPERATIONAL_ADMIN')")
     public ResponseEntity<?> getTasks(@RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         try {
@@ -486,7 +486,7 @@ public class SupervisorController {
      * Get maintenance requests - simplified version
      */
     @GetMapping("/maintenance")
-    @PreAuthorize("hasRole('OPERATIONS_SUPERVISOR')")
+    @PreAuthorize("hasRole('OPERATIONAL_ADMIN')")
     public ResponseEntity<?> getMaintenance(@RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         try {
@@ -564,7 +564,7 @@ public class SupervisorController {
      * Create new maintenance request
      */
     @PostMapping("/maintenance")
-    @PreAuthorize("hasRole('OPERATIONS_SUPERVISOR')")
+    @PreAuthorize("hasRole('OPERATIONAL_ADMIN')")
     public ResponseEntity<?> createMaintenanceRequest(@RequestBody CreateMaintenanceRequest request) {
         try {
             String tenantId = getCurrentUserTenantId();
@@ -624,7 +624,7 @@ public class SupervisorController {
      * Create new housekeeping task
      */
     @PostMapping("/tasks/housekeeping")
-    @PreAuthorize("hasRole('OPERATIONS_SUPERVISOR') or hasRole('HOTEL_ADMIN')")
+    @PreAuthorize("hasRole('OPERATIONAL_ADMIN') or hasRole('HOTEL_ADMIN')")
     public ResponseEntity<?> createHousekeepingTask(@RequestBody CreateTaskRequest request) {
         try {
             String tenantId = getCurrentUserTenantId();
@@ -751,7 +751,7 @@ public class SupervisorController {
      * Get tasks assigned to a specific staff member
      */
     @GetMapping("/staff/{staffId}/tasks")
-    @PreAuthorize("hasRole('OPERATIONS_SUPERVISOR')")
+    @PreAuthorize("hasRole('OPERATIONAL_ADMIN')")
     public ResponseEntity<?> getStaffTasks(@PathVariable Long staffId,
             @RequestParam(defaultValue = "ALL") String timeFilter,
             @RequestParam(defaultValue = "0") int page,
@@ -821,7 +821,7 @@ public class SupervisorController {
      * Get staff performance summary
      */
     @GetMapping("/staff/{staffId}/performance")
-    @PreAuthorize("hasRole('OPERATIONS_SUPERVISOR')")
+    @PreAuthorize("hasRole('OPERATIONAL_ADMIN')")
     public ResponseEntity<?> getStaffPerformance(@PathVariable Long staffId) {
         try {
             String tenantId = getCurrentUserTenantId();
@@ -881,7 +881,7 @@ public class SupervisorController {
      * Assign housekeeping task to staff member
      */
     @PutMapping("/tasks/housekeeping/{taskId}/assign/{staffId}")
-    @PreAuthorize("hasRole('OPERATIONS_SUPERVISOR')")
+    @PreAuthorize("hasRole('OPERATIONAL_ADMIN')")
     public ResponseEntity<?> assignHousekeepingTask(@PathVariable Long taskId, @PathVariable Long staffId) {
         try {
             String tenantId = getCurrentUserTenantId();
@@ -934,7 +934,7 @@ public class SupervisorController {
      * Assign maintenance request to staff member
      */
     @PutMapping("/maintenance/{requestId}/assign/{staffId}")
-    @PreAuthorize("hasRole('OPERATIONS_SUPERVISOR')")
+    @PreAuthorize("hasRole('OPERATIONAL_ADMIN')")
     public ResponseEntity<?> assignMaintenanceRequest(@PathVariable Long requestId, @PathVariable Long staffId) {
         try {
             String tenantId = getCurrentUserTenantId();
@@ -998,7 +998,7 @@ public class SupervisorController {
      * Auto-assign housekeeping task to available staff
      */
     @PutMapping("/tasks/housekeeping/{taskId}/auto-assign")
-    @PreAuthorize("hasRole('OPERATIONS_SUPERVISOR')")
+    @PreAuthorize("hasRole('OPERATIONAL_ADMIN')")
     public ResponseEntity<?> autoAssignHousekeepingTask(@PathVariable Long taskId) {
         try {
             String tenantId = getCurrentUserTenantId();

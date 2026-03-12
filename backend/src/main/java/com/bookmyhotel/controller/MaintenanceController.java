@@ -33,7 +33,7 @@ public class MaintenanceController {
      * Create a new maintenance task
      */
     @PostMapping("/tasks")
-    @PreAuthorize("hasRole('OPERATIONS_SUPERVISOR') or hasRole('HOTEL_ADMIN') or hasRole('SYSTEM_ADMIN')")
+    @PreAuthorize("hasRole('OPERATIONAL_ADMIN') or hasRole('HOTEL_ADMIN') or hasRole('SUPER_ADMIN')")
     public ResponseEntity<MaintenanceTask> createTask(@Valid @RequestBody CreateMaintenanceTaskRequest request) {
         String tenantId = TenantContext.getTenantId();
         Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
@@ -56,7 +56,7 @@ public class MaintenanceController {
      * Get all maintenance tasks
      */
     @GetMapping("/tasks")
-    @PreAuthorize("hasRole('MAINTENANCE') or hasRole('OPERATIONS_SUPERVISOR') or hasRole('HOTEL_ADMIN') or hasRole('SYSTEM_ADMIN')")
+    @PreAuthorize("hasRole('MAINTENANCE') or hasRole('OPERATIONAL_ADMIN') or hasRole('HOTEL_ADMIN') or hasRole('SUPER_ADMIN')")
     public ResponseEntity<List<MaintenanceTask>> getAllTasks() {
         String tenantId = TenantContext.getTenantId();
         Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
@@ -68,7 +68,7 @@ public class MaintenanceController {
      * Get task by ID
      */
     @GetMapping("/tasks/{taskId}")
-    @PreAuthorize("hasRole('MAINTENANCE') or hasRole('OPERATIONS_SUPERVISOR') or hasRole('HOTEL_ADMIN') or hasRole('SYSTEM_ADMIN')")
+    @PreAuthorize("hasRole('MAINTENANCE') or hasRole('OPERATIONAL_ADMIN') or hasRole('HOTEL_ADMIN') or hasRole('SUPER_ADMIN')")
     public ResponseEntity<MaintenanceTask> getTaskById(@PathVariable Long taskId) {
         String tenantId = TenantContext.getTenantId();
         Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
@@ -84,7 +84,7 @@ public class MaintenanceController {
      * Get tasks assigned to the current user
      */
     @GetMapping("/my-tasks")
-    @PreAuthorize("hasRole('MAINTENANCE') or hasRole('OPERATIONS_SUPERVISOR') or hasRole('HOTEL_ADMIN') or hasRole('SYSTEM_ADMIN')")
+    @PreAuthorize("hasRole('MAINTENANCE') or hasRole('OPERATIONAL_ADMIN') or hasRole('HOTEL_ADMIN') or hasRole('SUPER_ADMIN')")
     public ResponseEntity<List<MaintenanceTask>> getMyTasks(Authentication authentication) {
         String tenantId = TenantContext.getTenantId();
         Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
@@ -97,7 +97,7 @@ public class MaintenanceController {
      * Assign task to maintenance staff
      */
     @PutMapping("/tasks/{taskId}/assign/{userId}")
-    @PreAuthorize("hasRole('OPERATIONS_SUPERVISOR') or hasRole('HOTEL_ADMIN') or hasRole('SYSTEM_ADMIN')")
+    @PreAuthorize("hasRole('OPERATIONAL_ADMIN') or hasRole('HOTEL_ADMIN') or hasRole('SUPER_ADMIN')")
     public ResponseEntity<MaintenanceTask> assignTask(@PathVariable Long taskId, @PathVariable Long userId) {
         String tenantId = TenantContext.getTenantId();
         Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
@@ -109,7 +109,7 @@ public class MaintenanceController {
      * Start a maintenance task
      */
     @PutMapping("/tasks/{taskId}/start")
-    @PreAuthorize("hasRole('MAINTENANCE') or hasRole('OPERATIONS_SUPERVISOR') or hasRole('HOTEL_ADMIN') or hasRole('SYSTEM_ADMIN')")
+    @PreAuthorize("hasRole('MAINTENANCE') or hasRole('OPERATIONAL_ADMIN') or hasRole('HOTEL_ADMIN') or hasRole('SUPER_ADMIN')")
     public ResponseEntity<MaintenanceTask> startTask(@PathVariable Long taskId) {
         String tenantId = TenantContext.getTenantId();
         Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
@@ -121,7 +121,7 @@ public class MaintenanceController {
      * Complete a maintenance task
      */
     @PutMapping("/tasks/{taskId}/complete")
-    @PreAuthorize("hasRole('MAINTENANCE') or hasRole('OPERATIONS_SUPERVISOR') or hasRole('HOTEL_ADMIN') or hasRole('SYSTEM_ADMIN')")
+    @PreAuthorize("hasRole('MAINTENANCE') or hasRole('OPERATIONAL_ADMIN') or hasRole('HOTEL_ADMIN') or hasRole('SUPER_ADMIN')")
     public ResponseEntity<MaintenanceTask> completeTask(@PathVariable Long taskId,
             @RequestBody CompleteMaintenanceTaskRequest request) {
         String tenantId = TenantContext.getTenantId();
@@ -139,7 +139,7 @@ public class MaintenanceController {
      * Update task details
      */
     @PutMapping("/tasks/{taskId}")
-    @PreAuthorize("hasRole('OPERATIONS_SUPERVISOR') or hasRole('HOTEL_ADMIN') or hasRole('SYSTEM_ADMIN')")
+    @PreAuthorize("hasRole('OPERATIONAL_ADMIN') or hasRole('HOTEL_ADMIN') or hasRole('SUPER_ADMIN')")
     public ResponseEntity<MaintenanceTask> updateTask(@PathVariable Long taskId,
             @Valid @RequestBody MaintenanceTask updatedTask) {
         String tenantId = TenantContext.getTenantId();
@@ -151,7 +151,7 @@ public class MaintenanceController {
      * Cancel a maintenance task
      */
     @PutMapping("/tasks/{taskId}/cancel")
-    @PreAuthorize("hasRole('OPERATIONS_SUPERVISOR') or hasRole('HOTEL_ADMIN') or hasRole('SYSTEM_ADMIN')")
+    @PreAuthorize("hasRole('OPERATIONAL_ADMIN') or hasRole('HOTEL_ADMIN') or hasRole('SUPER_ADMIN')")
     public ResponseEntity<MaintenanceTask> cancelTask(@PathVariable Long taskId,
             @RequestBody CancelMaintenanceTaskRequest request) {
         String tenantId = TenantContext.getTenantId();

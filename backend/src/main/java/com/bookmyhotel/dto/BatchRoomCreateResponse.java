@@ -19,26 +19,61 @@ public class BatchRoomCreateResponse {
             this.error = error;
         }
 
-        public String getRoomNumber() { return roomNumber; }
-        public void setRoomNumber(String roomNumber) { this.roomNumber = roomNumber; }
+        public String getRoomNumber() {
+            return roomNumber;
+        }
 
-        public String getError() { return error; }
-        public void setError(String error) { this.error = error; }
+        public void setRoomNumber(String roomNumber) {
+            this.roomNumber = roomNumber;
+        }
+
+        public String getError() {
+            return error;
+        }
+
+        public void setError(String error) {
+            this.error = error;
+        }
     }
 
     // Getters and setters
-    public int getTotalRequested() { return totalRequested; }
-    public void setTotalRequested(int totalRequested) { this.totalRequested = totalRequested; }
+    public int getTotalRequested() {
+        return totalRequested;
+    }
 
-    public int getCreated() { return created; }
-    public void setCreated(int created) { this.created = created; }
+    public void setTotalRequested(int totalRequested) {
+        this.totalRequested = totalRequested;
+    }
 
-    public int getFailed() { return failed; }
-    public void setFailed(int failed) { this.failed = failed; }
+    public int getCreated() {
+        return created;
+    }
 
-    public List<RoomDTO> getCreatedRooms() { return createdRooms; }
-    public void setCreatedRooms(List<RoomDTO> createdRooms) { this.createdRooms = createdRooms; }
+    public void setCreated(int created) {
+        this.created = created;
+    }
 
-    public List<FailedRoom> getFailedRooms() { return failedRooms; }
-    public void setFailedRooms(List<FailedRoom> failedRooms) { this.failedRooms = failedRooms; }
+    public int getFailed() {
+        return failed;
+    }
+
+    public void setFailed(int failed) {
+        this.failed = failed;
+    }
+
+    public List<RoomDTO> getCreatedRooms() {
+        return createdRooms;
+    }
+
+    public void setCreatedRooms(List<RoomDTO> createdRooms) {
+        this.createdRooms = createdRooms;
+    }
+
+    public List<FailedRoom> getFailedRooms() {
+        return failedRooms;
+    }
+
+    public void setFailedRooms(List<FailedRoom> failedRooms) {
+        this.failedRooms = failedRooms;
+    }
 }

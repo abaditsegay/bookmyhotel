@@ -31,7 +31,7 @@ import jakarta.validation.Valid;
  */
 @RestController
 @RequestMapping("/api/admin/hotels")
-@PreAuthorize("hasRole('SYSTEM_ADMIN') or hasRole('ADMIN')")
+@PreAuthorize("hasRole('SUPER_ADMIN') or hasRole('ADMIN')")
 public class HotelManagementAdminController {
 
     @Autowired

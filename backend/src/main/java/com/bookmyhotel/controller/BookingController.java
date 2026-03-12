@@ -122,7 +122,7 @@ public class BookingController {
             String username = authentication.getName();
             boolean isAdmin = authentication.getAuthorities().stream()
                     .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN") ||
-                            auth.getAuthority().equals("ROLE_SYSTEM_ADMIN") ||
+                            auth.getAuthority().equals("ROLE_SUPER_ADMIN") ||
                             auth.getAuthority().equals("ROLE_HOTEL_ADMIN"));
 
             // If not admin, verify they're requesting their own bookings

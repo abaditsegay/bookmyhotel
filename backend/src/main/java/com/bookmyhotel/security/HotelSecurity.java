@@ -39,7 +39,7 @@ public class HotelSecurity {
         // System administrators can access any hotel
         if (authentication.getAuthorities().stream()
                 .anyMatch(auth -> "ROLE_ADMIN".equals(auth.getAuthority())
-                        || "ROLE_SYSTEM_ADMIN".equals(auth.getAuthority()))) {
+                        || "ROLE_SUPER_ADMIN".equals(auth.getAuthority()))) {
             logger.debug("✅ HotelSecurity: User has system admin role - allowing access");
             return true;
         }
@@ -69,9 +69,9 @@ public class HotelSecurity {
         }
 
         // All other hotel-bound roles (FRONTDESK, HOUSEKEEPING, MAINTENANCE,
-        // OPERATIONS_SUPERVISOR) can only access their assigned hotel
+        // OPERATIONAL_ADMIN) can only access their assigned hotel
         boolean isHotelBoundRole = authentication.getAuthorities().stream()
-                .anyMatch(auth -> "ROLE_OPERATIONS_SUPERVISOR".equals(auth.getAuthority())
+                .anyMatch(auth -> "ROLE_OPERATIONAL_ADMIN".equals(auth.getAuthority())
                         || "ROLE_FRONTDESK".equals(auth.getAuthority())
                         || "ROLE_HOUSEKEEPING".equals(auth.getAuthority())
                         || "ROLE_MAINTENANCE".equals(auth.getAuthority()));
@@ -106,7 +106,7 @@ public class HotelSecurity {
         // System administrators are considered hotel admins for any hotel
         if (authentication.getAuthorities().stream()
                 .anyMatch(auth -> "ROLE_ADMIN".equals(auth.getAuthority())
-                        || "ROLE_SYSTEM_ADMIN".equals(auth.getAuthority()))) {
+                        || "ROLE_SUPER_ADMIN".equals(auth.getAuthority()))) {
             return true;
         }
 

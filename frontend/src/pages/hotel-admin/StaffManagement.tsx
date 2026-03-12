@@ -78,7 +78,7 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
     roles: ['FRONTDESK'],
   });
 
-  const staffRoles = ['FRONTDESK', 'HOUSEKEEPING', 'HOTEL_ADMIN'];
+  const staffRoles = ['FRONTDESK', 'HOUSEKEEPING', 'MAINTENANCE', 'OPERATIONAL_ADMIN'];
   const statusOptions = ['ALL', 'ACTIVE', 'INACTIVE'];
 
   const loadStaff = useCallback(async () => {

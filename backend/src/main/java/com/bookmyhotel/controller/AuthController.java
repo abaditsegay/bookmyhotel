@@ -270,7 +270,8 @@ public class AuthController {
         } catch (IllegalStateException e) {
             // Email service not configured
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(java.util.Map.of("message", "Email service is currently unavailable. Please contact support."));
+                    .body(java.util.Map.of("message",
+                            "Email service is currently unavailable. Please contact support."));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(java.util.Map.of("message", "An error occurred. Please try again later."));

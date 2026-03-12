@@ -222,11 +222,14 @@ const ProfilePage: React.FC = () => {
               borderRadius: 1,
               display: 'inline-block'
             }}>
-              {user?.role === 'ADMIN' ? 'Administrator' : 
+              {user?.role === 'SUPER_ADMIN' ? 'Super Administrator' :
+               user?.role === 'ADMIN' ? 'Administrator' : 
                user?.role === 'HOTEL_ADMIN' ? 'Hotel Administrator' :
-               user?.role === 'HOTEL_MANAGER' ? 'Hotel Manager' : 
+               user?.role === 'OPERATIONAL_ADMIN' ? 'Operational Administrator' : 
                user?.role === 'FRONTDESK' ? 'Front Desk' :
-               user?.role === 'HOUSEKEEPING' ? 'Housekeeping' : 'Guest'}
+               user?.role === 'HOUSEKEEPING' ? 'Housekeeping' :
+               user?.role === 'MAINTENANCE' ? 'Maintenance' :
+               user?.role === 'CUSTOMER' ? 'Customer' : 'Guest'}
             </Typography>
             {!isEditing && (
               <StandardButton
@@ -406,11 +409,14 @@ const ProfilePage: React.FC = () => {
                 display: 'inline-block',
                 fontWeight: 'medium'
               }}>
-                {user?.role === 'ADMIN' ? 'Administrator' : 
+                {user?.role === 'SUPER_ADMIN' ? 'Super Administrator' :
+                 user?.role === 'ADMIN' ? 'Administrator' : 
                  user?.role === 'HOTEL_ADMIN' ? 'Hotel Administrator' :
-                 user?.role === 'HOTEL_MANAGER' ? 'Hotel Manager' : 
+                 user?.role === 'OPERATIONAL_ADMIN' ? 'Operational Administrator' : 
                  user?.role === 'FRONTDESK' ? 'Front Desk' :
-                 user?.role === 'HOUSEKEEPING' ? 'Housekeeping' : 'Guest'}
+                 user?.role === 'HOUSEKEEPING' ? 'Housekeeping' :
+                 user?.role === 'MAINTENANCE' ? 'Maintenance' :
+                 user?.role === 'CUSTOMER' ? 'Customer' : 'Guest'}
               </Typography>
             </Grid>
             <Grid item xs={12} sm={6}>

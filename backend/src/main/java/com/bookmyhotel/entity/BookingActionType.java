@@ -10,17 +10,17 @@ public enum BookingActionType {
     BOOKED("Booking Booked"),
     CHECKED_IN("Checked In"),
     CHECKED_OUT("Checked Out");
-    
+
     private final String description;
-    
+
     BookingActionType(String description) {
         this.description = description;
     }
-    
+
     public String getDescription() {
         return description;
     }
-    
+
     @Override
     public String toString() {
         return description;

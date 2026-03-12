@@ -31,10 +31,10 @@ import jakarta.validation.constraints.Size;
 /**
  * User entity for authentication and authorization
  * Supports both tenant-bound users (HOTEL_ADMIN, FRONTDESK, etc.)
- * and system-wide users (SYSTEM_ADMIN, ADMIN, CUSTOMER, GUEST)
+ * and system-wide users (SUPER_ADMIN, ADMIN, CUSTOMER, GUEST)
  * CUSTOMER: Registered users with accounts (can book across hotels)
  * GUEST: Anonymous users without accounts (temporary token-based access)
- * SYSTEM_ADMIN: System administrators with global access
+ * SUPER_ADMIN: Super administrators with global access
  * ADMIN: Regular administrators with global access
  */
 @Entity
@@ -121,7 +121,7 @@ public class User extends BaseEntity implements UserDetails {
     public boolean isTenantBoundUser() {
         // Check if user has system-wide roles
         if (roles != null) {
-            boolean hasSystemWideRole = roles.contains(UserRole.SYSTEM_ADMIN) ||
+            boolean hasSystemWideRole = roles.contains(UserRole.SUPER_ADMIN) ||
                     roles.contains(UserRole.GUEST) ||
                     roles.contains(UserRole.CUSTOMER) ||
                     roles.contains(UserRole.ADMIN);
@@ -137,7 +137,7 @@ public class User extends BaseEntity implements UserDetails {
     public boolean isSystemWideUser() {
         if (roles != null) {
             boolean hasSystemWideRole = roles.stream()
-                    .anyMatch(role -> role == UserRole.SYSTEM_ADMIN ||
+                    .anyMatch(role -> role == UserRole.SUPER_ADMIN ||
                             role == UserRole.ADMIN ||
                             role == UserRole.GUEST ||
                             role == UserRole.CUSTOMER);

@@ -70,7 +70,7 @@ interface StaffDashboardProps {
   currentUserRole?: string;
 }
 
-const StaffDashboard: React.FC<StaffDashboardProps> = ({ currentUserRole = 'OPERATIONS_SUPERVISOR' }) => {
+const StaffDashboard: React.FC<StaffDashboardProps> = ({ currentUserRole = 'OPERATIONAL_ADMIN' }) => {
   const [staffMembers, setStaffMembers] = useState<StaffMember[]>([]);
   const [filteredStaff, setFilteredStaff] = useState<StaffMember[]>([]);
   const [loading, setLoading] = useState(true);
@@ -477,7 +477,7 @@ const StaffDashboard: React.FC<StaffDashboardProps> = ({ currentUserRole = 'OPER
                             <VisibilityIcon />
                           </IconButton>
                         </Tooltip>
-                        {currentUserRole === 'OPERATIONS_SUPERVISOR' && (
+                        {currentUserRole === 'OPERATIONAL_ADMIN' && (
                           <Tooltip title="Edit Staff">
                             <IconButton size="small">
                               <EditIcon />
@@ -628,7 +628,7 @@ const StaffDashboard: React.FC<StaffDashboardProps> = ({ currentUserRole = 'OPER
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setStaffDetailOpen(false)}>Close</Button>
-          {currentUserRole === 'OPERATIONS_SUPERVISOR' && (
+          {currentUserRole === 'OPERATIONAL_ADMIN' && (
             <Button variant="contained" startIcon={<EditIcon />}>
               Edit Staff
             </Button>

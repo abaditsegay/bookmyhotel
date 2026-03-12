@@ -27,18 +27,43 @@ public class BatchRoomCreateRequest {
     private String description;
 
     // Getters and setters
-    public List<String> getRoomNumbers() { return roomNumbers; }
-    public void setRoomNumbers(List<String> roomNumbers) { this.roomNumbers = roomNumbers; }
+    public List<String> getRoomNumbers() {
+        return roomNumbers;
+    }
 
-    public RoomType getRoomType() { return roomType; }
-    public void setRoomType(RoomType roomType) { this.roomType = roomType; }
+    public void setRoomNumbers(List<String> roomNumbers) {
+        this.roomNumbers = roomNumbers;
+    }
 
-    public BigDecimal getPricePerNight() { return pricePerNight; }
-    public void setPricePerNight(BigDecimal pricePerNight) { this.pricePerNight = pricePerNight; }
+    public RoomType getRoomType() {
+        return roomType;
+    }
 
-    public Integer getCapacity() { return capacity; }
-    public void setCapacity(Integer capacity) { this.capacity = capacity; }
+    public void setRoomType(RoomType roomType) {
+        this.roomType = roomType;
+    }
 
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
+    public BigDecimal getPricePerNight() {
+        return pricePerNight;
+    }
+
+    public void setPricePerNight(BigDecimal pricePerNight) {
+        this.pricePerNight = pricePerNight;
+    }
+
+    public Integer getCapacity() {
+        return capacity;
+    }
+
+    public void setCapacity(Integer capacity) {
+        this.capacity = capacity;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
 }

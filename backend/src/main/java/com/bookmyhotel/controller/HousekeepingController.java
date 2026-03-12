@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/housekeeping")
-@PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('FRONTDESK') or hasRole('HOUSEKEEPING') or hasRole('OPERATIONS_SUPERVISOR')")
+@PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('FRONTDESK') or hasRole('HOUSEKEEPING') or hasRole('OPERATIONAL_ADMIN')")
 public class HousekeepingController {
 
     private static final Logger logger = LoggerFactory.getLogger(HousekeepingController.class);

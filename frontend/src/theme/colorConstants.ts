@@ -13,9 +13,9 @@ export const STATUS_COLORS = {
   REFUNDED: 'info',         // Light Blue
   
   // Admin Role Colors
-  HOTEL_ADMIN: 'orange',    // Orange theme for hotel admins
-  SYSTEM_ADMIN: 'primary',  // Blue theme for system admins
-  FRONT_DESK: 'secondary',  // Purple theme for front desk
+  HOTEL_ADMIN:  'orange',    // Orange theme for hotel admins
+  SUPER_ADMIN:  'primary',   // Blue theme for super admins
+  FRONT_DESK:   'secondary', // Purple theme for front desk
 } as const;
 
 export const ADMIN_THEME_COLORS = {
@@ -25,7 +25,7 @@ export const ADMIN_THEME_COLORS = {
     primaryDark: '#e65100',
     accent: '#ffcc80',
   },
-  SYSTEM_ADMIN: {
+  SUPER_ADMIN: {
     primary: '#1565c0',
     primaryHover: '#0d47a1',
     primaryDark: '#0d47a1',

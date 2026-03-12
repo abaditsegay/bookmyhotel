@@ -128,7 +128,7 @@ export default function VerticalHotelAdvertisementBanner({ maxHotels = 3 }: Vert
   }, [fetchHotels]);
 
   // Hide hotel banner for operations users
-  const isOperationsUser = user?.role === 'OPERATIONS_SUPERVISOR' || 
+  const isOperationsUser = user?.role === 'OPERATIONAL_ADMIN' || 
                            user?.role === 'HOUSEKEEPING' || 
                            user?.role === 'MAINTENANCE';
 

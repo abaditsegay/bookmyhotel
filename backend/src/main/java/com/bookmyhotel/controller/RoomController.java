@@ -26,7 +26,7 @@ import com.bookmyhotel.service.FrontDeskService;
  */
 @RestController
 @RequestMapping("/api/rooms")
-@PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONTDESK', 'HOUSEKEEPING', 'OPERATIONS_SUPERVISOR')")
+@PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONTDESK', 'HOUSEKEEPING', 'OPERATIONAL_ADMIN')")
 public class RoomController {
 
     @Autowired

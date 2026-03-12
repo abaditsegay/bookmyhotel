@@ -613,8 +613,8 @@ export const systemAdminEndpoints: APIEndpoint[] = [
       success: {
         users: [{
           id: 1,
-          username: 'system_admin',
-          role: 'SYSTEM_ADMIN',
+          username: 'super_admin',
+          role: 'SUPER_ADMIN',
           lastActivity: '2025-10-22T09:45:00Z',
           permissions: ['FULL_ACCESS']
         }]
@@ -651,7 +651,7 @@ export const systemAdminEndpoints: APIEndpoint[] = [
         admins: [{
           id: 1,
           username: 'super_admin',
-          role: 'SYSTEM_ADMIN',
+          role: 'SUPER_ADMIN',
           permissions: ['FULL_ACCESS'],
           lastLogin: '2025-10-22T08:00:00Z'
         }]
@@ -673,7 +673,7 @@ export const systemAdminEndpoints: APIEndpoint[] = [
       success: {
         user: {
           id: 25,
-          role: 'SYSTEM_ADMIN',
+          role: 'SUPER_ADMIN',
           promotedAt: '2025-10-22T10:30:00Z'
         }
       }

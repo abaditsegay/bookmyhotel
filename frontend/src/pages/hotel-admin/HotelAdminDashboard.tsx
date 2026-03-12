@@ -186,7 +186,7 @@ const HotelAdminDashboard: React.FC = () => {
             >
               {t('dashboard.hotelAdmin.goToHome')}
             </Button>
-            {user?.roles?.includes('OPERATIONS_SUPERVISOR') && (
+            {user?.roles?.includes('OPERATIONAL_ADMIN') && (
               <Button 
                 variant="outlined" 
                 onClick={() => navigate('/operations/dashboard')}

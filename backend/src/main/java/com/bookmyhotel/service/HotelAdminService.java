@@ -162,7 +162,7 @@ public class HotelAdminService {
         // Get all staff for this hotel
         List<User> allStaff = userRepository.findByHotelAndRolesContaining(hotel,
                 Arrays.asList(UserRole.FRONTDESK, UserRole.HOUSEKEEPING, UserRole.HOTEL_ADMIN,
-                        UserRole.OPERATIONS_SUPERVISOR, UserRole.MAINTENANCE));
+                        UserRole.OPERATIONAL_ADMIN, UserRole.MAINTENANCE));
 
         // Apply filters
         List<User> filteredStaff = allStaff.stream()
@@ -250,10 +250,15 @@ public class HotelAdminService {
             throw new RuntimeException("User with this email already exists");
         }
 
-        // Validate allowed roles for hotel admin
-        Set<UserRole> allowedRoles = Set.of(UserRole.FRONTDESK, UserRole.HOUSEKEEPING, UserRole.HOTEL_ADMIN);
+        // Validate allowed roles for hotel admin creation
+        // HOTEL_ADMIN can create: OPERATIONAL_ADMIN, FRONTDESK, HOUSEKEEPING,
+        // MAINTENANCE
+        Set<UserRole> allowedRoles = Set.of(
+                UserRole.FRONTDESK, UserRole.HOUSEKEEPING,
+                UserRole.OPERATIONAL_ADMIN, UserRole.MAINTENANCE);
         if (userDTO.getRoles() == null || !allowedRoles.containsAll(userDTO.getRoles())) {
-            throw new RuntimeException("Hotel admin can only create FRONTDESK, HOUSEKEEPING, or HOTEL_ADMIN users");
+            throw new RuntimeException(
+                    "Hotel admin can only create FRONTDESK, HOUSEKEEPING, OPERATIONAL_ADMIN, or MAINTENANCE users");
         }
 
         // Create new user
@@ -301,7 +306,9 @@ public class HotelAdminService {
 
         // Update roles if provided and valid
         if (userDTO.getRoles() != null) {
-            Set<UserRole> allowedRoles = Set.of(UserRole.FRONTDESK, UserRole.HOUSEKEEPING, UserRole.HOTEL_ADMIN);
+            Set<UserRole> allowedRoles = Set.of(
+                    UserRole.FRONTDESK, UserRole.HOUSEKEEPING,
+                    UserRole.OPERATIONAL_ADMIN, UserRole.MAINTENANCE);
             if (allowedRoles.containsAll(userDTO.getRoles())) {
                 staff.setRoles(userDTO.getRoles());
             }
@@ -527,7 +534,8 @@ public class HotelAdminService {
 
         for (String roomNumber : request.getRoomNumbers()) {
             String trimmed = roomNumber.trim();
-            if (trimmed.isEmpty()) continue;
+            if (trimmed.isEmpty())
+                continue;
 
             if (roomRepository.existsByHotelAndRoomNumber(hotel, trimmed)) {
                 failedRooms.add(new BatchRoomCreateResponse.FailedRoom(trimmed, "Room number already exists"));
@@ -977,7 +985,7 @@ public class HotelAdminService {
         // Staff statistics - include all staff roles (excluding customers and guests)
         List<User> staff = userRepository.findByHotelAndRolesContaining(hotel,
                 Arrays.asList(UserRole.FRONTDESK, UserRole.HOUSEKEEPING, UserRole.HOTEL_ADMIN,
-                        UserRole.HOTEL_MANAGER, UserRole.ADMIN, UserRole.OPERATIONS_SUPERVISOR,
+                        UserRole.HOTEL_ADMIN, UserRole.ADMIN, UserRole.OPERATIONAL_ADMIN,
                         UserRole.MAINTENANCE));
         stats.put("totalStaff", staff.size());
         stats.put("activeStaff", staff.stream().mapToInt(s -> s.getIsActive() ? 1 : 0).sum());
@@ -1021,7 +1029,7 @@ public class HotelAdminService {
     }
 
     /**
-     * Validates that adding the specified number of rooms would not exceed 
+     * Validates that adding the specified number of rooms would not exceed
      * the hotel's registered room limit (numberOfRooms from onboarding).
      */
     private void validateRoomLimit(Hotel hotel, int roomsToAdd) {
@@ -1030,8 +1038,9 @@ public class HotelAdminService {
             long currentRoomCount = roomRepository.countByHotel(hotel);
             if (currentRoomCount + roomsToAdd > registeredLimit) {
                 throw new RuntimeException(
-                        String.format("Room limit exceeded. Your hotel is registered for %d rooms and currently has %d. " +
-                                "Cannot add %d more room(s). Please update your hotel information to increase the room limit.",
+                        String.format(
+                                "Room limit exceeded. Your hotel is registered for %d rooms and currently has %d. " +
+                                        "Cannot add %d more room(s). Please update your hotel information to increase the room limit.",
                                 registeredLimit, currentRoomCount, roomsToAdd));
             }
         }
@@ -1055,8 +1064,8 @@ public class HotelAdminService {
         info.put("currentRoomCount", currentRoomCount);
         info.put("registeredLimit", registeredLimit);
         info.put("canAddRooms", registeredLimit == null || registeredLimit <= 0 || currentRoomCount < registeredLimit);
-        info.put("remainingSlots", registeredLimit != null && registeredLimit > 0 
-                ? Math.max(0, registeredLimit - currentRoomCount) 
+        info.put("remainingSlots", registeredLimit != null && registeredLimit > 0
+                ? Math.max(0, registeredLimit - currentRoomCount)
                 : null);
         return info;
     }
@@ -1089,7 +1098,7 @@ public class HotelAdminService {
         // Calculate staff statistics
         List<User> staff = userRepository.findByHotelAndRolesContaining(hotel,
                 Arrays.asList(UserRole.FRONTDESK, UserRole.HOUSEKEEPING, UserRole.HOTEL_ADMIN,
-                        UserRole.HOTEL_MANAGER, UserRole.ADMIN));
+                        UserRole.HOTEL_ADMIN, UserRole.ADMIN));
         dto.setTotalStaff(staff.size());
         dto.setActiveStaff((int) staff.stream().mapToInt(s -> s.getIsActive() ? 1 : 0).sum());
 

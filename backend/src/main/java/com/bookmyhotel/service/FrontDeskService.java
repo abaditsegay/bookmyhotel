@@ -1039,7 +1039,7 @@ public class FrontDeskService {
 
         // Check if user is SYSTEM_ADMIN - they can see all rooms across all hotels
         boolean isSystemAdmin = authentication.getAuthorities().stream()
-                .anyMatch(auth -> auth.getAuthority().equals("ROLE_SYSTEM_ADMIN"));
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_SUPER_ADMIN"));
 
         List<Room> allRooms;
         if (isSystemAdmin) {

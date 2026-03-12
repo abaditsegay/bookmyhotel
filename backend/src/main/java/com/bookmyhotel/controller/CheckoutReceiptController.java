@@ -15,7 +15,7 @@ import com.bookmyhotel.service.CheckoutReceiptService;
 
 @RestController
 @RequestMapping("/api/checkout/receipt")
-@PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONTDESK', 'SYSTEM_ADMIN')")
+@PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONTDESK', 'SUPER_ADMIN')")
 public class CheckoutReceiptController {
 
     @Autowired

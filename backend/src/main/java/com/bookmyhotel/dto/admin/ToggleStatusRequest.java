@@ -7,7 +7,8 @@ public class ToggleStatusRequest {
     @NotBlank(message = "Reason is required")
     private String reason;
 
-    public ToggleStatusRequest() {}
+    public ToggleStatusRequest() {
+    }
 
     public ToggleStatusRequest(String reason) {
         this.reason = reason;

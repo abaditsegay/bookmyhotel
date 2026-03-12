@@ -386,7 +386,7 @@ public class StaffScheduleService {
             // Hotel admin or operations supervisor - get staff from their hotel
             // Using optimized native query for better performance
             List<String> staffRoleNames = Arrays.asList("FRONTDESK", "HOUSEKEEPING", "HOTEL_ADMIN",
-                    "OPERATIONS_SUPERVISOR");
+                    "OPERATIONAL_ADMIN");
             logger.info("🏨 Searching for staff in hotel {} with roles: {}", admin.getHotel().getId(), staffRoleNames);
 
             staffMembers = userRepository.findStaffByHotelIdNative(admin.getHotel().getId(), staffRoleNames);

@@ -28,11 +28,16 @@ import com.bookmyhotel.service.UserManagementService;
 import jakarta.validation.Valid;
 
 /**
- * Admin controller for user management
+ * Admin controller for user management.
+ *
+ * Class-level guard: accessible to SUPER_ADMIN and ADMIN.
+ * Service-layer creator-permission checks provide the fine-grained enforcement
+ * (e.g. ADMIN cannot create SUPER_ADMIN, HOTEL_ADMIN cannot reach this
+ * controller).
  */
 @RestController
 @RequestMapping("/api/admin/users")
-@PreAuthorize("hasRole('SYSTEM_ADMIN') or hasRole('ADMIN')")
+@PreAuthorize("hasRole('SUPER_ADMIN') or hasRole('ADMIN')")
 public class UserManagementAdminController {
 
     @Autowired

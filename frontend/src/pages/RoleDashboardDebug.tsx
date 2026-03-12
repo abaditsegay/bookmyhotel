@@ -83,7 +83,7 @@ const RoleDashboardDebug: React.FC = () => {
         <Table>
           <TableBody>
             <TableRow>
-              <TableCell>SYSTEM_ADMIN</TableCell>
+              <TableCell>SUPER_ADMIN</TableCell>
               <TableCell>/system-dashboard</TableCell>
             </TableRow>
             <TableRow>
@@ -95,7 +95,7 @@ const RoleDashboardDebug: React.FC = () => {
               <TableCell>/frontdesk/dashboard</TableCell>
             </TableRow>
             <TableRow>
-              <TableCell>OPERATIONS_SUPERVISOR</TableCell>
+              <TableCell>OPERATIONAL_ADMIN</TableCell>
               <TableCell>/operations/dashboard</TableCell>
             </TableRow>
             <TableRow>
@@ -112,10 +112,10 @@ const RoleDashboardDebug: React.FC = () => {
             Your Expected Route
           </Typography>
           <Typography variant="body1">
-            {user.roles?.includes('SYSTEM_ADMIN') && '/system-dashboard'}
+            {user.roles?.includes('SUPER_ADMIN') && '/system-dashboard'}
             {user.roles?.includes('HOTEL_ADMIN') && '/hotel-admin/dashboard'}
             {user.roles?.includes('FRONTDESK') && '/frontdesk/dashboard'}
-            {user.roles?.includes('OPERATIONS_SUPERVISOR') && '/operations/dashboard'}
+            {user.roles?.includes('OPERATIONAL_ADMIN') && '/operations/dashboard'}
             {(user.roles?.includes('HOUSEKEEPING') || user.roles?.includes('MAINTENANCE')) && '/staff/dashboard'}
             {!user.roles && user.role === 'FRONTDESK' && '/frontdesk/dashboard (legacy role)'}
           </Typography>

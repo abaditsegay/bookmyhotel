@@ -482,7 +482,7 @@ const AdminDashboard: React.FC = () => {
               >
                 <MenuItem value="">All Roles</MenuItem>
                 <MenuItem value="ADMIN">Admin</MenuItem>
-                <MenuItem value="HOTEL_MANAGER">Hotel Manager</MenuItem>
+                <MenuItem value="HOTEL_ADMIN">Hotel Admin</MenuItem>
                 <MenuItem value="HOTEL_STAFF">Hotel Staff</MenuItem>
                 <MenuItem value="GUEST">Guest</MenuItem>
               </PremiumSelect>
@@ -582,7 +582,7 @@ const AdminDashboard: React.FC = () => {
                           color={
                             user.roles.includes('ADMIN') 
                               ? 'error' 
-                              : user.roles.includes('HOTEL_MANAGER')
+                              : user.roles.includes('HOTEL_ADMIN')
                                 ? 'info'
                                 : 'default'
                           }

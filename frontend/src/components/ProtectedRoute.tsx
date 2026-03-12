@@ -5,7 +5,7 @@ import { StandardLoading, ErrorBoundary } from './common';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requiredRole?: 'ADMIN' | 'HOTEL_ADMIN' | 'HOTEL_MANAGER' | 'FRONTDESK' | 'HOUSEKEEPING' | 'OPERATIONS_SUPERVISOR' | 'MAINTENANCE' | 'GUEST';
+  requiredRole?: 'SUPER_ADMIN' | 'ADMIN' | 'HOTEL_ADMIN' | 'OPERATIONAL_ADMIN' | 'FRONTDESK' | 'HOUSEKEEPING' | 'MAINTENANCE' | 'GUEST';
   requiredRoles?: string[]; // Allow multiple roles
   /**
    * Custom redirect path when access is denied
@@ -68,14 +68,14 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   // Define role hierarchy - higher roles can access lower role functionality
   const roleHierarchy: Record<string, number> = {
     'GUEST': 1,
+    'CUSTOMER': 1,
     'FRONTDESK': 2,
     'HOUSEKEEPING': 2,
     'MAINTENANCE': 2,
-    'OPERATIONS_SUPERVISOR': 3,
-    'HOTEL_MANAGER': 3,
+    'OPERATIONAL_ADMIN': 3,
     'HOTEL_ADMIN': 4,
-    'ADMIN': 5, // System admin role
-    'SYSTEM_ADMIN': 6 // Highest level system admin role
+    'ADMIN': 5,
+    'SUPER_ADMIN': 6,
   };
 
   // Check if user has the required role or a higher role
@@ -94,8 +94,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     
     // If requiredRole is provided, check hierarchy
     if (requiredRole) {
-      // Special case: SYSTEM_ADMIN can access everything
-      if (userRoles.includes('SYSTEM_ADMIN')) {
+      // Special case: SUPER_ADMIN can access everything
+      if (userRoles.includes('SUPER_ADMIN')) {
         return true;
       }
       

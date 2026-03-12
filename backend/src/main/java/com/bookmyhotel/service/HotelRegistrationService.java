@@ -130,7 +130,8 @@ public class HotelRegistrationService {
         response.setContactPerson(registration.getContactPerson());
         response.setLoginEmail(registration.getContactEmail());
         response.setStatus(registration.getStatus().name());
-        response.setMessage("Registration submitted successfully. A welcome email with your login credentials has been sent to your email address.");
+        response.setMessage(
+                "Registration submitted successfully. A welcome email with your login credentials has been sent to your email address.");
 
         return response;
     }
@@ -167,17 +168,28 @@ public class HotelRegistrationService {
                 .orElseThrow(() -> new RuntimeException("No registration found for email: " + email));
 
         // Update with additional onboarding fields
-        if (request.getDescription() != null) registration.setDescription(request.getDescription());
-        if (request.getPhone() != null) registration.setPhone(request.getPhone());
-        if (request.getMobilePaymentPhone() != null) registration.setMobilePaymentPhone(request.getMobilePaymentPhone());
-        if (request.getMobilePaymentPhone2() != null) registration.setMobilePaymentPhone2(request.getMobilePaymentPhone2());
-        if (request.getLicenseNumber() != null) registration.setLicenseNumber(request.getLicenseNumber());
-        if (request.getTaxId() != null) registration.setTaxId(request.getTaxId());
-        if (request.getWebsiteUrl() != null) registration.setWebsiteUrl(request.getWebsiteUrl());
-        if (request.getFacilityAmenities() != null) registration.setFacilityAmenities(request.getFacilityAmenities());
-        if (request.getNumberOfRooms() != null) registration.setNumberOfRooms(request.getNumberOfRooms());
-        if (request.getCheckInTime() != null) registration.setCheckInTime(request.getCheckInTime());
-        if (request.getCheckOutTime() != null) registration.setCheckOutTime(request.getCheckOutTime());
+        if (request.getDescription() != null)
+            registration.setDescription(request.getDescription());
+        if (request.getPhone() != null)
+            registration.setPhone(request.getPhone());
+        if (request.getMobilePaymentPhone() != null)
+            registration.setMobilePaymentPhone(request.getMobilePaymentPhone());
+        if (request.getMobilePaymentPhone2() != null)
+            registration.setMobilePaymentPhone2(request.getMobilePaymentPhone2());
+        if (request.getLicenseNumber() != null)
+            registration.setLicenseNumber(request.getLicenseNumber());
+        if (request.getTaxId() != null)
+            registration.setTaxId(request.getTaxId());
+        if (request.getWebsiteUrl() != null)
+            registration.setWebsiteUrl(request.getWebsiteUrl());
+        if (request.getFacilityAmenities() != null)
+            registration.setFacilityAmenities(request.getFacilityAmenities());
+        if (request.getNumberOfRooms() != null)
+            registration.setNumberOfRooms(request.getNumberOfRooms());
+        if (request.getCheckInTime() != null)
+            registration.setCheckInTime(request.getCheckInTime());
+        if (request.getCheckOutTime() != null)
+            registration.setCheckOutTime(request.getCheckOutTime());
 
         registration = registrationRepository.save(registration);
         logger.info("Onboarding completed for registration: {}", email);
@@ -260,7 +272,8 @@ public class HotelRegistrationService {
         // Create the hotel
         Hotel hotel = createHotelFromRegistration(registration, resolvedTenantId);
 
-        // Assign existing user to the hotel (user was created during registration submission)
+        // Assign existing user to the hotel (user was created during registration
+        // submission)
         String contactEmail = registration.getContactEmail();
         User hotelAdmin = userRepository.findByEmail(contactEmail)
                 .orElseThrow(() -> new RuntimeException("User account not found for: " + contactEmail));
@@ -421,8 +434,6 @@ public class HotelRegistrationService {
 
         return password.toString();
     }
-
-
 
     /**
      * Extract first name from full name

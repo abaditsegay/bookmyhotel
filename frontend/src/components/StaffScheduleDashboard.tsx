@@ -161,7 +161,7 @@ const StaffScheduleDashboard: React.FC = () => {
       'MAINTENANCE': 'warning',
       'SECURITY': 'error',
       'RESTAURANT': 'info',
-      'CONCIERGE': 'secondary',
+      'OPERATIONAL_ADMIN': 'secondary',
       'MANAGEMENT': 'secondary'
     };
     return colors[department] || 'secondary';

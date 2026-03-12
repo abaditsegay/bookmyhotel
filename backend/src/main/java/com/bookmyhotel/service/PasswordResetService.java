@@ -125,14 +125,16 @@ public class PasswordResetService {
 
         if (resetTokenOpt.isEmpty()) {
             logger.warn("Password reset attempted with invalid token");
-            return ResetResult.failure("Invalid, expired, or already-used reset token. Please request a new password reset.");
+            return ResetResult
+                    .failure("Invalid, expired, or already-used reset token. Please request a new password reset.");
         }
 
         PasswordResetToken resetToken = resetTokenOpt.get();
 
         if (resetToken.isUsed()) {
             logger.warn("Password reset attempted with already-used token");
-            return ResetResult.failure("Invalid, expired, or already-used reset token. Please request a new password reset.");
+            return ResetResult
+                    .failure("Invalid, expired, or already-used reset token. Please request a new password reset.");
         }
 
         if (resetToken.isExpired()) {
@@ -141,11 +143,12 @@ public class PasswordResetService {
         }
 
         // Validate password strength
-        PasswordSecurityService.PasswordValidationResult validation =
-                passwordSecurityService.validatePassword(newPassword);
+        PasswordSecurityService.PasswordValidationResult validation = passwordSecurityService
+                .validatePassword(newPassword);
         if (!validation.isValid()) {
             logger.warn("Password reset with weak password for user: {}", resetToken.getUser().getEmail());
-            return ResetResult.failure("Password does not meet requirements: " + String.join(", ", validation.getErrors()));
+            return ResetResult
+                    .failure("Password does not meet requirements: " + String.join(", ", validation.getErrors()));
         }
 
         // Update user password
@@ -178,8 +181,13 @@ public class PasswordResetService {
             return new ResetResult(false, message);
         }
 
-        public boolean isSuccessful() { return successful; }
-        public String getMessage() { return message; }
+        public boolean isSuccessful() {
+            return successful;
+        }
+
+        public String getMessage() {
+            return message;
+        }
     }
 
     /**

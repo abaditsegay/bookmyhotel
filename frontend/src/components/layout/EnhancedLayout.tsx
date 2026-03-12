@@ -83,12 +83,12 @@ const EnhancedLayout: React.FC<EnhancedLayoutProps> = ({
       )}
       
       {/* Calendar Widget */}
-      <Box sx={{ p: 2, borderBottom: `1px solid ${theme.palette.divider}`, bgcolor: 'background.paper' }}>
+      <Box sx={{ display: 'none', p: 2, borderBottom: `1px solid ${theme.palette.divider}`, bgcolor: 'background.paper' }}>
         <CalendarWidget />
       </Box>
       
       {/* TODOs Widget */}
-      <Box sx={{ p: 2, flex: 1, overflow: 'auto', bgcolor: 'background.paper' }}>
+      <Box sx={{ display: 'none', p: 2, flex: 1, overflow: 'auto', bgcolor: 'background.paper' }}>
         <TodosWidget />
       </Box>
     </Box>

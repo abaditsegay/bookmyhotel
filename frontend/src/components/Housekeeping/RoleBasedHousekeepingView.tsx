@@ -24,7 +24,7 @@ const RoleBasedHousekeepingView: React.FC = () => {
 
   // Check if user has management roles (can manage all tasks)
   const hasManagementRole = () => {
-    const managementRoles = ['HOTEL_ADMIN', 'FRONTDESK', 'OPERATIONS_SUPERVISOR'];
+    const managementRoles = ['HOTEL_ADMIN', 'FRONTDESK', 'OPERATIONAL_ADMIN'];
     return user.roles?.some(role => managementRoles.includes(role)) || 
            managementRoles.includes(user.role);
   };
