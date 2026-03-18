@@ -164,14 +164,20 @@ jobs:
       - name: Wait for health check
         run: |
           echo "Waiting for backend to start..."
-          for i in $(seq 1 30); do
-            if curl -sf --max-time 5 http://${{ vars.LIGHTSAIL_HOST }}${{ vars.SERVER_SERVLET_CONTEXT_PATH }}/actuator/health | grep -q '"status":"UP"'; then
+          for i in $(seq 1 60); do
+            if ssh -i ~/.ssh/bookmyhotel-aws \
+                  -o ConnectTimeout=5 \
+                  ${{ vars.LIGHTSAIL_USER }}@${{ vars.LIGHTSAIL_HOST }} \
+                  "curl -sf --max-time 5 http://localhost:${{ vars.SERVER_PORT }}${{ vars.SERVER_SERVLET_CONTEXT_PATH }}/actuator/health" \
+                  2>/dev/null; then
+              echo ""
               echo "✅ Backend is healthy"
               exit 0
             fi
-            echo "  attempt $i/30 — waiting 10s..."
-            sleep 10
+            echo -n "."
+            sleep 5
           done
+          echo ""
           echo "❌ Backend health check failed after 5 minutes"
           ssh -i ~/.ssh/bookmyhotel-aws ${{ vars.LIGHTSAIL_USER }}@${{ vars.LIGHTSAIL_HOST }} \
             'sudo journalctl -u bookmyhotel-backend.service --no-pager -n 50'
