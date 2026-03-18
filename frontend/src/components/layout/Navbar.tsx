@@ -459,7 +459,6 @@ const Navbar: React.FC = () => {
         sx={{
           ...getNavbarBackground(),
           height: 70, // Fixed height to prevent movement
-          borderBottom: `1px solid ${theme.palette.divider}`, // Add subtle border for structure
           zIndex: theme.zIndex.appBar, // Ensure proper z-index above sidebar
           top: 0, // Explicitly set top position
           left: 0, // Explicitly set left position

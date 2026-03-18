@@ -22,6 +22,7 @@ interface User {
   lastLogin?: string;
   isActive?: boolean;
   needsOnboarding?: boolean; // true if hotel admin needs to complete profile
+  accountStatus?: 'ACTIVE' | 'HOTEL_INACTIVE' | 'USER_SUSPENDED';
   // Helper properties
   isSystemWide?: boolean; // true if tenantId is null
   isTenantBound?: boolean; // true if tenantId is not null
@@ -39,6 +40,7 @@ interface AuthContextType {
   handleSessionExpired: () => void; // Add session expiration handler
   updateProfile: (updates: Partial<User>) => Promise<boolean>;
   changePassword: (currentPassword: string, newPassword: string) => Promise<boolean>;
+  setAccountStatus: (status: 'ACTIVE' | 'HOTEL_INACTIVE' | 'USER_SUSPENDED') => void;
   isAuthenticated: boolean;
   onTokenChange?: (token: string) => void;
   clearError: () => void;
@@ -258,6 +260,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
         lastLogin: new Date().toISOString(),
         isActive: true,
         needsOnboarding: loginData.needsOnboarding || false,
+        accountStatus: (loginData.accountStatus as 'ACTIVE' | 'HOTEL_INACTIVE' | 'USER_SUSPENDED') || 'ACTIVE',
         // Helper properties
         isSystemWide: (loginData.tenantId === null || loginData.tenantId === undefined) && 
                       (Array.isArray(loginData.roles) ? loginData.roles : [loginData.roles])
@@ -425,6 +428,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
     }
   };
 
+  const setAccountStatus = (status: 'ACTIVE' | 'HOTEL_INACTIVE' | 'USER_SUSPENDED') => {
+    if (!user || !token) return;
+    const updatedUser = { ...user, accountStatus: status };
+    setUser(updatedUser);
+    TokenManager.setAuth(token, updatedUser as AuthUser);
+  };
+
   const changePassword = async (currentPassword: string, newPassword: string): Promise<boolean> => {
     if (!user || !token) {
       setError('User not authenticated');
@@ -560,6 +570,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
     handleSessionExpired,
     updateProfile,
     changePassword,
+    setAccountStatus,
     isAuthenticated: !!user,
     onTokenChange,
     clearError,

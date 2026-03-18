@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.bookmyhotel.dto.HotelDTO;
 import com.bookmyhotel.dto.RoomDTO;
 import com.bookmyhotel.dto.admin.ToggleStatusRequest;
+import com.bookmyhotel.annotation.Auditable;
 import com.bookmyhotel.service.HotelManagementService;
 
 import jakarta.validation.Valid;
@@ -90,6 +91,7 @@ public class HotelManagementAdminController {
     /**
      * Create new hotel
      */
+    @Auditable(action = "CREATE", entityType = "HOTEL", description = "Admin created a hotel")
     @PostMapping
     public ResponseEntity<HotelDTO> createHotel(@Valid @RequestBody HotelDTO hotelDTO) {
         HotelDTO createdHotel = hotelManagementService.createHotel(hotelDTO);
@@ -99,6 +101,7 @@ public class HotelManagementAdminController {
     /**
      * Update hotel
      */
+    @Auditable(action = "UPDATE", entityType = "HOTEL", description = "Admin updated a hotel")
     @PutMapping("/{id}")
     public ResponseEntity<HotelDTO> updateHotel(
             @PathVariable Long id,
@@ -111,6 +114,7 @@ public class HotelManagementAdminController {
     /**
      * Delete hotel
      */
+    @Auditable(action = "DELETE", entityType = "HOTEL", description = "Admin deleted a hotel")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteHotel(@PathVariable Long id) {
         hotelManagementService.deleteHotel(id);
@@ -120,11 +124,26 @@ public class HotelManagementAdminController {
     /**
      * Toggle hotel status
      */
+    @Auditable(action = "TOGGLE_STATUS", entityType = "HOTEL", description = "Admin toggled hotel status")
     @PostMapping("/{id}/toggle-status")
     public ResponseEntity<HotelDTO> toggleHotelStatus(
             @PathVariable Long id,
             @Valid @RequestBody ToggleStatusRequest request) {
         HotelDTO hotel = hotelManagementService.toggleHotelStatus(id, request.getReason());
+        return ResponseEntity.ok(hotel);
+    }
+
+    /**
+     * Toggle public listing for a hotel.
+     * Publishing makes the hotel visible to guests in public search.
+     * Unpublishing hides it without revoking hotel-admin management access.
+     */
+    @Auditable(action = "TOGGLE_PUBLIC_LISTING", entityType = "HOTEL", description = "Admin toggled hotel public listing")
+    @PostMapping("/{id}/toggle-public-listing")
+    public ResponseEntity<HotelDTO> toggleHotelPublicListing(
+            @PathVariable Long id,
+            @Valid @RequestBody ToggleStatusRequest request) {
+        HotelDTO hotel = hotelManagementService.togglePublicListing(id, request.getReason());
         return ResponseEntity.ok(hotel);
     }
 
@@ -140,6 +159,7 @@ public class HotelManagementAdminController {
     /**
      * Add room to hotel
      */
+    @Auditable(action = "CREATE", entityType = "ROOM", description = "Admin added a room to a hotel")
     @PostMapping("/{id}/rooms")
     public ResponseEntity<RoomDTO> addRoomToHotel(
             @PathVariable Long id,
@@ -152,6 +172,7 @@ public class HotelManagementAdminController {
     /**
      * Update room
      */
+    @Auditable(action = "UPDATE", entityType = "ROOM", description = "Admin updated a room")
     @PutMapping("/rooms/{roomId}")
     public ResponseEntity<RoomDTO> updateRoom(
             @PathVariable Long roomId,
@@ -164,6 +185,7 @@ public class HotelManagementAdminController {
     /**
      * Delete room
      */
+    @Auditable(action = "DELETE", entityType = "ROOM", description = "Admin deleted a room")
     @DeleteMapping("/rooms/{roomId}")
     public ResponseEntity<Void> deleteRoom(@PathVariable Long roomId) {
         hotelManagementService.deleteRoom(roomId);
@@ -173,6 +195,7 @@ public class HotelManagementAdminController {
     /**
      * Assign hotel admin to hotel
      */
+    @Auditable(action = "ASSIGN_ADMIN", entityType = "HOTEL", description = "Admin assigned a hotel admin")
     @PostMapping("/{hotelId}/assign-admin/{userId}")
     public ResponseEntity<HotelDTO> assignHotelAdmin(
             @PathVariable Long hotelId,

@@ -112,6 +112,14 @@ public class Hotel extends BaseEntity {
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
 
+    /**
+     * Controls public visibility in guest hotel search.
+     * Independent from isActive (which gates hotel-admin management access after approval).
+     * An admin must explicitly publish a hotel after approval for it to appear in search.
+     */
+    @Column(name = "is_publicly_listed", nullable = false)
+    private Boolean isPubliclyListed = false;
+
     @JsonIgnore
     @OneToMany(mappedBy = "hotel", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Room> rooms = new ArrayList<>();
@@ -288,6 +296,14 @@ public class Hotel extends BaseEntity {
 
     public void setIsActive(Boolean isActive) {
         this.isActive = isActive;
+    }
+
+    public Boolean getIsPubliclyListed() {
+        return isPubliclyListed;
+    }
+
+    public void setIsPubliclyListed(Boolean isPubliclyListed) {
+        this.isPubliclyListed = isPubliclyListed;
     }
 
     public List<Room> getRooms() {

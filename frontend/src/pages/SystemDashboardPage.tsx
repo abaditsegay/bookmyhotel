@@ -44,6 +44,7 @@ import {
   ContentCopy,
   OpenInNew,
   Link as LinkIcon,
+  History,
 } from '@mui/icons-material';
 import { MetricCard, BarChart, DonutChart } from '../components/common/DataVisualization';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
@@ -59,6 +60,7 @@ import { API_ENDPOINTS } from '../config/apiConfig';
 import { 
   getAllEndpoints
 } from '../data/apiDocumentation';
+import AuditLogTab from './admin/AuditLogTab';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -278,7 +280,7 @@ export const SystemDashboardPage: React.FC = () => {
       </Box>
 
       {/* Navigation Tabs */}
-      <Paper sx={{ mb: 3, borderRadius: designSystem.borderRadius.lg }}>
+      <Box sx={{ mb: 3, borderBottom: 1, borderColor: 'divider' }}>
         <Tabs 
           value={activeTab} 
           onChange={handleTabChange}
@@ -315,8 +317,16 @@ export const SystemDashboardPage: React.FC = () => {
               sx={{ gap: 1 }}
             />
           )}
+          {isSystemAdmin && (
+            <Tab 
+              icon={<History />} 
+              label="Audit Log" 
+              iconPosition="start"
+              sx={{ gap: 1 }}
+            />
+          )}
         </Tabs>
-      </Paper>
+      </Box>
 
       {/* Tab Panels */}
       <TabPanel value={activeTab} index={0}>
@@ -324,6 +334,7 @@ export const SystemDashboardPage: React.FC = () => {
 
         {/* Business Onboarding URL — share with businesses to submit hotel registration */}
         <Paper
+          elevation={0}
           sx={{
             p: 3,
             mb: 4,
@@ -427,7 +438,7 @@ export const SystemDashboardPage: React.FC = () => {
         <Grid container spacing={3}>
           {isSystemAdmin && (
             <Grid item xs={12} md={6}>
-              <Paper sx={{ p: 3 }}>
+              <Paper elevation={0} sx={{ p: 3, border: 1, borderColor: 'divider' }}>
                 <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
                   <TrendingUp sx={{ mr: 1 }} />
                   {t('dashboard.system.systemOverview')}
@@ -468,7 +479,7 @@ export const SystemDashboardPage: React.FC = () => {
           )}
 
           <Grid item xs={12} md={isSystemAdmin ? 6 : 12}>
-            <Paper sx={{ p: 3 }}>
+            <Paper elevation={0} sx={{ p: 3, border: 1, borderColor: 'divider' }}>
               <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
                 <Dashboard sx={{ mr: 1 }} />
                 {t('dashboard.system.recentActivity')}
@@ -576,7 +587,7 @@ export const SystemDashboardPage: React.FC = () => {
           {/* Charts */}
           <Grid container spacing={3}>
             <Grid item xs={12} lg={8}>
-              <Paper sx={{ p: 3, borderRadius: designSystem.borderRadius.lg }}>
+              <Paper elevation={0} sx={{ p: 3, borderRadius: designSystem.borderRadius.lg, border: 1, borderColor: 'divider' }}>
                 <Typography variant="h6" sx={{ mb: 3, fontWeight: 'bold' }}>
                   {t('dashboard.system.monthlyRevenueChart')}
                 </Typography>
@@ -589,7 +600,7 @@ export const SystemDashboardPage: React.FC = () => {
             </Grid>
             
             <Grid item xs={12} lg={4}>
-              <Paper sx={{ p: 3, borderRadius: designSystem.borderRadius.lg, height: '100%' }}>
+              <Paper elevation={0} sx={{ p: 3, borderRadius: designSystem.borderRadius.lg, border: 1, borderColor: 'divider', height: '100%' }}>
                 <Typography variant="h6" sx={{ mb: 3, fontWeight: 'bold' }}>
                   {t('dashboard.system.bookingStatusChart')}
                 </Typography>
@@ -601,6 +612,13 @@ export const SystemDashboardPage: React.FC = () => {
               </Paper>
             </Grid>
           </Grid>
+        </TabPanel>
+      )}
+
+      {/* Audit Log Tab */}
+      {isSystemAdmin && (
+        <TabPanel value={activeTab} index={3}>
+          <AuditLogTab />
         </TabPanel>
       )}
 

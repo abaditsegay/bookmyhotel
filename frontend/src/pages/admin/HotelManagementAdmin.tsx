@@ -46,7 +46,9 @@ import {
   CheckCircle as ApproveIcon,
   Cancel as RejectIcon,
   NavigateNext,
-  NavigateBefore
+  NavigateBefore,
+  Public as PublishIcon,
+  PublicOff as UnpublishIcon
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { adminApiService, HotelDTO, UpdateHotelRequest, TenantDTO, ApproveRegistrationRequest, HotelRegistrationResponse } from '../../services/adminApi';
@@ -105,6 +107,8 @@ const HotelManagementAdmin: React.FC = () => {
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [toggleStatusDialogOpen, setToggleStatusDialogOpen] = useState(false);
   const [toggleStatusReason, setToggleStatusReason] = useState('');
+  const [togglePublicDialogOpen, setTogglePublicDialogOpen] = useState(false);
+  const [togglePublicReason, setTogglePublicReason] = useState('');
 
   // Approval/Rejection form state
   const [approvalComments, setApprovalComments] = useState('');
@@ -672,6 +676,27 @@ const HotelManagementAdmin: React.FC = () => {
     }
   };
 
+  // Toggle hotel public listing
+  const handleTogglePublicListing = async (hotel: Hotel) => {
+    if (!token) return;
+    try {
+      setLoading(true);
+      await adminApiService.toggleHotelPublicListing(hotel.id, togglePublicReason);
+      setTogglePublicDialogOpen(false);
+      setTogglePublicReason('');
+      setSelectedHotel(null);
+      loadHotels();
+      setError(null);
+      setSuccess(`Hotel ${hotel.isPubliclyListed ? 'unpublished' : 'published'} successfully`);
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to update public listing.';
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Box sx={{ width: '100%', p: 3 }}>
       <Box sx={{ py: 4 }}>
@@ -787,19 +812,20 @@ const HotelManagementAdmin: React.FC = () => {
                     <TableCell>Rooms</TableCell>
                     <TableCell>Rating</TableCell>
                     <TableCell>Status</TableCell>
+                    <TableCell>Public Listing</TableCell>
                     <TableCell>Actions</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {loading ? (
                     <TableRow>
-                      <TableCell colSpan={8} align="center">
+                      <TableCell colSpan={9} align="center">
                         <CircularProgress />
                       </TableCell>
                     </TableRow>
                   ) : filteredHotels.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={8} align="center">
+                      <TableCell colSpan={9} align="center">
                         <Typography variant="body2" color="text.secondary">
                           No hotels found
                         </Typography>
@@ -850,6 +876,14 @@ const HotelManagementAdmin: React.FC = () => {
                             />
                           </TableCell>
                           <TableCell>
+                            <Chip
+                              label={hotel.isPubliclyListed ? 'Published' : 'Unlisted'}
+                              color={hotel.isPubliclyListed ? 'info' : 'default'}
+                              size="small"
+                              icon={hotel.isPubliclyListed ? <PublishIcon fontSize="small" /> : <UnpublishIcon fontSize="small" />}
+                            />
+                          </TableCell>
+                          <TableCell>
                             <Box sx={{ display: 'flex', gap: 1 }}>
                               <IconButton
                                 size="small"
@@ -869,6 +903,19 @@ const HotelManagementAdmin: React.FC = () => {
                                 color={hotel.isActive ? "success" : "error"}
                               >
                                 {hotel.isActive ? <ToggleOnIcon /> : <ToggleOffIcon />}
+                              </IconButton>
+                              <IconButton
+                                size="small"
+                                onClick={() => {
+                                  setSelectedHotel(hotel);
+                                  setTogglePublicReason('');
+                                  setTogglePublicDialogOpen(true);
+                                }}
+                                title={hotel.isPubliclyListed ? 'Unpublish from public search' : 'Publish to public search'}
+                                color={hotel.isPubliclyListed ? 'info' : 'default'}
+                                disabled={!hotel.isActive}
+                              >
+                                {hotel.isPubliclyListed ? <PublishIcon /> : <UnpublishIcon />}
                               </IconButton>
                             </Box>
                           </TableCell>
@@ -1692,6 +1739,48 @@ const HotelManagementAdmin: React.FC = () => {
               disabled={!toggleStatusReason.trim() || loading}
             >
               {loading ? <CircularProgress size={20} /> : (selectedHotel?.isActive ? 'Deactivate' : 'Activate')}
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Toggle Public Listing Confirmation Dialog */}
+        <Dialog
+          open={togglePublicDialogOpen}
+          onClose={() => { setTogglePublicDialogOpen(false); setTogglePublicReason(''); }}
+          maxWidth="sm"
+          fullWidth
+        >
+          <DialogTitle>
+            {selectedHotel?.isPubliclyListed ? 'Unpublish Hotel' : 'Publish Hotel to Public Search'}
+          </DialogTitle>
+          <DialogContent>
+            <Typography sx={{ mb: 2 }}>
+              {selectedHotel?.isPubliclyListed
+                ? `Unpublishing "${selectedHotel?.name}" will hide it from public guest search. Hotel admin will retain management access.`
+                : `Publishing "${selectedHotel?.name}" will make it visible to guests in the public hotel search. Ensure all hotel details, rooms, and pricing are configured before publishing.`}
+            </Typography>
+            <PremiumTextField
+              label="Reason"
+              fullWidth
+              required
+              multiline
+              rows={3}
+              value={togglePublicReason}
+              onChange={(e) => setTogglePublicReason(e.target.value)}
+              placeholder={selectedHotel?.isPubliclyListed ? 'Reason for unpublishing...' : 'Reason for publishing...'}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => { setTogglePublicDialogOpen(false); setTogglePublicReason(''); }}>
+              Cancel
+            </Button>
+            <Button
+              onClick={() => selectedHotel && handleTogglePublicListing(selectedHotel)}
+              variant="contained"
+              color={selectedHotel?.isPubliclyListed ? 'warning' : 'info'}
+              disabled={!togglePublicReason.trim() || loading}
+            >
+              {loading ? <CircularProgress size={20} /> : (selectedHotel?.isPubliclyListed ? 'Unpublish' : 'Publish')}
             </Button>
           </DialogActions>
         </Dialog>

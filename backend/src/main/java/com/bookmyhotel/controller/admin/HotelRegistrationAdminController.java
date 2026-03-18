@@ -24,6 +24,7 @@ import com.bookmyhotel.dto.admin.HotelRegistrationResponse;
 import com.bookmyhotel.dto.admin.HotelRegistrationSubmitResponse;
 import com.bookmyhotel.dto.admin.RejectRegistrationRequest;
 import com.bookmyhotel.entity.RegistrationStatus;
+import com.bookmyhotel.annotation.Auditable;
 import com.bookmyhotel.service.HotelRegistrationService;
 
 import jakarta.validation.Valid;
@@ -46,6 +47,7 @@ public class HotelRegistrationAdminController {
     /**
      * Submit new hotel registration
      */
+    @Auditable(action = "CREATE", entityType = "HOTEL_REGISTRATION", description = "Hotel registration submitted")
     @PostMapping
     public ResponseEntity<HotelRegistrationSubmitResponse> submitRegistration(
             @Valid @RequestBody HotelRegistrationRequest request) {
@@ -123,6 +125,7 @@ public class HotelRegistrationAdminController {
     /**
      * Approve hotel registration
      */
+    @Auditable(action = "APPROVE", entityType = "HOTEL_REGISTRATION", description = "Admin approved hotel registration")
     @PostMapping("/{id}/approve")
     public ResponseEntity<HotelRegistrationResponse> approveRegistration(
             @PathVariable Long id,
@@ -155,6 +158,7 @@ public class HotelRegistrationAdminController {
     /**
      * Reject hotel registration
      */
+    @Auditable(action = "REJECT", entityType = "HOTEL_REGISTRATION", description = "Admin rejected hotel registration")
     @PostMapping("/{id}/reject")
     public ResponseEntity<HotelRegistrationResponse> rejectRegistration(
             @PathVariable Long id,
@@ -181,6 +185,7 @@ public class HotelRegistrationAdminController {
     /**
      * Mark registration as under review
      */
+    @Auditable(action = "UNDER_REVIEW", entityType = "HOTEL_REGISTRATION", description = "Admin marked registration as under review")
     @PostMapping("/{id}/under-review")
     public ResponseEntity<HotelRegistrationResponse> markUnderReview(
             @PathVariable Long id,

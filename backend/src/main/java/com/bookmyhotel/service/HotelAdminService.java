@@ -139,6 +139,14 @@ public class HotelAdminService {
         hotel.setMobilePaymentPhone(hotelDTO.getMobilePaymentPhone());
         hotel.setMobilePaymentPhone2(hotelDTO.getMobilePaymentPhone2());
         hotel.setEmail(hotelDTO.getEmail());
+        if (hotelDTO.getContactPerson() != null) hotel.setContactPerson(hotelDTO.getContactPerson());
+        if (hotelDTO.getLicenseNumber() != null) hotel.setLicenseNumber(hotelDTO.getLicenseNumber());
+        if (hotelDTO.getTaxId() != null) hotel.setTaxId(hotelDTO.getTaxId());
+        if (hotelDTO.getWebsiteUrl() != null) hotel.setWebsiteUrl(hotelDTO.getWebsiteUrl());
+        if (hotelDTO.getFacilityAmenities() != null) hotel.setFacilityAmenities(hotelDTO.getFacilityAmenities());
+        if (hotelDTO.getCheckInTime() != null) hotel.setCheckInTime(hotelDTO.getCheckInTime());
+        if (hotelDTO.getCheckOutTime() != null) hotel.setCheckOutTime(hotelDTO.getCheckOutTime());
+        if (hotelDTO.getNumberOfRooms() != null) hotel.setNumberOfRooms(hotelDTO.getNumberOfRooms());
         hotel.setUpdatedAt(LocalDateTime.now());
 
         Hotel saved = hotelRepository.save(hotel);
@@ -1082,6 +1090,13 @@ public class HotelAdminService {
         dto.setMobilePaymentPhone(hotel.getMobilePaymentPhone());
         dto.setMobilePaymentPhone2(hotel.getMobilePaymentPhone2());
         dto.setEmail(hotel.getEmail());
+        dto.setContactPerson(hotel.getContactPerson());
+        dto.setLicenseNumber(hotel.getLicenseNumber());
+        dto.setTaxId(hotel.getTaxId());
+        dto.setWebsiteUrl(hotel.getWebsiteUrl());
+        dto.setFacilityAmenities(hotel.getFacilityAmenities());
+        dto.setCheckInTime(hotel.getCheckInTime());
+        dto.setCheckOutTime(hotel.getCheckOutTime());
         dto.setIsActive(hotel.getIsActive());
         dto.setNumberOfRooms(hotel.getNumberOfRooms());
         dto.setCreatedAt(hotel.getCreatedAt());

@@ -140,6 +140,7 @@ public class EmailService {
 
         try {
             Map<String, Object> templateData = new HashMap<>();
+            templateData.put("email", email);
             templateData.put("firstName", firstName);
             templateData.put("hotelName", hotelName);
             templateData.put("tempPassword", tempPassword);

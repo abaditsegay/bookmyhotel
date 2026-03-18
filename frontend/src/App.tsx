@@ -52,6 +52,7 @@ const GuestAuthPage = lazyWithRetry(() => import('./pages/GuestAuthPage'));
 const ForgotPasswordPage = lazyWithRetry(() => import('./pages/ForgotPasswordPage'));
 const ResetPasswordPage = lazyWithRetry(() => import('./pages/ResetPasswordPage'));
 const ProfilePage = lazyWithRetry(() => import('./pages/ProfilePage'));
+const AccountStatusPage = lazyWithRetry(() => import('./pages/AccountStatusPage'));
 
 // Admin pages
 const AdminDashboard = lazyWithRetry(() => import('./pages/admin/AdminDashboard'));
@@ -66,6 +67,7 @@ const HotelOnboarding = lazyWithRetry(() => import('./pages/HotelOnboarding'));
 
 // Hotel Admin pages
 const HotelAdminDashboard = lazyWithRetry(() => import('./pages/hotel-admin/HotelAdminDashboard'));
+const MyRegistrationPage = lazyWithRetry(() => import('./pages/hotel-admin/MyRegistrationPage'));
 const RoomManagement = lazyWithRetry(() => import('./pages/hotel-admin/RoomManagement'));
 const RoomViewEdit = lazyWithRetry(() => import('./pages/hotel-admin/RoomViewEdit'));
 const StaffManagement = lazyWithRetry(() => import('./pages/hotel-admin/StaffManagement'));
@@ -284,6 +286,7 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/guest-auth" element={<GuestAuthPage />} />
+        <Route path="/account-status" element={<AccountStatusPage />} />
         {/* Development Demo Routes - only available in development mode */}
         {process.env.NODE_ENV === 'development' && (
           <Route path="/demo/error-boundary" element={<ErrorBoundaryDemo />} />
@@ -443,6 +446,11 @@ function App() {
         <Route path="/hotel-admin/dashboard" element={
           <ProtectedRoute requiredRole="HOTEL_ADMIN">
             <HotelAdminDashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/hotel-admin/my-registration" element={
+          <ProtectedRoute requiredRole="HOTEL_ADMIN">
+            <MyRegistrationPage />
           </ProtectedRoute>
         } />
         <Route path="/hotel-admin/bookings/:id" element={

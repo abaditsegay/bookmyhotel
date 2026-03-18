@@ -24,6 +24,7 @@ import {
 import {
   Hotel,
   People,
+  History,
   Add as AddIcon,
   PersonAdd as PersonAddIcon,
   Visibility as ViewIcon,
@@ -33,6 +34,7 @@ import {
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { adminApiService, UserManagementResponse, HotelDTO, PagedResponse } from '../../services/adminApi';
+import AuditLogTab from './AuditLogTab';
 import PremiumTextField from '../../components/common/PremiumTextField';
 import PremiumSelect from '../../components/common/PremiumSelect';
 
@@ -45,7 +47,7 @@ const AdminDashboard: React.FC = () => {
   const getInitialTab = () => {
     const tabParam = searchParams.get('tab');
     const tab = tabParam ? parseInt(tabParam, 10) : 0;
-    return isNaN(tab) || tab < 0 || tab > 1 ? 0 : tab; // Only 2 tabs (0-1)
+    return isNaN(tab) || tab < 0 || tab > 2 ? 0 : tab; // 3 tabs (0-2)
   };
   
   const [currentTab, setCurrentTab] = useState(() => getInitialTab());
@@ -230,7 +232,7 @@ const AdminDashboard: React.FC = () => {
       </Box>
       
       {/* Main Management Tabs */}
-      <Paper sx={{ width: '100%', mb: 4 }}>
+      <Box sx={{ width: '100%', mb: 4, borderBottom: 1, borderColor: 'divider' }}>
         <Tabs
           value={currentTab}
           onChange={handleTabChange}
@@ -257,6 +259,12 @@ const AdminDashboard: React.FC = () => {
             label="User Management"
             id="tab-1"
             aria-controls="tabpanel-1"
+          />
+          <Tab
+            icon={<History />}
+            label="Audit Log"
+            id="tab-2"
+            aria-controls="tabpanel-2"
           />
         </Tabs>
 
@@ -306,19 +314,17 @@ const AdminDashboard: React.FC = () => {
             </Box>
 
             {/* Hotels Table */}
-            <TableContainer component={Paper} sx={{ mt: 2 }}>
+            <TableContainer sx={{ mt: 2 }}>
               <Table aria-label="hotels table">
                 <TableHead>
                   <TableRow 
                     sx={{
                       background: getGradient('slate'),
-                      boxShadow: `0 4px 12px ${addAlpha(COLORS.SLATE_500, 0.15)}`,
                       '& .MuiTableCell-head': {
                         color: COLORS.WHITE,
                         fontWeight: 600,
                         fontSize: '0.95rem',
                         letterSpacing: '0.5px',
-                        textTransform: 'uppercase',
                         border: 'none',
                         padding: '20px 16px',
                         position: 'relative',
@@ -501,13 +507,12 @@ const AdminDashboard: React.FC = () => {
             </Box>
 
             {/* Users Table */}
-            <TableContainer component={Paper} sx={{ mt: 2 }}>
+            <TableContainer sx={{ mt: 2 }}>
               <Table aria-label="users table">
                 <TableHead>
                   <TableRow 
                     sx={{
                       background: getGradient('slate'),
-                      boxShadow: `0 4px 12px ${addAlpha(COLORS.SLATE_500, 0.15)}`,
                       '& .MuiTableCell-head': {
                         color: COLORS.WHITE,
                         fontWeight: 600,
@@ -640,7 +645,14 @@ const AdminDashboard: React.FC = () => {
             </TableContainer>
           </Box>
         )}
-      </Paper>
+
+        {/* Audit Log Tab */}
+        {currentTab === 2 && (
+          <Box sx={{ p: 3 }}>
+            <AuditLogTab />
+          </Box>
+        )}
+      </Box>
 
       {/* Footer */}
       <Box sx={{ mt: 6, pt: 4, borderTop: 1, borderColor: 'divider', textAlign: 'center' }}>

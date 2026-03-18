@@ -179,6 +179,13 @@ class AdminApiService {
     });
   }
 
+  async toggleHotelPublicListing(hotelId: number, reason: string): Promise<HotelDTO> {
+    return this.fetchApi<HotelDTO>(`/admin/hotels/${hotelId}/toggle-public-listing`, {
+      method: 'POST',
+      body: JSON.stringify({ reason }),
+    });
+  }
+
   // Room Management Methods
   async getHotelRooms(hotelId: number): Promise<RoomDTO[]> {
     return this.fetchApi<RoomDTO[]>(`/admin/hotels/${hotelId}/rooms`);
@@ -305,6 +312,28 @@ class AdminApiService {
   async searchHotelRegistrations(searchTerm: string, page: number = 0, size: number = 10): Promise<PagedResponse<HotelRegistrationResponse>> {
     return this.fetchApi<PagedResponse<HotelRegistrationResponse>>(`/admin/hotel-registrations/search?searchTerm=${encodeURIComponent(searchTerm)}&page=${page}&size=${size}`);
   }
+
+  // Audit Log Methods
+  async getAuditLogs(params: AuditLogParams): Promise<PagedResponse<SystemAuditLogDto>> {
+    const query = new URLSearchParams();
+    if (params.action) query.set('action', params.action);
+    if (params.entityType) query.set('entityType', params.entityType);
+    if (params.userEmail) query.set('userEmail', params.userEmail);
+    if (params.from) query.set('from', params.from);
+    if (params.to) query.set('to', params.to);
+    query.set('page', String(params.page ?? 0));
+    query.set('size', String(params.size ?? 20));
+    query.set('sort', params.sort ?? 'performedAt,desc');
+    return this.fetchApi<PagedResponse<SystemAuditLogDto>>(`/admin/audit/logs?${query.toString()}`);
+  }
+
+  async getAuditLogById(id: number): Promise<SystemAuditLogDto> {
+    return this.fetchApi<SystemAuditLogDto>(`/admin/audit/logs/${id}`);
+  }
+
+  async getAuditStats(): Promise<AuditStatsResponse> {
+    return this.fetchApi<AuditStatsResponse>('/admin/audit/stats');
+  }
 }
 
 // Type definitions for API responses
@@ -381,6 +410,7 @@ export interface HotelDTO {
   totalRooms?: number;
   availableRooms?: number;
   isActive?: boolean;
+  isPubliclyListed?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -519,6 +549,44 @@ export interface HotelRegistrationStatistics {
   underReviewRegistrations: number;
   approvedRegistrations: number;
   rejectedRegistrations: number;
+}
+
+export interface SystemAuditLogDto {
+  id: number;
+  entityType: string;
+  entityId: number | null;
+  action: string;
+  description: string | null;
+  oldValues: string | null;
+  newValues: string | null;
+  performedByUserId: number | null;
+  performedByUserName: string | null;
+  performedByUserEmail: string | null;
+  performedByUserRole: string | null;
+  ipAddress: string | null;
+  userAgent: string | null;
+  requestPath: string | null;
+  requestMethod: string | null;
+  responseStatus: number | null;
+  performedAt: string;
+  success: boolean;
+  errorMessage: string | null;
+}
+
+export interface AuditLogParams {
+  action?: string;
+  entityType?: string;
+  userEmail?: string;
+  from?: string;
+  to?: string;
+  page?: number;
+  size?: number;
+  sort?: string;
+}
+
+export interface AuditStatsResponse {
+  totalToday: number;
+  failedToday: number;
 }
 
 export const adminApiService = new AdminApiService();

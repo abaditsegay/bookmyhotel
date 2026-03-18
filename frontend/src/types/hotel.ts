@@ -121,6 +121,14 @@ export interface Hotel {
   mobilePaymentPhone?: string;
   mobilePaymentPhone2?: string;
   email?: string;
+  contactPerson?: string;
+  licenseNumber?: string;
+  taxId?: string;
+  websiteUrl?: string;
+  facilityAmenities?: string;
+  numberOfRooms?: number;
+  checkInTime?: string;
+  checkOutTime?: string;
   tenantId?: string;
   isActive?: boolean;
   roomCount?: number;

@@ -1,5 +1,8 @@
 package com.bookmyhotel.controller;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,16 +38,15 @@ public class HotelRegistrationController {
      * Allows hotels to register themselves without requiring authentication
      */
     @PostMapping("/submit")
-    public ResponseEntity<HotelRegistrationSubmitResponse> submitRegistration(
+    public ResponseEntity<?> submitRegistration(
             @Valid @RequestBody HotelRegistrationRequest request) {
         try {
             HotelRegistrationSubmitResponse response = registrationService.submitRegistration(request);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (RuntimeException e) {
-            // Return more detailed error information for public endpoint
-            return ResponseEntity.badRequest()
-                    .header("Error-Message", e.getMessage())
-                    .build();
+            Map<String, String> error = new HashMap<>();
+            error.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
         }
     }
 

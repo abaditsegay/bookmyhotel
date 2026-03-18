@@ -413,7 +413,7 @@ const UserManagementAdmin: React.FC = () => {
       )}
 
       {/* Filters */}
-      <Paper sx={{ p: 2, mb: 2 }}>
+      <Box sx={{ mb: 2 }}>
         <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
           <FilterListIcon />
           Filters
@@ -458,7 +458,7 @@ const UserManagementAdmin: React.FC = () => {
             </PremiumSelect>
           </Grid>
         </Grid>
-      </Paper>
+      </Box>
 
       {/* Users Table */}
       <Paper>
@@ -520,35 +520,41 @@ const UserManagementAdmin: React.FC = () => {
                   </TableCell>
                   <TableCell align="center">
                     <Box sx={{ display: 'flex', gap: 1 }}>
-                      <Tooltip title="View Details">
-                        <IconButton
-                          size="small"
-                          onClick={() => openDetailsDialog(user)}
-                        >
-                          <VisibilityIcon />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title={user.isActive ? 'Deactivate User' : 'Activate User'}>
-                        <IconButton
-                          size="small"
-                          onClick={() => {
-                            setToggleUser(user);
-                            setToggleStatusReason('');
-                            setToggleStatusDialogOpen(true);
-                          }}
-                          color={user.isActive ? 'success' : 'error'}
-                        >
-                          {user.isActive ? <ToggleOnIcon /> : <ToggleOffIcon />}
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Reset Password">
-                        <IconButton
-                          size="small"
-                          onClick={() => openPasswordResetDialog(user)}
-                        >
-                          <LockResetIcon />
-                        </IconButton>
-                      </Tooltip>
+                      {!user.roles.includes('SUPER_ADMIN') && (
+                        <Tooltip title="View Details">
+                          <IconButton
+                            size="small"
+                            onClick={() => openDetailsDialog(user)}
+                          >
+                            <VisibilityIcon />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                      {!user.roles.includes('SUPER_ADMIN') && (
+                        <Tooltip title={user.isActive ? 'Deactivate User' : 'Activate User'}>
+                          <IconButton
+                            size="small"
+                            onClick={() => {
+                              setToggleUser(user);
+                              setToggleStatusReason('');
+                              setToggleStatusDialogOpen(true);
+                            }}
+                            color={user.isActive ? 'success' : 'error'}
+                          >
+                            {user.isActive ? <ToggleOnIcon /> : <ToggleOffIcon />}
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                      {!user.roles.includes('SUPER_ADMIN') && (
+                        <Tooltip title="Reset Password">
+                          <IconButton
+                            size="small"
+                            onClick={() => openPasswordResetDialog(user)}
+                          >
+                            <LockResetIcon />
+                          </IconButton>
+                        </Tooltip>
+                      )}
                     </Box>
                   </TableCell>
                 </TableRow>

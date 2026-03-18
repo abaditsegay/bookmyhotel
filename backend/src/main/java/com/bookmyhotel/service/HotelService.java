@@ -28,11 +28,13 @@ public class HotelService {
     }
 
     /**
-     * Get all active hotels
+     * Get all publicly listed hotels (for public guest-facing listing).
+     * Uses isPubliclyListed rather than isActive — approved hotels are only
+     * surfaced publicly after an admin explicitly publishes them.
      */
     public List<Hotel> getAllActiveHotels() {
         return hotelRepository.findAll().stream()
-                .filter(Hotel::getIsActive)
+                .filter(h -> Boolean.TRUE.equals(h.getIsPubliclyListed()))
                 .toList();
     }
 

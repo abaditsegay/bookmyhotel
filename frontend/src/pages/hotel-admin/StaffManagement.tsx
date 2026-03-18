@@ -280,7 +280,7 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
         )}
 
         {/* Search and Filters */}
-        <Paper sx={{ p: 2, mb: 2 }}>
+        <Box sx={{ mb: 2 }}>
           <Grid container spacing={2} alignItems="center">
             <Grid item xs={12} md={4}>
               <PremiumTextField
@@ -340,7 +340,7 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
               </Box>
             </Grid>
           </Grid>
-        </Paper>
+        </Box>
 
         {/* Staff Table */}
         <Paper>

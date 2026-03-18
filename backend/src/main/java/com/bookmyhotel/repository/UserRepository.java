@@ -54,6 +54,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
        Page<User> findByHotel_Id(Long hotelId, Pageable pageable);
 
        /**
+        * Find all users belonging to a specific hotel (no pagination).
+        */
+       List<User> findByHotel_Id(Long hotelId);
+
+       /**
         * Find system-wide users (where hotel is null)
         */
        Page<User> findByHotelIsNull(Pageable pageable);

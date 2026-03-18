@@ -64,8 +64,9 @@ public class HotelRegistrationService {
     private PasswordEncoder passwordEncoder;
 
     /**
-     * Submit a new hotel registration
-     * Creates the registration record and a user account with temporary credentials
+     * Submit a new hotel registration.
+     * Atomically creates: HotelRegistration record + Hotel (inactive, pending approval)
+     * + HOTEL_ADMIN user assigned to that hotel.
      */
     public HotelRegistrationSubmitResponse submitRegistration(HotelRegistrationRequest request) {
         // Check if email is already registered
@@ -80,6 +81,7 @@ public class HotelRegistrationService {
             throw new RuntimeException("A user account with this email already exists");
         }
 
+        // 1. Save the registration record
         HotelRegistration registration = new HotelRegistration();
         registration.setHotelName(request.getHotelName());
         registration.setDescription(request.getDescription());
@@ -93,24 +95,30 @@ public class HotelRegistrationService {
         registration.setContactPerson(request.getContactPerson());
         registration.setLicenseNumber(request.getLicenseNumber());
         registration.setTaxId(request.getTaxId());
-
-        // Map the new fields
         registration.setWebsiteUrl(request.getWebsiteUrl());
         registration.setFacilityAmenities(request.getFacilityAmenities());
         registration.setNumberOfRooms(request.getNumberOfRooms());
         registration.setCheckInTime(request.getCheckInTime());
         registration.setCheckOutTime(request.getCheckOutTime());
-
         registration = registrationRepository.save(registration);
 
-        // Generate 6-digit temporary password and create user account
+        // 2. Create the Hotel immediately (inactive until admin approves)
+        String resolvedTenantId = resolveDefaultTenant(null);
+        Hotel hotel = createHotelFromRegistration(registration, resolvedTenantId, false);
+
+        // 3. Track hotel on the registration record
+        registration.setApprovedHotelId(hotel.getId());
+        registration.setTenantId(resolvedTenantId);
+        registration = registrationRepository.save(registration);
+
+        // 4. Create the HOTEL_ADMIN user with the hotel already assigned
         String temporaryPassword = generateSixDigitPassword();
-        User registrationUser = createRegistrationUser(registration, temporaryPassword);
+        User registrationUser = createRegistrationUser(registration, temporaryPassword, hotel);
 
-        logger.info("Hotel registration submitted with user account created: {} (user ID: {})",
-                registration.getContactEmail(), registrationUser.getId());
+        logger.info("Hotel registration submitted — hotel ID: {}, user ID: {}, email: {}",
+                hotel.getId(), registrationUser.getId(), registration.getContactEmail());
 
-        // Send welcome email with temporary credentials
+        // 5. Send welcome email (non-fatal)
         try {
             emailService.sendHotelAdminWelcomeEmail(
                     registration.getContactEmail(),
@@ -120,10 +128,8 @@ public class HotelRegistrationService {
             logger.info("Registration welcome email sent to: {}", registration.getContactEmail());
         } catch (Exception e) {
             logger.error("Failed to send registration welcome email to: {}", registration.getContactEmail(), e);
-            // Don't fail registration if email fails
         }
 
-        // Build submit response (no credentials exposed — sent via email)
         HotelRegistrationSubmitResponse response = new HotelRegistrationSubmitResponse();
         response.setRegistrationId(registration.getId());
         response.setHotelName(registration.getHotelName());
@@ -146,9 +152,9 @@ public class HotelRegistrationService {
     }
 
     /**
-     * Create user account for hotel registration (no hotel assigned yet)
+     * Create user account for hotel registration with hotel already assigned.
      */
-    private User createRegistrationUser(HotelRegistration registration, String temporaryPassword) {
+    private User createRegistrationUser(HotelRegistration registration, String temporaryPassword, Hotel hotel) {
         User user = new User();
         user.setEmail(registration.getContactEmail());
         user.setFirstName(extractFirstName(registration.getContactPerson()));
@@ -156,7 +162,7 @@ public class HotelRegistrationService {
         user.setPassword(passwordEncoder.encode(temporaryPassword));
         user.setRoles(Set.of(UserRole.HOTEL_ADMIN));
         user.setIsActive(true);
-        // No hotel assigned - will be assigned after admin approval
+        user.setHotel(hotel); // hotel must be assigned before persist (enforced by @PrePersist)
         return userRepository.save(user);
     }
 
@@ -167,7 +173,19 @@ public class HotelRegistrationService {
         HotelRegistration registration = registrationRepository.findByContactEmail(email)
                 .orElseThrow(() -> new RuntimeException("No registration found for email: " + email));
 
-        // Update with additional onboarding fields
+        // Update all editable registration fields
+        if (request.getHotelName() != null)
+            registration.setHotelName(request.getHotelName());
+        if (request.getAddress() != null)
+            registration.setAddress(request.getAddress());
+        if (request.getCity() != null)
+            registration.setCity(request.getCity());
+        if (request.getCountry() != null)
+            registration.setCountry(request.getCountry());
+        if (request.getContactPerson() != null)
+            registration.setContactPerson(request.getContactPerson());
+        if (request.getContactEmail() != null)
+            registration.setContactEmail(request.getContactEmail());
         if (request.getDescription() != null)
             registration.setDescription(request.getDescription());
         if (request.getPhone() != null)
@@ -192,8 +210,36 @@ public class HotelRegistrationService {
             registration.setCheckOutTime(request.getCheckOutTime());
 
         registration = registrationRepository.save(registration);
-        logger.info("Onboarding completed for registration: {}", email);
 
+        // Push the same field changes into the linked hotels row so the operational
+        // table stays current. hotel_registrations is the staging/draft record;
+        // hotels is the live record used by rooms, reservations, etc.
+        final HotelRegistration saved = registration;
+        if (saved.getApprovedHotelId() != null) {
+            hotelRepository.findById(saved.getApprovedHotelId()).ifPresent(hotel -> {
+                hotel.setName(saved.getHotelName());
+                hotel.setDescription(saved.getDescription());
+                hotel.setAddress(saved.getAddress());
+                hotel.setCity(saved.getCity());
+                hotel.setCountry(saved.getCountry());
+                hotel.setPhone(saved.getPhone());
+                hotel.setMobilePaymentPhone(saved.getMobilePaymentPhone());
+                hotel.setMobilePaymentPhone2(saved.getMobilePaymentPhone2());
+                hotel.setEmail(saved.getContactEmail());
+                hotel.setContactPerson(saved.getContactPerson());
+                hotel.setLicenseNumber(saved.getLicenseNumber());
+                hotel.setTaxId(saved.getTaxId());
+                hotel.setWebsiteUrl(saved.getWebsiteUrl());
+                hotel.setFacilityAmenities(saved.getFacilityAmenities());
+                hotel.setNumberOfRooms(saved.getNumberOfRooms());
+                hotel.setCheckInTime(saved.getCheckInTime());
+                hotel.setCheckOutTime(saved.getCheckOutTime());
+                hotelRepository.save(hotel);
+                logger.info("Hotels row {} updated from registration changes for: {}", hotel.getId(), email);
+            });
+        }
+
+        logger.info("Onboarding completed for registration: {}", email);
         return convertToResponse(registration);
     }
 
@@ -254,7 +300,8 @@ public class HotelRegistrationService {
     }
 
     /**
-     * Approve hotel registration
+     * Approve hotel registration.
+     * The hotel was already created (inactive) during submission — this activates it.
      */
     public HotelRegistrationResponse approveRegistration(Long registrationId, ApproveRegistrationRequest request,
             Long reviewerId) {
@@ -266,28 +313,50 @@ public class HotelRegistrationService {
             throw new RuntimeException("Only pending or under review registrations can be approved");
         }
 
-        // Resolve tenant ID - use provided or fall back to default "All Hotels" tenant
-        String resolvedTenantId = resolveDefaultTenant(request.getTenantId());
+        // Hotel was created atomically during submission — look it up, sync all registration
+        // fields (in case they were updated after initial submission), then activate it.
+        final Long hotelId = registration.getApprovedHotelId();
+        final Hotel hotel = hotelRepository.findById(hotelId)
+                .orElseThrow(() -> new RuntimeException("Hotel not found with id: " + hotelId));
+        hotel.setName(registration.getHotelName());
+        hotel.setDescription(registration.getDescription());
+        hotel.setAddress(registration.getAddress());
+        hotel.setCity(registration.getCity());
+        hotel.setCountry(registration.getCountry());
+        hotel.setPhone(registration.getPhone());
+        hotel.setMobilePaymentPhone(registration.getMobilePaymentPhone());
+        hotel.setMobilePaymentPhone2(registration.getMobilePaymentPhone2());
+        hotel.setEmail(registration.getContactEmail());
+        hotel.setContactPerson(registration.getContactPerson());
+        hotel.setLicenseNumber(registration.getLicenseNumber());
+        hotel.setTaxId(registration.getTaxId());
+        hotel.setWebsiteUrl(registration.getWebsiteUrl());
+        hotel.setFacilityAmenities(registration.getFacilityAmenities());
+        hotel.setNumberOfRooms(registration.getNumberOfRooms());
+        hotel.setCheckInTime(registration.getCheckInTime());
+        hotel.setCheckOutTime(registration.getCheckOutTime());
+        hotel.setIsActive(true);
+        hotelRepository.save(hotel);
 
-        // Create the hotel
-        Hotel hotel = createHotelFromRegistration(registration, resolvedTenantId);
-
-        // Assign existing user to the hotel (user was created during registration
-        // submission)
-        String contactEmail = registration.getContactEmail();
-        User hotelAdmin = userRepository.findByEmail(contactEmail)
-                .orElseThrow(() -> new RuntimeException("User account not found for: " + contactEmail));
-        hotelAdmin.setHotel(hotel);
-        userRepository.save(hotelAdmin);
+        // Retrieve or create the hotel admin user, and ensure they are linked to this hotel.
+        final String contactEmail = registration.getContactEmail();
+        final HotelRegistration regSnapshot = registration;
+        User hotelAdmin = userRepository.findByEmail(contactEmail).orElseGet(() -> {
+            logger.warn("No user account found for {}; creating hotel admin at approval time (legacy fallback)",
+                    contactEmail);
+            String tempPwd = generateSixDigitPassword();
+            return createRegistrationUser(regSnapshot, tempPwd, hotel);
+        });
+        if (hotelAdmin.getHotel() == null || !hotelAdmin.getHotel().getId().equals(hotel.getId())) {
+            hotelAdmin.setHotel(hotel);
+            userRepository.save(hotelAdmin);
+        }
 
         // Update registration status
         registration.setStatus(RegistrationStatus.APPROVED);
         registration.setReviewedAt(LocalDateTime.now());
         registration.setReviewedBy(reviewerId);
         registration.setReviewComments(request.getComments());
-        registration.setApprovedHotelId(hotel.getId());
-        registration.setTenantId(resolvedTenantId);
-
         registration = registrationRepository.save(registration);
 
         // Send approval email
@@ -296,7 +365,6 @@ public class HotelRegistrationService {
             logger.info("Hotel approval email sent successfully to: {}", registration.getContactEmail());
         } catch (Exception e) {
             logger.error("Failed to send hotel approval email to: {}", registration.getContactEmail(), e);
-            // Don't fail the approval process if email fails
         }
 
         return convertToResponse(registration);
@@ -384,14 +452,16 @@ public class HotelRegistrationService {
     }
 
     /**
-     * Create hotel from approved registration
+     * Create hotel from registration data.
+     *
+     * @param active whether the hotel should be active immediately.
+     *               Pass {@code false} on submission (pending approval); {@code true} is
+     *               reserved for direct/admin creation.
      */
-    private Hotel createHotelFromRegistration(HotelRegistration registration, String tenantId) {
-        // Set tenant context for hotel creation
+    private Hotel createHotelFromRegistration(HotelRegistration registration, String tenantId, boolean active) {
         TenantContext.setTenantId(tenantId);
 
         try {
-            // Get the tenant entity
             Tenant tenant = tenantRepository.findById(tenantId)
                     .orElseThrow(() -> new RuntimeException("Tenant not found: " + tenantId));
 
@@ -413,7 +483,8 @@ public class HotelRegistrationService {
             hotel.setNumberOfRooms(registration.getNumberOfRooms());
             hotel.setCheckInTime(registration.getCheckInTime());
             hotel.setCheckOutTime(registration.getCheckOutTime());
-            hotel.setTenant(tenant); // Set the tenant
+            hotel.setTenant(tenant);
+            hotel.setIsActive(active);
 
             return hotelRepository.save(hotel);
         } finally {
@@ -490,6 +561,8 @@ public class HotelRegistrationService {
         response.setCity(registration.getCity());
         response.setCountry(registration.getCountry());
         response.setPhone(registration.getPhone());
+        response.setMobilePaymentPhone(registration.getMobilePaymentPhone());
+        response.setMobilePaymentPhone2(registration.getMobilePaymentPhone2());
         response.setContactEmail(registration.getContactEmail());
         response.setContactPerson(registration.getContactPerson());
         response.setLicenseNumber(registration.getLicenseNumber());

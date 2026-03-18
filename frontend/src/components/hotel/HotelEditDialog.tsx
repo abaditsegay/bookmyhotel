@@ -12,6 +12,8 @@ import {
   MenuItem,
   SelectChangeEvent,
   FormHelperText,
+  Typography,
+  Divider,
 } from '@mui/material';
 import { Hotel } from '../../types/hotel';
 import { adminApiService, TenantDTO } from '../../services/adminApi';
@@ -48,6 +50,14 @@ const HotelEditDialog: React.FC<HotelEditDialogProps> = ({
     email: '',
     totalRooms: 0,
     tenantId: '',
+    contactPerson: '',
+    licenseNumber: '',
+    taxId: '',
+    websiteUrl: '',
+    facilityAmenities: '',
+    checkInTime: '',
+    checkOutTime: '',
+    numberOfRooms: undefined,
   });
 
   const [localError, setLocalError] = useState<string>('');
@@ -72,6 +82,14 @@ const HotelEditDialog: React.FC<HotelEditDialogProps> = ({
         email: hotel.email || '',
         totalRooms: hotel.totalRooms || hotel.roomCount || 0,
         tenantId: hotel.tenantId || '',
+        contactPerson: hotel.contactPerson || '',
+        licenseNumber: hotel.licenseNumber || '',
+        taxId: hotel.taxId || '',
+        websiteUrl: hotel.websiteUrl || '',
+        facilityAmenities: hotel.facilityAmenities || '',
+        checkInTime: hotel.checkInTime || '',
+        checkOutTime: hotel.checkOutTime || '',
+        numberOfRooms: hotel.numberOfRooms,
       });
     }
   }, [hotel]);
@@ -350,20 +368,119 @@ const HotelEditDialog: React.FC<HotelEditDialogProps> = ({
                 helperText="Backup mobile number for payment processing"
               />
             </Grid>
-            
+
+            {/* Contact Person */}
             <Grid item xs={12} sm={6}>
+              <PremiumTextField
+                label="Contact Person"
+                fullWidth
+                value={formData.contactPerson || ''}
+                onChange={handleInputChange('contactPerson')}
+                disabled={saving}
+                inputProps={{ maxLength: 100 }}
+                helperText="Primary contact person name"
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <PremiumTextField
+                label="Website URL"
+                fullWidth
+                value={formData.websiteUrl || ''}
+                onChange={handleInputChange('websiteUrl')}
+                disabled={saving}
+                inputProps={{ maxLength: 255 }}
+                placeholder="https://www.yourhotel.com"
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <PremiumTextField
+                label="Facilities & Amenities"
+                multiline
+                rows={2}
+                fullWidth
+                value={formData.facilityAmenities || ''}
+                onChange={handleInputChange('facilityAmenities')}
+                disabled={saving}
+                inputProps={{ maxLength: 1000 }}
+                placeholder="e.g. Free WiFi, Parking, Pool, Gym, Restaurant..."
+                helperText="Describe the hotel's facilities and amenities"
+              />
+            </Grid>
+
+            {/* Operational Details */}
+            <Grid item xs={12}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 0.5, mt: 1 }}>Operational Details</Typography>
+              <Divider />
+            </Grid>
+
+            <Grid item xs={12} sm={4}>
+              <PremiumTextField
+                label="Check-in Time"
+                fullWidth
+                value={formData.checkInTime || ''}
+                onChange={handleInputChange('checkInTime')}
+                disabled={saving}
+                inputProps={{ maxLength: 10 }}
+                placeholder="e.g. 15:00"
+                helperText="Default check-in time"
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={4}>
+              <PremiumTextField
+                label="Check-out Time"
+                fullWidth
+                value={formData.checkOutTime || ''}
+                onChange={handleInputChange('checkOutTime')}
+                disabled={saving}
+                inputProps={{ maxLength: 10 }}
+                placeholder="e.g. 11:00"
+                helperText="Default check-out time"
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={4}>
               <PremiumTextField
                 label="Number of Rooms"
                 type="number"
                 fullWidth
-                value={formData.totalRooms || ''}
-                onChange={handleInputChange('totalRooms')}
+                value={formData.numberOfRooms ?? formData.totalRooms ?? ''}
+                onChange={handleInputChange('numberOfRooms')}
                 disabled={saving}
-                inputProps={{ 
-                  min: 0,
-                  max: 9999
-                }}
-                helperText="Total number of rooms in the hotel"
+                inputProps={{ min: 0, max: 9999 }}
+                helperText="Total registered room capacity"
+              />
+            </Grid>
+
+            {/* Business Registration */}
+            <Grid item xs={12}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 0.5, mt: 1 }}>Business Registration</Typography>
+              <Divider />
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <PremiumTextField
+                label="License Number"
+                fullWidth
+                value={formData.licenseNumber || ''}
+                onChange={handleInputChange('licenseNumber')}
+                disabled={saving}
+                inputProps={{ maxLength: 100 }}
+                placeholder="Business license number"
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <PremiumTextField
+                label="Tax ID"
+                fullWidth
+                value={formData.taxId || ''}
+                onChange={handleInputChange('taxId')}
+                disabled={saving}
+                inputProps={{ maxLength: 50 }}
+                placeholder="Tax identification number"
               />
             </Grid>
           </Grid>

@@ -3,6 +3,7 @@ import { formatEthiopianPhone, normalizeEthiopianPhone } from '../utils/phoneUti
 import {
   Box,
   CardContent,
+  Chip,
   Container,
   Typography,
   Avatar,
@@ -204,7 +205,6 @@ const ProfilePage: React.FC = () => {
                 backgroundColor: COLORS.PRIMARY,
                 fontSize: '2.5rem',
                 fontWeight: 'bold',
-                border: `4px solid ${addAlpha(COLORS.PRIMARY, 0.2)}`,
               }}
             >
               {user?.firstName?.[0] || user?.email?.[0] || <PersonIcon />}
@@ -215,22 +215,21 @@ const ProfilePage: React.FC = () => {
             <Typography variant="body1" color="text.secondary" gutterBottom sx={{ mb: 1 }}>
               {user?.email}
             </Typography>
-            <Typography variant="body2" color="text.secondary" gutterBottom sx={{ 
-              backgroundColor: addAlpha(COLORS.BLACK, 0.04), 
-              px: 2, 
-              py: 0.5, 
-              borderRadius: 1,
-              display: 'inline-block'
-            }}>
-              {user?.role === 'SUPER_ADMIN' ? 'Super Administrator' :
-               user?.role === 'ADMIN' ? 'Administrator' : 
-               user?.role === 'HOTEL_ADMIN' ? 'Hotel Administrator' :
-               user?.role === 'OPERATIONAL_ADMIN' ? 'Operational Administrator' : 
-               user?.role === 'FRONTDESK' ? 'Front Desk' :
-               user?.role === 'HOUSEKEEPING' ? 'Housekeeping' :
-               user?.role === 'MAINTENANCE' ? 'Maintenance' :
-               user?.role === 'CUSTOMER' ? 'Customer' : 'Guest'}
-            </Typography>
+            <Chip
+              size="small"
+              variant="outlined"
+              label={
+                user?.role === 'SUPER_ADMIN' ? 'Super Administrator' :
+                user?.role === 'ADMIN' ? 'Administrator' : 
+                user?.role === 'HOTEL_ADMIN' ? 'Hotel Administrator' :
+                user?.role === 'OPERATIONAL_ADMIN' ? 'Operational Administrator' : 
+                user?.role === 'FRONTDESK' ? 'Front Desk' :
+                user?.role === 'HOUSEKEEPING' ? 'Housekeeping' :
+                user?.role === 'MAINTENANCE' ? 'Maintenance' :
+                user?.role === 'CUSTOMER' ? 'Customer' : 'Guest'
+              }
+              sx={{ mb: 1 }}
+            />
             {!isEditing && (
               <StandardButton
                 variant="contained"

@@ -51,6 +51,16 @@ const LoginPage: React.FC = () => {
   // Redirect already authenticated users to their appropriate dashboard
   useEffect(() => {
     if (!isInitializing && isAuthenticated && user) {
+      // Inactive hotel — redirect hotel admins to their registration detail page
+      if (user.accountStatus === 'HOTEL_INACTIVE') {
+        navigate('/hotel-admin/my-registration', { replace: true });
+        return;
+      }
+      if (user.accountStatus === 'USER_SUSPENDED') {
+        navigate('/account-status?reason=suspended', { replace: true });
+        return;
+      }
+
       // If there's a specific redirect with booking data, use that
       if (redirectTo && bookingData) {
         navigate(redirectTo, { state: bookingData, replace: true });

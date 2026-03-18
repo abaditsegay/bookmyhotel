@@ -16,6 +16,8 @@ public class HotelRegistrationResponse {
     private String city;
     private String country;
     private String phone;
+    private String mobilePaymentPhone;
+    private String mobilePaymentPhone2;
     private String contactEmail;
     private String contactPerson;
     private String licenseNumber;
@@ -92,6 +94,22 @@ public class HotelRegistrationResponse {
 
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+
+    public String getMobilePaymentPhone() {
+        return mobilePaymentPhone;
+    }
+
+    public void setMobilePaymentPhone(String mobilePaymentPhone) {
+        this.mobilePaymentPhone = mobilePaymentPhone;
+    }
+
+    public String getMobilePaymentPhone2() {
+        return mobilePaymentPhone2;
+    }
+
+    public void setMobilePaymentPhone2(String mobilePaymentPhone2) {
+        this.mobilePaymentPhone2 = mobilePaymentPhone2;
     }
 
     public String getContactEmail() {

@@ -127,7 +127,16 @@ public class AuthService {
     }
 
     /**
-     * Authenticate user and generate JWT token with session management
+     * Authenticate user and generate JWT token with session management.
+     *
+     * Inactive users (suspended account or deactivated hotel) are still allowed
+     * to authenticate so the frontend can show them an informational page. The
+     * response carries an {@code accountStatus} field:
+     * <ul>
+     *   <li>{@code ACTIVE} – normal access</li>
+     *   <li>{@code HOTEL_INACTIVE} – user's hotel has been deactivated</li>
+     *   <li>{@code USER_SUSPENDED} – user account was manually suspended</li>
+     * </ul>
      */
     public LoginResponse login(LoginRequest loginRequest, String userAgent, String ipAddress) {
         Optional<User> userOpt = userRepository.findByEmail(loginRequest.getEmail());
@@ -138,12 +147,18 @@ public class AuthService {
 
         User user = userOpt.get();
 
-        if (!user.getIsActive()) {
-            throw new BadCredentialsException("Account is disabled");
-        }
-
+        // Validate password before any status checks
         if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
             throw new BadCredentialsException("Invalid email or password");
+        }
+
+        // Determine account status (login is still allowed so the frontend can show
+        // the correct informational page instead of a generic error)
+        String accountStatus = "ACTIVE";
+        if (user.getHotel() != null && !Boolean.TRUE.equals(user.getHotel().getIsActive())) {
+            accountStatus = "HOTEL_INACTIVE";
+        } else if (!Boolean.TRUE.equals(user.getIsActive())) {
+            accountStatus = "USER_SUSPENDED";
         }
 
         String token = jwtUtil.generateToken(user);
@@ -185,6 +200,7 @@ public class AuthService {
                 hotelName,
                 user.getTenantId());
         loginResponse.setNeedsOnboarding(needsOnboarding);
+        loginResponse.setAccountStatus(accountStatus);
 
         return loginResponse;
     }

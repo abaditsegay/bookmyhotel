@@ -239,10 +239,16 @@ public class UserManagementService {
      * Caller may only assign roles they are permitted to create, and may only
      * manage
      * users whose highest role is lower than or equal to their own.
+     * SUPER_ADMIN users can never be edited.
      */
     public UserManagementResponse updateUser(Long userId, UpdateUserRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+
+        // SUPER_ADMIN users are immutable — no one may edit them via the admin panel
+        if (user.getRoles() != null && user.getRoles().contains(UserRole.SUPER_ADMIN)) {
+            throw new AccessDeniedException("SUPER_ADMIN users cannot be edited");
+        }
 
         UserRole callerHighestRole = getCallerHighestRole();
 
@@ -288,10 +294,16 @@ public class UserManagementService {
     /**
      * Activate or deactivate user.
      * ADMIN callers cannot toggle a SUPER_ADMIN user.
+     * SUPER_ADMIN users can never be deactivated.
      */
     public UserManagementResponse toggleUserStatus(Long userId, String reason) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+
+        // SUPER_ADMIN users are immutable — their status cannot be toggled
+        if (user.getRoles() != null && user.getRoles().contains(UserRole.SUPER_ADMIN)) {
+            throw new AccessDeniedException("SUPER_ADMIN users cannot be deactivated");
+        }
         assertCanManageUser(user);
 
         boolean wasActive = user.getIsActive();
@@ -337,12 +349,18 @@ public class UserManagementService {
     }
 
     /**
-     * Delete user (soft delete by deactivating).
-     * ADMIN callers cannot delete a SUPER_ADMIN user.
+     * Soft-delete user (deactivates the account).
+     * SUPER_ADMIN users can never be deleted or deactivated this way.
+     * ADMIN callers cannot delete any SUPER_ADMIN user.
      */
     public void deleteUser(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+
+        // SUPER_ADMIN users are immutable — they may never be soft-deleted
+        if (user.getRoles() != null && user.getRoles().contains(UserRole.SUPER_ADMIN)) {
+            throw new AccessDeniedException("SUPER_ADMIN users cannot be deleted");
+        }
         assertCanManageUser(user);
 
         user.setIsActive(false);

@@ -83,8 +83,8 @@ public class HotelSearchService {
      * Get hotel details by ID
      */
     public HotelSearchResult getHotelDetails(Long hotelId, HotelSearchRequest request) {
-        Hotel hotel = hotelRepository.findByIdAndIsActiveTrue(hotelId)
-                .orElseThrow(() -> new RuntimeException("Hotel not found or not available"));
+        Hotel hotel = hotelRepository.findByIdAndIsPubliclyListedTrue(hotelId)
+                .orElseThrow(() -> new RuntimeException("Hotel not found or not publicly listed"));
 
         return convertToSearchResult(hotel, request);
     }

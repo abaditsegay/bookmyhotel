@@ -60,6 +60,14 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     />;
   }
 
+  // Gate: unapproved hotel admins can only access the registration page
+  if (user && user.accountStatus === 'HOTEL_INACTIVE') {
+    const userRoles = user.roles?.length ? user.roles : (user.role ? [user.role] : []);
+    if (userRoles.includes('HOTEL_ADMIN') && location.pathname !== '/hotel-admin/my-registration') {
+      return <Navigate to="/hotel-admin/my-registration" replace />;
+    }
+  }
+
   // If no requiredRole or requiredRoles is specified, just check authentication
   if (!requiredRole && !requiredRoles) {
     return <>{children}</>;

@@ -98,6 +98,13 @@ const UserViewEdit: React.FC = () => {
     }
   }, [id, adminApiService, fetchUser]);
 
+  // SUPER_ADMIN users cannot be viewed or edited via the UI
+  useEffect(() => {
+    if (user?.roles?.includes('SUPER_ADMIN')) {
+      navigate(-1);
+    }
+  }, [user, navigate]);
+
   const handleEdit = () => {
     setIsEditing(true);
     navigate(`/admin/users/${id}/edit`);
@@ -196,9 +203,15 @@ const UserViewEdit: React.FC = () => {
   }
 
   const currentUser = isEditing ? editedUser : user;
+  const isSuperAdmin = currentUser?.roles?.includes('SUPER_ADMIN') ?? false;
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
+      {isSuperAdmin && (
+        <Alert severity="info" sx={{ mb: 2 }}>
+          SUPER_ADMIN accounts cannot be modified.
+        </Alert>
+      )}
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -242,13 +255,15 @@ const UserViewEdit: React.FC = () => {
               </Button>
             </>
           ) : (
-            <Button
-              variant="contained"
-              startIcon={<EditIcon />}
-              onClick={handleEdit}
-            >
-              Edit User
-            </Button>
+            !isSuperAdmin && (
+              <Button
+                variant="contained"
+                startIcon={<EditIcon />}
+                onClick={handleEdit}
+              >
+                Edit User
+              </Button>
+            )
           )}
         </Box>
       </Box>
@@ -356,7 +371,7 @@ const UserViewEdit: React.FC = () => {
                     <Switch
                       checked={currentUser.isActive}
                       onChange={(e) => handleInputChange('isActive', e.target.checked)}
-                      disabled={!isEditing}
+                      disabled={!isEditing || isSuperAdmin}
                     />
                   }
                   label="Active Account"

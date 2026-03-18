@@ -509,7 +509,6 @@ const HousekeepingDashboard: React.FC = () => {
             <TableRow
               sx={{
                 background: COLORS.GRADIENT_SLATE,
-                boxShadow: `0 4px 12px ${addAlpha(COLORS.SLATE_500, 0.15)}`,
                 '& .MuiTableCell-head': {
                   color: COLORS.WHITE,
                   fontWeight: 600,

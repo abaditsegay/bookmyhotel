@@ -26,6 +26,7 @@ import com.bookmyhotel.entity.UserRole;
 import com.bookmyhotel.service.UserManagementService;
 
 import jakarta.validation.Valid;
+import com.bookmyhotel.annotation.Auditable;
 
 /**
  * Admin controller for user management.
@@ -133,6 +134,7 @@ public class UserManagementAdminController {
     /**
      * Create a new user
      */
+    @Auditable(action = "CREATE", entityType = "USER", description = "Admin created a new user")
     @PostMapping
     public ResponseEntity<UserManagementResponse> createUser(@Valid @RequestBody CreateUserRequest request) {
         UserManagementResponse user = userManagementService.createUser(request);
@@ -142,6 +144,7 @@ public class UserManagementAdminController {
     /**
      * Update user
      */
+    @Auditable(action = "UPDATE", entityType = "USER", description = "Admin updated a user")
     @PutMapping("/{id}")
     public ResponseEntity<UserManagementResponse> updateUser(
             @PathVariable Long id,
@@ -154,6 +157,7 @@ public class UserManagementAdminController {
     /**
      * Toggle user active status
      */
+    @Auditable(action = "TOGGLE_STATUS", entityType = "USER", description = "Admin toggled user active status")
     @PostMapping("/{id}/toggle-status")
     public ResponseEntity<UserManagementResponse> toggleUserStatus(
             @PathVariable Long id,
@@ -165,6 +169,7 @@ public class UserManagementAdminController {
     /**
      * Add role to user
      */
+    @Auditable(action = "ADD_ROLE", entityType = "USER", description = "Admin added role to user")
     @PostMapping("/{id}/roles/{role}")
     public ResponseEntity<UserManagementResponse> addRoleToUser(
             @PathVariable Long id,
@@ -177,6 +182,7 @@ public class UserManagementAdminController {
     /**
      * Remove role from user
      */
+    @Auditable(action = "REMOVE_ROLE", entityType = "USER", description = "Admin removed role from user")
     @DeleteMapping("/{id}/roles/{role}")
     public ResponseEntity<UserManagementResponse> removeRoleFromUser(
             @PathVariable Long id,
@@ -189,6 +195,7 @@ public class UserManagementAdminController {
     /**
      * Delete user
      */
+    @Auditable(action = "DELETE", entityType = "USER", description = "Admin deleted a user")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         userManagementService.deleteUser(id);
@@ -198,6 +205,7 @@ public class UserManagementAdminController {
     /**
      * Reset user password - generates random password and emails it to the user
      */
+    @Auditable(action = "RESET_PASSWORD", entityType = "USER", description = "Admin reset user password")
     @PostMapping("/{id}/reset-password")
     public ResponseEntity<Void> resetUserPassword(@PathVariable Long id) {
         userManagementService.resetUserPassword(id);

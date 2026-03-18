@@ -64,7 +64,11 @@ const PublicHotelRegistration: React.FC = () => {
         setSubmitted(true);
       } else {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || 'Failed to submit registration');
+        let errorMessage = errorData.userFriendlyMessage || errorData.message;
+        if (!errorMessage && errorData.fieldErrors) {
+          errorMessage = Object.values(errorData.fieldErrors as Record<string, string>).join('. ');
+        }
+        throw new Error(errorMessage || 'Failed to submit registration. Please try again.');
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to submit hotel registration. Please try again.');

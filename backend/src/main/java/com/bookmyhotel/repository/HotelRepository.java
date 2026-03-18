@@ -18,20 +18,20 @@ import com.bookmyhotel.entity.Hotel;
 public interface HotelRepository extends JpaRepository<Hotel, Long> {
 
        /**
-        * Find hotels by location (city or country)
+        * Find hotels by location (city or country) — PUBLIC: only publicly-listed hotels.
         */
        @Query("SELECT DISTINCT h FROM Hotel h WHERE " +
-                     "h.isActive = true " +
+                     "h.isPubliclyListed = true " +
                      "AND (:location IS NULL OR LOWER(h.city) LIKE LOWER(CONCAT('%', :location, '%')) OR " +
                      "LOWER(h.country) LIKE LOWER(CONCAT('%', :location, '%')))")
        List<Hotel> findByLocation(@Param("location") String location);
 
        /**
-        * Find hotels with available rooms for given criteria
+        * Find hotels with available rooms for given criteria — PUBLIC: only publicly-listed hotels.
         */
        @Query("SELECT DISTINCT h FROM Hotel h " +
                      "JOIN h.rooms r " +
-                     "WHERE h.isActive = true " +
+                     "WHERE h.isPubliclyListed = true " +
                      "AND (:location IS NULL OR LOWER(h.city) LIKE LOWER(CONCAT('%', :location, '%')) OR " +
                      "LOWER(h.country) LIKE LOWER(CONCAT('%', :location, '%'))) " +
                      "AND r.isAvailable = true " +
@@ -85,9 +85,14 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
        List<Hotel> findByNameContainingIgnoreCase(String name);
 
        /**
-        * Find active hotel by ID
+        * Find active hotel by ID (for admin/internal operations)
         */
        Optional<Hotel> findByIdAndIsActiveTrue(Long id);
+
+       /**
+        * Find publicly-listed hotel by ID (for public guest search)
+        */
+       Optional<Hotel> findByIdAndIsPubliclyListedTrue(Long id);
 
        /**
         * Count active hotels

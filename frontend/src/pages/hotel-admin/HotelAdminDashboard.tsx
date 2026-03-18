@@ -448,20 +448,15 @@ const HotelAdminDashboard: React.FC = () => {
               '& .MuiTabs-scrollButtons': {
                 '&.Mui-disabled': { opacity: 0.3 },
               },
-              '& .MuiTab-root': { // Apply to all tabs for consistent styling
-                backgroundColor: theme.palette.background.paper,
+              '& .MuiTab-root': {
                 color: theme.palette.text.secondary,
-                border: `1px solid ${theme.palette.divider}`,
-                borderRadius: '8px 8px 0 0',
-                marginRight: '4px',
+                minHeight: 48,
                 '&:hover': {
-                  backgroundColor: theme.palette.action.hover,
                   color: theme.palette.text.primary,
                 },
                 '&.Mui-selected': {
-                  backgroundColor: theme.palette.action.selected,
-                  color: theme.palette.text.primary,
-                  borderColor: theme.palette.text.primary,
+                  color: theme.palette.primary.main,
+                  fontWeight: 600,
                 },
               },
             }}
@@ -722,17 +717,15 @@ const HotelAdminDashboard: React.FC = () => {
                       {/* Basic Information Card */}
                       <Grid item xs={12} md={6}>
                         <Card elevation={0} sx={{ 
-                          border: `1px solid ${theme.palette.divider}`,
                           borderRadius: 3,
-                          height: '100%'
+                          height: '100%',
+                          bgcolor: theme.palette.background.paper,
                         }}>
                           <CardContent sx={{ p: 4 }}>
                             <Box sx={{ 
                               display: 'flex', 
                               alignItems: 'center', 
                               mb: 3,
-                              pb: 2,
-                              borderBottom: `1px solid ${theme.palette.divider}`
                             }}>
                               <Box sx={{ 
                                 width: 48, 
@@ -811,17 +804,15 @@ const HotelAdminDashboard: React.FC = () => {
                       {/* Contact & Operational Information Card */}
                       <Grid item xs={12} md={6}>
                         <Card elevation={0} sx={{ 
-                          border: `1px solid ${theme.palette.divider}`,
                           borderRadius: 3,
-                          height: '100%'
+                          height: '100%',
+                          bgcolor: theme.palette.background.paper,
                         }}>
                           <CardContent sx={{ p: 4 }}>
                             <Box sx={{ 
                               display: 'flex', 
                               alignItems: 'center', 
                               mb: 3,
-                              pb: 2,
-                              borderBottom: `1px solid ${theme.palette.divider}`
                             }}>
                               <Box sx={{ 
                                 width: 48, 

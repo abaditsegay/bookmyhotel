@@ -43,8 +43,29 @@ public class HotelDTO {
     @Size(max = 100, message = "Email must not exceed 100 characters")
     private String email;
 
+    @Size(max = 100, message = "Contact person must not exceed 100 characters")
+    private String contactPerson;
+
+    @Size(max = 50, message = "License number must not exceed 50 characters")
+    private String licenseNumber;
+
+    @Size(max = 50, message = "Tax ID must not exceed 50 characters")
+    private String taxId;
+
+    @Size(max = 200, message = "Website URL must not exceed 200 characters")
+    private String websiteUrl;
+
+    private String facilityAmenities;
+
+    @Size(max = 10, message = "Check-in time must not exceed 10 characters")
+    private String checkInTime;
+
+    @Size(max = 10, message = "Check-out time must not exceed 10 characters")
+    private String checkOutTime;
+
     private String tenantId;
     private Boolean isActive;
+    private Boolean isPubliclyListed;
     private Integer numberOfRooms; // registered room limit from onboarding
     private Integer roomCount;
     private Integer totalRooms;
@@ -238,6 +259,14 @@ public class HotelDTO {
         this.isActive = isActive;
     }
 
+    public Boolean getIsPubliclyListed() {
+        return isPubliclyListed;
+    }
+
+    public void setIsPubliclyListed(Boolean isPubliclyListed) {
+        this.isPubliclyListed = isPubliclyListed;
+    }
+
     public Integer getNumberOfRooms() {
         return numberOfRooms;
     }
@@ -252,5 +281,61 @@ public class HotelDTO {
 
     public void setRoomCount(Integer roomCount) {
         this.roomCount = roomCount;
+    }
+
+    public String getContactPerson() {
+        return contactPerson;
+    }
+
+    public void setContactPerson(String contactPerson) {
+        this.contactPerson = contactPerson;
+    }
+
+    public String getLicenseNumber() {
+        return licenseNumber;
+    }
+
+    public void setLicenseNumber(String licenseNumber) {
+        this.licenseNumber = licenseNumber;
+    }
+
+    public String getTaxId() {
+        return taxId;
+    }
+
+    public void setTaxId(String taxId) {
+        this.taxId = taxId;
+    }
+
+    public String getWebsiteUrl() {
+        return websiteUrl;
+    }
+
+    public void setWebsiteUrl(String websiteUrl) {
+        this.websiteUrl = websiteUrl;
+    }
+
+    public String getFacilityAmenities() {
+        return facilityAmenities;
+    }
+
+    public void setFacilityAmenities(String facilityAmenities) {
+        this.facilityAmenities = facilityAmenities;
+    }
+
+    public String getCheckInTime() {
+        return checkInTime;
+    }
+
+    public void setCheckInTime(String checkInTime) {
+        this.checkInTime = checkInTime;
+    }
+
+    public String getCheckOutTime() {
+        return checkOutTime;
+    }
+
+    public void setCheckOutTime(String checkOutTime) {
+        this.checkOutTime = checkOutTime;
     }
 }
