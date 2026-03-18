@@ -1,11 +1,12 @@
 package com.bookmyhotel.service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -16,16 +17,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Caching;
 
 import com.bookmyhotel.config.CacheConfig;
-
 import com.bookmyhotel.dto.BookingCancellationRequest;
 import com.bookmyhotel.dto.BookingModificationRequest;
 import com.bookmyhotel.dto.BookingModificationResponse;
@@ -33,8 +34,11 @@ import com.bookmyhotel.dto.BookingRequest;
 import com.bookmyhotel.dto.BookingResponse;
 import com.bookmyhotel.dto.RoomTypeBookingRequest;
 import com.bookmyhotel.dto.payment.PaymentInitiationRequest;
+import com.bookmyhotel.entity.BookingNotification;
 import com.bookmyhotel.entity.GuestInfo;
 import com.bookmyhotel.entity.Hotel;
+import com.bookmyhotel.entity.HotelPricingConfig;
+import com.bookmyhotel.entity.PaymentStatus;
 import com.bookmyhotel.entity.Reservation;
 import com.bookmyhotel.entity.ReservationStatus;
 import com.bookmyhotel.entity.Room;
@@ -56,7 +60,7 @@ import com.stripe.param.PaymentIntentCreateParams;
  * Booking service
  */
 @Service
-@Transactional
+@Transactional(timeout = 30)
 public class BookingService {
 
     private static final Logger logger = LoggerFactory.getLogger(BookingService.class);
@@ -86,6 +90,9 @@ public class BookingService {
 
     @Autowired
     private EmailService emailService;
+
+    @Autowired
+    private HotelPricingConfigService hotelPricingConfigService;
 
     @Autowired
     private PdfService pdfService;
@@ -168,9 +175,18 @@ public class BookingService {
             // Process payment if payment method provided
             if (request.getPaymentMethodId() != null) {
                 if ("pay_at_frontdesk".equals(request.getPaymentMethodId())) {
-                    // For pay at front desk, mark reservation as confirmed with payment pending
-                    reservation.setStatus(ReservationStatus.CONFIRMED);
+                    // For pay at front desk, mark reservation as booked with payment pending
+                    reservation.setStatus(ReservationStatus.BOOKED);
                     // No payment intent ID set, so payment status will be "PENDING"
+                } else if ("mock_payment_processed".equals(request.getPaymentMethodId())) {
+                    // For mock payments already processed by frontend
+                    reservation.setStatus(ReservationStatus.BOOKED);
+                    // Use the transaction ID from the mock payment gateway
+                    if (request.getTransactionId() != null) {
+                        reservation.setPaymentIntentId(request.getTransactionId());
+                    }
+                    logger.info("Mock payment processed for reservation: {} with transaction ID: {}",
+                            reservation.getId(), request.getTransactionId());
                 } else if ("mbirr".equals(request.getPaymentMethodId())
                         || "telebirr".equals(request.getPaymentMethodId())) {
                     // Handle Ethiopian mobile payments
@@ -178,12 +194,12 @@ public class BookingService {
                         String paymentIntentId = processEthiopianPayment(totalAmount, request.getPaymentMethodId(),
                                 request.getGuestPhone(), reservation);
                         reservation.setPaymentIntentId(paymentIntentId);
-                        reservation.setStatus(ReservationStatus.CONFIRMED);
+                        reservation.setStatus(ReservationStatus.BOOKED);
                     } catch (Exception e) {
                         // If Ethiopian payment initiation fails, still confirm booking but mark payment
                         // as failed
-                        reservation.setStatus(ReservationStatus.CONFIRMED);
-                        logger.warn("Ethiopian payment processing failed for reservation, but booking confirmed: {}",
+                        reservation.setStatus(ReservationStatus.BOOKED);
+                        logger.warn("Ethiopian payment processing failed for reservation, but booking booked: {}",
                                 e.getMessage());
                         // Payment status will be determined by the absence of payment intent ID
                     }
@@ -192,18 +208,18 @@ public class BookingService {
                     try {
                         String paymentIntentId = processPayment(totalAmount, request.getPaymentMethodId());
                         reservation.setPaymentIntentId(paymentIntentId);
-                        reservation.setStatus(ReservationStatus.CONFIRMED);
+                        reservation.setStatus(ReservationStatus.BOOKED);
                     } catch (StripeException e) {
                         // Even if payment fails, confirm the booking but mark payment as failed
-                        reservation.setStatus(ReservationStatus.CONFIRMED);
-                        logger.warn("Payment processing failed for reservation, but booking confirmed: {}",
+                        reservation.setStatus(ReservationStatus.BOOKED);
+                        logger.warn("Payment processing failed for reservation, but booking booked: {}",
                                 e.getMessage());
                         // Payment status will be determined by the absence of payment intent ID
                     }
                 }
             } else {
                 // No payment method provided - still confirm the booking
-                reservation.setStatus(ReservationStatus.CONFIRMED);
+                reservation.setStatus(ReservationStatus.BOOKED);
             }
 
             // Generate a temporary confirmation number before first save
@@ -296,26 +312,35 @@ public class BookingService {
             // Process payment if payment method provided
             if (request.getPaymentMethodId() != null) {
                 if ("pay_at_frontdesk".equals(request.getPaymentMethodId())) {
-                    // For pay at front desk, mark reservation as confirmed with payment pending
-                    reservation.setStatus(ReservationStatus.CONFIRMED);
+                    // For pay at front desk, mark reservation as booked with payment pending
+                    reservation.setStatus(ReservationStatus.BOOKED);
                     // No payment intent ID set, so payment status will be "PENDING"
+                } else if ("mock_payment_processed".equals(request.getPaymentMethodId())) {
+                    // For mock payments already processed by frontend
+                    reservation.setStatus(ReservationStatus.BOOKED);
+                    // Use the transaction ID from the mock payment gateway
+                    if (request.getTransactionId() != null) {
+                        reservation.setPaymentIntentId(request.getTransactionId());
+                    }
+                    logger.info("Mock payment processed for reservation: {} with transaction ID: {}",
+                            reservation.getId(), request.getTransactionId());
                 } else {
                     // Handle other payment methods (e.g., credit card via Stripe)
                     try {
                         String paymentIntentId = processPayment(totalAmount, request.getPaymentMethodId());
                         reservation.setPaymentIntentId(paymentIntentId);
-                        reservation.setStatus(ReservationStatus.CONFIRMED);
+                        reservation.setStatus(ReservationStatus.BOOKED);
                     } catch (StripeException e) {
                         // Even if payment fails, confirm the booking but mark payment as failed
-                        reservation.setStatus(ReservationStatus.CONFIRMED);
-                        logger.warn("Payment processing failed for reservation, but booking confirmed: {}",
+                        reservation.setStatus(ReservationStatus.BOOKED);
+                        logger.warn("Payment processing failed for reservation, but booking booked: {}",
                                 e.getMessage());
                         // Payment status will be determined by the absence of payment intent ID
                     }
                 }
             } else {
                 // No payment method provided - still confirm the booking
-                reservation.setStatus(ReservationStatus.CONFIRMED);
+                reservation.setStatus(ReservationStatus.BOOKED);
             }
 
             // Generate a temporary confirmation number before first save
@@ -443,9 +468,9 @@ public class BookingService {
 
         // Create booking change notification for hotel admin/front desk
         try {
-            BigDecimal refundAmount = BigDecimal.ZERO; // TODO: Calculate actual refund amount
-            logger.info("📧 Creating cancellation notification with cancelledBy: '{}', reason: '{}'", cancelledBy,
-                    cancellationReason);
+            BigDecimal refundAmount = calculateCancellationRefund(reservation);
+            logger.info("📧 Creating cancellation notification with cancelledBy: '{}', reason: '{}', refundAmount: {}",
+                    cancelledBy, cancellationReason, refundAmount);
             bookingChangeNotificationService.createCancellationNotification(
                     reservation, cancellationReason, refundAmount, cancelledBy);
             logger.info("✅ Cancellation notification created successfully");
@@ -550,18 +575,31 @@ public class BookingService {
                 throw new BookingException("Guest email is required for anonymous bookings");
             }
 
-            // Check for email uniqueness - prevent multiple active bookings with same email
-            List<Reservation> activeReservations = reservationRepository.findActiveReservationsByGuestEmail(
-                    request.getGuestEmail());
-            if (!activeReservations.isEmpty()) {
-                throw new BookingException("An active reservation already exists for this email address. " +
-                        "Please use a different email or contact the hotel to modify your existing booking.");
+            // Check for overlapping bookings - prevent double bookings for same dates
+            // This allows multiple bookings with same email as long as dates don't overlap
+            List<Reservation> overlappingReservations = reservationRepository.findOverlappingActiveReservations(
+                    request.getGuestEmail(),
+                    request.getCheckInDate(),
+                    request.getCheckOutDate());
+            if (!overlappingReservations.isEmpty()) {
+                Reservation existingBooking = overlappingReservations.get(0);
+                throw new BookingException(
+                        String.format(
+                                "You already have a booked reservation (confirmation: %s) from %s to %s that overlaps with your selected dates. "
+                                        +
+                                        "Please choose different dates or contact the hotel to modify your existing booking.",
+                                existingBooking.getConfirmationNumber(),
+                                existingBooking.getCheckInDate(),
+                                existingBooking.getCheckOutDate()));
             }
         }
     }
 
     /**
      * Calculate total amount for the booking using room type pricing
+     * NOTE: This returns the SUBTOTAL only (base price × nights × seasonal
+     * multiplier).
+     * Taxes are NOT included and will be calculated separately at checkout.
      */
     private BigDecimal calculateTotalAmountByRoomType(Long hotelId, RoomType roomType, BookingRequest request) {
         logger.debug("Calculating total amount for hotel {} and room type {}", hotelId, roomType);
@@ -571,18 +609,38 @@ public class BookingService {
 
         if (pricePerNight == null) {
             logger.warn("No pricing found for hotel {} and room type {}, using default price", hotelId, roomType);
-            pricePerNight = BigDecimal.valueOf(100); // Default fallback
+            throw new IllegalStateException("Room pricing not configured for hotel " + hotelId + " and room type "
+                    + roomType + ". Please configure pricing before accepting bookings.");
         }
 
         long numberOfNights = ChronoUnit.DAYS.between(request.getCheckInDate(), request.getCheckOutDate());
-        BigDecimal totalAmount = pricePerNight.multiply(BigDecimal.valueOf(numberOfNights));
 
-        logger.debug("Calculated pricing: {} per night x {} nights = {}", pricePerNight, numberOfNights, totalAmount);
-        return totalAmount;
+        // Apply seasonal multiplier based on hotel pricing configuration
+        BigDecimal seasonalMultiplier = getSeasonalMultiplier(hotelId, request.getCheckInDate(),
+                request.getCheckOutDate());
+        BigDecimal adjustedPricePerNight = pricePerNight.multiply(seasonalMultiplier)
+                .setScale(2, RoundingMode.HALF_UP);
+
+        // Calculate subtotal (base price * nights * seasonal multiplier)
+        // IMPORTANT: Taxes are NOT included here - they will be calculated at checkout
+        BigDecimal subtotal = adjustedPricePerNight.multiply(BigDecimal.valueOf(numberOfNights))
+                .setScale(2, RoundingMode.HALF_UP);
+
+        logger.debug("Calculated pricing breakdown (taxes will be applied at checkout):");
+        logger.debug("  Base price per night: {}", pricePerNight);
+        logger.debug("  Seasonal multiplier: {}", seasonalMultiplier);
+        logger.debug("  Adjusted price per night: {}", adjustedPricePerNight);
+        logger.debug("  Number of nights: {}", numberOfNights);
+        logger.debug("  Subtotal (without taxes): {}", subtotal);
+
+        return subtotal;
     }
 
     /**
      * Calculate total amount for room type booking using room type pricing
+     * NOTE: This returns the SUBTOTAL only (base price × nights × seasonal
+     * multiplier).
+     * Taxes are NOT included and will be calculated separately at checkout.
      */
     private BigDecimal calculateTotalAmountForRoomTypeByPricing(Long hotelId, RoomType roomType,
             RoomTypeBookingRequest request) {
@@ -593,14 +651,31 @@ public class BookingService {
 
         if (pricePerNight == null) {
             logger.warn("No pricing found for hotel {} and room type {}, using default price", hotelId, roomType);
-            pricePerNight = BigDecimal.valueOf(100); // Default fallback
+            throw new IllegalStateException("Room pricing not configured for hotel " + hotelId + " and room type "
+                    + roomType + ". Please configure pricing before accepting bookings.");
         }
 
         long numberOfNights = ChronoUnit.DAYS.between(request.getCheckInDate(), request.getCheckOutDate());
-        BigDecimal totalAmount = pricePerNight.multiply(BigDecimal.valueOf(numberOfNights));
 
-        logger.debug("Calculated pricing: {} per night x {} nights = {}", pricePerNight, numberOfNights, totalAmount);
-        return totalAmount;
+        // Apply seasonal multiplier based on hotel pricing configuration
+        BigDecimal seasonalMultiplier = getSeasonalMultiplier(hotelId, request.getCheckInDate(),
+                request.getCheckOutDate());
+        BigDecimal adjustedPricePerNight = pricePerNight.multiply(seasonalMultiplier)
+                .setScale(2, RoundingMode.HALF_UP);
+
+        // Calculate subtotal (base price * nights * seasonal multiplier)
+        // IMPORTANT: Taxes are NOT included here - they will be calculated at checkout
+        BigDecimal subtotal = adjustedPricePerNight.multiply(BigDecimal.valueOf(numberOfNights))
+                .setScale(2, RoundingMode.HALF_UP);
+
+        logger.debug("Calculated pricing breakdown (taxes will be applied at checkout):");
+        logger.debug("  Base price per night: {}", pricePerNight);
+        logger.debug("  Seasonal multiplier: {}", seasonalMultiplier);
+        logger.debug("  Adjusted price per night: {}", adjustedPricePerNight);
+        logger.debug("  Number of nights: {}", numberOfNights);
+        logger.debug("  Subtotal (without taxes): {}", subtotal);
+
+        return subtotal;
     }
 
     /**
@@ -618,7 +693,8 @@ public class BookingService {
         }
 
         long numberOfNights = ChronoUnit.DAYS.between(request.getCheckInDate(), request.getCheckOutDate());
-        return room.getPricePerNight().multiply(BigDecimal.valueOf(numberOfNights));
+        return room.getPricePerNight().multiply(BigDecimal.valueOf(numberOfNights))
+                .setScale(2, RoundingMode.HALF_UP);
     }
 
     /**
@@ -646,12 +722,22 @@ public class BookingService {
                 throw new BookingException("Guest email is required for anonymous bookings");
             }
 
-            // Check for email uniqueness - prevent multiple active bookings with same email
-            List<Reservation> activeReservations = reservationRepository.findActiveReservationsByGuestEmail(
-                    request.getGuestEmail());
-            if (!activeReservations.isEmpty()) {
-                throw new BookingException("An active reservation already exists for this email address. " +
-                        "Please use a different email or contact the hotel to modify your existing booking.");
+            // Check for overlapping bookings - prevent double bookings for same dates
+            // This allows multiple bookings with same email as long as dates don't overlap
+            List<Reservation> overlappingReservations = reservationRepository.findOverlappingActiveReservations(
+                    request.getGuestEmail(),
+                    request.getCheckInDate(),
+                    request.getCheckOutDate());
+            if (!overlappingReservations.isEmpty()) {
+                Reservation existingBooking = overlappingReservations.get(0);
+                throw new BookingException(
+                        String.format(
+                                "You already have a booked reservation (confirmation: %s) from %s to %s that overlaps with your selected dates. "
+                                        +
+                                        "Please choose different dates or contact the hotel to modify your existing booking.",
+                                existingBooking.getConfirmationNumber(),
+                                existingBooking.getCheckInDate(),
+                                existingBooking.getCheckOutDate()));
             }
         }
     }
@@ -671,7 +757,8 @@ public class BookingService {
         }
 
         long numberOfNights = ChronoUnit.DAYS.between(request.getCheckInDate(), request.getCheckOutDate());
-        return room.getPricePerNight().multiply(BigDecimal.valueOf(numberOfNights));
+        return room.getPricePerNight().multiply(BigDecimal.valueOf(numberOfNights))
+                .setScale(2, RoundingMode.HALF_UP);
     }
 
     /**
@@ -699,7 +786,7 @@ public class BookingService {
         reservation.setTotalAmount(totalAmount);
         reservation.setSpecialRequests(request.getSpecialRequests());
         reservation.setNumberOfGuests(request.getGuests()); // Set number of guests
-        reservation.setStatus(ReservationStatus.CONFIRMED); // Immediate confirmation
+        reservation.setStatus(ReservationStatus.BOOKED); // Immediate confirmation
 
         // Debug: Log payment method before setting it and truncate if needed
         String paymentMethodId = request.getPaymentMethodId();
@@ -709,6 +796,14 @@ public class BookingService {
             paymentMethodId = paymentMethodId.substring(0, 50);
         }
         reservation.setPaymentMethod(paymentMethodId); // Store the payment method
+
+        // Set payment reference and status if provided
+        if (request.getPaymentReference() != null && !request.getPaymentReference().trim().isEmpty()) {
+            reservation.setPaymentReference(request.getPaymentReference());
+            reservation.setPaymentStatus(PaymentStatus.PROCESSING);
+        } else {
+            reservation.setPaymentStatus(PaymentStatus.PENDING);
+        }
 
         return reservation;
     }
@@ -747,7 +842,7 @@ public class BookingService {
         reservation.setTotalAmount(totalAmount);
         reservation.setSpecialRequests(request.getSpecialRequests());
         reservation.setNumberOfGuests(request.getGuests()); // Set number of guests
-        reservation.setStatus(ReservationStatus.CONFIRMED); // Immediate confirmation
+        reservation.setStatus(ReservationStatus.BOOKED); // Immediate confirmation
 
         // Debug: Log payment method before setting it and truncate if needed
         String paymentMethodId = request.getPaymentMethodId();
@@ -757,6 +852,14 @@ public class BookingService {
             paymentMethodId = paymentMethodId.substring(0, 50);
         }
         reservation.setPaymentMethod(paymentMethodId); // Store the payment method
+
+        // Set payment reference and status if provided
+        if (request.getPaymentReference() != null && !request.getPaymentReference().trim().isEmpty()) {
+            reservation.setPaymentReference(request.getPaymentReference());
+            reservation.setPaymentStatus(PaymentStatus.PROCESSING);
+        } else {
+            reservation.setPaymentStatus(PaymentStatus.PENDING);
+        }
 
         return reservation;
     }
@@ -833,6 +936,14 @@ public class BookingService {
         }
         reservation.setPaymentMethod(paymentMethodId);
 
+        // Set payment reference and status if provided
+        if (request.getPaymentReference() != null && !request.getPaymentReference().trim().isEmpty()) {
+            reservation.setPaymentReference(request.getPaymentReference());
+            reservation.setPaymentStatus(PaymentStatus.PROCESSING);
+        } else {
+            reservation.setPaymentStatus(PaymentStatus.PENDING);
+        }
+
         return reservation;
     }
 
@@ -869,7 +980,7 @@ public class BookingService {
         reservation.setTotalAmount(totalAmount);
         reservation.setSpecialRequests(request.getSpecialRequests());
         reservation.setNumberOfGuests(request.getGuests()); // Set number of guests
-        reservation.setStatus(ReservationStatus.CONFIRMED); // Immediate confirmation
+        reservation.setStatus(ReservationStatus.BOOKED); // Immediate confirmation
 
         // Debug: Log payment method before setting it and truncate if needed
         String paymentMethodId = request.getPaymentMethodId();
@@ -879,6 +990,14 @@ public class BookingService {
             paymentMethodId = paymentMethodId.substring(0, 50);
         }
         reservation.setPaymentMethod(paymentMethodId); // Store the payment method
+
+        // Set payment reference and status if provided
+        if (request.getPaymentReference() != null && !request.getPaymentReference().trim().isEmpty()) {
+            reservation.setPaymentReference(request.getPaymentReference());
+            reservation.setPaymentStatus(PaymentStatus.PROCESSING);
+        } else {
+            reservation.setPaymentStatus(PaymentStatus.PENDING);
+        }
 
         return reservation;
     }
@@ -909,7 +1028,7 @@ public class BookingService {
         reservation.setTotalAmount(totalAmount);
         reservation.setSpecialRequests(request.getSpecialRequests());
         reservation.setNumberOfGuests(request.getGuests()); // Set number of guests
-        reservation.setStatus(ReservationStatus.CONFIRMED); // Immediate confirmation
+        reservation.setStatus(ReservationStatus.BOOKED); // Immediate confirmation
 
         // Debug: Log payment method before setting it and truncate if needed
         String paymentMethodId = request.getPaymentMethodId();
@@ -919,6 +1038,14 @@ public class BookingService {
             paymentMethodId = paymentMethodId.substring(0, 50);
         }
         reservation.setPaymentMethod(paymentMethodId); // Store the payment method
+
+        // Set payment reference and status if provided
+        if (request.getPaymentReference() != null && !request.getPaymentReference().trim().isEmpty()) {
+            reservation.setPaymentReference(request.getPaymentReference());
+            reservation.setPaymentStatus(PaymentStatus.PROCESSING);
+        } else {
+            reservation.setPaymentStatus(PaymentStatus.PENDING);
+        }
 
         return reservation;
     }
@@ -957,12 +1084,14 @@ public class BookingService {
         response.setCheckOutDate(reservation.getCheckOutDate());
         response.setTotalAmount(reservation.getTotalAmount());
         response.setPaymentIntentId(reservation.getPaymentIntentId());
+        response.setPaymentReference(reservation.getPaymentReference());
         response.setCreatedAt(reservation.getCreatedAt());
 
         Room room = reservation.getRoom();
         // Show actual room number if assigned, otherwise indicate assignment pending
         if (room != null && room.getRoomNumber() != null && !room.getRoomNumber().trim().isEmpty()) {
             response.setRoomNumber(room.getRoomNumber());
+            response.setAssignedRoomId(room.getId()); // Set the room ID for pre-assigned rooms
         } else {
             response.setRoomNumber("To be assigned");
         }
@@ -1020,14 +1149,11 @@ public class BookingService {
         // Special requests
         response.setSpecialRequests(reservation.getSpecialRequests());
 
-        // Payment status - now using the stored payment method for better accuracy
-        if (reservation.getPaymentIntentId() != null) {
-            response.setPaymentStatus("PAID");
-        } else if ("pay_at_frontdesk".equals(reservation.getPaymentMethod())) {
-            response.setPaymentStatus("PAY_AT_FRONTDESK");
-        } else {
-            response.setPaymentStatus("PENDING");
-        }
+        // Payment status - use the actual payment status from the entity
+        response.setPaymentStatus(reservation.getPaymentStatusString());
+
+        // Payment type (method) - CASH, BANK, MOBILE, etc.
+        response.setPaymentType(reservation.getPaymentMethod());
 
         return response;
     }
@@ -1189,6 +1315,17 @@ public class BookingService {
     }
 
     /**
+     * Find booking by payment reference (public search across all tenants)
+     */
+    public BookingResponse findByPaymentReferencePublic(String paymentReference) {
+        Reservation reservation = reservationRepository.findByPaymentReferencePublic(paymentReference)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Booking not found with payment reference: " + paymentReference));
+
+        return convertToBookingResponse(reservation);
+    }
+
+    /**
      * Find booking by email and last name
      */
     public BookingResponse findByEmailAndLastName(String email, String lastName) {
@@ -1261,6 +1398,7 @@ public class BookingService {
                         "Modifications must be made at least 24 hours before check-in");
             }
 
+            BigDecimal totalPriceDifference = BigDecimal.ZERO; // Track total net difference
             BigDecimal additionalCharges = BigDecimal.ZERO;
             BigDecimal refundAmount = BigDecimal.ZERO;
 
@@ -1287,26 +1425,25 @@ public class BookingService {
                     return new BookingModificationResponse(false, "Room is not available for the new dates");
                 }
 
-                // Calculate price difference
+                // Calculate comprehensive price difference including taxes and fees
                 long oldNights = ChronoUnit.DAYS.between(reservation.getCheckInDate(), reservation.getCheckOutDate());
                 long newNights = ChronoUnit.DAYS.between(newCheckIn, newCheckOut);
 
-                BigDecimal priceDifference;
-                if (reservation.getRoom() != null) {
-                    // Use room price per night if room is assigned
-                    priceDifference = reservation.getRoom().getPricePerNight()
-                            .multiply(BigDecimal.valueOf(newNights - oldNights));
-                } else {
-                    // Use reservation price per night if no room assigned
-                    priceDifference = reservation.getPricePerNight()
-                            .multiply(BigDecimal.valueOf(newNights - oldNights));
+                BigDecimal oldTotal = calculateSubtotalAmount(reservation, oldNights);
+                BigDecimal newTotal = calculateSubtotalAmount(reservation, newNights);
+                BigDecimal priceDifference = newTotal.subtract(oldTotal);
+
+                // Validate calculation results
+                if (oldTotal.compareTo(BigDecimal.ZERO) <= 0 || newTotal.compareTo(BigDecimal.ZERO) <= 0) {
+                    logger.warn("Invalid price calculation for reservation {}: oldTotal={}, newTotal={}",
+                            reservation.getConfirmationNumber(), oldTotal, newTotal);
+                    return new BookingModificationResponse(false, "Error calculating price difference");
                 }
 
-                if (priceDifference.compareTo(BigDecimal.ZERO) > 0) {
-                    additionalCharges = priceDifference;
-                } else if (priceDifference.compareTo(BigDecimal.ZERO) < 0) {
-                    refundAmount = priceDifference.abs();
-                }
+                // Accumulate price difference (positive = customer owes, negative = refund due)
+                totalPriceDifference = totalPriceDifference.add(priceDifference);
+                logger.info("Date change price difference: {} for reservation {}, running total: {}",
+                        priceDifference, reservation.getConfirmationNumber(), totalPriceDifference);
 
                 // Update dates
                 reservation.setCheckInDate(newCheckIn);
@@ -1322,92 +1459,105 @@ public class BookingService {
                 }
             }
 
-            // Handle room changes by room type
-            if (request.getNewRoomType() != null
-                    && (reservation.getRoom() == null
-                            || !request.getNewRoomType().equals(reservation.getRoom().getRoomType().name()))) {
-                // Find an available room of the new type
-                Room newRoom = roomRepository.findFirstAvailableRoomOfTypePublic(
-                        reservation.getHotel().getId(),
-                        request.getNewRoomType(),
-                        reservation.getCheckInDate(),
-                        reservation.getCheckOutDate())
-                        .orElseThrow(() -> new BookingException(
-                                "No available rooms of type " + request.getNewRoomType() + " for your dates"));
+            // Handle room type changes
+            if (request.getNewRoomType() != null && !request.getNewRoomType().trim().isEmpty()) {
+                logger.info("Processing room type change request: {} for reservation {}",
+                        request.getNewRoomType(), reservation.getConfirmationNumber());
 
-                // Room is available if we found one above
-
-                // Calculate price difference for room upgrade/downgrade
-                long nights = ChronoUnit.DAYS.between(reservation.getCheckInDate(), reservation.getCheckOutDate());
-                BigDecimal oldRoomTotal;
-                if (reservation.getRoom() != null) {
-                    // Use current room price if room is assigned
-                    oldRoomTotal = reservation.getRoom().getPricePerNight().multiply(BigDecimal.valueOf(nights));
-                } else {
-                    // Use reservation price per night if no room assigned yet
-                    oldRoomTotal = reservation.getPricePerNight().multiply(BigDecimal.valueOf(nights));
-                }
-                BigDecimal newRoomTotal = newRoom.getPricePerNight().multiply(BigDecimal.valueOf(nights));
-                BigDecimal roomPriceDifference = newRoomTotal.subtract(oldRoomTotal);
-
-                if (roomPriceDifference.compareTo(BigDecimal.ZERO) > 0) {
-                    additionalCharges = additionalCharges.add(roomPriceDifference);
-                } else if (roomPriceDifference.compareTo(BigDecimal.ZERO) < 0) {
-                    refundAmount = refundAmount.add(roomPriceDifference.abs());
-                }
-
-                // Update room and total amount
-                reservation.setRoom(newRoom);
-                reservation.setTotalAmount(newRoomTotal);
-            }
-            // Handle room changes by type name
-            else if (request.getNewRoomType() != null && !request.getNewRoomType().trim().isEmpty()) {
-
-                // Convert string to RoomType enum
+                // Convert string to RoomType enum for validation
                 RoomType requestedRoomType;
                 try {
                     requestedRoomType = RoomType.valueOf(request.getNewRoomType().trim().toUpperCase());
                 } catch (IllegalArgumentException e) {
+                    logger.error("Invalid room type provided: {}", request.getNewRoomType());
                     return new BookingModificationResponse(false, "Invalid room type: " + request.getNewRoomType());
                 }
 
                 // Check if it's actually a different room type
-                if (reservation.getRoom() == null || !requestedRoomType.equals(reservation.getRoom().getRoomType())) {
+                boolean needsRoomChange = false;
+                if (reservation.getRoom() == null) {
+                    logger.info("Reservation has no assigned room, proceeding with room type change");
+                    needsRoomChange = true;
+                } else if (!requestedRoomType.equals(reservation.getRoom().getRoomType())) {
+                    logger.info("Current room type: {}, Requested room type: {}",
+                            reservation.getRoom().getRoomType(), requestedRoomType);
+                    needsRoomChange = true;
+                } else {
+                    logger.info("Requested room type {} is same as current room type, no change needed",
+                            requestedRoomType);
+                }
 
+                if (needsRoomChange) {
                     // Use the effective dates (new dates if they were modified, otherwise current
                     // dates)
                     LocalDate effectiveCheckIn = reservation.getCheckInDate();
                     LocalDate effectiveCheckOut = reservation.getCheckOutDate();
 
-                    // Find an available room of the requested type directly using the availability
-                    // query
-                    Room newRoom = findAvailableRoomOfType(
+                    logger.info("Finding available room of type {} for dates {} to {} at hotel {}",
+                            requestedRoomType.name(), effectiveCheckIn, effectiveCheckOut,
+                            reservation.getHotel().getId());
+
+                    // Find an available room of the new type using the public method
+                    Optional<Room> newRoomOpt = roomRepository.findFirstAvailableRoomOfTypePublic(
+                            reservation.getHotel().getId(),
                             requestedRoomType.name(),
                             effectiveCheckIn,
-                            effectiveCheckOut,
-                            reservation.getId());
+                            effectiveCheckOut);
 
-                    if (newRoom == null) {
+                    if (newRoomOpt.isEmpty()) {
+                        logger.error("No available rooms of type {} found for the requested dates",
+                                requestedRoomType.name());
                         return new BookingModificationResponse(false,
                                 "No available rooms of type '" + request.getNewRoomType() + "' for your dates");
                     }
 
+                    Room newRoom = newRoomOpt.get();
+                    logger.info("Found available room: {} (ID: {})", newRoom.getRoomNumber(), newRoom.getId());
+
                     // Calculate price difference for room upgrade/downgrade using effective dates
                     long nights = ChronoUnit.DAYS.between(effectiveCheckIn, effectiveCheckOut);
-                    BigDecimal oldRoomTotal = reservation.getRoom().getPricePerNight()
-                            .multiply(BigDecimal.valueOf(nights));
-                    BigDecimal newRoomTotal = newRoom.getPricePerNight().multiply(BigDecimal.valueOf(nights));
-                    BigDecimal roomPriceDifference = newRoomTotal.subtract(oldRoomTotal);
+                    BigDecimal oldRoomTotal;
 
-                    if (roomPriceDifference.compareTo(BigDecimal.ZERO) > 0) {
-                        additionalCharges = additionalCharges.add(roomPriceDifference);
-                    } else if (roomPriceDifference.compareTo(BigDecimal.ZERO) < 0) {
-                        refundAmount = refundAmount.add(roomPriceDifference.abs());
+                    if (reservation.getRoom() != null) {
+                        // Use current room price if room is assigned
+                        oldRoomTotal = reservation.getRoom().getPricePerNight().multiply(BigDecimal.valueOf(nights))
+                                .setScale(2, RoundingMode.HALF_UP);
+                        logger.info("Current room price: {} per night, total: {}",
+                                reservation.getRoom().getPricePerNight(), oldRoomTotal);
+                    } else {
+                        // Use reservation price per night if no room assigned yet
+                        oldRoomTotal = reservation.getPricePerNight().multiply(BigDecimal.valueOf(nights))
+                                .setScale(2, RoundingMode.HALF_UP);
+                        logger.info("Using reservation price: {} per night, total: {}",
+                                reservation.getPricePerNight(), oldRoomTotal);
                     }
 
-                    // Update room and total amount
+                    BigDecimal newRoomTotal = newRoom.getPricePerNight().multiply(BigDecimal.valueOf(nights))
+                            .setScale(2, RoundingMode.HALF_UP);
+                    BigDecimal roomPriceDifference = newRoomTotal.subtract(oldRoomTotal)
+                            .setScale(2, RoundingMode.HALF_UP);
+
+                    logger.info("New room price: {} per night, total: {}, difference: {}",
+                            newRoom.getPricePerNight(), newRoomTotal, roomPriceDifference);
+
+                    // Accumulate room price difference to total
+                    totalPriceDifference = totalPriceDifference.add(roomPriceDifference);
+                    logger.info("Room price difference: {}, total difference so far: {}",
+                            roomPriceDifference, totalPriceDifference);
+
+                    // Update room, room type, and total amount
+                    Room oldRoom = reservation.getRoom();
                     reservation.setRoom(newRoom);
+                    reservation.setRoomType(newRoom.getRoomType()); // CRITICAL: Update room type field
                     reservation.setTotalAmount(newRoomTotal);
+
+                    logger.info(
+                            "Updated reservation - Old room: {}, New room: {}, Old room type: {}, New room type: {}, New total: {}",
+                            oldRoom != null ? oldRoom.getRoomNumber() : "None",
+                            newRoom.getRoomNumber(),
+                            oldRoom != null ? oldRoom.getRoomType() : reservation.getRoomType(),
+                            newRoom.getRoomType(),
+                            newRoomTotal);
                 }
             } // Update guest information if provided
             if (request.getGuestName() != null && !request.getGuestName().trim().isEmpty()) {
@@ -1454,6 +1604,24 @@ public class BookingService {
             // Update modification timestamp
             reservation.setUpdatedAt(LocalDateTime.now());
 
+            // Calculate final amounts based on total price difference
+            if (totalPriceDifference.compareTo(BigDecimal.ZERO) > 0) {
+                // Customer owes additional amount
+                additionalCharges = totalPriceDifference;
+                refundAmount = BigDecimal.ZERO;
+                logger.info("Final calculation: Customer owes ${}", additionalCharges);
+            } else if (totalPriceDifference.compareTo(BigDecimal.ZERO) < 0) {
+                // Customer is owed a refund
+                additionalCharges = BigDecimal.ZERO;
+                refundAmount = totalPriceDifference.abs();
+                logger.info("Final calculation: Customer receives refund of ${}", refundAmount);
+            } else {
+                // No financial change
+                additionalCharges = BigDecimal.ZERO;
+                refundAmount = BigDecimal.ZERO;
+                logger.info("Final calculation: No financial implications");
+            }
+
             // Save the updated reservation
             reservation = reservationRepository.save(reservation);
 
@@ -1472,14 +1640,21 @@ public class BookingService {
                 logger.warn("Failed to send modification confirmation email: {}", e.getMessage());
             }
 
-            // Create booking change notification for hotel admin/front desk
+            // Create booking change notification for hotel admin/front desk (only if there
+            // are financial implications)
             try {
                 String modificationReason = request.getReason() != null &&
                         !request.getReason().trim().isEmpty()
                                 ? request.getReason().trim()
                                 : "Booking details updated";
-                bookingChangeNotificationService.createModificationNotification(reservation, modificationReason,
+                BookingNotification notification = bookingChangeNotificationService.createModificationNotification(
+                        reservation, modificationReason,
                         additionalCharges, refundAmount, "Guest");
+                if (notification != null) {
+                    logger.info("Created booking modification notification for financial implications");
+                } else {
+                    logger.info("No notification created - booking modification had no financial implications");
+                }
             } catch (Exception e) {
                 logger.warn("Failed to create booking modification notification: {}", e.getMessage());
             }
@@ -1678,6 +1853,7 @@ public class BookingService {
 
             BigDecimal additionalCharges = BigDecimal.ZERO;
             BigDecimal refundAmount = BigDecimal.ZERO;
+            BigDecimal totalPriceDifference = BigDecimal.ZERO; // Track net price difference
 
             // Handle date modifications
             if (request.getNewCheckInDate() != null || request.getNewCheckOutDate() != null) {
@@ -1707,11 +1883,10 @@ public class BookingService {
                 BigDecimal priceDifference = reservation.getRoom().getPricePerNight()
                         .multiply(BigDecimal.valueOf(newNights - oldNights));
 
-                if (priceDifference.compareTo(BigDecimal.ZERO) > 0) {
-                    additionalCharges = priceDifference;
-                } else if (priceDifference.compareTo(BigDecimal.ZERO) < 0) {
-                    refundAmount = priceDifference.abs();
-                }
+                // Accumulate date price difference to total
+                totalPriceDifference = totalPriceDifference.add(priceDifference);
+                logger.info("Date price difference: {}, total difference so far: {}",
+                        priceDifference, totalPriceDifference);
 
                 // Update dates
                 reservation.setCheckInDate(newCheckIn);
@@ -1786,11 +1961,10 @@ public class BookingService {
                 BigDecimal newRoomTotal = newRoom.getPricePerNight().multiply(BigDecimal.valueOf(nights));
                 BigDecimal roomPriceDifference = newRoomTotal.subtract(oldRoomTotal);
 
-                if (roomPriceDifference.compareTo(BigDecimal.ZERO) > 0) {
-                    additionalCharges = additionalCharges.add(roomPriceDifference);
-                } else if (roomPriceDifference.compareTo(BigDecimal.ZERO) < 0) {
-                    refundAmount = refundAmount.add(roomPriceDifference.abs());
-                }
+                // Accumulate room price difference to total
+                totalPriceDifference = totalPriceDifference.add(roomPriceDifference);
+                logger.info("Room price difference: {}, total difference so far: {}",
+                        roomPriceDifference, totalPriceDifference);
 
                 // Update room and total amount
                 reservation.setRoom(newRoom);
@@ -1810,6 +1984,24 @@ public class BookingService {
             // Update modification timestamp
             reservation.setUpdatedAt(LocalDateTime.now());
 
+            // Calculate final amounts based on total price difference
+            if (totalPriceDifference.compareTo(BigDecimal.ZERO) > 0) {
+                // Customer owes additional amount
+                additionalCharges = totalPriceDifference;
+                refundAmount = BigDecimal.ZERO;
+                logger.info("Final calculation: Customer owes ${}", additionalCharges);
+            } else if (totalPriceDifference.compareTo(BigDecimal.ZERO) < 0) {
+                // Customer is owed a refund
+                additionalCharges = BigDecimal.ZERO;
+                refundAmount = totalPriceDifference.abs();
+                logger.info("Final calculation: Customer receives refund of ${}", refundAmount);
+            } else {
+                // No financial change
+                additionalCharges = BigDecimal.ZERO;
+                refundAmount = BigDecimal.ZERO;
+                logger.info("Final calculation: No financial implications");
+            }
+
             // Save the updated reservation
             reservation = reservationRepository.save(reservation);
 
@@ -1828,13 +2020,20 @@ public class BookingService {
                 logger.warn("Failed to send modification confirmation email: {}", e.getMessage());
             }
 
-            // Create booking change notification for hotel admin/front desk
+            // Create booking change notification for hotel admin/front desk (only if there
+            // are financial implications)
             try {
                 String modificationReason = request.getReason() != null && !request.getReason().trim().isEmpty()
                         ? request.getReason().trim()
                         : "Booking details updated";
-                bookingChangeNotificationService.createModificationNotification(reservation, modificationReason,
+                BookingNotification notification = bookingChangeNotificationService.createModificationNotification(
+                        reservation, modificationReason,
                         additionalCharges, refundAmount, "Staff");
+                if (notification != null) {
+                    logger.info("Created booking modification notification for financial implications");
+                } else {
+                    logger.info("No notification created - booking modification had no financial implications");
+                }
             } catch (Exception e) {
                 logger.warn("Failed to create booking modification notification: {}", e.getMessage());
             }
@@ -2034,16 +2233,35 @@ public class BookingService {
 
         if (targetRoom != null) {
             BigDecimal originalCost = reservation.getRoom().getPricePerNight()
-                    .multiply(BigDecimal.valueOf(originalNights));
-            BigDecimal newCost = targetRoom.getPricePerNight().multiply(BigDecimal.valueOf(newNights));
+                    .multiply(BigDecimal.valueOf(originalNights))
+                    .setScale(2, RoundingMode.HALF_UP);
+            BigDecimal newCost = targetRoom.getPricePerNight()
+                    .multiply(BigDecimal.valueOf(newNights))
+                    .setScale(2, RoundingMode.HALF_UP);
             newTotal = newCost;
         }
 
-        // Add modification fee (flat $25 fee for any modification)
-        BigDecimal modificationFee = BigDecimal.valueOf(25.00);
-        newTotal = newTotal.add(modificationFee);
+        // Get modification fee from hotel-specific configuration
+        try {
+            BigDecimal modificationFeeRate = hotelPricingConfigService
+                    .getActiveConfiguration(targetRoom.getHotel().getId())
+                    .getModificationFeeRate();
+            BigDecimal modificationFee = currentTotal
+                    .multiply(modificationFeeRate != null ? modificationFeeRate : BigDecimal.ZERO)
+                    .setScale(2, RoundingMode.HALF_UP);
+            newTotal = newTotal.add(modificationFee).setScale(2, RoundingMode.HALF_UP);
 
-        return newTotal.subtract(currentTotal);
+            if (modificationFee.compareTo(BigDecimal.ZERO) > 0) {
+                logger.info("Applied modification fee of {} ({}) to reservation {}",
+                        modificationFee, modificationFeeRate, reservation.getId());
+            }
+        } catch (Exception e) {
+            logger.warn("Could not calculate modification fee for hotel {}: {}",
+                    targetRoom.getHotel().getId(), e.getMessage());
+            // Continue without modification fee
+        }
+
+        return newTotal.subtract(currentTotal).setScale(2, RoundingMode.HALF_UP);
     }
 
     /**
@@ -2074,35 +2292,115 @@ public class BookingService {
             Long excludeReservationId) {
         List<Reservation> conflictingReservations = reservationRepository.findConflictingReservationsExcluding(
                 roomId, checkIn, checkOut, excludeReservationId,
-                Set.of(ReservationStatus.CONFIRMED, ReservationStatus.CHECKED_IN));
+                Set.of(ReservationStatus.BOOKED, ReservationStatus.CHECKED_IN));
         return conflictingReservations.isEmpty();
     }
 
     /**
-     * Calculate refund amount based on cancellation policy
+     * Calculate refund amount based on hotel's configurable cancellation policy
      */
     private BigDecimal calculateCancellationRefund(Reservation reservation) {
+        if (reservation == null || reservation.getTotalAmount() == null) {
+            logger.warn("Invalid reservation data for refund calculation");
+            return BigDecimal.ZERO;
+        }
+
         LocalDate now = LocalDate.now();
         LocalDate checkInDate = reservation.getCheckInDate();
         long daysUntilCheckIn = ChronoUnit.DAYS.between(now, checkInDate);
 
         BigDecimal totalAmount = reservation.getTotalAmount();
 
-        // Cancellation policy:
-        // - More than 7 days: 100% refund
-        // - 3-7 days: 50% refund
-        // - 1-2 days: 25% refund
-        // - Same day or past: No refund
-
-        if (daysUntilCheckIn > 7) {
-            return totalAmount; // 100% refund
-        } else if (daysUntilCheckIn >= 3) {
-            return totalAmount.multiply(BigDecimal.valueOf(0.5)); // 50% refund
-        } else if (daysUntilCheckIn >= 1) {
-            return totalAmount.multiply(BigDecimal.valueOf(0.25)); // 25% refund
-        } else {
-            return BigDecimal.ZERO; // No refund
+        // Validate total amount is positive
+        if (totalAmount.compareTo(BigDecimal.ZERO) <= 0) {
+            logger.warn("Invalid total amount for reservation {}: {}",
+                    reservation.getConfirmationNumber(), totalAmount);
+            return BigDecimal.ZERO;
         }
+
+        // Get hotel's pricing configuration for refund policy
+        Long hotelId = null;
+        if (reservation.getRoom() != null && reservation.getRoom().getHotel() != null) {
+            hotelId = reservation.getRoom().getHotel().getId();
+        } else if (reservation.getHotel() != null) {
+            hotelId = reservation.getHotel().getId();
+        }
+
+        BigDecimal refundPercentage;
+        if (hotelId != null) {
+            try {
+                HotelPricingConfig pricingConfig = hotelPricingConfigService.getActiveConfiguration(hotelId);
+                if (pricingConfig != null) {
+                    refundPercentage = pricingConfig.getRefundRateForDays(daysUntilCheckIn);
+                    logger.info("Using hotel {} configured refund policy: {}% for {} days until check-in",
+                            hotelId, refundPercentage.multiply(new BigDecimal("100")), daysUntilCheckIn);
+                } else {
+                    // Fall back to default policy if no configuration found
+                    refundPercentage = getDefaultRefundRate(daysUntilCheckIn);
+                    logger.warn("No pricing configuration found for hotel {}, using default refund policy", hotelId);
+                }
+            } catch (Exception e) {
+                logger.error("Error retrieving pricing configuration for hotel {}: {}", hotelId, e.getMessage());
+                refundPercentage = getDefaultRefundRate(daysUntilCheckIn);
+            }
+        } else {
+            // Fall back to default policy if hotel ID cannot be determined
+            refundPercentage = getDefaultRefundRate(daysUntilCheckIn);
+            logger.warn("Cannot determine hotel ID for reservation {}, using default refund policy",
+                    reservation.getConfirmationNumber());
+        }
+
+        BigDecimal refundAmount = totalAmount.multiply(refundPercentage)
+                .setScale(2, RoundingMode.HALF_UP);
+
+        logger.info("Calculated refund for reservation {}: {} ({}% of {})",
+                reservation.getConfirmationNumber(), refundAmount,
+                refundPercentage.multiply(new BigDecimal("100")), totalAmount);
+
+        return refundAmount;
+    }
+
+    /**
+     * Get default refund rate when hotel configuration is not available
+     */
+    private BigDecimal getDefaultRefundRate(long daysUntilCheckIn) {
+        if (daysUntilCheckIn > 7) {
+            return new BigDecimal("1.00"); // 100% refund
+        } else if (daysUntilCheckIn >= 3) {
+            return new BigDecimal("0.50"); // 50% refund
+        } else if (daysUntilCheckIn >= 1) {
+            return new BigDecimal("0.25"); // 25% refund
+        } else {
+            return BigDecimal.ZERO; // No refund for same day or past
+        }
+    }
+
+    /**
+     * Calculate subtotal amount (tax-exclusive) for a given number of nights
+     */
+    private BigDecimal calculateSubtotalAmount(Reservation reservation, long nights) {
+        if (reservation == null || nights <= 0) {
+            return BigDecimal.ZERO;
+        }
+
+        BigDecimal pricePerNight;
+        if (reservation.getRoom() != null) {
+            pricePerNight = reservation.getRoom().getPricePerNight();
+        } else {
+            pricePerNight = reservation.getPricePerNight();
+        }
+
+        if (pricePerNight == null || pricePerNight.compareTo(BigDecimal.ZERO) <= 0) {
+            return BigDecimal.ZERO;
+        }
+
+        BigDecimal baseAmount = pricePerNight.multiply(BigDecimal.valueOf(nights))
+                .setScale(2, RoundingMode.HALF_UP);
+
+        logger.debug("Calculated subtotal amount for reservation {} for {} nights: base={}",
+                reservation.getId(), nights, baseAmount);
+
+        return baseAmount;
     }
 
     /**
@@ -2236,6 +2534,143 @@ public class BookingService {
             logger.debug("Invalidated room availability caches after reservation change");
         } catch (Exception e) {
             logger.warn("Failed to invalidate room caches: {}", e.getMessage());
+        }
+    }
+
+    /**
+     * Determine the appropriate seasonal multiplier based on booking dates
+     * For simplicity, we consider December-February as peak season
+     * 
+     * @param hotelId      the hotel ID
+     * @param checkInDate  the check-in date
+     * @param checkOutDate the check-out date
+     * @return the seasonal multiplier to apply
+     */
+    private BigDecimal getSeasonalMultiplier(Long hotelId, LocalDate checkInDate, LocalDate checkOutDate) {
+        HotelPricingConfig config = hotelPricingConfigService.getActiveConfiguration(hotelId);
+
+        if (config == null) {
+            logger.warn("No pricing configuration found for hotel {}. Using default multiplier of 1.0", hotelId);
+            return BigDecimal.ONE;
+        }
+
+        // Simple seasonal logic: December (12), January (1), February (2) are peak
+        // months
+        boolean isPeakSeason = isPeakSeasonPeriod(checkInDate, checkOutDate);
+
+        if (isPeakSeason) {
+            logger.debug("Peak season detected for hotel {}, applying multiplier: {}", hotelId,
+                    config.getPeakSeasonMultiplier());
+            return config.getPeakSeasonMultiplier();
+        } else {
+            logger.debug("Off season detected for hotel {}, applying multiplier: {}", hotelId,
+                    config.getOffSeasonMultiplier());
+            return config.getOffSeasonMultiplier();
+        }
+    }
+
+    /**
+     * Check if the given date range falls within peak season months
+     * Peak season: December, January, February
+     * 
+     * @param checkInDate  the check-in date
+     * @param checkOutDate the check-out date
+     * @return true if any part of the stay falls in peak season
+     */
+    private boolean isPeakSeasonPeriod(LocalDate checkInDate, LocalDate checkOutDate) {
+        // Peak season months: December (12), January (1), February (2)
+        Set<Integer> peakMonths = Set.of(12, 1, 2);
+
+        // Check if check-in month is peak season
+        if (peakMonths.contains(checkInDate.getMonthValue())) {
+            return true;
+        }
+
+        // Check if check-out month is peak season
+        if (peakMonths.contains(checkOutDate.getMonthValue())) {
+            return true;
+        }
+
+        // Check if the stay spans across peak season months
+        LocalDate current = checkInDate;
+        while (!current.isAfter(checkOutDate)) {
+            if (peakMonths.contains(current.getMonthValue())) {
+                return true;
+            }
+            current = current.plusDays(1);
+        }
+
+        return false;
+    }
+
+    /**
+     * Send booking authentication email for management access
+     */
+    public void sendBookingAuthenticationEmail(String confirmationNumber, String email, String action) {
+        try {
+            // Find the booking to get details
+            BookingResponse booking = findByConfirmationNumberPublic(confirmationNumber);
+
+            // Generate a secure token for the booking management
+            String managementToken = bookingTokenService.generateBookingManagementToken(
+                    booking.getReservationId(),
+                    booking.getGuestEmail());
+
+            // Determine action for email content
+            String actionText = "manage";
+            if ("modify".equals(action)) {
+                actionText = "modify";
+            } else if ("cancel".equals(action)) {
+                actionText = "cancel";
+            }
+
+            // Send the authentication email
+            emailService.sendBookingAuthenticationEmail(booking, managementToken, actionText);
+
+            logger.info("Booking authentication email sent for confirmation: {} to email: {}", confirmationNumber,
+                    email);
+
+        } catch (Exception e) {
+            logger.error("Failed to send booking authentication email for confirmation: {}", confirmationNumber, e);
+            throw new RuntimeException("Failed to send authentication email", e);
+        }
+    }
+
+    /**
+     * Scheduled job to auto-cancel expired PENDING bookings
+     * Runs every 5 minutes to clean up abandoned bookings
+     */
+    @Scheduled(fixedRate = 300000) // 5 minutes
+    public void autoExpirePendingBookings() {
+        try {
+            // Cancel PENDING bookings older than 30 minutes
+            LocalDateTime cutoffTime = LocalDateTime.now().minusMinutes(30);
+
+            List<Reservation> expiredPendingBookings = reservationRepository.findExpiredPendingReservations(cutoffTime);
+
+            if (!expiredPendingBookings.isEmpty()) {
+                logger.info("Found {} expired PENDING bookings to auto-cancel", expiredPendingBookings.size());
+
+                for (Reservation reservation : expiredPendingBookings) {
+                    String confirmationNumber = reservation.getConfirmationNumber();
+
+                    // Update status to CANCELLED
+                    reservation.setStatus(ReservationStatus.CANCELLED);
+                    reservation.setUpdatedAt(LocalDateTime.now());
+                    reservationRepository.save(reservation);
+
+                    logger.info("Auto-cancelled expired PENDING booking: {} (created at: {})",
+                            confirmationNumber, reservation.getCreatedAt());
+                }
+
+                // Clear cache after bulk updates
+                invalidateRoomCaches();
+
+                logger.info("Successfully auto-cancelled {} expired PENDING bookings", expiredPendingBookings.size());
+            }
+        } catch (Exception e) {
+            logger.error("Error during auto-expiration of PENDING bookings", e);
+            // Don't rethrow - scheduled job should continue running
         }
     }
 }

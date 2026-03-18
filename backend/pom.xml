@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.3.2</version>
+        <version>3.4.0</version>
         <relativePath/>
     </parent>
     
@@ -18,8 +18,10 @@
     
     <properties>
         <java.version>21</java.version>
+        <lombok.version>1.18.36</lombok.version>
         <stripe.version>26.7.0</stripe.version>
         <testcontainers.version>1.20.1</testcontainers.version>
+        <aws.sdk.version>2.27.21</aws.sdk.version>
     </properties>
     
     <dependencies>
@@ -92,6 +94,16 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-cache</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+        <!-- Logstash JSON encoder for structured logging in production logback-spring.xml -->
+        <dependency>
+            <groupId>net.logstash.logback</groupId>
+            <artifactId>logstash-logback-encoder</artifactId>
+            <version>7.4</version>
+        </dependency>
         
         <!-- JWT -->
         <dependency>
@@ -119,6 +131,18 @@
             <version>${stripe.version}</version>
         </dependency>
         
+        <!-- AWS SDK for S3 -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>s3</artifactId>
+            <version>${aws.sdk.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>auth</artifactId>
+            <version>${aws.sdk.version}</version>
+        </dependency>
+        
         <!-- OAuth2 Email Configuration -->
         <!-- Note: Microsoft Graph SDK has compatibility issues with Spring Boot 3.x -->
         <!-- OAuth2 credentials are preserved in application.properties for future use -->
@@ -129,11 +153,20 @@
             <artifactId>micrometer-registry-prometheus</artifactId>
         </dependency>
         
-        <!-- Development Tools -->
+        <!-- Development Tools (temporarily disabled) -->
+        <!-- 
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
             <scope>runtime</scope>
+            <optional>true</optional>
+        </dependency>
+        -->
+        
+        <!-- Lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
         
@@ -172,8 +205,27 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>21</source>
+                    <target>21</target>
+                    <release>21</release>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>com.bookmyhotel.BookMyHotelApplication</mainClass>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.flywaydb</groupId>

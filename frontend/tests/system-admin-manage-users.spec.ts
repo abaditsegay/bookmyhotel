@@ -70,7 +70,7 @@ class ManageUsersPage {
     await this.page.fill('[data-testid="email-input"]', 'admin@bookmyhotel.com');
     
     await this.highlightElement(this.page.locator('[data-testid="password-input"]'), 'Password field', 1500);
-    await this.page.fill('[data-testid="password-input"]', 'password123');
+    await this.page.fill('[data-testid="password-input"]', 'admin123');
     
     await this.highlightElement(this.page.locator('[data-testid="login-button"]'), 'Login button', 1500);
     await this.page.click('[data-testid="login-button"]');
@@ -400,35 +400,6 @@ class ManageUsersPage {
     await this.fillFormField(phoneSelectors, '+1234567890', 'Phone field');
     
     // Field 5: Password
-    const passwordSelectors = [
-      '[role="dialog"] input[placeholder*="Password"]',
-      '[role="dialog"] input[placeholder*="password"]',
-      '[role="dialog"] input[type="password"]',
-      '[role="dialog"] [data-testid*="password"]',
-      '[role="dialog"] input[name="password"]'
-    ];
-    
-    await this.fillFormField(passwordSelectors, 'SecurePass123!', 'Password field');
-  }
-    
-    await this.fillFormField(phoneSelectors, '+1234567890', 'Phone field');
-    
-    // Field 5: Password
-    const passwordSelectors = [
-      '[role="dialog"] input[placeholder*="Password"]',
-      '[role="dialog"] input[placeholder*="password"]',
-      '[role="dialog"] input[type="password"]',
-      '[role="dialog"] [data-testid*="password"]',
-      '[role="dialog"] input[name="password"]'
-    ];
-    
-    await this.fillFormField(passwordSelectors, 'SecurePass123!', 'Password field');
-  }
-    ];
-    
-    await this.fillFormField(phoneSelectors, '+1234567890', 'Phone field');
-    
-    // Field 5: Password - must be in dialog
     const passwordSelectors = [
       '[role="dialog"] input[placeholder*="Password"]',
       '[role="dialog"] input[placeholder*="password"]',

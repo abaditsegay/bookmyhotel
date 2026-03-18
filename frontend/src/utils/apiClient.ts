@@ -83,7 +83,7 @@ class ApiClient {
       // Check if token has expired (exp is in seconds)
       return payload.exp && payload.exp < currentTime;
     } catch (error) {
-      console.warn('Failed to decode JWT token:', error);
+      // console.warn('Failed to decode JWT token:', error);
       return true; // Assume expired if we can't decode
     }
   }
@@ -187,7 +187,7 @@ class ApiClient {
         if (response.status === 401) {
           // 401 = Session expired or invalid token
           const hasToken = this.getToken() !== null;
-          console.log('Authentication failed (401) - session expired, triggering logout...', { hasToken });
+          // console.log('Authentication failed (401) - session expired, triggering logout...', { hasToken });
           
           // Only trigger session expiration for users who actually have tokens/sessions
           if (hasToken && this.onSessionExpired) {
@@ -210,22 +210,22 @@ class ApiClient {
           const isAuthEndpoint = isAuthenticatedEndpoint(requestUrl);
           const hasToken = this.getToken() !== null;
           
-          console.log('403 Error Analysis:', {
-            url: requestUrl,
-            tokenExpired,
-            isAuthEndpoint,
-            hasToken,
-            willTriggerLogout: hasToken && (tokenExpired || isAuthEndpoint)
-          });
+          // console.log('403 Error Analysis:', {
+          //   url: requestUrl,
+          //   tokenExpired,
+          //   isAuthEndpoint,
+          //   hasToken,
+          //   willTriggerLogout: hasToken && (tokenExpired || isAuthEndpoint)
+          // });
           
           // Only trigger session expiration for users who actually have tokens/sessions
           if (hasToken && (tokenExpired || isAuthEndpoint)) {
-            console.log('Session validation failed (403) - treating as session expiration, triggering logout...');
+            // console.log('Session validation failed (403) - treating as session expiration, triggering logout...');
             if (this.onSessionExpired) {
               setTimeout(() => this.onSessionExpired?.(), 100);
             }
           } else {
-            console.log('Authorization failed (403) - insufficient permissions for:', requestUrl);
+            // console.log('Authorization failed (403) - insufficient permissions for:', requestUrl);
             // Don't auto-logout for permission issues on non-core endpoints or guest users
           }
         }
@@ -288,7 +288,7 @@ class ApiClient {
     try {
       // Check if we're making an authenticated request without a token
       if (!options.skipAuth && !this.token) {
-        console.warn('API request attempted without token - likely race condition during initialization');
+        // console.warn('API request attempted without token - likely race condition during initialization');
         return {
           error: 'Authentication token not available - request aborted to prevent 403',
           status: 401,

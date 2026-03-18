@@ -30,7 +30,7 @@ const UserDebugPage: React.FC = () => {
         }).join(''));
         setTokenData(JSON.parse(jsonPayload));
       } catch (error) {
-        console.error('Failed to decode token:', error);
+        // console.error('Failed to decode token:', error);
       }
     }
   }, []);

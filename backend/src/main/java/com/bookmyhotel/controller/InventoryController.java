@@ -19,7 +19,7 @@ import com.bookmyhotel.service.ProductService;
  */
 @RestController
 @RequestMapping("/api/hotels/{hotelId}/shop/inventory")
-@PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('FRONTDESK') or hasRole('SYSTEM_ADMIN')")
+@PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('FRONTDESK') or hasRole('SUPER_ADMIN')")
 public class InventoryController {
 
     @Autowired
@@ -51,7 +51,7 @@ public class InventoryController {
     @GetMapping("/low-stock")
     public ResponseEntity<List<ProductResponse>> getLowStockItems(
             @PathVariable Long hotelId,
-            @RequestParam(defaultValue = "10") int threshold) {
+            @RequestParam(defaultValue = "10") Integer threshold) {
 
         List<ProductResponse> lowStockItems = productService.getLowStockProducts(hotelId, threshold);
         return ResponseEntity.ok(lowStockItems);

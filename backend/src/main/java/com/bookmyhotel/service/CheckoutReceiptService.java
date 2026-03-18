@@ -1,6 +1,7 @@
 package com.bookmyhotel.service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -11,6 +12,7 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,7 @@ import com.bookmyhotel.dto.ConsolidatedReceiptResponse;
 import com.bookmyhotel.dto.ConsolidatedReceiptResponse.ReceiptChargeItem;
 import com.bookmyhotel.dto.ConsolidatedReceiptResponse.ReceiptPaymentItem;
 import com.bookmyhotel.dto.RoomChargeResponse;
+import com.bookmyhotel.dto.TaxBreakdown;
 import com.bookmyhotel.entity.Hotel;
 import com.bookmyhotel.entity.Reservation;
 import com.bookmyhotel.entity.ReservationStatus;
@@ -53,6 +56,18 @@ public class CheckoutReceiptService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private HotelPricingConfigService hotelPricingConfigService;
+
+    @Autowired
+    private TaxCalculationService taxCalculationService;
+
+    @Autowired
+    private MicrosoftGraphEmailService microsoftGraphEmailService;
+
+    @Value("${app.email.from}")
+    private String fromEmail;
+
     /**
      * Generate a consolidated receipt for checkout
      */
@@ -73,7 +88,8 @@ public class CheckoutReceiptService {
             if (authentication != null) {
                 currentUserEmail = authentication.getName();
                 // System admin users have hotel_id = null and SYSTEM_ADMIN role
-                if (currentUserEmail != null && (currentUserEmail.equals("admin@bookmyhotel.com") ||
+                // TODO: Replace hardcoded check with proper role-based authorization
+                if (currentUserEmail != null && (currentUserEmail.equals(System.getenv("SYSTEM_ADMIN_EMAIL")) ||
                         currentUserEmail.contains("system"))) {
                     isSystemWideUser = true;
                     logger.info("System-wide user detected: {} - bypassing tenant validation", currentUserEmail);
@@ -202,12 +218,24 @@ public class CheckoutReceiptService {
     }
 
     private void calculateRoomCharges(ConsolidatedReceiptResponse receipt, Reservation reservation) {
-        receipt.setRoomChargePerNight(reservation.getPricePerNight());
+        // The stored reservation.getPricePerNight() is the base room rate (before
+        // taxes)
+        // The stored reservation.getTotalAmount() is the subtotal (base rate × nights ×
+        // seasonal multiplier)
+        // This method calculates the room charges correctly without adding taxes
+        // (taxes are added separately in setTaxesAndFees method)
+        BigDecimal baseRatePerNight = reservation.getPricePerNight();
+        receipt.setRoomChargePerNight(baseRatePerNight);
 
-        // Calculate total room charges based on actual stay or reservation dates
+        // Calculate total room charges based on actual stay or reservation dates (base
+        // rate only)
         long nights = receipt.getNumberOfNights();
-        BigDecimal totalRoomCharges = reservation.getPricePerNight().multiply(BigDecimal.valueOf(nights));
+        BigDecimal totalRoomCharges = baseRatePerNight.multiply(BigDecimal.valueOf(nights))
+                .setScale(2, RoundingMode.HALF_UP);
         receipt.setTotalRoomCharges(totalRoomCharges);
+
+        logger.debug("Receipt room charges: {} per night × {} nights = {} (base rate before taxes)",
+                baseRatePerNight, nights, totalRoomCharges);
     }
 
     private void setAdditionalCharges(ConsolidatedReceiptResponse receipt, Reservation reservation) {
@@ -230,14 +258,77 @@ public class CheckoutReceiptService {
     private void setTaxesAndFees(ConsolidatedReceiptResponse receipt, Reservation reservation) {
         List<ReceiptChargeItem> taxesAndFees = new ArrayList<>();
 
-        // Example: Add city tax (you can customize this based on your requirements)
-        BigDecimal cityTaxRate = BigDecimal.valueOf(0.05); // 5% city tax
-        BigDecimal cityTax = receipt.getTotalRoomCharges().multiply(cityTaxRate);
+        try {
+            // Get hotel pricing configuration to determine tax rates
+            Long hotelId = reservation.getHotel().getId();
+            BigDecimal vatRate = hotelPricingConfigService.getVatRate(hotelId);
+            BigDecimal serviceTaxRate = hotelPricingConfigService.getServiceTaxRate(hotelId);
+            BigDecimal cityTaxRate = hotelPricingConfigService.getCityTaxRate(hotelId);
 
-        if (cityTax.compareTo(BigDecimal.ZERO) > 0) {
-            ReceiptChargeItem cityTaxItem = new ReceiptChargeItem(
-                    "City Tax (5%)", cityTax, "TAX");
-            taxesAndFees.add(cityTaxItem);
+            if (vatRate == null) {
+                vatRate = BigDecimal.ZERO;
+            }
+            if (serviceTaxRate == null) {
+                serviceTaxRate = BigDecimal.ZERO;
+            }
+            if (cityTaxRate == null) {
+                cityTaxRate = BigDecimal.ZERO;
+            }
+
+            // Calculate subtotal (room charges + additional charges, excluding taxes)
+            BigDecimal subtotal = receipt.getTotalRoomCharges().add(receipt.getTotalAdditionalCharges())
+                    .setScale(2, RoundingMode.HALF_UP);
+
+            TaxBreakdown taxes = taxCalculationService.calculateTaxesWithRates(subtotal, vatRate, serviceTaxRate,
+                    cityTaxRate);
+
+            BigDecimal vatAmount = taxes.getVatAmount();
+            BigDecimal serviceTaxAmount = taxes.getServiceTaxAmount();
+            BigDecimal cityTaxAmount = taxes.getCityTaxAmount();
+
+            // Add VAT as separate line item
+            if (vatAmount.compareTo(BigDecimal.ZERO) > 0) {
+                BigDecimal vatPercentage = vatRate.multiply(BigDecimal.valueOf(100));
+                String vatDescription = String.format("VAT (%.2f%%)", vatPercentage.doubleValue());
+
+                ReceiptChargeItem vatItem = new ReceiptChargeItem(
+                        vatDescription, vatAmount, "TAX");
+                taxesAndFees.add(vatItem);
+
+                logger.debug("Applied VAT for hotel {}: {}% on subtotal {} = {}",
+                        hotelId, vatPercentage, subtotal, vatAmount);
+            }
+
+            // Add Service Tax as separate line item
+            if (serviceTaxAmount.compareTo(BigDecimal.ZERO) > 0) {
+                BigDecimal serviceTaxPercentage = serviceTaxRate.multiply(BigDecimal.valueOf(100));
+                String serviceTaxDescription = String.format("Service Tax (%.2f%%)",
+                        serviceTaxPercentage.doubleValue());
+
+                ReceiptChargeItem serviceTaxItem = new ReceiptChargeItem(
+                        serviceTaxDescription, serviceTaxAmount, "TAX");
+                taxesAndFees.add(serviceTaxItem);
+
+                logger.debug("Applied Service Tax for hotel {}: {}% on subtotal {} = {}",
+                        hotelId, serviceTaxPercentage, subtotal, serviceTaxAmount);
+            }
+
+            if (cityTaxAmount.compareTo(BigDecimal.ZERO) > 0) {
+                BigDecimal cityTaxPercentage = cityTaxRate.multiply(BigDecimal.valueOf(100));
+                String cityTaxDescription = String.format("City Tax (%.2f%%)",
+                        cityTaxPercentage.doubleValue());
+
+                ReceiptChargeItem cityTaxItem = new ReceiptChargeItem(
+                        cityTaxDescription, cityTaxAmount, "TAX");
+                taxesAndFees.add(cityTaxItem);
+
+                logger.debug("Applied City Tax for hotel {}: {}% on subtotal {} = {}",
+                        hotelId, cityTaxPercentage, subtotal, cityTaxAmount);
+            }
+
+        } catch (Exception e) {
+            logger.warn("Failed to calculate taxes for hotel {}: {}. Using zero tax.",
+                    reservation.getHotel().getId(), e.getMessage());
         }
 
         receipt.setTaxesAndFees(taxesAndFees);
@@ -291,15 +382,18 @@ public class CheckoutReceiptService {
     private void calculateTotals(ConsolidatedReceiptResponse receipt) {
         // Calculate subtotal (room charges + additional charges)
         BigDecimal subtotal = receipt.getTotalRoomCharges()
-                .add(receipt.getTotalAdditionalCharges());
+                .add(receipt.getTotalAdditionalCharges())
+                .setScale(2, RoundingMode.HALF_UP);
         receipt.setSubtotal(subtotal);
 
         // Calculate grand total (subtotal + taxes and fees)
-        BigDecimal grandTotal = subtotal.add(receipt.getTotalTaxesAndFees());
+        BigDecimal grandTotal = subtotal.add(receipt.getTotalTaxesAndFees())
+                .setScale(2, RoundingMode.HALF_UP);
         receipt.setGrandTotal(grandTotal);
 
         // Calculate balance due
-        BigDecimal balanceDue = grandTotal.subtract(receipt.getTotalPayments());
+        BigDecimal balanceDue = grandTotal.subtract(receipt.getTotalPayments())
+                .setScale(2, RoundingMode.HALF_UP);
         receipt.setBalanceDue(balanceDue);
     }
 
@@ -364,7 +458,8 @@ public class CheckoutReceiptService {
         item.setQuantity(orderItem.getQuantity());
 
         // Calculate proportional amount for this item
-        BigDecimal itemTotal = orderItem.getUnitPrice().multiply(BigDecimal.valueOf(orderItem.getQuantity()));
+        BigDecimal itemTotal = orderItem.getUnitPrice().multiply(BigDecimal.valueOf(orderItem.getQuantity()))
+                .setScale(2, RoundingMode.HALF_UP);
         item.setAmount(itemTotal);
 
         item.setChargeType(roomCharge.getChargeType().getDisplayName());
@@ -457,5 +552,98 @@ public class CheckoutReceiptService {
             address.append(hotel.getCountry());
         }
         return address.toString();
+    }
+
+    /**
+     * Email checkout receipt to guest
+     */
+    public void emailReceipt(Long reservationId, String generatedByEmail, String customEmail) {
+        try {
+            // Generate the receipt
+            ConsolidatedReceiptResponse receipt = generateCheckoutReceipt(reservationId, generatedByEmail);
+
+            // Use custom email if provided, otherwise use guest email from receipt
+            String guestEmail = customEmail != null && !customEmail.trim().isEmpty()
+                    ? customEmail
+                    : receipt.getGuestEmail();
+
+            if (guestEmail == null || guestEmail.trim().isEmpty()) {
+                throw new RuntimeException("Guest email not found");
+            }
+
+            // Build email content
+            String subject = "Receipt for Booking " + receipt.getConfirmationNumber();
+            String body = buildReceiptEmailBody(receipt);
+
+            // Send email using Microsoft Graph
+            microsoftGraphEmailService.sendEmail(guestEmail, subject, body);
+
+            logger.info("Receipt emailed successfully to {} for reservation {}", guestEmail, reservationId);
+        } catch (Exception e) {
+            logger.error("Failed to email receipt for reservation {}: {}", reservationId, e.getMessage(), e);
+            throw new RuntimeException("Failed to send receipt email: " + e.getMessage());
+        }
+    }
+
+    private String buildReceiptEmailBody(ConsolidatedReceiptResponse receipt) {
+        StringBuilder body = new StringBuilder();
+        body.append("<html><body style='font-family: Arial, sans-serif;'>")
+                .append("<div style='max-width: 600px; margin: 0 auto; padding: 20px;'>")
+                .append("<h2 style='color: #2196F3; text-align: center;'>").append(receipt.getHotelName())
+                .append("</h2>")
+                .append("<p style='text-align: center; color: #666;'>").append(receipt.getHotelAddress()).append("</p>")
+                .append("<hr style='border: 1px solid #e0e0e0;' />")
+                .append("<h3 style='color: #333;'>Official Receipt</h3>")
+                .append("<p><strong>Receipt #:</strong> ").append(receipt.getReceiptNumber()).append("</p>")
+                .append("<p><strong>Confirmation #:</strong> ").append(receipt.getConfirmationNumber()).append("</p>")
+                .append("<p><strong>Guest Name:</strong> ").append(receipt.getGuestName()).append("</p>")
+                .append("<p><strong>Check-in:</strong> ").append(receipt.getCheckInDate()).append("</p>")
+                .append("<p><strong>Check-out:</strong> ").append(receipt.getCheckOutDate()).append("</p>")
+                .append("<p><strong>Room Type:</strong> ").append(receipt.getRoomType()).append("</p>")
+                .append("<hr style='border: 1px solid #e0e0e0;' />")
+                .append("<h3 style='color: #333;'>Charges</h3>")
+                .append("<table style='width: 100%; border-collapse: collapse;'>")
+                .append("<tr><th style='text-align: left; padding: 8px; border-bottom: 1px solid #ddd;'>Description</th>")
+                .append("<th style='text-align: right; padding: 8px; border-bottom: 1px solid #ddd;'>Amount</th></tr>")
+                .append("<tr><td style='padding: 8px;'>Room Charge (").append(receipt.getNumberOfNights())
+                .append(" nights @ ").append(formatCurrency(receipt.getRoomChargePerNight())).append(")</td>")
+                .append("<td style='text-align: right; padding: 8px;'>")
+                .append(formatCurrency(receipt.getTotalRoomCharges())).append("</td></tr>");
+
+        if (receipt.getAdditionalCharges() != null && !receipt.getAdditionalCharges().isEmpty()) {
+            for (var charge : receipt.getAdditionalCharges()) {
+                body.append("<tr><td style='padding: 8px;'>").append(charge.getDescription()).append("</td>")
+                        .append("<td style='text-align: right; padding: 8px;'>")
+                        .append(formatCurrency(charge.getAmount())).append("</td></tr>");
+            }
+        }
+
+        body.append("<tr><td style='padding: 8px; border-top: 1px solid #ddd;'><strong>Subtotal</strong></td>")
+                .append("<td style='text-align: right; padding: 8px; border-top: 1px solid #ddd;'><strong>")
+                .append(formatCurrency(receipt.getSubtotal())).append("</strong></td></tr>");
+
+        // Add taxes and fees if present
+        if (receipt.getTaxesAndFees() != null && !receipt.getTaxesAndFees().isEmpty()) {
+            for (var tax : receipt.getTaxesAndFees()) {
+                body.append("<tr><td style='padding: 8px;'>").append(tax.getDescription()).append("</td>")
+                        .append("<td style='text-align: right; padding: 8px;'>").append(formatCurrency(tax.getAmount()))
+                        .append("</td></tr>");
+            }
+        }
+
+        body.append("<tr><td style='padding: 8px; border-top: 2px solid #333;'><strong>Total Amount</strong></td>")
+                .append("<td style='text-align: right; padding: 8px; border-top: 2px solid #333;'><strong>")
+                .append(formatCurrency(receipt.getGrandTotal())).append("</strong></td></tr>")
+                .append("</table>")
+                .append("<hr style='border: 1px solid #e0e0e0;' />")
+                .append("<p style='text-align: center; color: #666; font-size: 12px;'>Thank you for choosing ")
+                .append(receipt.getHotelName()).append("!</p>")
+                .append("</div></body></html>");
+
+        return body.toString();
+    }
+
+    private String formatCurrency(java.math.BigDecimal amount) {
+        return "ETB " + String.format("%,.2f", amount);
     }
 }

@@ -6,8 +6,8 @@ export interface Todo {
   id?: number;
   title: string;
   description?: string;
-  completed: boolean;
-  priority: 'HIGH' | 'MEDIUM' | 'LOW';
+  completed?: boolean; // Temporarily optional since removed from backend
+  severity: 'HIGH' | 'MEDIUM' | 'LOW';
   dueDate?: string;
   category?: string;
   createdAt?: string;
@@ -16,7 +16,7 @@ export interface Todo {
 
 export interface TodoFilters {
   completed?: boolean;
-  sortBy?: 'priority' | 'dueDate' | 'created' | 'alphabetical';
+  sortBy?: 'severity' | 'dueDate' | 'created' | 'alphabetical';
 }
 
 class TodoApiService {

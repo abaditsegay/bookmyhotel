@@ -84,9 +84,9 @@ export const useNotifications = () => {
       setLoading(true);
       setError(null);
       
-      // Skip notifications for system admin users - they don't have access
-      if (hasRole('SYSTEM_ADMIN')) {
-        console.log('🔑 System admin detected - skipping notifications API call');
+      // Skip notifications for super admin users - they don't have access
+      if (hasRole('SUPER_ADMIN')) {
+        // console.log('🔑 System admin detected - skipping notifications API call');
         setNotifications([]);
         setStats({ totalUnread: 0, unreadCancellations: 0, unreadModifications: 0 });
         setLoading(false);
@@ -95,7 +95,7 @@ export const useNotifications = () => {
       
       // Only load notifications for HOTEL_ADMIN and FRONTDESK roles
       if (!hasRole('HOTEL_ADMIN') && !hasRole('FRONTDESK')) {
-        console.log('🚫 User does not have required role for notifications');
+        // console.log('🚫 User does not have required role for notifications');
         setNotifications([]);
         setStats({ totalUnread: 0, unreadCancellations: 0, unreadModifications: 0 });
         setLoading(false);
@@ -121,9 +121,9 @@ export const useNotifications = () => {
   }, [hasRole]);
 
   const markAsRead = async (notificationId: number) => {
-    // Skip for system admin or users without proper roles
-    if (hasRole('SYSTEM_ADMIN') || (!hasRole('HOTEL_ADMIN') && !hasRole('FRONTDESK'))) {
-      console.log('🚫 User does not have permission to mark notifications as read');
+    // Skip for super admin or users without proper roles
+    if (hasRole('SUPER_ADMIN') || (!hasRole('HOTEL_ADMIN') && !hasRole('FRONTDESK'))) {
+      // console.log('🚫 User does not have permission to mark notifications as read');
       return false;
     }
     
@@ -152,9 +152,9 @@ export const useNotifications = () => {
   };
 
   const markAllAsRead = async () => {
-    // Skip for system admin or users without proper roles
-    if (hasRole('SYSTEM_ADMIN') || (!hasRole('HOTEL_ADMIN') && !hasRole('FRONTDESK'))) {
-      console.log('🚫 User does not have permission to mark all notifications as read');
+    // Skip for super admin or users without proper roles
+    if (hasRole('SUPER_ADMIN') || (!hasRole('HOTEL_ADMIN') && !hasRole('FRONTDESK'))) {
+      // console.log('🚫 User does not have permission to mark all notifications as read');
       return false;
     }
     
@@ -181,9 +181,9 @@ export const useNotifications = () => {
   };
 
   const archiveNotification = async (notificationId: number) => {
-    // Skip for system admin or users without proper roles
-    if (hasRole('SYSTEM_ADMIN') || (!hasRole('HOTEL_ADMIN') && !hasRole('FRONTDESK'))) {
-      console.log('🚫 User does not have permission to archive notifications');
+    // Skip for super admin or users without proper roles
+    if (hasRole('SUPER_ADMIN') || (!hasRole('HOTEL_ADMIN') && !hasRole('FRONTDESK'))) {
+      // console.log('🚫 User does not have permission to archive notifications');
       return false;
     }
     
@@ -212,8 +212,8 @@ export const useNotifications = () => {
   };
 
   const getUnreadCount = async (): Promise<number> => {
-    // Skip for system admin or users without proper roles
-    if (hasRole('SYSTEM_ADMIN') || (!hasRole('HOTEL_ADMIN') && !hasRole('FRONTDESK'))) {
+    // Skip for super admin or users without proper roles
+    if (hasRole('SUPER_ADMIN') || (!hasRole('HOTEL_ADMIN') && !hasRole('FRONTDESK'))) {
       return 0;
     }
     
@@ -225,7 +225,7 @@ export const useNotifications = () => {
       }
       return 0;
     } catch (err) {
-      console.warn('Failed to get unread count:', err);
+      // console.warn('Failed to get unread count:', err);
       return 0;
     }
   };
@@ -299,7 +299,7 @@ class NotificationEventEmitter {
   }
 
   emit(action?: 'cancel' | 'modify' | 'create' | 'update'): void {
-    console.log(`🔄 NotificationEventEmitter: Triggering refresh${action ? ` after booking ${action}` : ''}`);
+    // console.log(`🔄 NotificationEventEmitter: Triggering refresh${action ? ` after booking ${action}` : ''}`);
     
     // Add a small delay to ensure backend has processed the changes
     setTimeout(() => {
@@ -307,7 +307,7 @@ class NotificationEventEmitter {
         try {
           callback();
         } catch (error) {
-          console.error('Error in notification refresh callback:', error);
+          // console.error('Error in notification refresh callback:', error);
         }
       });
     }, action ? 1000 : 0); // 1 second delay for booking actions, immediate for manual refresh

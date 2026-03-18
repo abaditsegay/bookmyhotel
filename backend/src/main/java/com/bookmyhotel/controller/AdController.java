@@ -23,7 +23,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/ads")
 @Tag(name = "Advertisements", description = "Advertisement management operations")
-@CrossOrigin(origins = "*", maxAge = 3600)
 public class AdController {
 
         @Autowired
@@ -48,7 +47,7 @@ public class AdController {
          * Get all ads for current tenant
          */
         @GetMapping
-        @PreAuthorize("hasAnyRole('SYSTEM_ADMIN', 'HOTEL_ADMIN')")
+        @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'HOTEL_ADMIN')")
         @Operation(summary = "Get all ads for current tenant")
         public ResponseEntity<List<AdResponse>> getAllAds() {
                 List<AdResponse> ads = adService.getAllAds();
@@ -59,7 +58,7 @@ public class AdController {
          * Get ads by hotel ID
          */
         @GetMapping("/hotel/{hotelId}")
-        @PreAuthorize("hasAnyRole('SYSTEM_ADMIN', 'HOTEL_ADMIN')")
+        @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'HOTEL_ADMIN')")
         @Operation(summary = "Get ads by hotel", description = "Get advertisements for a specific hotel")
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "200", description = "Successfully retrieved hotel ads"),
@@ -79,7 +78,7 @@ public class AdController {
          * Get ad by ID
          */
         @GetMapping("/{id}")
-        @PreAuthorize("hasAnyRole('SYSTEM_ADMIN', 'HOTEL_ADMIN')")
+        @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'HOTEL_ADMIN')")
         @Operation(summary = "Get ad by ID", description = "Get advertisement by its ID")
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "200", description = "Successfully retrieved ad"),
@@ -98,7 +97,7 @@ public class AdController {
          * Create a new ad
          */
         @PostMapping
-        @PreAuthorize("hasAnyRole('SYSTEM_ADMIN', 'HOTEL_ADMIN')")
+        @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'HOTEL_ADMIN')")
         @Operation(summary = "Create new ad", description = "Create a new advertisement")
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "201", description = "Ad created successfully"),
@@ -118,7 +117,7 @@ public class AdController {
          * Update an existing ad
          */
         @PutMapping("/{id}")
-        @PreAuthorize("hasAnyRole('SYSTEM_ADMIN', 'HOTEL_ADMIN')")
+        @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'HOTEL_ADMIN')")
         @Operation(summary = "Update ad", description = "Update an existing advertisement")
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "200", description = "Ad updated successfully"),
@@ -139,7 +138,7 @@ public class AdController {
          * Delete an ad
          */
         @DeleteMapping("/{id}")
-        @PreAuthorize("hasAnyRole('SYSTEM_ADMIN', 'HOTEL_ADMIN')")
+        @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'HOTEL_ADMIN')")
         @Operation(summary = "Delete ad", description = "Delete an advertisement")
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "204", description = "Ad deleted successfully"),
@@ -174,7 +173,7 @@ public class AdController {
          * Toggle ad active status
          */
         @PatchMapping("/{id}/toggle")
-        @PreAuthorize("hasAnyRole('SYSTEM_ADMIN', 'HOTEL_ADMIN')")
+        @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'HOTEL_ADMIN')")
         @Operation(summary = "Toggle ad status", description = "Toggle advertisement active/inactive status")
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "200", description = "Ad status toggled successfully"),
@@ -193,7 +192,7 @@ public class AdController {
          * Get active ads for current tenant
          */
         @GetMapping("/active")
-        @PreAuthorize("hasAnyRole('SYSTEM_ADMIN', 'HOTEL_ADMIN')")
+        @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'HOTEL_ADMIN')")
         @Operation(summary = "Get active ads", description = "Get active advertisements for current tenant")
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "200", description = "Successfully retrieved active ads"),

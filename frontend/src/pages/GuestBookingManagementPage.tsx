@@ -1,14 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { COLORS, addAlpha, getGradient } from '../theme/themeColors';
 import {
   Container,
-  Paper,
   Typography,
   Box,
   Grid,
   Button,
-  Card,
-  CardContent,
   Chip,
   Alert,
   Dialog,
@@ -20,20 +18,26 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  CircularProgress
+  CircularProgress,
+  useTheme,
+  useMediaQuery
 } from '@mui/material';
+import StandardCard from '../components/common/StandardCard';
 import {
   Edit as EditIcon,
   Cancel as CancelIcon,
   ExpandMore as ExpandMoreIcon,
   Event as EventIcon,
   Hotel as HotelIcon,
-  Person as PersonIcon
+  Person as PersonIcon,
+  Receipt as ReceiptIcon
 } from '@mui/icons-material';
+import { useTranslation } from 'react-i18next';
 import { bookingApiService } from '../services/bookingApi';
-import { buildApiUrl } from '../config/apiConfig';
-import { ROOM_TYPES } from '../constants/roomTypes';
+import { buildApiUrl, API_CONFIG } from '../config/apiConfig';
+import { ROOM_TYPES, getRoomTypeLabel } from '../constants/roomTypes';
 import { formatDateForInput, formatDateForAPI, formatDateForDisplay } from '../utils/dateUtils';
+import { formatCurrencyWithDecimals } from '../utils/currencyUtils';
 
 // Get today's date in YYYY-MM-DD format (avoiding timezone issues)
 const getTodayForInput = (): string => {
@@ -50,6 +54,7 @@ interface BookingData {
   guestName: string;
   guestEmail: string;
   numberOfGuests: number;
+  hotelId: number;
   hotelName: string;
   hotelAddress: string;
   roomNumber: string;
@@ -62,11 +67,15 @@ interface BookingData {
   createdAt: string;
   paymentStatus: string;
   paymentIntentId?: string;
+  paymentReference?: string;
 }
 
 const GuestBookingManagementPage: React.FC = () => {
+  const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [searchParams] = useSearchParams();
   
   const initialBooking: BookingData = location.state?.booking;
@@ -78,8 +87,21 @@ const GuestBookingManagementPage: React.FC = () => {
   const [loading, setLoading] = useState(!initialBooking); // Only load if no initial booking
   const [modifyDialogOpen, setModifyDialogOpen] = useState(false);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [authLoading, setAuthLoading] = useState(false);
+  const [authMessage, setAuthMessage] = useState('');
+  const [pendingAction, setPendingAction] = useState<'modify' | 'cancel' | null>(null);
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  
+  // Price modification tracking
+  const [pricesModified, setPricesModified] = useState(false);
+  const [originalPricing, setOriginalPricing] = useState<{pricePerNight: number, totalAmount: number} | null>(null);
+  const [currentCalculatedTotal, setCurrentCalculatedTotal] = useState<number | null>(null);
+  const [fetchingRoomPrice, setFetchingRoomPrice] = useState(false);
+  const [roomTypePrices, setRoomTypePrices] = useState<Map<string, number>>(new Map());
+  const [hotelTaxRate, setHotelTaxRate] = useState<number>(0); // Total tax rate from backend
+  const [hotelVatRate, setHotelVatRate] = useState<number>(0); // VAT rate from backend
+  const [hotelServiceTaxRate, setHotelServiceTaxRate] = useState<number>(0); // Service tax rate from backend
   
     // Modification form state
   const [modificationData, setModificationData] = useState({
@@ -94,6 +116,145 @@ const GuestBookingManagementPage: React.FC = () => {
   
   // Cancellation form state
   const [cancellationReason, setCancellationReason] = useState('');
+
+  // Fetch hotel tax rates
+  const fetchHotelTaxRate = useCallback(async (hotelId: number) => {
+    try {
+      const response = await fetch(buildApiUrl(`/hotels/${hotelId}/tax-rate`));
+      
+      if (!response.ok) {
+        // console.warn('Could not fetch tax rate for hotel:', hotelId);
+        return { total: 0, vat: 0, service: 0 };
+      }
+      
+      const data = await response.json();
+      return {
+        total: data.taxRate || 0,
+        vat: data.vatRate || 0,
+        service: data.serviceTaxRate || 0
+      };
+    } catch (error) {
+      // console.error('Error fetching hotel tax rate:', error);
+      return { total: 0, vat: 0, service: 0 };
+    }
+  }, []);
+
+  // Fetch room price for a specific room type
+  const fetchRoomPriceForType = useCallback(async (roomType: string) => {
+    if (!booking) return null;
+    
+    // Check if we already have this price cached
+    if (roomTypePrices.has(roomType)) {
+      return roomTypePrices.get(roomType)!;
+    }
+    
+    try {
+      setFetchingRoomPrice(true);
+      
+      // Ensure we have a hotel ID
+      if (!booking.hotelId) {
+        // console.warn('No hotel ID available in booking data');
+        return null;
+      }
+      
+      // Use the public hotel rooms API to get room pricing
+      // This endpoint doesn't require authentication and returns available rooms with pricing
+      const response = await fetch(
+        buildApiUrl(`/hotels/${booking.hotelId}/rooms?roomType=${roomType}&checkInDate=${formatDateForAPI(modificationData.newCheckInDate)}&checkOutDate=${formatDateForAPI(modificationData.newCheckOutDate)}&guests=${modificationData.newNumberOfGuests}`)
+      );
+      
+      if (!response.ok) {
+        // console.warn('Could not fetch room price for type:', roomType);
+        return null;
+      }
+      
+      const rooms = await response.json();
+      if (rooms && rooms.length > 0) {
+        // Find the room with matching type
+        const room = rooms.find((r: any) => r.roomType?.toLowerCase() === roomType.toLowerCase());
+        
+        if (room && room.pricePerNight) {
+          const price = room.pricePerNight;
+          // Cache the price
+          setRoomTypePrices(prev => new Map(prev).set(roomType, price));
+          return price;
+        }
+      }
+      
+      return null;
+    } catch (error) {
+      // console.error('Error fetching room price:', error);
+      return null;
+    } finally {
+      setFetchingRoomPrice(false);
+    }
+  }, [booking, modificationData, roomTypePrices]);
+
+  // Calculate pricing for modified booking data
+  const calculateModifiedPricing = useCallback((modData: typeof modificationData) => {
+    if (!booking || !modData.newCheckInDate || !modData.newCheckOutDate) return null;
+    
+    const checkInDate = new Date(modData.newCheckInDate);
+    const checkOutDate = new Date(modData.newCheckOutDate);
+    const diffTime = Math.abs(checkOutDate.getTime() - checkInDate.getTime());
+    const nights = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    // Calculate the original nights
+    const originalCheckIn = new Date(booking.checkInDate);
+    const originalCheckOut = new Date(booking.checkOutDate);
+    const originalDiffTime = Math.abs(originalCheckOut.getTime() - originalCheckIn.getTime());
+    const originalNights = Math.ceil(originalDiffTime / (1000 * 60 * 60 * 24));
+    
+    // Each room type has its own fixed price per night
+    // If the original booking has no price data, we cannot calculate modifications
+    const roomTypeChanged = modData.newRoomType !== booking.roomType;
+    const hasNewRoomPrice = roomTypeChanged && roomTypePrices.has(modData.newRoomType);
+    if (!booking.pricePerNight && !hasNewRoomPrice) return null;
+    const originalPricePerNight = booking.pricePerNight ?? 0;
+    
+    // Use the tax rates from backend (already fetched)
+    const taxRate = hotelTaxRate;
+    const vatRate = hotelVatRate;
+    const serviceTaxRate = hotelServiceTaxRate;
+    
+    // Calculate original totals with separate taxes
+    const originalSubtotal = originalPricePerNight * originalNights;
+    const originalVatAmount = originalSubtotal * vatRate;
+    const originalServiceTaxAmount = originalSubtotal * serviceTaxRate;
+    const originalTaxAmount = originalVatAmount + originalServiceTaxAmount;
+    
+    let newPricePerNight = originalPricePerNight;
+    
+    // If room type changed, try to get the cached price
+    if (roomTypeChanged && roomTypePrices.has(modData.newRoomType)) {
+      newPricePerNight = roomTypePrices.get(modData.newRoomType)!;
+    }
+    
+    // Calculate new subtotal and apply the same tax rates separately
+    const newSubtotal = newPricePerNight * nights;
+    const newVatAmount = newSubtotal * vatRate;
+    const newServiceTaxAmount = newSubtotal * serviceTaxRate;
+    const newTaxAmount = newVatAmount + newServiceTaxAmount;
+    const newTotalAmount = newSubtotal + newTaxAmount;
+    
+    return {
+      pricePerNight: newPricePerNight,
+      subtotal: newSubtotal,
+      vatAmount: newVatAmount,
+      vatRate: vatRate,
+      serviceTaxAmount: newServiceTaxAmount,
+      serviceTaxRate: serviceTaxRate,
+      taxAmount: newTaxAmount,
+      taxRate: taxRate,
+      totalAmount: newTotalAmount,
+      nights,
+      roomTypeChanged,
+      originalSubtotal,
+      originalVatAmount: originalVatAmount,
+      originalServiceTaxAmount: originalServiceTaxAmount,
+      originalTaxAmount: originalTaxAmount
+    };
+  }, [booking, roomTypePrices, hotelTaxRate, hotelVatRate, hotelServiceTaxRate]);
 
   // Fetch booking data from token (for email links)
   const fetchBookingFromToken = useCallback(async () => {
@@ -224,35 +385,108 @@ const GuestBookingManagementPage: React.FC = () => {
         newNumberOfGuests: booking.numberOfGuests || 1,
         modificationReason: ''
       });
+      
+      // Fetch hotel tax rates
+      if (booking.hotelId) {
+        fetchHotelTaxRate(booking.hotelId).then(taxRates => {
+          setHotelTaxRate(taxRates.total);
+          setHotelVatRate(taxRates.vat);
+          setHotelServiceTaxRate(taxRates.service);
+        });
+      }
+      
+      // Only reset price tracking if dialog is not open
+      if (!modifyDialogOpen) {
+        setPricesModified(false);
+        setOriginalPricing(null);
+        setCurrentCalculatedTotal(null);
+      }
     }
-  }, [booking]);
+  }, [booking, modifyDialogOpen, fetchHotelTaxRate]);
+
+  // Track price changes during modification
+  useEffect(() => {
+    if (!modifyDialogOpen || !originalPricing) return;
+    
+    // Only track changes if the dialog is actually open and we have original pricing
+    const newPricing = calculateModifiedPricing(modificationData);
+    if (newPricing) {
+      setCurrentCalculatedTotal(newPricing.totalAmount);
+      
+      // Check if prices have actually changed from original
+      const hasChanged = Math.abs(newPricing.totalAmount - originalPricing.totalAmount) > 0.01 ||
+                        Math.abs(newPricing.pricePerNight - originalPricing.pricePerNight) > 0.01;
+      
+      // Once prices are modified, keep them modified until dialog closes
+      if (hasChanged) {
+        setPricesModified(true);
+      }
+    }
+  }, [modificationData, originalPricing, calculateModifiedPricing, modifyDialogOpen]);
 
   if (loading) {
     return (
-      <Container maxWidth="md" sx={{ py: 4, textAlign: 'center' }}>
-        <CircularProgress />
-        <Typography variant="h6" sx={{ mt: 2 }}>
-          Loading your booking...
-        </Typography>
-      </Container>
+      <Box
+        sx={{
+          minHeight: '100vh',
+          background: theme.palette.mode === 'dark' 
+            ? getGradient('dark')
+            : getGradient('white'),
+          py: 4,
+        }}
+      >
+        <Container maxWidth="lg" sx={{ textAlign: 'center' }}>
+          <StandardCard cardVariant="elevated">
+            <Box sx={{ p: isMobile ? 3 : 5 }}>
+              <CircularProgress />
+              <Typography variant="h6" sx={{ mt: 2 }}>
+                Loading your booking...
+              </Typography>
+            </Box>
+          </StandardCard>
+        </Container>
+      </Box>
     );
   }
 
   if (!booking) {
     return (
-      <Container maxWidth="md" sx={{ py: 4 }}>
-        <Alert severity="error" sx={{ mb: 3 }}>
-          {errorMessage || 'No booking information available. Please search for your booking first.'}
-        </Alert>
-        <Box sx={{ textAlign: 'center' }}>
-          <Button
-            variant="contained"
-            onClick={() => navigate('/guest-auth')}
-          >
-            Find My Booking
-          </Button>
-        </Box>
-      </Container>
+      <Box
+        sx={{
+          minHeight: '100vh',
+          background: theme.palette.mode === 'dark' 
+            ? getGradient('dark')
+            : getGradient('white'),
+          py: 4,
+        }}
+      >
+        <Container maxWidth="lg">
+          <StandardCard cardVariant="elevated">
+            <Box sx={{ p: isMobile ? 3 : 5 }}>
+              <Alert 
+                severity="error" 
+                sx={{ 
+                  mb: 3,
+                  borderRadius: 0,
+                  backgroundColor: theme.palette.mode === 'dark' 
+                    ? addAlpha(COLORS.ERROR, 0.1)
+                    : addAlpha(COLORS.ERROR, 0.04),
+                }}
+              >
+                {errorMessage || 'No booking information available. Please search for your booking first.'}
+              </Alert>
+              <Box sx={{ textAlign: 'center' }}>
+                <Button
+                  variant="contained"
+                  onClick={() => navigate('/guest-auth')}
+                >
+                  Find My Booking
+                </Button>
+              </Box>
+            </Box>
+          </StandardCard>
+        </Container>
+      </Box>
     );
   }
 
@@ -269,7 +503,7 @@ const GuestBookingManagementPage: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'confirmed': return 'primary';
+      case 'booked': return 'primary';
       case 'pending': return 'warning';
       case 'cancelled': return 'error';
       case 'checked in': return 'info';
@@ -278,19 +512,73 @@ const GuestBookingManagementPage: React.FC = () => {
     }
   };
 
+  // Helper function to get payment status color
+  const getPaymentStatusColor = (status?: string): string => {
+    switch (status?.toUpperCase()) {
+      case 'COMPLETED':
+        return COLORS.SUCCESS;
+      case 'PROCESSING':
+        return COLORS.WARNING;
+      case 'PENDING':
+      default:
+        return COLORS.ERROR;
+    }
+  };
+
   const canModifyBooking = () => {
     const checkInDate = new Date(booking.checkInDate);
     const now = new Date();
     const daysBefore = (checkInDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
     
-    return booking.status.toLowerCase() === 'confirmed' && daysBefore >= 1;
+    return booking.status.toLowerCase() === 'booked' && daysBefore >= 1;
   };
 
   const canCancelBooking = () => {
     const checkInDate = new Date(booking.checkInDate);
     const now = new Date();
     
-    return booking.status.toLowerCase() === 'confirmed' && checkInDate > now;
+    return booking.status.toLowerCase() === 'booked' && checkInDate > now;
+  };
+
+  // Email authentication for modify/cancel actions
+  const sendAuthenticationEmail = async (action: 'modify' | 'cancel') => {
+    try {
+      setAuthLoading(true);
+      setAuthMessage('');
+      setPendingAction(action);
+      
+      const response = await fetch(`${API_CONFIG.BASE_URL}/bookings/authenticate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          confirmationNumber: booking.confirmationNumber,
+          email: booking.guestEmail,
+          action: action
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setAuthMessage(`Authentication email sent! Please check your email and click the link to ${action} your booking.`);
+      } else {
+        setAuthMessage(result.message || `Failed to send authentication email for ${action}. Please try again.`);
+      }
+    } catch (error) {
+      // console.error('Error sending authentication email:', error);
+      setAuthMessage(`Failed to send authentication email for ${action}. Please try again.`);
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleCloseModifyDialog = () => {
+    setModifyDialogOpen(false);
+    setPricesModified(false);
+    setOriginalPricing(null);
+    setCurrentCalculatedTotal(null);
   };
 
   const handleModifyBooking = async () => {
@@ -330,7 +618,19 @@ const GuestBookingManagementPage: React.FC = () => {
         response = await apiResponse.json();
         
         if (response.success) {
-          setSuccessMessage(response.message || 'Booking modified successfully');
+          // Build detailed success message with pricing info
+          let message = response.message || 'Booking modified successfully';
+          if (response.additionalCharges && response.additionalCharges > 0) {
+            message += ` | Additional charges: ETB ${response.additionalCharges.toFixed(2)}`;
+          }
+          if (response.refundAmount && response.refundAmount > 0) {
+            message += ` | Refund amount: ETB ${response.refundAmount.toFixed(2)}`;
+          }
+          if (response.updatedBooking && response.updatedBooking.totalAmount) {
+            message += ` | New total: ETB ${response.updatedBooking.totalAmount.toFixed(2)}`;
+          }
+          
+          setSuccessMessage(message);
           setModifyDialogOpen(false);
           
           // Wait a moment for backend cache eviction and database commit
@@ -363,7 +663,21 @@ const GuestBookingManagementPage: React.FC = () => {
         response = await bookingApiService.modifyBooking(modificationRequest);
         
         if (response.success) {
-          setSuccessMessage(response.message || 'Booking modified successfully');
+          // Build detailed success message with pricing info
+          let message = response.message || 'Booking modified successfully';
+          const responseData = response.data || response;
+          
+          if (responseData.additionalCharges && responseData.additionalCharges > 0) {
+            message += ` | Additional charges: ETB ${responseData.additionalCharges.toFixed(2)}`;
+          }
+          if (responseData.refundAmount && responseData.refundAmount > 0) {
+            message += ` | Refund amount: ETB ${responseData.refundAmount.toFixed(2)}`;
+          }
+          if (responseData.updatedBooking && responseData.updatedBooking.totalAmount) {
+            message += ` | New total: ETB ${responseData.updatedBooking.totalAmount.toFixed(2)}`;
+          }
+          
+          setSuccessMessage(message);
           setModifyDialogOpen(false);
           
           // Wait a moment for backend cache eviction and database commit
@@ -475,197 +789,692 @@ const GuestBookingManagementPage: React.FC = () => {
   const nights = calculateNights(booking.checkInDate, booking.checkOutDate);
 
   return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
-      {/* Success/Error Messages */}
-      {successMessage && (
-        <Alert severity="success" sx={{ mb: 3 }} onClose={() => setSuccessMessage('')}>
-          {successMessage}
-        </Alert>
-      )}
-      {errorMessage && (
-        <Alert severity="error" sx={{ mb: 3 }} onClose={() => setErrorMessage('')}>
-          {errorMessage}
-        </Alert>
-      )}
-
-      {/* Cancelled Booking Notice */}
-      {booking.status.toLowerCase() === 'cancelled' && (
-        <Alert severity="info" sx={{ mb: 3 }}>
-          <Typography variant="h6" gutterBottom>
-            Booking Cancelled
-          </Typography>
-          <Typography variant="body2">
-            This booking has been cancelled. If you need to make a new reservation, please visit our booking page.
-            If you have questions about refunds, please contact the hotel directly.
-          </Typography>
-        </Alert>
-      )}
-
-      {/* Booking Header */}
-      <Paper sx={{ p: 3, mb: 3 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-          <Box>
-            <Typography variant="h4" gutterBottom>
-              Manage Your Booking
-            </Typography>
-            <Typography variant="h6" color="primary">
-              Confirmation: {booking.confirmationNumber}
-            </Typography>
-          </Box>
-          <Chip
-            label={booking.status}
-            color={getStatusColor(booking.status) as any}
-            variant="filled"
-          />
-        </Box>
-
-        {/* Action Buttons */}
-        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-          <Button
-            variant="contained"
-            startIcon={<EditIcon />}
-            onClick={() => setModifyDialogOpen(true)}
-            disabled={!canModifyBooking()}
+    <Box
+      sx={{
+        minHeight: '100vh',
+        background: theme.palette.mode === 'dark' 
+          ? getGradient('dark')
+          : getGradient('white'),
+        py: 4,
+      }}
+    >
+      <Container maxWidth="lg">
+        {/* Success/Error Messages */}
+        {successMessage && (
+          <Alert 
+            severity="success" 
+            sx={{ 
+              mb: 3,
+              borderRadius: 0,
+              backgroundColor: theme.palette.mode === 'dark' 
+                ? addAlpha(COLORS.SUCCESS, 0.1)
+                : addAlpha(COLORS.SUCCESS, 0.04),
+            }} 
+            onClose={() => setSuccessMessage('')}
           >
-            Modify Booking
+            {successMessage}
+          </Alert>
+        )}
+        {errorMessage && (
+          <Alert 
+            severity="error" 
+            sx={{ 
+              mb: 3,
+              borderRadius: 0,
+              backgroundColor: theme.palette.mode === 'dark' 
+                ? addAlpha(COLORS.ERROR, 0.1)
+                : addAlpha(COLORS.ERROR, 0.04),
+            }} 
+            onClose={() => setErrorMessage('')}
+          >
+            {errorMessage}
+          </Alert>
+        )}
+
+        {/* Cancelled Booking Notice */}
+        {booking.status.toLowerCase() === 'cancelled' && (
+          <Alert 
+            severity="info" 
+            sx={{ 
+              mb: 3,
+              borderRadius: 0,
+              backgroundColor: theme.palette.mode === 'dark' 
+                ? addAlpha(COLORS.INFO, 0.1)
+                : addAlpha(COLORS.INFO, 0.04),
+            }}
+          >
+            <Typography variant="h6" gutterBottom>
+              Booking Cancelled
+            </Typography>
+            <Typography variant="body2">
+              This booking has been cancelled. If you need to make a new reservation, please visit our booking page.
+              If you have questions about refunds, please contact the hotel directly.
+            </Typography>
+          </Alert>
+        )}
+
+        {/* Booking Header */}
+        <StandardCard 
+          cardVariant="elevated"
+          sx={{ 
+            mb: 4,
+          }}
+        >
+          <Box sx={{ p: isMobile ? 3 : 5 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+              <Box>
+                <Typography 
+                  variant="h4" 
+                  gutterBottom
+                  sx={{
+                    fontWeight: 'bold',
+                    color: 'primary.main',
+                  }}
+                >
+                  {t('booking.manage.title')}
+                </Typography>
+                <Typography 
+                  variant="h6" 
+                  color="primary"
+                  sx={{
+                    fontWeight: 'bold',
+                  }}
+                >
+                  {t('booking.manage.confirmationLabel')}: {booking.confirmationNumber}
+                </Typography>
+              </Box>
+              <Chip
+                label={booking.status}
+                color={getStatusColor(booking.status) as any}
+                variant="filled"
+              />
+            </Box>
+
+            {/* Action Buttons */}
+            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+              <Button
+                variant="contained"
+            startIcon={<EditIcon />}
+            onClick={() => {
+              if (token) {
+                // User came from email link, show modify dialog directly
+                setOriginalPricing({
+                  pricePerNight: booking.pricePerNight,
+                  totalAmount: booking.totalAmount
+                });
+                setModifyDialogOpen(true);
+              } else {
+                // User found booking through search, require email authentication
+                sendAuthenticationEmail('modify');
+              }
+            }}
+            disabled={!canModifyBooking() || authLoading}
+          >
+            {authLoading && pendingAction === 'modify' ? t('booking.manage.sendingEmail') : t('booking.manage.modifyBooking')}
           </Button>
           <Button
             variant="outlined"
             color="error"
             startIcon={<CancelIcon />}
-            onClick={() => setCancelDialogOpen(true)}
-            disabled={!canCancelBooking()}
+            onClick={() => {
+              if (token) {
+                // User came from email link, show cancel dialog directly
+                setCancelDialogOpen(true);
+              } else {
+                // User found booking through search, require email authentication
+                sendAuthenticationEmail('cancel');
+              }
+            }}
+            disabled={!canCancelBooking() || authLoading}
           >
-            Cancel Booking
+            {authLoading && pendingAction === 'cancel' ? t('booking.manage.sendingEmail') : t('booking.manage.cancelBooking')}
           </Button>
         </Box>
 
-        {!canModifyBooking() && booking.status.toLowerCase() === 'confirmed' && (
-          <Alert severity="info" sx={{ mt: 2 }}>
-            Modifications must be made at least 24 hours before check-in.
+        {/* Authentication Message */}
+        {authMessage && (
+          <Alert 
+            severity={authMessage.includes('sent') ? 'success' : 'error'}
+            sx={{ mt: 2 }}
+          >
+            {authMessage}
           </Alert>
         )}
-      </Paper>
 
-      {/* Booking Details Accordion */}
-      <Accordion defaultExpanded>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography variant="h6">Booking Details</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
+            {!canModifyBooking() && booking.status.toLowerCase() === 'booked' && (
+              <Alert 
+                severity="info" 
+                sx={{ 
+                  mt: 2,
+                  borderRadius: 0,
+                  backgroundColor: theme.palette.mode === 'dark' 
+                    ? addAlpha(COLORS.INFO, 0.1)
+                    : addAlpha(COLORS.INFO, 0.04),
+                }}
+              >
+                Modifications must be made at least 24 hours before check-in.
+              </Alert>
+            )}
+          </Box>
+        </StandardCard>
+
+        {/* Booking Details Accordion */}
+        <StandardCard 
+          cardVariant="elevated"
+          sx={{ 
+            mb: 4,
+          }}
+        >
+          <Accordion defaultExpanded sx={{ boxShadow: 'none' }}>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography variant="h6">{t('booking.manage.bookingDetails')}</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
           <Grid container spacing={3}>
             {/* Dates */}
             <Grid item xs={12} md={6}>
-              <Card variant="outlined">
-                <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <EventIcon sx={{ mr: 1 }} />
-                    <Typography variant="h6">Stay Details</Typography>
+              <Box 
+                sx={{
+                  p: 2,
+                  borderRadius: 0,
+                  background: theme.palette.background.paper,
+                  border: `1px solid ${addAlpha(COLORS.BORDER_LIGHT, 0.3)}`,
+                  boxShadow: 'none',
+                }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                  <EventIcon sx={{ mr: 1, color: 'primary.main' }} />
+                  <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold' }}>
+                    {t('booking.manage.stayDetails')}
+                  </Typography>
+                </Box>
+                <Typography variant="body1" sx={{ mb: 1 }}>
+                  <strong>{t('booking.manage.checkIn')}:</strong> {formatDate(booking.checkInDate)}
+                </Typography>
+                <Typography variant="body1" sx={{ mb: 1 }}>
+                  <strong>{t('booking.manage.checkOut')}:</strong> {formatDate(booking.checkOutDate)}
+                </Typography>
+                <Typography variant="body1" sx={{ mb: 1 }}>
+                  <strong>{t('booking.manage.duration')}:</strong> {nights} night{nights !== 1 ? 's' : ''}
+                </Typography>
+                <Typography variant="body1" sx={{ mb: 1 }}>
+                  <strong>{t('booking.manage.rate')}:</strong> {formatCurrencyWithDecimals(booking.pricePerNight || 0)}/night
+                </Typography>
+              </Box>
+            </Grid>
+
+            {/* Pricing Summary */}
+            <Grid item xs={12}>
+              <Box 
+                sx={{
+                  p: 3,
+                  borderRadius: 2,
+                  background: `linear-gradient(135deg, ${addAlpha(COLORS.SUCCESS, 0.12)} 0%, ${addAlpha(COLORS.SUCCESS, 0.06)} 100%)`,
+                  border: `2px solid ${addAlpha(COLORS.SUCCESS, 0.4)}`,
+                  boxShadow: `0 2px 8px ${addAlpha(COLORS.SUCCESS, 0.15)}`,
+                }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                  <Box
+                    sx={{
+                      width: 48,
+                      height: 48,
+                      borderRadius: '50%',
+                      backgroundColor: COLORS.SUCCESS,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      mr: 2,
+                    }}
+                  >
+                    <ReceiptIcon sx={{ color: 'white', fontSize: 28 }} />
                   </Box>
-                  <Typography variant="body1">
-                    <strong>Check-in:</strong> {formatDate(booking.checkInDate)}
+                  <Typography variant="h5" sx={{ fontWeight: 'bold', color: COLORS.SUCCESS }}>
+                    Price Summary
                   </Typography>
-                  <Typography variant="body1">
-                    <strong>Check-out:</strong> {formatDate(booking.checkOutDate)}
-                  </Typography>
-                  <Typography variant="body1">
-                    <strong>Duration:</strong> {nights} night{nights !== 1 ? 's' : ''}
-                  </Typography>
-                  <Typography variant="body1" color="primary">
-                    <strong>Total Amount:</strong> ETB {booking.totalAmount?.toFixed(0)}
-                  </Typography>
-                </CardContent>
-              </Card>
+                </Box>
+                {(() => {
+                  if (!booking.pricePerNight) {
+                    return (
+                      <Typography color="error" sx={{ py: 2, textAlign: 'center' }}>
+                        Price information is unavailable for this booking. Please contact support.
+                      </Typography>
+                    );
+                  }
+                  const subtotal = booking.pricePerNight * nights;
+                  const vatAmount = subtotal * (hotelVatRate || 0);
+                  const serviceTaxAmount = subtotal * (hotelServiceTaxRate || 0);
+                  const total = subtotal + vatAmount + serviceTaxAmount;
+                  
+                  return (
+                    <>
+                      {/* Price per Night and Number of Nights */}
+                      <Grid container spacing={3} sx={{ mb: 3 }}>
+                        <Grid item xs={12} sm={6}>
+                          <Typography variant="body2" sx={{ mb: 0.5, color: COLORS.TEXT_SECONDARY, fontWeight: 500 }}>
+                            Price per Night
+                          </Typography>
+                          <Typography variant="h5" sx={{ fontWeight: 'bold', color: COLORS.SUCCESS }}>
+                            {formatCurrencyWithDecimals(booking.pricePerNight || 0)}
+                          </Typography>
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                          <Typography variant="body2" sx={{ mb: 0.5, color: COLORS.TEXT_SECONDARY, fontWeight: 500 }}>
+                            Number of Nights
+                          </Typography>
+                          <Typography variant="h5" sx={{ fontWeight: 'bold', color: COLORS.SUCCESS }}>
+                            {nights}
+                          </Typography>
+                        </Grid>
+                      </Grid>
+
+                      <Box sx={{ borderTop: `2px solid ${addAlpha(COLORS.SUCCESS, 0.3)}`, pt: 2.5, mb: 2.5 }} />
+
+                      {/* Price Breakdown */}
+                      <Box sx={{ mb: 2.5 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1.5 }}>
+                          <Typography variant="body1" sx={{ color: COLORS.TEXT_SECONDARY }}>
+                            Subtotal
+                          </Typography>
+                          <Typography variant="body1" sx={{ fontWeight: 'bold', color: COLORS.TEXT_PRIMARY }}>
+                            {formatCurrencyWithDecimals(subtotal)}
+                          </Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1.5 }}>
+                          <Typography variant="body1" sx={{ color: COLORS.TEXT_SECONDARY }}>
+                            VAT ({((hotelVatRate || 0) * 100).toFixed(2)}%)
+                          </Typography>
+                          <Typography variant="body1" sx={{ fontWeight: 'bold', color: COLORS.TEXT_PRIMARY }}>
+                            {formatCurrencyWithDecimals(vatAmount)}
+                          </Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1.5 }}>
+                          <Typography variant="body1" sx={{ color: COLORS.TEXT_SECONDARY }}>
+                            Service Tax ({((hotelServiceTaxRate || 0) * 100).toFixed(2)}%)
+                          </Typography>
+                          <Typography variant="body1" sx={{ fontWeight: 'bold', color: COLORS.TEXT_PRIMARY }}>
+                            {formatCurrencyWithDecimals(serviceTaxAmount)}
+                          </Typography>
+                        </Box>
+                      </Box>
+
+                      <Box sx={{ borderTop: `2px solid ${addAlpha(COLORS.SUCCESS, 0.3)}`, pt: 2.5 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <Typography variant="h6" sx={{ fontWeight: 'bold', color: COLORS.SUCCESS }}>
+                            Total Amount
+                          </Typography>
+                          <Typography variant="h5" sx={{ fontWeight: 'bold', color: COLORS.SUCCESS }}>
+                            {formatCurrencyWithDecimals(total)}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </>
+                  );
+                })()}
+              </Box>
             </Grid>
 
             {/* Hotel & Room */}
             <Grid item xs={12} md={6}>
-              <Card variant="outlined">
-                <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <HotelIcon sx={{ mr: 1 }} />
-                    <Typography variant="h6">Hotel & Room Type</Typography>
-                  </Box>
-                  <Typography variant="body1">
-                    <strong>Hotel:</strong> {booking.hotelName}
+              <Box 
+                sx={{
+                  p: 2,
+                  borderRadius: 0,
+                  background: theme.palette.background.paper,
+                  border: `1px solid ${addAlpha(COLORS.BORDER_LIGHT, 0.3)}`,
+                  boxShadow: 'none',
+                }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                  <HotelIcon sx={{ mr: 1, color: 'primary.main' }} />
+                  <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold' }}>
+                    {t('booking.manage.hotelAndRoom')}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {booking.hotelAddress}
-                  </Typography>
-                  <Typography variant="body1">
-                    <strong>Room Type:</strong> {booking.roomType}
-                  </Typography>
-                  <Typography variant="body1" sx={{ color: 'success.main', fontWeight: 'bold' }}>
-                    <strong>Room Assignment:</strong> Room will be assigned at check-in
-                  </Typography>
-                  <Typography variant="body1">
-                    <strong>Rate:</strong> ETB {booking.pricePerNight?.toFixed(0)}/night
-                  </Typography>
-                </CardContent>
-              </Card>
+                </Box>
+                <Typography variant="body1" sx={{ mb: 1 }}>
+                  <strong>{t('booking.manage.hotel')}:</strong> {booking.hotelName}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                  {booking.hotelAddress}
+                </Typography>
+                <Typography variant="body1" sx={{ mb: 1 }}>
+                  <strong>{t('booking.manage.roomType')}:</strong> {getRoomTypeLabel(booking.roomType)}
+                </Typography>
+                <Typography variant="body1" sx={{ color: 'success.main', fontWeight: 'bold' }}>
+                  <strong>{t('booking.manage.roomAssignment')}:</strong> {t('booking.manage.roomAssignmentNote')}
+                </Typography>
+              </Box>
             </Grid>
 
             {/* Guest Information */}
             <Grid item xs={12}>
-              <Card variant="outlined">
-                <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <PersonIcon sx={{ mr: 1 }} />
-                    <Typography variant="h6">Guest Information</Typography>
-                  </Box>
-                  <Grid container spacing={2}>
-                    <Grid item xs={12} sm={6}>
-                      <Typography variant="body1">
-                        <strong>Name:</strong> {booking.guestName}
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                      <Typography variant="body1">
-                        <strong>Email:</strong> {booking.guestEmail}
-                      </Typography>
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                      <Typography variant="body1">
-                        <strong>Number of Guests:</strong> {booking.numberOfGuests || 1}
-                      </Typography>
-                    </Grid>
+              <Box 
+                sx={{
+                  p: 2,
+                  borderRadius: 0,
+                  background: theme.palette.background.paper,
+                  border: `1px solid ${addAlpha(COLORS.BORDER_LIGHT, 0.3)}`,
+                  boxShadow: 'none',
+                }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                  <PersonIcon sx={{ mr: 1, color: 'primary.main' }} />
+                  <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold' }}>
+                    {t('booking.manage.guestInformation')}
+                  </Typography>
+                </Box>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={6}>
+                    <Typography variant="body1" sx={{ mb: 1 }}>
+                      <strong>{t('booking.manage.name')}:</strong> {booking.guestName}
+                    </Typography>
                   </Grid>
-                </CardContent>
-              </Card>
+                  <Grid item xs={12} sm={6}>
+                    <Typography variant="body1" sx={{ mb: 1 }}>
+                      <strong>{t('booking.manage.email')}:</strong> {booking.guestEmail}
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <Typography variant="body1">
+                      <strong>{t('booking.manage.numberOfGuests')}:</strong> {booking.numberOfGuests || 1}
+                    </Typography>
+                  </Grid>
+                </Grid>
+              </Box>
+            </Grid>
+
+            {/* Payment Information */}
+            <Grid item xs={12}>
+              <Box 
+                sx={{
+                  p: 2,
+                  borderRadius: 0,
+                  background: theme.palette.background.paper,
+                  border: `1px solid ${addAlpha(COLORS.BORDER_LIGHT, 0.3)}`,
+                  boxShadow: 'none',
+                }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                  <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold' }}>
+                    {t('booking.manage.paymentInformation')}
+                  </Typography>
+                </Box>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={6}>
+                    <Typography variant="body1" sx={{ mb: 1 }}>
+                      <strong>{t('booking.manage.paymentStatus')}:</strong>{' '}
+                      <Typography 
+                        component="span" 
+                        sx={{ 
+                          color: getPaymentStatusColor(booking.paymentStatus),
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        {booking.paymentStatus || 'PENDING'}
+                      </Typography>
+                    </Typography>
+                  </Grid>
+                  {booking.paymentReference && (
+                    <Grid item xs={12} sm={6}>
+                      <Typography variant="body1">
+                        <strong>{t('booking.manage.paymentReference')}:</strong> {booking.paymentReference}
+                      </Typography>
+                    </Grid>
+                  )}
+                </Grid>
+              </Box>
             </Grid>
           </Grid>
         </AccordionDetails>
       </Accordion>
-
-      {/* Modification Dialog */}
-      <Dialog open={modifyDialogOpen} onClose={() => setModifyDialogOpen(false)} maxWidth="md" fullWidth>
-        <DialogTitle>Modify Your Booking</DialogTitle>
+    </StandardCard>      {/* Modification Dialog */}
+      <Dialog open={modifyDialogOpen} onClose={handleCloseModifyDialog} maxWidth="md" fullWidth>
+        <DialogTitle>{t('booking.manage.modifyDialogTitle')}</DialogTitle>
         <DialogContent>
+          {/* Price Change Indicator - Large and Prominent */}
+          {pricesModified && originalPricing && currentCalculatedTotal !== null && (() => {
+            // Calculate all the pricing details for transparency
+            const modPricing = calculateModifiedPricing(modificationData);
+            if (!modPricing) return null;
+
+            // Original booking details
+            const originalNights = calculateNights(booking.checkInDate, booking.checkOutDate);
+            const originalRoomType = booking.roomType;
+            const originalPricePerNight = booking.pricePerNight;
+            
+            // New booking details
+            const newNights = modPricing.nights;
+            const newRoomType = modificationData.newRoomType;
+            const newPricePerNight = modPricing.pricePerNight;
+            
+            // Changes detection
+            const datesChanged = formatDateForAPI(modificationData.newCheckInDate) !== formatDateForAPI(booking.checkInDate) ||
+                                formatDateForAPI(modificationData.newCheckOutDate) !== formatDateForAPI(booking.checkOutDate);
+            const roomTypeChanged = newRoomType !== originalRoomType;
+            const nightsChanged = newNights !== originalNights;
+            
+            const originalTotal = modPricing.originalSubtotal + modPricing.originalVatAmount + modPricing.originalServiceTaxAmount;
+            const priceDifference = currentCalculatedTotal - originalTotal;
+
+            return (
+              <Box sx={{ 
+                mb: 3, 
+                p: 3, 
+                backgroundColor: theme.palette.mode === 'dark' ? addAlpha(COLORS.INFO, 0.1) : COLORS.BG_INFO_LIGHT,
+                border: `2px solid ${addAlpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.5 : 0.8)}`,
+                borderRadius: 2,
+              }}>
+                <Typography variant="h5" sx={{ color: COLORS.PRIMARY, fontWeight: 'bold', mb: 3, textAlign: 'center' }}>
+                  🔄 PRICING UPDATED
+                </Typography>
+                
+                {/* What Changed Section */}
+                <Box sx={{ mb: 3, p: 2, backgroundColor: addAlpha(COLORS.WHITE, 0.5), borderRadius: 1 }}>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 2, color: (theme) => theme.palette.primary.dark }}>
+                    📋 What Changed:
+                  </Typography>
+                  
+                  {datesChanged && (
+                    <Box sx={{ mb: 1.5 }}>
+                      <Typography variant="body2" sx={{ color: COLORS.TEXT_SECONDARY }}>
+                        <strong>Dates:</strong> {formatDate(booking.checkInDate)} → {formatDate(modificationData.newCheckInDate)} (Check-in)<br/>
+                        <Typography component="span" sx={{ ml: 7.5 }}>
+                          {formatDate(booking.checkOutDate)} → {formatDate(modificationData.newCheckOutDate)} (Check-out)
+                        </Typography>
+                      </Typography>
+                    </Box>
+                  )}
+                  
+                  {nightsChanged && (
+                    <Box sx={{ mb: 1.5 }}>
+                      <Typography variant="body2" sx={{ color: COLORS.TEXT_SECONDARY }}>
+                        <strong>Duration:</strong> {originalNights} night{originalNights !== 1 ? 's' : ''} → {newNights} night{newNights !== 1 ? 's' : ''} 
+                        <Typography component="span" sx={{ 
+                          ml: 1, 
+                          color: newNights > originalNights ? COLORS.ERROR : COLORS.SUCCESS,
+                          fontWeight: 'bold'
+                        }}>
+                          ({newNights > originalNights ? '+' : ''}{newNights - originalNights} night{Math.abs(newNights - originalNights) !== 1 ? 's' : ''})
+                        </Typography>
+                      </Typography>
+                    </Box>
+                  )}
+                  
+                  {roomTypeChanged && (
+                    <Box sx={{ mb: 1.5 }}>
+                      <Typography variant="body2" sx={{ color: COLORS.TEXT_SECONDARY }}>
+                        <strong>Room Type:</strong> {getRoomTypeLabel(originalRoomType)} → {getRoomTypeLabel(newRoomType)}
+                      </Typography>
+                      <Alert severity="warning" sx={{ mt: 1 }}>
+                        Room type change detected. Final pricing will be calculated by the server based on the new room type's rate.
+                      </Alert>
+                    </Box>
+                  )}
+                </Box>
+
+                {/* Price Calculation Breakdown */}
+                <Box sx={{ mb: 3, p: 2, backgroundColor: addAlpha(COLORS.WHITE, 0.5), borderRadius: 1 }}>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 2, color: (theme) => theme.palette.primary.dark }}>
+                    🧮 Price Calculation Breakdown:
+                  </Typography>
+                  
+                  <Grid container spacing={2}>
+                    {/* Original Calculation */}
+                    <Grid item xs={12} sm={6}>
+                      <Box sx={{ p: 2, backgroundColor: addAlpha(COLORS.ERROR, 0.05), borderRadius: 1, border: `1px solid ${addAlpha(COLORS.ERROR, 0.3)}` }}>
+                        <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1, color: COLORS.ERROR }}>
+                          Original Booking:
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: COLORS.TEXT_SECONDARY, mb: 0.5 }}>
+                          Room Type: {getRoomTypeLabel(originalRoomType)}
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: COLORS.TEXT_SECONDARY, mb: 0.5 }}>
+                          Rate/Night: {formatCurrencyWithDecimals(originalPricePerNight)}
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: COLORS.TEXT_SECONDARY, mb: 0.5 }}>
+                          Nights: {originalNights}
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: COLORS.TEXT_SECONDARY, mb: 0.5 }}>
+                          Subtotal: {formatCurrencyWithDecimals(modPricing.originalSubtotal)}
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: COLORS.TEXT_SECONDARY, mb: 0.5 }}>
+                          VAT ({modPricing.vatRate > 0 ? (modPricing.vatRate * 100).toFixed(2) : '0.00'}%): {formatCurrencyWithDecimals(modPricing.originalVatAmount)}
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: COLORS.TEXT_SECONDARY, mb: 0.5 }}>
+                          Service Tax ({modPricing.serviceTaxRate > 0 ? (modPricing.serviceTaxRate * 100).toFixed(2) : '0.00'}%): {formatCurrencyWithDecimals(modPricing.originalServiceTaxAmount)}
+                        </Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 'bold', color: COLORS.ERROR, mt: 1, pt: 1, borderTop: `1px solid ${addAlpha(COLORS.ERROR, 0.3)}` }}>
+                          Total: {formatCurrencyWithDecimals(modPricing.originalSubtotal + modPricing.originalVatAmount + modPricing.originalServiceTaxAmount)}
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: COLORS.TEXT_DISABLED, mt: 0.5, display: 'block' }}>
+                          Calculation: {formatCurrencyWithDecimals(originalPricePerNight)} × {originalNights} = {formatCurrencyWithDecimals(modPricing.originalSubtotal)}{modPricing.vatRate > 0 ? ` + ${formatCurrencyWithDecimals(modPricing.originalVatAmount)} (VAT)` : ''}{modPricing.serviceTaxRate > 0 ? ` + ${formatCurrencyWithDecimals(modPricing.originalServiceTaxAmount)} (Service Tax)` : ''} = {formatCurrencyWithDecimals(modPricing.originalSubtotal + modPricing.originalVatAmount + modPricing.originalServiceTaxAmount)}
+                        </Typography>
+                      </Box>
+                    </Grid>
+
+                    {/* New Calculation */}
+                    <Grid item xs={12} sm={6}>
+                      <Box sx={{ p: 2, backgroundColor: addAlpha(COLORS.SUCCESS, 0.05), borderRadius: 1, border: `1px solid ${addAlpha(COLORS.SUCCESS, 0.3)}` }}>
+                        <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1, color: COLORS.SUCCESS }}>
+                          Modified Booking:
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: COLORS.TEXT_SECONDARY, mb: 0.5 }}>
+                          Room Type: {getRoomTypeLabel(newRoomType)}
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: COLORS.TEXT_SECONDARY, mb: 0.5 }}>
+                          Rate/Night: {formatCurrencyWithDecimals(newPricePerNight)}
+                          {roomTypeChanged && (
+                            <Typography component="span" sx={{ color: COLORS.WARNING, fontSize: '0.75rem', ml: 0.5 }}>
+                              *
+                            </Typography>
+                          )}
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: COLORS.TEXT_SECONDARY, mb: 0.5 }}>
+                          Nights: {newNights}
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: COLORS.TEXT_SECONDARY, mb: 0.5 }}>
+                          Subtotal: {formatCurrencyWithDecimals(modPricing.subtotal)}
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: COLORS.TEXT_SECONDARY, mb: 0.5 }}>
+                          VAT ({modPricing.vatRate > 0 ? (modPricing.vatRate * 100).toFixed(2) : '0.00'}%): {formatCurrencyWithDecimals(modPricing.vatAmount)}
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: COLORS.TEXT_SECONDARY, mb: 0.5 }}>
+                          Service Tax ({modPricing.serviceTaxRate > 0 ? (modPricing.serviceTaxRate * 100).toFixed(2) : '0.00'}%): {formatCurrencyWithDecimals(modPricing.serviceTaxAmount)}
+                        </Typography>
+                        <Typography variant="body2" sx={{ fontWeight: 'bold', color: COLORS.SUCCESS, mt: 1, pt: 1, borderTop: `1px solid ${addAlpha(COLORS.SUCCESS, 0.3)}` }}>
+                          Total: {formatCurrencyWithDecimals(currentCalculatedTotal)}
+                          {roomTypeChanged && (
+                            <Typography component="span" sx={{ color: COLORS.WARNING, fontSize: '0.75rem', ml: 0.5 }}>
+                              *
+                            </Typography>
+                          )}
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: COLORS.TEXT_DISABLED, mt: 0.5, display: 'block' }}>
+                          Calculation: {formatCurrencyWithDecimals(newPricePerNight)} × {newNights} = {formatCurrencyWithDecimals(modPricing.subtotal)}{modPricing.vatRate > 0 ? ` + ${formatCurrencyWithDecimals(modPricing.vatAmount)} (VAT)` : ''}{modPricing.serviceTaxRate > 0 ? ` + ${formatCurrencyWithDecimals(modPricing.serviceTaxAmount)} (Service Tax)` : ''} = {formatCurrencyWithDecimals(currentCalculatedTotal)}
+                        </Typography>
+                        {roomTypeChanged && (
+                          <Typography variant="caption" sx={{ color: COLORS.WARNING, mt: 0.5, display: 'block' }}>
+                            * Estimated - server will calculate actual price
+                          </Typography>
+                        )}
+                      </Box>
+                    </Grid>
+                  </Grid>
+                </Box>
+
+                {/* Summary - Large Numbers */}
+                <Grid container spacing={2} sx={{ mb: 2 }}>
+                  <Grid item xs={4}>
+                    <Box sx={{ textAlign: 'center' }}>
+                      <Typography variant="h6" sx={{ color: COLORS.TEXT_SECONDARY, mb: 1 }}>Original Total</Typography>
+                      <Typography variant="h4" sx={{ color: COLORS.ERROR, fontWeight: 'bold' }}>
+                        {formatCurrencyWithDecimals(modPricing.originalSubtotal + modPricing.originalVatAmount + modPricing.originalServiceTaxAmount)}
+                      </Typography>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={4}>
+                    <Box sx={{ textAlign: 'center' }}>
+                      <Typography variant="h6" sx={{ color: COLORS.TEXT_SECONDARY, mb: 1 }}>New Total</Typography>
+                      <Typography variant="h4" sx={{ color: COLORS.SUCCESS, fontWeight: 'bold' }}>
+                        {formatCurrencyWithDecimals(currentCalculatedTotal)}
+                        {roomTypeChanged && (
+                          <Typography component="span" sx={{ color: COLORS.WARNING, fontSize: '0.875rem', ml: 0.5 }}>
+                            *
+                          </Typography>
+                        )}
+                      </Typography>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={4}>
+                    <Box sx={{ textAlign: 'center' }}>
+                      <Typography variant="h6" sx={{ color: COLORS.TEXT_SECONDARY, mb: 1 }}>
+                        {priceDifference > 0 ? 'Additional Cost' : priceDifference < 0 ? 'Savings' : 'No Change'}
+                      </Typography>
+                      <Typography 
+                        variant="h4" 
+                        sx={{ 
+                          color: priceDifference > 0 ? COLORS.ERROR : priceDifference < 0 ? COLORS.SUCCESS : COLORS.TEXT_SECONDARY,
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        {priceDifference > 0 ? '+' : ''}{formatCurrencyWithDecimals(Math.abs(priceDifference))}
+                      </Typography>
+                    </Box>
+                  </Grid>
+                </Grid>
+                
+                <Typography variant="body2" sx={{ color: COLORS.PRIMARY, fontStyle: 'italic', textAlign: 'center', mt: 2 }}>
+                  💡 This pricing update will persist until you close this dialog
+                </Typography>
+              </Box>
+            );
+          })()}
+          
           <Grid container spacing={2} sx={{ mt: 1 }}>
             <Grid item xs={12}>
               <TextField
-                label="Guest Name"
+                label={t('booking.manage.guestName')}
                 fullWidth
                 value={modificationData.newGuestName}
                 onChange={(e) => setModificationData({ ...modificationData, newGuestName: e.target.value })}
-                helperText="Update the primary guest name for this booking"
+                helperText={t('booking.manage.guestNameHelp')}
                 required
               />
             </Grid>
             <Grid item xs={12}>
               <TextField
-                label="Email Address"
+                label={t('booking.manage.emailAddress')}
                 type="email"
                 fullWidth
                 value={modificationData.newGuestEmail}
                 onChange={(e) => setModificationData({ ...modificationData, newGuestEmail: e.target.value })}
-                helperText="Update your email address if needed for confirmations"
+                helperText={t('booking.manage.emailHelp')}
                 required
               />
             </Grid>
             <Grid item xs={12} sm={6}>
               <TextField
-                label="Check-in Date"
+                label={t('booking.manage.checkInDate')}
                 type="date"
                 fullWidth
                 value={modificationData.newCheckInDate}
@@ -676,7 +1485,7 @@ const GuestBookingManagementPage: React.FC = () => {
             </Grid>
             <Grid item xs={12} sm={6}>
               <TextField
-                label="Check-out Date"
+                label={t('booking.manage.checkOutDate')}
                 type="date"
                 fullWidth
                 value={modificationData.newCheckOutDate}
@@ -687,81 +1496,87 @@ const GuestBookingManagementPage: React.FC = () => {
             </Grid>
             <Grid item xs={12} sm={6}>
               <TextField
-                label="Number of Guests"
+                label={t('booking.manage.numberOfGuests')}
                 type="number"
                 fullWidth
                 value={modificationData.newNumberOfGuests}
                 onChange={(e) => setModificationData({ ...modificationData, newNumberOfGuests: parseInt(e.target.value) || 1 })}
                 inputProps={{ min: 1, max: 10 }}
-                helperText="Update the number of guests for your booking"
+                helperText={t('booking.manage.numberOfGuestsHelp')}
               />
             </Grid>
             <Grid item xs={12}>
               <TextField
-                label="Room Type"
+                label={t('booking.manage.roomType')}
                 fullWidth
                 select
                 value={modificationData.newRoomType}
-                onChange={(e) => setModificationData({ ...modificationData, newRoomType: e.target.value })}
+                onChange={async (e) => {
+                  const newRoomType = e.target.value;
+                  setModificationData({ ...modificationData, newRoomType });
+                  
+                  // If room type changed, fetch the new price
+                  if (newRoomType !== booking?.roomType) {
+                    await fetchRoomPriceForType(newRoomType);
+                  }
+                }}
+                helperText={fetchingRoomPrice ? 'Fetching price for selected room type...' : ''}
               >
-                <MenuItem value="">Select Room Type</MenuItem>
+                <MenuItem value="">{t('booking.manage.selectRoomType')}</MenuItem>
                 {ROOM_TYPES.map((roomType) => (
                   <MenuItem key={roomType.value} value={roomType.value}>
-                    {roomType.value}
+                    {getRoomTypeLabel(roomType.value)}
                   </MenuItem>
                 ))}
               </TextField>
             </Grid>
             <Grid item xs={12}>
               <TextField
-                label="Reason for Modification"
+                label={t('booking.manage.reasonForModification')}
                 fullWidth
                 value={modificationData.modificationReason}
                 onChange={(e) => setModificationData({ ...modificationData, modificationReason: e.target.value })}
-                helperText="Optional: Help us understand why you're making changes"
+                helperText={t('booking.manage.reasonHelp')}
               />
             </Grid>
           </Grid>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setModifyDialogOpen(false)}>Cancel</Button>
+          <Button onClick={handleCloseModifyDialog}>{t('booking.manage.cancel')}</Button>
           <Button
             onClick={handleModifyBooking}
             variant="contained"
             disabled={loading}
             startIcon={loading ? <CircularProgress size={20} /> : <EditIcon />}
           >
-            {loading ? 'Modifying...' : 'Modify Booking'}
+            {loading ? t('booking.manage.modifying') : t('booking.manage.modifyBookingAction')}
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* Cancellation Dialog */}
       <Dialog open={cancelDialogOpen} onClose={() => setCancelDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Cancel Your Booking</DialogTitle>
+        <DialogTitle>{t('booking.manage.cancelDialogTitle')}</DialogTitle>
         <DialogContent>
           <Alert severity="warning" sx={{ mb: 2 }}>
             <Typography variant="body2">
-              <strong>Cancellation Policy:</strong><br />
-              • More than 7 days before check-in: 100% refund<br />
-              • 3-7 days before: 50% refund<br />
-              • 1-2 days before: 25% refund<br />
-              • Same day: No refund
+              <strong>{t('booking.manage.cancellationPolicy')}:</strong><br />
+              {t('booking.manage.cancellationPolicyDetails')}
             </Typography>
           </Alert>
           <TextField
-            label="Reason for Cancellation"
+            label={t('booking.manage.reasonForCancellation')}
             fullWidth
             multiline
             rows={3}
             value={cancellationReason}
             onChange={(e) => setCancellationReason(e.target.value)}
             sx={{ mt: 2 }}
-            helperText="Optional: Help us understand why you're cancelling"
+            helperText={t('booking.manage.cancellationReasonHelp')}
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setCancelDialogOpen(false)}>Keep Booking</Button>
+          <Button onClick={() => setCancelDialogOpen(false)}>{t('booking.manage.keepBooking')}</Button>
           <Button
             onClick={handleCancelBooking}
             variant="contained"
@@ -769,7 +1584,7 @@ const GuestBookingManagementPage: React.FC = () => {
             disabled={loading}
             startIcon={loading ? <CircularProgress size={20} /> : <CancelIcon />}
           >
-            {loading ? 'Cancelling...' : 'Cancel Booking'}
+            {loading ? t('booking.manage.cancelling') : t('booking.manage.cancelBookingAction')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -815,7 +1630,8 @@ const GuestBookingManagementPage: React.FC = () => {
         )}
       </Box>
     </Container>
-  );
+  </Box>
+);
 };
 
 export default GuestBookingManagementPage;

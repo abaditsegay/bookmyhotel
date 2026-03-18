@@ -23,8 +23,10 @@ import {
   Star as StarIcon,
 } from '@mui/icons-material';
 import { HotelSearchResult } from '../../types/hotel';
+import { formatCurrencyWithDecimals } from '../../utils/currencyUtils';
 import RoomCard from './RoomCard';
 import RoomTypeCard from './RoomTypeCard';
+import { COLORS, addAlpha } from '../../theme/themeColors';
 
 interface HotelDetailsCardProps {
   hotel: HotelSearchResult;
@@ -34,8 +36,14 @@ interface HotelDetailsCardProps {
   horizontalLayout?: boolean; // New prop for horizontal layout in search results
 }
 
-// Professional hotel images based on hotel name/location
-const getHotelImage = (hotelName: string, city: string): string => {
+// Get hotel image - uses uploaded S3 images if available, otherwise fallback to city-based defaults
+const getHotelImage = (hotel: HotelSearchResult): string => {
+  // Use uploaded hotel hero image if available
+  if (hotel.heroImageUrl) {
+    return hotel.heroImageUrl;
+  }
+
+  // Fallback to city-based default images if no uploaded images are available
   const cityImages = {
     'New York': 'https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=800&h=400&fit=crop&crop=center', // Luxury NYC hotel exterior
     'Miami': 'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800&h=400&fit=crop&crop=center', // Modern Miami beachfront hotel
@@ -47,8 +55,11 @@ const getHotelImage = (hotelName: string, city: string): string => {
     'San Diego': 'https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?w=800&h=400&fit=crop&crop=center', // San Diego resort hotel
     'Las Vegas': 'https://images.unsplash.com/photo-1540541338287-41700207dee6?w=800&h=400&fit=crop&crop=center', // Vegas luxury hotel
     'Boston': 'https://images.unsplash.com/photo-1445019980597-93fa8acb246c?w=800&h=400&fit=crop&crop=center', // Historic Boston hotel
+    // Default fallback for Addis Ababa and other cities
+    'Addis Ababa': 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&h=400&fit=crop&crop=center',
   };
-  return cityImages[city as keyof typeof cityImages] || cityImages['New York'];
+  
+  return cityImages[hotel.city as keyof typeof cityImages] || cityImages['New York'];
 };
 
 const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({ 
@@ -79,25 +90,36 @@ const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({
 
   return (
     <Card 
-      elevation={isMobile ? 1 : 3} 
+      elevation={2} 
       sx={{ 
         mb: isMobile ? 2 : 3,
-        borderRadius: isMobile ? 1 : 2,
+        borderRadius: 2,
         overflow: 'hidden',
+        border: `1px solid ${addAlpha(COLORS.BORDER_LIGHT, 0.3)}`,
         display: horizontalLayout && isLargeScreen ? 'flex' : 'block',
         flexDirection: horizontalLayout && isLargeScreen ? 'row' : 'column',
+        transition: 'all 0.3s ease-in-out',
+        '&:hover': {
+          transform: 'translateY(-8px)',
+          boxShadow: 6,
+          borderColor: 'primary.light',
+        },
       }}
     >
       {/* Hotel Header with Image */}
       <CardMedia
         component="img"
-        height={isMobile ? "200" : horizontalLayout && isLargeScreen ? "250" : "300"}
-        image={getHotelImage(hotel.name, hotel.city)}
+        height={isMobile ? "300" : horizontalLayout && isLargeScreen ? "350" : "400"}
+        image={getHotelImage(hotel)}
         alt={hotel.name}
         sx={{ 
           objectFit: 'cover',
-          width: horizontalLayout && isLargeScreen ? '400px' : '100%',
+          width: horizontalLayout && isLargeScreen ? '500px' : '100%',
           flexShrink: 0,
+          transition: 'transform 0.4s ease-in-out',
+          '&:hover': {
+            transform: 'scale(1.05)',
+          },
         }}
       />
       
@@ -181,13 +203,13 @@ const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({
                 }}
               >
                 <Typography variant="h5" color="success.main" sx={{ fontWeight: 'bold' }}>
-                  From ETB {hotel.minPrice?.toFixed(0)}
+                  From {formatCurrencyWithDecimals(hotel.minPrice || 0)}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                   per night
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
-                  Up to ETB {hotel.maxPrice?.toFixed(0)}
+                  Up to {formatCurrencyWithDecimals(hotel.maxPrice || 0)}
                 </Typography>
               </Box>
             </Stack>
@@ -235,13 +257,13 @@ const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({
               
               <Box sx={{ textAlign: 'right', ml: 2 }}>
                 <Typography variant="h5" color="success.main" sx={{ fontWeight: 'bold' }}>
-                  From ETB {hotel.minPrice?.toFixed(0)}
+                  From {formatCurrencyWithDecimals(hotel.minPrice || 0)}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                   per night
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
-                  Up to ETB {hotel.maxPrice?.toFixed(0)}
+                  Up to {formatCurrencyWithDecimals(hotel.maxPrice || 0)}
                 </Typography>
               </Box>
             </Box>

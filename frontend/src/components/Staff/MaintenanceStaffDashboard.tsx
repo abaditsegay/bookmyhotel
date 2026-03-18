@@ -36,6 +36,7 @@ import {
   Schedule as ScheduleIcon,
   Warning as WarningIcon
 } from '@mui/icons-material';
+import { COLORS, addAlpha } from '../../theme/themeColors';
 import { staffApi } from '../../services/staffApi';
 import { MaintenanceTask } from '../../types/operations';
 
@@ -62,7 +63,7 @@ const MaintenanceStaffDashboard: React.FC = () => {
       setTasks(tasksData);
     } catch (err) {
       setError('Failed to load your maintenance tasks');
-      console.error('Error loading tasks:', err);
+      // console.error('Error loading tasks:', err);
     } finally {
       setLoading(false);
     }
@@ -73,7 +74,7 @@ const MaintenanceStaffDashboard: React.FC = () => {
       const statsData = await staffApi.getStaffStats('MAINTENANCE');
       setStats(statsData);
     } catch (err) {
-      console.error('Error loading stats:', err);
+      // console.error('Error loading stats:', err);
     }
   };
 
@@ -95,7 +96,7 @@ const MaintenanceStaffDashboard: React.FC = () => {
       await loadStats();
     } catch (err) {
       setError('Failed to update task status');
-      console.error('Error updating task:', err);
+      // console.error('Error updating task:', err);
     }
   };
 
@@ -106,7 +107,7 @@ const MaintenanceStaffDashboard: React.FC = () => {
       await loadStats();
     } catch (err) {
       setError('Failed to start task');
-      console.error('Error starting task:', err);
+      // console.error('Error starting task:', err);
     }
   };
 
@@ -117,7 +118,7 @@ const MaintenanceStaffDashboard: React.FC = () => {
       await loadStats();
     } catch (err) {
       setError('Failed to complete task');
-      console.error('Error completing task:', err);
+      // console.error('Error completing task:', err);
     }
   };
 
@@ -129,12 +130,11 @@ const MaintenanceStaffDashboard: React.FC = () => {
   };
 
   const getStatusColor = (status: string) => {
-    switch (status.toUpperCase()) {
-      case 'OPEN': return 'warning';
-      case 'IN_PROGRESS': return 'info';
-      case 'COMPLETED': return 'success';
+    switch (status) {
+      case 'ASSIGNED': return 'default';
+      case 'IN_PROGRESS': return 'warning';
+      case 'COMPLETED': return 'primary';
       case 'CANCELLED': return 'error';
-      case 'ON_HOLD': return 'default';
       default: return 'default';
     }
   };
@@ -243,7 +243,7 @@ const MaintenanceStaffDashboard: React.FC = () => {
             <Grid item xs={12} sm={6} md={3}>
               <Card>
                 <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <CheckCircleIcon color="success" />
+                                    <CheckCircleIcon color="primary" />
                   <Box>
                     <Typography color="textSecondary" gutterBottom>
                       Completed
@@ -286,7 +286,32 @@ const MaintenanceStaffDashboard: React.FC = () => {
               <TableContainer component={Paper}>
                 <Table>
                   <TableHead>
-                    <TableRow>
+                    <TableRow
+                      sx={{
+                        background: COLORS.GRADIENT_SLATE,
+                        boxShadow: `0 4px 12px ${addAlpha(COLORS.SLATE_500, 0.15)}`,
+                        '& .MuiTableCell-head': {
+                          color: COLORS.WHITE,
+                          fontWeight: 600,
+                          fontSize: '0.95rem',
+                          letterSpacing: '0.5px',
+                          textTransform: 'uppercase',
+                          border: 'none',
+                          padding: '20px 16px',
+                          position: 'relative',
+                          textShadow: `0 1px 2px ${addAlpha(COLORS.BLACK, 0.1)}`,
+                          '&::after': {
+                            content: '""',
+                            position: 'absolute',
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
+                            height: '3px',
+                            background: `linear-gradient(90deg, ${addAlpha(COLORS.WHITE, 0.6)} 0%, ${addAlpha(COLORS.WHITE, 0.8)} 50%, ${addAlpha(COLORS.WHITE, 0.6)} 100%)`
+                          }
+                        }
+                      }}
+                    >
                       <TableCell>Location</TableCell>
                       <TableCell>Category</TableCell>
                       <TableCell>Description</TableCell>
@@ -347,7 +372,7 @@ const MaintenanceStaffDashboard: React.FC = () => {
                             )}
                             {canCompleteTask(task) && (
                               <IconButton
-                                color="success"
+                                color="primary"
                                 onClick={() => handleCompleteTask(task)}
                                 title="Complete Task"
                               >

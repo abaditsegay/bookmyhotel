@@ -16,14 +16,16 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Paper,
   TextField,
   MenuItem,
   FormControl,
   InputLabel,
   Select,
   Tooltip,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
+import { ROOM_TYPES, getRoomTypeLabel } from '../constants/roomTypes';
 import {
   Hotel,
   CalendarToday,
@@ -37,16 +39,19 @@ import {
   Email,
   Edit,
 } from '@mui/icons-material';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import dayjs, { Dayjs } from 'dayjs';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { addDays, format } from 'date-fns';
+import PremiumDatePicker from './common/PremiumDatePicker';
 import { useAuth } from '../contexts/AuthContext';
 import { BookingService } from '../services/BookingService';
 import { BookingResponse, BookingModificationRequest } from '../types/booking';
+import { StandardLoading, StandardError } from './common';
+import { COLORS, addAlpha, getGradient } from '../theme/themeColors';
 
 const MyBookings: React.FC = () => {
   const { user, token } = useAuth();
+  const theme = useTheme();
   const [bookings, setBookings] = useState<BookingResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -57,8 +62,8 @@ const MyBookings: React.FC = () => {
   const [modifying, setModifying] = useState(false);
   
   // Modify booking form state
-  const [newCheckInDate, setNewCheckInDate] = useState<Dayjs | null>(null);
-  const [newCheckOutDate, setNewCheckOutDate] = useState<Dayjs | null>(null);
+  const [newCheckInDate, setNewCheckInDate] = useState<Date | null>(null);
+  const [newCheckOutDate, setNewCheckOutDate] = useState<Date | null>(null);
   const [newRoomType, setNewRoomType] = useState('');
   const [newSpecialRequests, setNewSpecialRequests] = useState('');
 
@@ -76,7 +81,7 @@ const MyBookings: React.FC = () => {
       setBookings(userBookings);
     } catch (err) {
       setError('Failed to load your bookings. Please try again later.');
-      console.error('Error fetching bookings:', err);
+      // console.error('Error fetching bookings:', err);
     } finally {
       setLoading(false);
     }
@@ -97,7 +102,7 @@ const MyBookings: React.FC = () => {
       setSelectedBooking(null);
     } catch (err) {
       setError('Failed to cancel booking. Please try again or contact support.');
-      console.error('Error cancelling booking:', err);
+      // console.error('Error cancelling booking:', err);
     } finally {
       setCancelling(false);
     }
@@ -113,10 +118,10 @@ const MyBookings: React.FC = () => {
       const modificationRequest: BookingModificationRequest = {};
       
       if (newCheckInDate) {
-        modificationRequest.newCheckInDate = newCheckInDate.format('YYYY-MM-DD');
+        modificationRequest.newCheckInDate = format(newCheckInDate, 'yyyy-MM-dd');
       }
       if (newCheckOutDate) {
-        modificationRequest.newCheckOutDate = newCheckOutDate.format('YYYY-MM-DD');
+        modificationRequest.newCheckOutDate = format(newCheckOutDate, 'yyyy-MM-dd');
       }
       if (newRoomType && newRoomType !== selectedBooking.roomType) {
         modificationRequest.newRoomType = newRoomType;
@@ -142,7 +147,7 @@ const MyBookings: React.FC = () => {
       }
     } catch (err: any) {
       setError(err.message || 'Failed to modify booking. Please try again or contact support.');
-      console.error('Error modifying booking:', err);
+      // console.error('Error modifying booking:', err);
     } finally {
       setModifying(false);
     }
@@ -150,8 +155,8 @@ const MyBookings: React.FC = () => {
 
   const openModifyDialog = (booking: BookingResponse) => {
     setSelectedBooking(booking);
-    setNewCheckInDate(dayjs(booking.checkInDate));
-    setNewCheckOutDate(dayjs(booking.checkOutDate));
+    setNewCheckInDate(new Date(booking.checkInDate));
+    setNewCheckOutDate(new Date(booking.checkOutDate));
     setNewRoomType(booking.roomType);
     setNewSpecialRequests(booking.specialRequests || '');
     setModifyDialogOpen(true);
@@ -186,8 +191,8 @@ const MyBookings: React.FC = () => {
     const now = new Date();
     const twentyFourHoursFromNow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
     
-    // Can cancel if booking is PENDING or CONFIRMED and check-in is at least 24 hours away
-    return (status === 'PENDING' || status === 'CONFIRMED') && checkInDate > twentyFourHoursFromNow;
+    // Can cancel if booking is PENDING or BOOKED and check-in is at least 24 hours away
+    return (status === 'PENDING' || status === 'BOOKED') && checkInDate > twentyFourHoursFromNow;
   };
 
   const canModifyBooking = (booking: BookingResponse): boolean => {
@@ -196,13 +201,13 @@ const MyBookings: React.FC = () => {
     const now = new Date();
     const twentyFourHoursFromNow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
     
-    // Can modify if booking is PENDING or CONFIRMED and check-in is at least 24 hours away
-    return (status === 'PENDING' || status === 'CONFIRMED') && checkInDate > twentyFourHoursFromNow;
+    // Can modify if booking is PENDING or BOOKED and check-in is at least 24 hours away
+    return (status === 'PENDING' || status === 'BOOKED') && checkInDate > twentyFourHoursFromNow;
   };
 
   const getStatusIcon = (status: string) => {
     switch (status.toUpperCase()) {
-      case 'CONFIRMED':
+      case 'BOOKED':
         return <CheckCircle color="success" />;
       case 'PENDING':
         return <Pending color="warning" />;
@@ -219,9 +224,12 @@ const MyBookings: React.FC = () => {
   if (loading) {
     return (
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-        <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-          <CircularProgress size={60} />
-        </Box>
+        <StandardLoading 
+          loading={true}
+          overlay={true} 
+          message="Loading your bookings..." 
+          size="large"
+        />
       </Container>
     );
   }
@@ -229,49 +237,128 @@ const MyBookings: React.FC = () => {
   if (error) {
     return (
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-        <Alert severity="error" sx={{ mb: 2 }}>
-          {error}
-        </Alert>
-        <Button variant="contained" onClick={fetchBookings}>
-          Try Again
-        </Button>
+        <StandardError
+          error={true}
+          message={error}
+          severity="error"
+          showRetry={true}
+          onRetry={fetchBookings}
+          retryText="Try Again"
+        />
       </Container>
     );
   }
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Typography variant="h4" component="h1" gutterBottom sx={{ mb: 4 }}>
-        My Bookings
-      </Typography>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        background: theme.palette.mode === 'light' 
+          ? getGradient('white')
+          : theme.palette.background.default,
+        pt: 4,
+        pb: 8,
+      }}
+    >
+      <Container maxWidth="lg">
+        <Box sx={{ textAlign: 'center', mb: 4 }}>
+          <Typography 
+            variant="h3" 
+            component="h1" 
+            sx={{
+              fontWeight: 'bold',
+              color: 'text.primary',
+              mb: 1,
+            }}
+          >
+            📋 My Bookings
+          </Typography>
+          <Typography variant="h6" color="text.secondary">
+            Manage and track your hotel reservations
+          </Typography>
+        </Box>
 
       {bookings.length === 0 ? (
-        <Paper sx={{ p: 4, textAlign: 'center' }}>
-          <Hotel sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
-          <Typography variant="h6" color="text.secondary" gutterBottom>
+        <Card 
+          elevation={8}
+          sx={{ 
+            p: 6, 
+            textAlign: 'center',
+            background: theme.palette.background.paper,
+            borderRadius: 4,
+            border: `1px solid ${theme.palette.divider}`,
+            boxShadow: theme.shadows[4],
+          }}
+        >
+          <Hotel sx={{ fontSize: 80, color: 'primary.main', mb: 3, opacity: 0.7 }} />
+          <Typography 
+            variant="h4" 
+            sx={{
+              fontWeight: 'bold',
+              color: 'text.primary',
+              mb: 2,
+            }}
+          >
             No Bookings Yet
           </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+          <Typography variant="body1" color="text.secondary" sx={{ mb: 4, fontSize: '1.1rem' }}>
             You haven't made any bookings yet. Start exploring our hotels and make your first reservation!
           </Typography>
-          <Button variant="contained" href="/hotels">
-            Browse Hotels
+          <Button 
+            variant="contained" 
+            size="large"
+            href="/hotels"
+            sx={{
+              borderRadius: 2,
+              px: 4,
+              py: 1.5,
+              fontWeight: 600,
+              textTransform: 'none',
+              boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.1)}`,
+              '&:hover': {
+                transform: 'translateY(-1px)',
+                boxShadow: `0 4px 12px ${addAlpha(COLORS.BLACK, 0.15)}`,
+              },
+            }}
+          >
+            🏨 Browse Hotels
           </Button>
-        </Paper>
+        </Card>
       ) : (
         <Grid container spacing={3}>
           {bookings.map((booking) => (
             <Grid item xs={12} key={booking.reservationId}>
-              <Card sx={{ mb: 2 }}>
-                <CardContent>
-                  <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
-                    <Box>
-                      <Typography variant="h6" component="h2" gutterBottom>
-                        {booking.hotelName}
+              <Card 
+                elevation={8}
+                sx={{ 
+                  background: theme.palette.background.paper,
+                  borderRadius: 4,
+                  border: `1px solid ${theme.palette.divider}`,
+                  boxShadow: theme.shadows[4],
+                  transition: 'all 0.3s ease-in-out',
+                  '&:hover': {
+                    transform: 'translateY(-4px)',
+                    boxShadow: theme.shadows[8],
+                  },
+                }}
+              >
+                <CardContent sx={{ p: 3 }}>
+                  <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={3}>
+                    <Box flex={1}>
+                      <Typography 
+                        variant="h5" 
+                        component="h2" 
+                        sx={{
+                          fontWeight: 'bold',
+                          color: 'primary.main',
+                          mb: 1,
+                        }}
+                      >
+                        🏨 {booking.hotelName}
                       </Typography>
                       <Box display="flex" alignItems="center" gap={1} mb={1}>
-                        <LocationOn fontSize="small" color="action" />
-                        <Typography variant="body2" color="text.secondary">
+                        <LocationOn fontSize="small" sx={{ color: 'primary.main' }} />
+                        <Typography variant="body1" color="text.secondary" sx={{ fontSize: '1rem' }}>
                           {booking.hotelAddress}
                         </Typography>
                       </Box>
@@ -280,27 +367,53 @@ const MyBookings: React.FC = () => {
                       <Box display="flex" alignItems="center" gap={1} mb={1}>
                         {getStatusIcon(booking.status)}
                         <Chip 
-                          label={booking.status}
+                          label={BookingService.getStatusDisplayLabel(booking.status)}
                           color={BookingService.getStatusColor(booking.status)}
-                          size="small"
+                          size="medium"
+                          sx={{
+                            fontWeight: 'bold',
+                            px: 2,
+                            py: 0.5,
+                            borderRadius: 2,
+                          }}
                         />
                       </Box>
                       <Chip 
                         label={booking.paymentStatus}
                         color={BookingService.getPaymentStatusColor(booking.paymentStatus)}
-                        size="small"
+                        size="medium"
                         variant="outlined"
+                        sx={{
+                          fontWeight: 'bold',
+                          borderWidth: 2,
+                          borderRadius: 2,
+                        }}
                       />
                     </Box>
                   </Box>
 
-                  <Divider sx={{ my: 2 }} />
+                  <Divider 
+                    sx={{ 
+                      my: 3,
+                      borderColor: theme.palette.divider,
+                    }} 
+                  />
 
                   <Grid container spacing={3}>
                     <Grid item xs={12} md={6}>
                       <Box mb={2}>
-                        <Typography variant="subtitle2" color="primary" gutterBottom>
-                          Booking Details
+                        <Typography 
+                          variant="h6" 
+                          sx={{
+                            fontWeight: 'bold',
+                            color: 'primary.main',
+                            mb: 2,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1,
+                          }}
+                        >
+                          📋 Booking Details
                         </Typography>
                         <Box display="flex" alignItems="center" gap={1} mb={1}>
                           <Receipt fontSize="small" />
@@ -311,7 +424,7 @@ const MyBookings: React.FC = () => {
                         <Box display="flex" alignItems="center" gap={1} mb={1}>
                           <Hotel fontSize="small" />
                           <Typography variant="body2">
-                            Room {booking.roomNumber} - {booking.roomType}
+                            Room {booking.roomNumber} - {getRoomTypeLabel(booking.roomType)}
                           </Typography>
                         </Box>
                         <Box display="flex" alignItems="center" gap={1}>
@@ -375,34 +488,78 @@ const MyBookings: React.FC = () => {
                   </Box>
                 </CardContent>
                 
-                <CardActions sx={{ px: 2, pb: 2 }}>
+                <CardActions 
+                  sx={{ 
+                    px: 3, 
+                    pb: 3,
+                    pt: 2,
+                    gap: 2,
+                    flexWrap: 'wrap',
+                  }}
+                >
                   <Button 
-                    size="small" 
+                    variant="outlined"
+                    size="medium" 
                     startIcon={<Email />}
-                    href={`mailto:support@bookmyhotel.com?subject=Booking Inquiry - ${booking.confirmationNumber}`}
+                    href={`mailto:support@shegersolutions.com?subject=Booking Inquiry - ${booking.confirmationNumber}`}
+                    sx={{
+                      borderRadius: 2,
+                      borderWidth: 1.5,
+                      px: 3,
+                      py: 1.5,
+                      fontWeight: 600,
+                      textTransform: 'none',
+                      backgroundColor: COLORS.WHITE,
+                      '&:hover': {
+                        borderWidth: 1.5,
+                        transform: 'translateY(-1px)',
+                        boxShadow: `0 4px 12px ${addAlpha(COLORS.BLACK, 0.15)}`,
+                      },
+                    }}
                   >
-                    Contact Support
+                    💬 Contact Support
                   </Button>
                   {canModifyBooking(booking) ? (
                     <Button 
-                      size="small" 
+                      variant="contained"
+                      size="medium" 
                       color="primary" 
                       startIcon={<Edit />}
                       onClick={() => openModifyDialog(booking)}
+                      sx={{
+                        borderRadius: 2,
+                        px: 3,
+                        py: 1.5,
+                        fontWeight: 600,
+                        textTransform: 'none',
+                        boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.1)}`,
+                        '&:hover': {
+                          transform: 'translateY(-1px)',
+                          boxShadow: `0 4px 12px ${addAlpha(COLORS.BLACK, 0.15)}`,
+                        },
+                      }}
                     >
-                      Modify Booking
+                      ✏️ Modify Booking
                     </Button>
                   ) : (
                     booking.status !== 'CANCELLED' && (
                       <Tooltip title="Modifications must be made at least 24 hours before check-in">
                         <span>
                           <Button 
-                            size="small" 
+                            variant="outlined"
+                            size="medium" 
                             color="primary" 
                             disabled
                             startIcon={<Edit />}
+                            sx={{
+                              borderRadius: 2,
+                              px: 3,
+                              py: 1.5,
+                              fontWeight: 600,
+                              textTransform: 'none',
+                            }}
                           >
-                            Modify Booking
+                            ✏️ Modify Booking
                           </Button>
                         </span>
                       </Tooltip>
@@ -410,12 +567,28 @@ const MyBookings: React.FC = () => {
                   )}
                   {canCancelBooking(booking) && (
                     <Button 
-                      size="small" 
+                      variant="outlined"
+                      size="medium" 
                       color="error" 
                       startIcon={<Cancel />}
                       onClick={() => openCancelDialog(booking)}
+                      sx={{
+                        borderRadius: 2,
+                        borderWidth: 1.5,
+                        px: 3,
+                        py: 1.5,
+                        fontWeight: 600,
+                        textTransform: 'none',
+                        backgroundColor: COLORS.WHITE,
+                        '&:hover': {
+                          borderWidth: 1.5,
+                          backgroundColor: addAlpha(COLORS.ERROR, 0.04),
+                          transform: 'translateY(-1px)',
+                          boxShadow: `0 4px 12px ${addAlpha(COLORS.ERROR, 0.15)}`,
+                        },
+                      }}
                     >
-                      Cancel Booking
+                      ❌ Cancel Booking
                     </Button>
                   )}
                 </CardActions>
@@ -482,14 +655,14 @@ const MyBookings: React.FC = () => {
                 Current Booking: {selectedBooking.hotelName} - {selectedBooking.confirmationNumber}
               </Typography>
 
-              <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <LocalizationProvider dateAdapter={AdapterDateFns}>
                 <Grid container spacing={3}>
                   <Grid item xs={12} md={6}>
-                    <DatePicker
+                    <PremiumDatePicker
                       label="New Check-in Date"
                       value={newCheckInDate}
                       onChange={(date) => setNewCheckInDate(date)}
-                      minDate={dayjs()}
+                      minDate={new Date()}
                       slotProps={{
                         textField: {
                           fullWidth: true,
@@ -499,11 +672,11 @@ const MyBookings: React.FC = () => {
                     />
                   </Grid>
                   <Grid item xs={12} md={6}>
-                    <DatePicker
+                    <PremiumDatePicker
                       label="New Check-out Date"
                       value={newCheckOutDate}
                       onChange={(date) => setNewCheckOutDate(date)}
-                      minDate={newCheckInDate ? newCheckInDate.add(1, 'day') : dayjs().add(1, 'day')}
+                      minDate={newCheckInDate ? addDays(newCheckInDate, 1) : addDays(new Date(), 1)}
                       slotProps={{
                         textField: {
                           fullWidth: true,
@@ -520,14 +693,15 @@ const MyBookings: React.FC = () => {
                         label="Room Type"
                         onChange={(e) => setNewRoomType(e.target.value as string)}
                       >
-                        <MenuItem value="STANDARD">Standard Room</MenuItem>
-                        <MenuItem value="DELUXE">Deluxe Room</MenuItem>
-                        <MenuItem value="SUITE">Suite</MenuItem>
-                        <MenuItem value="PRESIDENTIAL">Presidential Suite</MenuItem>
+                        {ROOM_TYPES.map((roomType) => (
+                          <MenuItem key={roomType.value} value={roomType.value}>
+                            {roomType.label}
+                          </MenuItem>
+                        ))}
                       </Select>
                     </FormControl>
                     <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-                      Current: {selectedBooking.roomType}
+                      Current: {getRoomTypeLabel(selectedBooking.roomType)}
                     </Typography>
                   </Grid>
                   <Grid item xs={12}>
@@ -568,7 +742,8 @@ const MyBookings: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
-    </Container>
+      </Container>
+    </Box>
   );
 };
 

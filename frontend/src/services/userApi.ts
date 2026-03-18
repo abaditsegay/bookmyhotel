@@ -1,7 +1,6 @@
 // User API service functions
 // This file contains functions for user profile management API calls
 
-import TokenManager from '../utils/tokenManager';
 import { API_CONFIG } from '../config/apiConfig';
 
 const API_BASE_URL = API_CONFIG.BASE_URL;
@@ -44,7 +43,7 @@ export const updateUserProfile = async (
     const data = await response.json();
     return { success: true, message: data.message };
   } catch (error) {
-    console.error('Profile update error:', error);
+    // console.error('Profile update error:', error);
     return { 
       success: false, 
       message: error instanceof Error ? error.message : 'Failed to update profile' 
@@ -78,7 +77,7 @@ export const changeUserPassword = async (
     const data = await response.json();
     return { success: true, message: data.message };
   } catch (error) {
-    console.error('Password change error:', error);
+    // console.error('Password change error:', error);
     return { 
       success: false, 
       message: error instanceof Error ? error.message : 'Failed to change password' 
@@ -109,7 +108,7 @@ export const getUserProfile = async (
     const data = await response.json();
     return { success: true, data };
   } catch (error) {
-    console.error('Profile fetch error:', error);
+    // console.error('Profile fetch error:', error);
     return { 
       success: false, 
       message: error instanceof Error ? error.message : 'Failed to fetch profile' 

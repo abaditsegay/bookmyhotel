@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -16,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.bookmyhotel.dto.ShopOrderItemResponse;
 import com.bookmyhotel.dto.ShopOrderRequest;
 import com.bookmyhotel.dto.ShopOrderResponse;
+import com.bookmyhotel.dto.TaxBreakdown;
 import com.bookmyhotel.entity.Hotel;
 import com.bookmyhotel.entity.OrderStatus;
 import com.bookmyhotel.entity.PaymentMethod;
@@ -38,6 +41,8 @@ import com.bookmyhotel.repository.ShopOrderRepository;
 @Transactional
 public class ShopOrderService {
 
+    private static final Logger logger = LoggerFactory.getLogger(ShopOrderService.class);
+
     @Autowired
     private ShopOrderRepository shopOrderRepository;
 
@@ -52,6 +57,12 @@ public class ShopOrderService {
 
     @Autowired
     private RoomChargeService roomChargeService;
+
+    @Autowired
+    private HotelPricingConfigService hotelPricingConfigService;
+
+    @Autowired
+    private TaxCalculationService taxCalculationService;
 
     /**
      * Simple method to demonstrate shop order functionality
@@ -98,9 +109,9 @@ public class ShopOrderService {
                 // Try alternative approach: allow room charges if customer info is provided
                 // This handles cases where room assignment might not be in the system yet
                 if (request.getCustomerName() != null && !request.getCustomerName().trim().isEmpty()) {
-                    System.out.println("DEBUG: No reservation found for room " + request.getRoomNumber() +
-                            ", but customer name provided: " + request.getCustomerName() +
-                            ". Allowing room charge with manual tracking.");
+                    logger.debug(
+                            "No reservation found for room {}, but customer name provided: {}. Allowing room charge with manual tracking.",
+                            request.getRoomNumber(), request.getCustomerName());
                     // Continue without targetReservation - order will be created with room number
                     // and customer info
                 } else {
@@ -177,6 +188,14 @@ public class ShopOrderService {
                     .orElseThrow(() -> new ResourceNotFoundException(
                             "Product not found with ID: " + itemRequest.getProductId()));
 
+            // Check if product has sufficient stock
+            if (!product.canOrderQuantity(itemRequest.getQuantity())) {
+                int availableStock = product.getStockQuantity();
+                throw new IllegalArgumentException(
+                        "Insufficient stock for product '" + product.getName() + "'. " +
+                                "Available stock: " + availableStock + ", Requested: " + itemRequest.getQuantity());
+            }
+
             ShopOrderItem orderItem = new ShopOrderItem();
             orderItem.setOrder(order);
             orderItem.setProduct(product);
@@ -193,11 +212,39 @@ public class ShopOrderService {
             orderItems.add(orderItem);
         }
 
-        order.setTotalAmount(totalAmount);
+        // Calculate taxes separately
+        BigDecimal subtotal = totalAmount;
+        TaxBreakdown taxes = taxCalculationService.calculateTaxes(hotelId, subtotal);
+
+        // Set tax amounts
+        order.setVatAmount(taxes.getVatAmount());
+        order.setServiceTaxAmount(taxes.getServiceTaxAmount());
+        order.setTaxAmount(taxes.getTotalTax());
+
+        // Store tax-exclusive total
+        order.setTotalAmount(subtotal);
         order.setOrderItems(orderItems);
 
         // Save the order
         ShopOrder savedOrder = shopOrderRepository.save(order);
+
+        // **IMPORTANT: Decrement stock quantities for all ordered products**
+        List<Product> productsToUpdate = new ArrayList<>();
+        for (ShopOrderItem orderItem : savedOrder.getOrderItems()) {
+            Product product = orderItem.getProduct();
+            int oldStockQuantity = product.getStockQuantity();
+            int newStockQuantity = oldStockQuantity - orderItem.getQuantity();
+            product.setStockQuantity(newStockQuantity);
+            productsToUpdate.add(product);
+
+            logger.debug("Stock decremented for product '{}' (ID: {}). Old stock: {}, New stock: {}",
+                    product.getName(), product.getId(),
+                    oldStockQuantity,
+                    newStockQuantity);
+        }
+        if (!productsToUpdate.isEmpty()) {
+            productRepository.saveAll(productsToUpdate);
+        }
 
         // If payment method is ROOM_CHARGE and order is linked to a reservation,
         // create a room charge automatically
@@ -208,8 +255,8 @@ public class ShopOrderService {
             } catch (Exception e) {
                 // Log the error but don't fail the order creation
                 // The room charge can be created manually later if needed
-                System.err.println(
-                        "Failed to create room charge for shop order " + savedOrder.getId() + ": " + e.getMessage());
+                logger.error("Failed to create room charge for shop order {}: {}",
+                        savedOrder.getId(), e.getMessage(), e);
             }
         }
 
@@ -507,6 +554,9 @@ public class ShopOrderService {
         response.setRoomNumber(order.getRoomNumber());
         response.setReservationId(order.getReservation() != null ? order.getReservation().getId() : null);
         response.setTotalAmount(order.getTotalAmount());
+        response.setTaxAmount(order.getTaxAmount());
+        response.setVatAmount(order.getVatAmount());
+        response.setServiceTaxAmount(order.getServiceTaxAmount());
         response.setIsPaid(order.getIsPaid());
         response.setPaidAt(order.getPaidAt());
         response.setPaymentReference(order.getPaymentReference());
@@ -581,10 +631,9 @@ public class ShopOrderService {
                 .collect(Collectors.toList());
 
         // For debugging: log what we found
-        System.out.println("DEBUG: Looking for room " + roomNumber + " in hotel " + hotelId);
-        System.out.println("DEBUG: Found " + checkedInReservations.size() + " specific room reservations");
-        System.out.println(
-                "DEBUG: Found " + roomTypeReservations.size() + " room-type reservations without specific rooms");
+        logger.debug("Looking for room {} in hotel {}", roomNumber, hotelId);
+        logger.debug("Found {} specific room reservations", checkedInReservations.size());
+        logger.debug("Found {} room-type reservations without specific rooms", roomTypeReservations.size());
 
         // Return null if no suitable reservation found
         return null;

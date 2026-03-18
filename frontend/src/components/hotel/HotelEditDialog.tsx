@@ -1,17 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
-  TextField,
   Button,
   Grid,
   Box,
   Alert,
   CircularProgress,
+  MenuItem,
+  SelectChangeEvent,
+  FormHelperText,
+  Typography,
+  Divider,
 } from '@mui/material';
 import { Hotel } from '../../types/hotel';
+import { adminApiService, TenantDTO } from '../../services/adminApi';
+import { useAuth } from '../../contexts/AuthContext';
+import PremiumTextField from '../common/PremiumTextField';
+import PremiumSelect from '../common/PremiumSelect';
 
 interface HotelEditDialogProps {
   open: boolean;
@@ -37,12 +45,27 @@ const HotelEditDialog: React.FC<HotelEditDialogProps> = ({
     city: '',
     country: '',
     phone: '',
+    mobilePaymentPhone: '',
+    mobilePaymentPhone2: '',
     email: '',
     totalRooms: 0,
+    tenantId: '',
+    contactPerson: '',
+    licenseNumber: '',
+    taxId: '',
+    websiteUrl: '',
+    facilityAmenities: '',
+    checkInTime: '',
+    checkOutTime: '',
+    numberOfRooms: undefined,
   });
 
   const [localError, setLocalError] = useState<string>('');
   const [saving, setSaving] = useState(false);
+  const [tenants, setTenants] = useState<TenantDTO[]>([]);
+  const [loadingTenants, setLoadingTenants] = useState(false);
+  
+  const { token, user } = useAuth();
 
   // Update form data when hotel prop changes
   useEffect(() => {
@@ -54,18 +77,77 @@ const HotelEditDialog: React.FC<HotelEditDialogProps> = ({
         city: hotel.city || '',
         country: hotel.country || '',
         phone: hotel.phone || '',
+        mobilePaymentPhone: hotel.mobilePaymentPhone || '',
+        mobilePaymentPhone2: hotel.mobilePaymentPhone2 || '',
         email: hotel.email || '',
         totalRooms: hotel.totalRooms || hotel.roomCount || 0,
+        tenantId: hotel.tenantId || '',
+        contactPerson: hotel.contactPerson || '',
+        licenseNumber: hotel.licenseNumber || '',
+        taxId: hotel.taxId || '',
+        websiteUrl: hotel.websiteUrl || '',
+        facilityAmenities: hotel.facilityAmenities || '',
+        checkInTime: hotel.checkInTime || '',
+        checkOutTime: hotel.checkOutTime || '',
+        numberOfRooms: hotel.numberOfRooms,
       });
     }
   }, [hotel]);
 
-  // Clear errors when dialog opens
+  // Load active tenants for selection
+  const loadTenants = useCallback(async () => {
+    if (!token) return;
+    
+    try {
+      setLoadingTenants(true);
+      adminApiService.setToken(token);
+      
+      // Check if user has permission to access tenants
+      const hasSystemAdminRole = user?.roles?.includes('SUPER_ADMIN') || user?.roles?.includes('ADMIN');
+      
+      if (!hasSystemAdminRole) {
+        // For hotel admins, they should edit their own hotel without tenant selection
+        const isHotelAdmin = user?.roles?.includes('HOTEL_ADMIN');
+        
+        if (isHotelAdmin && user?.tenantId) {
+          // Auto-populate tenant for hotel admins
+          setFormData(prev => ({
+            ...prev,
+            tenantId: user.tenantId!
+          }));
+          setTenants([{ 
+            id: 1, // Dummy ID for UI
+            tenantId: user.tenantId!, 
+            name: user.hotelName || 'Current Hotel',
+            isActive: true,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          }]);
+          return;
+        }
+        
+        // console.warn('User does not have permissions to access tenant management or is not associated with a hotel.');
+        setTenants([]);
+        return;
+      }
+      
+      const activeTenants = await adminApiService.getActiveTenants();
+      setTenants(activeTenants);
+    } catch (err) {
+      // console.error('Error loading tenants:', err);
+      setLocalError('Failed to load tenants. You may not have sufficient permissions.');
+    } finally {
+      setLoadingTenants(false);
+    }
+  }, [token, user]);
+
+  // Clear errors when dialog opens and load tenants
   useEffect(() => {
     if (open) {
       setLocalError('');
+      loadTenants();
     }
-  }, [open]);
+  }, [open, loadTenants]);
 
   const handleInputChange = (field: keyof Hotel) => (
     event: React.ChangeEvent<HTMLInputElement>
@@ -78,6 +160,14 @@ const HotelEditDialog: React.FC<HotelEditDialogProps> = ({
     if (localError) setLocalError('');
   };
 
+  const handleTenantChange = (event: SelectChangeEvent<string>) => {
+    setFormData((prev) => ({
+      ...prev,
+      tenantId: event.target.value,
+    }));
+    if (localError) setLocalError('');
+  };
+
   const validateForm = (): boolean => {
     if (!formData.name?.trim()) {
       setLocalError('Hotel name is required');
@@ -85,6 +175,10 @@ const HotelEditDialog: React.FC<HotelEditDialogProps> = ({
     }
     if (!formData.address?.trim()) {
       setLocalError('Address is required');
+      return false;
+    }
+    if (!formData.tenantId?.trim()) {
+      setLocalError('Please select a tenant');
       return false;
     }
     if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
@@ -147,7 +241,7 @@ const HotelEditDialog: React.FC<HotelEditDialogProps> = ({
             )}
             
             <Grid item xs={12} sm={6}>
-              <TextField
+              <PremiumTextField
                 label="Hotel Name"
                 fullWidth
                 required
@@ -159,7 +253,7 @@ const HotelEditDialog: React.FC<HotelEditDialogProps> = ({
             </Grid>
             
             <Grid item xs={12} sm={6}>
-              <TextField
+              <PremiumTextField
                 label="Email"
                 type="email"
                 fullWidth
@@ -170,8 +264,30 @@ const HotelEditDialog: React.FC<HotelEditDialogProps> = ({
               />
             </Grid>
             
+            <Grid item xs={12} sm={6}>
+              <PremiumSelect
+                label="Tenant *"
+                fullWidth
+                value={formData.tenantId || ''}
+                onChange={handleTenantChange}
+                disabled={saving || loadingTenants || user?.roles?.includes('HOTEL_ADMIN')}
+              >
+                <MenuItem value="">
+                  <em>Select a tenant</em>
+                </MenuItem>
+                {tenants.map((tenant) => (
+                  <MenuItem key={tenant.tenantId} value={tenant.tenantId}>
+                    {tenant.name} {tenant.subdomain ? `(${tenant.subdomain})` : ''}
+                  </MenuItem>
+                ))}
+              </PremiumSelect>
+              {user?.roles?.includes('HOTEL_ADMIN') && (
+                <FormHelperText>Hotel admins can only edit their own hotel</FormHelperText>
+              )}
+            </Grid>
+            
             <Grid item xs={12}>
-              <TextField
+              <PremiumTextField
                 label="Description"
                 multiline
                 rows={3}
@@ -184,7 +300,7 @@ const HotelEditDialog: React.FC<HotelEditDialogProps> = ({
             </Grid>
             
             <Grid item xs={12}>
-              <TextField
+              <PremiumTextField
                 label="Address"
                 fullWidth
                 required
@@ -196,7 +312,7 @@ const HotelEditDialog: React.FC<HotelEditDialogProps> = ({
             </Grid>
             
             <Grid item xs={12} sm={6}>
-              <TextField
+              <PremiumTextField
                 label="City"
                 fullWidth
                 value={formData.city || ''}
@@ -207,7 +323,7 @@ const HotelEditDialog: React.FC<HotelEditDialogProps> = ({
             </Grid>
             
             <Grid item xs={12} sm={6}>
-              <TextField
+              <PremiumTextField
                 label="Country"
                 fullWidth
                 value={formData.country || ''}
@@ -218,29 +334,153 @@ const HotelEditDialog: React.FC<HotelEditDialogProps> = ({
             </Grid>
             
             <Grid item xs={12} sm={6}>
-              <TextField
-                label="Phone"
+              <PremiumTextField
+                label="Communication Phone"
                 fullWidth
                 value={formData.phone || ''}
                 onChange={handleInputChange('phone')}
                 disabled={saving}
                 inputProps={{ maxLength: 20 }}
+                helperText="Main contact number for hotel communications"
               />
             </Grid>
             
             <Grid item xs={12} sm={6}>
-              <TextField
+              <PremiumTextField
+                label="Primary Payment Phone"
+                fullWidth
+                value={formData.mobilePaymentPhone || ''}
+                onChange={handleInputChange('mobilePaymentPhone')}
+                disabled={saving}
+                inputProps={{ maxLength: 20 }}
+                helperText="Primary mobile number for payment processing"
+              />
+            </Grid>
+            
+            <Grid item xs={12} sm={6}>
+              <PremiumTextField
+                label="Secondary Payment Phone"
+                fullWidth
+                value={formData.mobilePaymentPhone2 || ''}
+                onChange={handleInputChange('mobilePaymentPhone2')}
+                disabled={saving}
+                inputProps={{ maxLength: 20 }}
+                helperText="Backup mobile number for payment processing"
+              />
+            </Grid>
+
+            {/* Contact Person */}
+            <Grid item xs={12} sm={6}>
+              <PremiumTextField
+                label="Contact Person"
+                fullWidth
+                value={formData.contactPerson || ''}
+                onChange={handleInputChange('contactPerson')}
+                disabled={saving}
+                inputProps={{ maxLength: 100 }}
+                helperText="Primary contact person name"
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <PremiumTextField
+                label="Website URL"
+                fullWidth
+                value={formData.websiteUrl || ''}
+                onChange={handleInputChange('websiteUrl')}
+                disabled={saving}
+                inputProps={{ maxLength: 255 }}
+                placeholder="https://www.yourhotel.com"
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <PremiumTextField
+                label="Facilities & Amenities"
+                multiline
+                rows={2}
+                fullWidth
+                value={formData.facilityAmenities || ''}
+                onChange={handleInputChange('facilityAmenities')}
+                disabled={saving}
+                inputProps={{ maxLength: 1000 }}
+                placeholder="e.g. Free WiFi, Parking, Pool, Gym, Restaurant..."
+                helperText="Describe the hotel's facilities and amenities"
+              />
+            </Grid>
+
+            {/* Operational Details */}
+            <Grid item xs={12}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 0.5, mt: 1 }}>Operational Details</Typography>
+              <Divider />
+            </Grid>
+
+            <Grid item xs={12} sm={4}>
+              <PremiumTextField
+                label="Check-in Time"
+                fullWidth
+                value={formData.checkInTime || ''}
+                onChange={handleInputChange('checkInTime')}
+                disabled={saving}
+                inputProps={{ maxLength: 10 }}
+                placeholder="e.g. 15:00"
+                helperText="Default check-in time"
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={4}>
+              <PremiumTextField
+                label="Check-out Time"
+                fullWidth
+                value={formData.checkOutTime || ''}
+                onChange={handleInputChange('checkOutTime')}
+                disabled={saving}
+                inputProps={{ maxLength: 10 }}
+                placeholder="e.g. 11:00"
+                helperText="Default check-out time"
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={4}>
+              <PremiumTextField
                 label="Number of Rooms"
                 type="number"
                 fullWidth
-                value={formData.totalRooms || ''}
-                onChange={handleInputChange('totalRooms')}
+                value={formData.numberOfRooms ?? formData.totalRooms ?? ''}
+                onChange={handleInputChange('numberOfRooms')}
                 disabled={saving}
-                inputProps={{ 
-                  min: 0,
-                  max: 9999
-                }}
-                helperText="Total number of rooms in the hotel"
+                inputProps={{ min: 0, max: 9999 }}
+                helperText="Total registered room capacity"
+              />
+            </Grid>
+
+            {/* Business Registration */}
+            <Grid item xs={12}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 0.5, mt: 1 }}>Business Registration</Typography>
+              <Divider />
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <PremiumTextField
+                label="License Number"
+                fullWidth
+                value={formData.licenseNumber || ''}
+                onChange={handleInputChange('licenseNumber')}
+                disabled={saving}
+                inputProps={{ maxLength: 100 }}
+                placeholder="Business license number"
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <PremiumTextField
+                label="Tax ID"
+                fullWidth
+                value={formData.taxId || ''}
+                onChange={handleInputChange('taxId')}
+                disabled={saving}
+                inputProps={{ maxLength: 50 }}
+                placeholder="Tax identification number"
               />
             </Grid>
           </Grid>

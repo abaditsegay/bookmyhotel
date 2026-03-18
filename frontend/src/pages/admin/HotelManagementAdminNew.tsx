@@ -23,9 +23,6 @@ import {
   DialogActions,
   Alert,
   CircularProgress,
-  FormControl,
-  InputLabel,
-  Select,
   MenuItem,
   IconButton,
   Tabs,
@@ -39,12 +36,17 @@ import {
   Edit as EditIcon, 
   ToggleOn as ToggleOnIcon, 
   ToggleOff as ToggleOffIcon, 
-  Delete as DeleteIcon,
-  Add as AddIcon
+  Add as AddIcon,
+  RateReview as ReviewIcon,
+  CheckCircle as ApproveIcon,
+  Cancel as RejectIcon
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { adminApiService, HotelDTO, UpdateHotelRequest } from '../../services/adminApi';
 import HotelEditDialog from '../../components/hotel/HotelEditDialog';
+import PremiumTextField from '../../components/common/PremiumTextField';
+import PremiumSelect from '../../components/common/PremiumSelect';
+import { COLORS, addAlpha, getGradient } from '../../theme/themeColors';
 
 interface Hotel extends HotelDTO {}
 
@@ -112,9 +114,15 @@ const HotelManagementAdmin: React.FC = () => {
   const [selectedRegistration, setSelectedRegistration] = useState<HotelRegistration | null>(null);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [registerDialogOpen, setRegisterDialogOpen] = useState(false);
   const [registrationViewDialogOpen, setRegistrationViewDialogOpen] = useState(false);
+  const [toggleStatusDialogOpen, setToggleStatusDialogOpen] = useState(false);
+  const [toggleStatusReason, setToggleStatusReason] = useState('');
+
+  // Approval/Rejection form state
+  const [approvalComments, setApprovalComments] = useState('');
+  const [rejectionReason, setRejectionReason] = useState('');
+  const [tenantId, setTenantId] = useState('');
 
   // Registration form state
   const [registrationForm, setRegistrationForm] = useState({
@@ -163,7 +171,7 @@ const HotelManagementAdmin: React.FC = () => {
       const response = await adminApiService.getHotels(0, 1000); // Get all hotels for now
       setHotels(response.content || []);
     } catch (err) {
-      console.error('Error loading hotels:', err);
+      // console.error('Error loading hotels:', err);
       setError('Failed to load hotels. Please try again.');
     } finally {
       setLoading(false);
@@ -188,7 +196,7 @@ const HotelManagementAdmin: React.FC = () => {
         setRegistrations(data.content || data);
       }
     } catch (err) {
-      console.error('Error loading registrations:', err);
+      // console.error('Error loading registrations:', err);
     }
   }, [token]);
 
@@ -205,7 +213,7 @@ const HotelManagementAdmin: React.FC = () => {
         setRegistrationStats(data);
       }
     } catch (err) {
-      console.error('Error loading registration statistics:', err);
+      // console.error('Error loading registration statistics:', err);
     }
   }, [token]);
 
@@ -220,8 +228,8 @@ const HotelManagementAdmin: React.FC = () => {
   // Filter hotels based on search term and status
   const filteredHotels = useMemo(() => {
     return hotels.filter(hotel => {
-      const matchesSearch = hotel.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
-                           hotel.city.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+      const matchesSearch = (hotel.name?.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) || false) ||
+                           (hotel.city?.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) || false) ||
                            (hotel.email && hotel.email.toLowerCase().includes(debouncedSearchTerm.toLowerCase()));
       
       const matchesStatus = statusFilter === 'all' || 
@@ -312,7 +320,7 @@ const HotelManagementAdmin: React.FC = () => {
         throw new Error('Failed to submit registration');
       }
     } catch (err) {
-      console.error('Error submitting registration:', err);
+      // console.error('Error submitting registration:', err);
       setError('Failed to submit hotel registration. Please try again.');
     }
   };
@@ -326,7 +334,89 @@ const HotelManagementAdmin: React.FC = () => {
 
   const viewRegistration = (registration: HotelRegistration) => {
     setSelectedRegistration(registration);
+    setApprovalComments('');
+    setRejectionReason('');
+    setTenantId('');
     setRegistrationViewDialogOpen(true);
+  };
+
+  const handleApproveRegistration = async () => {
+    if (!selectedRegistration || !tenantId.trim()) {
+      setError('Tenant ID is required for approval');
+      setTimeout(() => setError(null), 3000);
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/admin/hotel-registrations/${selectedRegistration.id}/approve`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          comments: approvalComments,
+          tenantId: tenantId
+        })
+      });
+
+      if (response.ok) {
+        setRegistrationViewDialogOpen(false);
+        setSelectedRegistration(null);
+        setApprovalComments('');
+        setTenantId('');
+        setSuccess('Hotel registration approved successfully! The hotel is now active.');
+        setTimeout(() => setSuccess(null), 5000);
+        
+        // Refresh data
+        loadRegistrations();
+        loadRegistrationStatistics();
+        loadHotels();
+      } else {
+        throw new Error('Failed to approve registration');
+      }
+    } catch (err) {
+      setError('Failed to approve registration. Please try again.');
+      setTimeout(() => setError(null), 3000);
+    }
+  };
+
+  const handleRejectRegistration = async () => {
+    if (!selectedRegistration || !rejectionReason.trim()) {
+      setError('Rejection reason is required');
+      setTimeout(() => setError(null), 3000);
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/admin/hotel-registrations/${selectedRegistration.id}/reject`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          reason: rejectionReason
+        })
+      });
+
+      if (response.ok) {
+        setRegistrationViewDialogOpen(false);
+        setSelectedRegistration(null);
+        setRejectionReason('');
+        setSuccess('Hotel registration rejected successfully');
+        setTimeout(() => setSuccess(null), 3000);
+        
+        // Refresh data
+        loadRegistrations();
+        loadRegistrationStatistics();
+      } else {
+        throw new Error('Failed to reject registration');
+      }
+    } catch (err) {
+      setError('Failed to reject hotel registration. Please try again.');
+      setTimeout(() => setError(null), 3000);
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -386,7 +476,7 @@ const HotelManagementAdmin: React.FC = () => {
       setSuccess('Hotel updated successfully');
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
-      console.error('Error updating hotel:', err);
+      // console.error('Error updating hotel:', err);
       setError('Failed to update hotel. Please try again.');
     }
   };
@@ -397,40 +487,17 @@ const HotelManagementAdmin: React.FC = () => {
     
     try {
       setLoading(true);
-      await adminApiService.toggleHotelStatus(hotel.id);
-      loadHotels(); // Refresh the list
+      await adminApiService.toggleHotelStatus(hotel.id, toggleStatusReason);
+      setToggleStatusDialogOpen(false);
+      setToggleStatusReason('');
+      setSelectedHotel(null);
+      loadHotels();
       setError(null);
       setSuccess(`Hotel ${hotel.isActive ? 'deactivated' : 'activated'} successfully`);
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
-      console.error('Error toggling hotel status:', err);
+      // console.error('Error toggling hotel status:', err);
       setError('Failed to update hotel status. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Delete hotel functions
-  const openDeleteDialog = (hotel: Hotel) => {
-    setSelectedHotel(hotel);
-    setDeleteDialogOpen(true);
-  };
-
-  const handleDeleteHotel = async () => {
-    if (!selectedHotel || !token) return;
-
-    try {
-      setLoading(true);
-      await adminApiService.deleteHotel(selectedHotel.id);
-      setDeleteDialogOpen(false);
-      setSelectedHotel(null);
-      loadHotels(); // Refresh the list
-      setError(null);
-      setSuccess('Hotel deleted successfully');
-      setTimeout(() => setSuccess(null), 3000);
-    } catch (err) {
-      console.error('Error deleting hotel:', err);
-      setError('Failed to delete hotel. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -441,12 +508,6 @@ const HotelManagementAdmin: React.FC = () => {
       <Box sx={{ py: 4 }}>
         {/* Header */}
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-          <IconButton 
-            onClick={() => navigate('/system-dashboard')}
-            sx={{ mr: 2 }}
-          >
-            <ArrowBackIcon />
-          </IconButton>
           <Typography variant="h4" component="h1" sx={{ flexGrow: 1 }}>
             Hotel Management
           </Typography>
@@ -499,7 +560,7 @@ const HotelManagementAdmin: React.FC = () => {
             <Paper sx={{ p: 2, mb: 2 }}>
               <Grid container spacing={2}>
                 <Grid item xs={12} md={6}>
-                  <TextField
+                  <PremiumTextField
                     fullWidth
                     label="Search hotels..."
                     value={searchTerm}
@@ -508,18 +569,16 @@ const HotelManagementAdmin: React.FC = () => {
                   />
                 </Grid>
                 <Grid item xs={12} md={3}>
-                  <FormControl fullWidth>
-                    <InputLabel>Status</InputLabel>
-                    <Select
-                      value={statusFilter}
-                      label="Status"
-                      onChange={(e) => setStatusFilter(e.target.value)}
-                    >
-                      <MenuItem value="all">All Hotels</MenuItem>
-                      <MenuItem value="active">Active Only</MenuItem>
-                      <MenuItem value="inactive">Inactive Only</MenuItem>
-                    </Select>
-                  </FormControl>
+                  <PremiumSelect
+                    fullWidth
+                    label="Status"
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                  >
+                    <MenuItem value="all">All Hotels</MenuItem>
+                    <MenuItem value="active">Active Only</MenuItem>
+                    <MenuItem value="inactive">Inactive Only</MenuItem>
+                  </PremiumSelect>
                 </Grid>
               </Grid>
             </Paper>
@@ -528,7 +587,32 @@ const HotelManagementAdmin: React.FC = () => {
             <TableContainer component={Paper}>
               <Table>
                 <TableHead>
-                  <TableRow>
+                  <TableRow
+                    sx={{
+                      background: getGradient('slate'),
+                      boxShadow: `0 4px 12px ${addAlpha(COLORS.SLATE_500, 0.15)}`,
+                      '& .MuiTableCell-head': {
+                        color: COLORS.WHITE,
+                        fontWeight: 600,
+                        fontSize: '0.95rem',
+                        letterSpacing: '0.5px',
+                        textTransform: 'uppercase',
+                        border: 'none',
+                        padding: '20px 16px',
+                        position: 'relative',
+                        textShadow: `0 1px 2px ${addAlpha(COLORS.BLACK, 0.1)}`,
+                        '&::after': {
+                          content: '""',
+                          position: 'absolute',
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          height: '3px',
+                          background: `linear-gradient(90deg, ${addAlpha(COLORS.WHITE, 0.6)} 0%, ${addAlpha(COLORS.WHITE, 0.8)} 50%, ${addAlpha(COLORS.WHITE, 0.6)} 100%)`
+                        }
+                      }
+                    }}
+                  >
                     <TableCell>Hotel Name</TableCell>
                     <TableCell>Location</TableCell>
                     <TableCell>Contact</TableCell>
@@ -603,19 +687,15 @@ const HotelManagementAdmin: React.FC = () => {
                               </IconButton>
                               <IconButton
                                 size="small"
-                                onClick={() => handleToggleHotelStatus(hotel)}
+                                onClick={() => {
+                                  setSelectedHotel(hotel);
+                                  setToggleStatusReason('');
+                                  setToggleStatusDialogOpen(true);
+                                }}
                                 title={hotel.isActive ? "Deactivate" : "Activate"}
                                 color={hotel.isActive ? "success" : "error"}
                               >
                                 {hotel.isActive ? <ToggleOnIcon /> : <ToggleOffIcon />}
-                              </IconButton>
-                              <IconButton
-                                size="small"
-                                onClick={() => openDeleteDialog(hotel)}
-                                title="Delete Hotel"
-                                color="error"
-                              >
-                                <DeleteIcon />
                               </IconButton>
                             </Box>
                           </TableCell>
@@ -710,7 +790,32 @@ const HotelManagementAdmin: React.FC = () => {
             <TableContainer component={Paper}>
               <Table>
                 <TableHead>
-                  <TableRow>
+                  <TableRow
+                    sx={{
+                      background: getGradient('slate'),
+                      boxShadow: `0 4px 12px ${addAlpha(COLORS.SLATE_500, 0.15)}`,
+                      '& .MuiTableCell-head': {
+                        color: COLORS.WHITE,
+                        fontWeight: 600,
+                        fontSize: '0.95rem',
+                        letterSpacing: '0.5px',
+                        textTransform: 'uppercase',
+                        border: 'none',
+                        padding: '20px 16px',
+                        position: 'relative',
+                        textShadow: `0 1px 2px ${addAlpha(COLORS.BLACK, 0.1)}`,
+                        '&::after': {
+                          content: '""',
+                          position: 'absolute',
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          height: '3px',
+                          background: `linear-gradient(90deg, ${addAlpha(COLORS.WHITE, 0.6)} 0%, ${addAlpha(COLORS.WHITE, 0.8)} 50%, ${addAlpha(COLORS.WHITE, 0.6)} 100%)`
+                        }
+                      }
+                    }}
+                  >
                     <TableCell>Hotel Name</TableCell>
                     <TableCell>Contact Person</TableCell>
                     <TableCell>Email</TableCell>
@@ -745,10 +850,19 @@ const HotelManagementAdmin: React.FC = () => {
                       <TableCell>
                         <Button
                           size="small"
-                          startIcon={<ViewIcon />}
+                          variant="outlined"
+                          startIcon={<ReviewIcon />}
                           onClick={() => viewRegistration(registration)}
+                          sx={{
+                            borderColor: COLORS.PRIMARY,
+                            color: COLORS.PRIMARY,
+                            '&:hover': {
+                              borderColor: COLORS.PRIMARY_PRESSED,
+                              backgroundColor: COLORS.SLATE_50
+                            }
+                          }}
                         >
-                          View
+                          Review
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -765,7 +879,7 @@ const HotelManagementAdmin: React.FC = () => {
           <DialogContent>
             <Grid container spacing={2} sx={{ mt: 1 }}>
               <Grid item xs={12} sm={6}>
-                <TextField
+                <PremiumTextField
                   label="Hotel Name"
                   fullWidth
                   required
@@ -775,7 +889,7 @@ const HotelManagementAdmin: React.FC = () => {
               </Grid>
               
               <Grid item xs={12} sm={6}>
-                <TextField
+                <PremiumTextField
                   label="Contact Person"
                   fullWidth
                   required
@@ -785,7 +899,7 @@ const HotelManagementAdmin: React.FC = () => {
               </Grid>
               
               <Grid item xs={12}>
-                <TextField
+                <PremiumTextField
                   label="Description"
                   multiline
                   rows={3}
@@ -796,7 +910,7 @@ const HotelManagementAdmin: React.FC = () => {
               </Grid>
               
               <Grid item xs={12}>
-                <TextField
+                <PremiumTextField
                   label="Address"
                   fullWidth
                   required
@@ -806,7 +920,7 @@ const HotelManagementAdmin: React.FC = () => {
               </Grid>
               
               <Grid item xs={12} sm={6}>
-                <TextField
+                <PremiumTextField
                   label="City"
                   fullWidth
                   required
@@ -816,7 +930,7 @@ const HotelManagementAdmin: React.FC = () => {
               </Grid>
               
               <Grid item xs={12} sm={6}>
-                <TextField
+                <PremiumTextField
                   label="Country"
                   fullWidth
                   required
@@ -826,7 +940,7 @@ const HotelManagementAdmin: React.FC = () => {
               </Grid>
               
               <Grid item xs={12} sm={6}>
-                <TextField
+                <PremiumTextField
                   label="Phone"
                   fullWidth
                   required
@@ -836,7 +950,7 @@ const HotelManagementAdmin: React.FC = () => {
               </Grid>
 
               <Grid item xs={12} sm={6}>
-                <TextField
+                <PremiumTextField
                   label="Contact Email"
                   type="email"
                   fullWidth
@@ -847,7 +961,7 @@ const HotelManagementAdmin: React.FC = () => {
               </Grid>
 
               <Grid item xs={12} sm={6}>
-                <TextField
+                <PremiumTextField
                   label="License Number"
                   fullWidth
                   value={registrationForm.licenseNumber}
@@ -856,7 +970,7 @@ const HotelManagementAdmin: React.FC = () => {
               </Grid>
 
               <Grid item xs={12} sm={6}>
-                <TextField
+                <PremiumTextField
                   label="Tax ID"
                   fullWidth
                   value={registrationForm.taxId}
@@ -865,7 +979,7 @@ const HotelManagementAdmin: React.FC = () => {
               </Grid>
 
               <Grid item xs={12}>
-                <TextField
+                <PremiumTextField
                   label="Website URL"
                   fullWidth
                   value={registrationForm.websiteUrl}
@@ -874,7 +988,7 @@ const HotelManagementAdmin: React.FC = () => {
               </Grid>
 
               <Grid item xs={12}>
-                <TextField
+                <PremiumTextField
                   label="Facility Amenities"
                   multiline
                   rows={2}
@@ -886,7 +1000,7 @@ const HotelManagementAdmin: React.FC = () => {
               </Grid>
 
               <Grid item xs={12} sm={4}>
-                <TextField
+                <PremiumTextField
                   label="Number of Rooms"
                   type="number"
                   fullWidth
@@ -896,7 +1010,7 @@ const HotelManagementAdmin: React.FC = () => {
               </Grid>
 
               <Grid item xs={12} sm={4}>
-                <TextField
+                <PremiumTextField
                   label="Check-in Time"
                   type="time"
                   fullWidth
@@ -906,7 +1020,7 @@ const HotelManagementAdmin: React.FC = () => {
               </Grid>
 
               <Grid item xs={12} sm={4}>
-                <TextField
+                <PremiumTextField
                   label="Check-out Time"
                   type="time"
                   fullWidth
@@ -928,204 +1042,332 @@ const HotelManagementAdmin: React.FC = () => {
           </DialogActions>
         </Dialog>
 
-        {/* Registration View Dialog */}
+        {/* Registration Review Dialog */}
         <Dialog open={registrationViewDialogOpen} onClose={() => setRegistrationViewDialogOpen(false)} maxWidth="md" fullWidth>
-          <DialogTitle>Hotel Registration Details</DialogTitle>
+          <DialogTitle
+            sx={{
+              borderBottom: `2px solid ${COLORS.SECONDARY}`,
+              pb: 2,
+              fontWeight: 600,
+              color: COLORS.PRIMARY
+            }}
+          >
+            Review Hotel Registration
+          </DialogTitle>
           <DialogContent>
             {selectedRegistration && (
               <Grid container spacing={2} sx={{ mt: 1 }}>
+                <Grid item xs={12}>
+                  <Typography variant="subtitle2" sx={{ color: COLORS.PRIMARY, fontWeight: 600, mb: 2 }}>
+                    Hotel Information
+                  </Typography>
+                </Grid>
+
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     label="Hotel Name"
                     fullWidth
                     value={selectedRegistration.hotelName}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
                 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     label="Contact Person"
                     fullWidth
                     value={selectedRegistration.contactPerson}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
                 
                 <Grid item xs={12}>
-                  <TextField
+                  <PremiumTextField
                     label="Description"
                     multiline
                     rows={3}
                     fullWidth
                     value={selectedRegistration.description}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
                 
                 <Grid item xs={12}>
-                  <TextField
+                  <PremiumTextField
                     label="Address"
                     fullWidth
                     value={selectedRegistration.address}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
                 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     label="City"
                     fullWidth
                     value={selectedRegistration.city}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
                 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     label="Country"
                     fullWidth
                     value={selectedRegistration.country}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
                 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     label="Phone"
                     fullWidth
                     value={selectedRegistration.phone}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     label="Contact Email"
                     fullWidth
                     value={selectedRegistration.contactEmail}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     label="Status"
                     fullWidth
                     value={selectedRegistration.status}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     label="Submitted At"
                     fullWidth
                     value={formatDate(selectedRegistration.submittedAt)}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
 
                 {selectedRegistration.licenseNumber && (
                   <Grid item xs={12} sm={6}>
-                    <TextField
+                    <PremiumTextField
                       label="License Number"
                       fullWidth
                       value={selectedRegistration.licenseNumber}
                       disabled
-                      variant="filled"
                     />
                   </Grid>
                 )}
 
                 {selectedRegistration.taxId && (
                   <Grid item xs={12} sm={6}>
-                    <TextField
+                    <PremiumTextField
                       label="Tax ID"
                       fullWidth
                       value={selectedRegistration.taxId}
                       disabled
-                      variant="filled"
                     />
                   </Grid>
                 )}
 
                 {selectedRegistration.websiteUrl && (
                   <Grid item xs={12}>
-                    <TextField
+                    <PremiumTextField
                       label="Website URL"
                       fullWidth
                       value={selectedRegistration.websiteUrl}
                       disabled
-                      variant="filled"
                     />
                   </Grid>
                 )}
 
                 {selectedRegistration.facilityAmenities && (
                   <Grid item xs={12}>
-                    <TextField
+                    <PremiumTextField
                       label="Facility Amenities"
                       multiline
                       rows={2}
                       fullWidth
                       value={selectedRegistration.facilityAmenities}
                       disabled
-                      variant="filled"
                     />
                   </Grid>
                 )}
 
                 {selectedRegistration.numberOfRooms && (
                   <Grid item xs={12} sm={4}>
-                    <TextField
+                    <PremiumTextField
                       label="Number of Rooms"
                       fullWidth
                       value={selectedRegistration.numberOfRooms}
                       disabled
-                      variant="filled"
                     />
                   </Grid>
                 )}
 
                 {selectedRegistration.checkInTime && (
                   <Grid item xs={12} sm={4}>
-                    <TextField
+                    <PremiumTextField
                       label="Check-in Time"
                       fullWidth
                       value={selectedRegistration.checkInTime}
                       disabled
-                      variant="filled"
                     />
                   </Grid>
                 )}
 
                 {selectedRegistration.checkOutTime && (
                   <Grid item xs={12} sm={4}>
-                    <TextField
+                    <PremiumTextField
                       label="Check-out Time"
                       fullWidth
                       value={selectedRegistration.checkOutTime}
                       disabled
-                      variant="filled"
                     />
                   </Grid>
+                )}
+
+                {selectedRegistration.status === 'PENDING' && (
+                  <>
+                    <Grid item xs={12}>
+                      <Typography variant="subtitle2" sx={{ color: COLORS.PRIMARY, fontWeight: 600, mt: 2, mb: 1 }}>
+                        Review Actions
+                      </Typography>
+                    </Grid>
+
+                    <Grid item xs={12}>
+                      <PremiumTextField
+                        label="Tenant ID (Required for Approval)"
+                        fullWidth
+                        value={tenantId}
+                        onChange={(e) => setTenantId(e.target.value)}
+                        placeholder="Enter tenant identifier"
+                      />
+                    </Grid>
+
+                    <Grid item xs={12}>
+                      <PremiumTextField
+                        label="Approval Comments (Optional)"
+                        multiline
+                        rows={2}
+                        fullWidth
+                        value={approvalComments}
+                        onChange={(e) => setApprovalComments(e.target.value)}
+                        placeholder="Add any comments for approval"
+                      />
+                    </Grid>
+
+                    <Grid item xs={12}>
+                      <PremiumTextField
+                        label="Rejection Reason (Required for Rejection)"
+                        multiline
+                        rows={2}
+                        fullWidth
+                        value={rejectionReason}
+                        onChange={(e) => setRejectionReason(e.target.value)}
+                        placeholder="Provide reason if rejecting this registration"
+                      />
+                    </Grid>
+                  </>
                 )}
               </Grid>
             )}
           </DialogContent>
+          <DialogActions sx={{ px: 3, py: 2, borderTop: `1px solid ${COLORS.BORDER_LIGHT}` }}>
+            <Button 
+              onClick={() => setRegistrationViewDialogOpen(false)}
+              sx={{ color: COLORS.TEXT_SECONDARY }}
+            >
+              Close
+            </Button>
+            {selectedRegistration?.status === 'PENDING' && (
+              <>
+                <Button
+                  variant="outlined"
+                  color="error"
+                  startIcon={<RejectIcon />}
+                  onClick={handleRejectRegistration}
+                  disabled={!rejectionReason.trim()}
+                  sx={{
+                    borderColor: COLORS.ERROR,
+                    '&:hover': {
+                      backgroundColor: COLORS.BG_ERROR_LIGHT,
+                      borderColor: COLORS.ERROR
+                    }
+                  }}
+                >
+                  Reject
+                </Button>
+                <Button
+                  variant="contained"
+                  color="success"
+                  startIcon={<ApproveIcon />}
+                  onClick={handleApproveRegistration}
+                  disabled={!tenantId.trim()}
+                  sx={{
+                    backgroundColor: (theme) => theme.palette.success.main,
+                    '&:hover': {
+                      backgroundColor: (theme) => theme.palette.success.dark
+                    }
+                  }}
+                >
+                  Approve
+                </Button>
+              </>
+            )}
+          </DialogActions>
+        </Dialog>
+
+        {/* Toggle Status Confirmation Dialog */}
+        <Dialog
+          open={toggleStatusDialogOpen}
+          onClose={() => {
+            setToggleStatusDialogOpen(false);
+            setToggleStatusReason('');
+          }}
+          maxWidth="sm"
+          fullWidth
+        >
+          <DialogTitle>
+            {selectedHotel?.isActive ? 'Deactivate Hotel' : 'Activate Hotel'}
+          </DialogTitle>
+          <DialogContent>
+            <Typography sx={{ mb: 2 }}>
+              Are you sure you want to {selectedHotel?.isActive ? 'deactivate' : 'activate'} hotel "{selectedHotel?.name}"?
+            </Typography>
+            <PremiumTextField
+              label="Reason"
+              fullWidth
+              required
+              multiline
+              rows={3}
+              value={toggleStatusReason}
+              onChange={(e) => setToggleStatusReason(e.target.value)}
+              placeholder={`Enter reason for ${selectedHotel?.isActive ? 'deactivation' : 'activation'}...`}
+            />
+          </DialogContent>
           <DialogActions>
-            <Button onClick={() => setRegistrationViewDialogOpen(false)}>Close</Button>
+            <Button onClick={() => {
+              setToggleStatusDialogOpen(false);
+              setToggleStatusReason('');
+            }}>
+              Cancel
+            </Button>
+            <Button
+              onClick={() => selectedHotel && handleToggleHotelStatus(selectedHotel)}
+              variant="contained"
+              color={selectedHotel?.isActive ? 'error' : 'success'}
+              disabled={!toggleStatusReason.trim() || loading}
+            >
+              {loading ? <CircularProgress size={20} /> : (selectedHotel?.isActive ? 'Deactivate' : 'Activate')}
+            </Button>
           </DialogActions>
         </Dialog>
 
@@ -1136,125 +1378,113 @@ const HotelManagementAdmin: React.FC = () => {
             {selectedHotel && (
               <Grid container spacing={2} sx={{ mt: 1 }}>
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     label="Hotel Name"
                     fullWidth
                     value={selectedHotel.name || ''}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
                 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     label="Email"
                     type="email"
                     fullWidth
                     value={selectedHotel.email || ''}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
                 
                 <Grid item xs={12}>
-                  <TextField
+                  <PremiumTextField
                     label="Description"
                     multiline
                     rows={3}
                     fullWidth
                     value={selectedHotel.description || ''}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
                 
                 <Grid item xs={12}>
-                  <TextField
+                  <PremiumTextField
                     label="Address"
                     fullWidth
                     value={selectedHotel.address || ''}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
                 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     label="City"
                     fullWidth
                     value={selectedHotel.city || ''}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
                 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     label="Country"
                     fullWidth
                     value={selectedHotel.country || ''}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
                 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     label="Phone"
                     fullWidth
                     value={selectedHotel.phone || ''}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     label="Status"
                     fullWidth
                     value={selectedHotel.isActive ? 'Active' : 'Inactive'}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     label="Total Rooms"
                     fullWidth
                     value={selectedHotel.totalRooms?.toString() || '0'}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     label="Available Rooms"
                     fullWidth
                     value={selectedHotel.availableRooms?.toString() || '0'}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     label="Created At"
                     fullWidth
                     value={selectedHotel.createdAt ? new Date(selectedHotel.createdAt).toLocaleString() : ''}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     label="Last Updated"
                     fullWidth
                     value={selectedHotel.updatedAt ? new Date(selectedHotel.updatedAt).toLocaleString() : ''}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
               </Grid>
@@ -1286,30 +1516,6 @@ const HotelManagementAdmin: React.FC = () => {
           loading={loading}
         />
 
-        {/* Delete Confirmation Dialog */}
-        <Dialog
-          open={deleteDialogOpen}
-          onClose={() => setDeleteDialogOpen(false)}
-        >
-          <DialogTitle>Confirm Delete</DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              Are you sure you want to delete the hotel "{selectedHotel?.name}"? This action cannot be undone.
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setDeleteDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              onClick={handleDeleteHotel}
-              color="error"
-              variant="contained"
-            >
-              Delete
-            </Button>
-          </DialogActions>
-        </Dialog>
       </Box>
     </Container>
   );

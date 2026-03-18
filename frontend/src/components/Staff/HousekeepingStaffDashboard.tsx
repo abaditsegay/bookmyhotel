@@ -25,7 +25,16 @@ import {
   Select,
   MenuItem,
   FormControl,
-  InputLabel
+  InputLabel,
+  useMediaQuery,
+  useTheme,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemIcon,
+  Divider,
+  Fab,
+  TablePagination
 } from '@mui/material';
 import {
   CheckCircle as CheckCircleIcon,
@@ -33,12 +42,21 @@ import {
   Info as InfoIcon,
   CleaningServices as CleaningIcon,
   Assignment as AssignmentIcon,
-  Schedule as ScheduleIcon
+  Schedule as ScheduleIcon,
+  Room as RoomIcon,
+  AccessTime as AccessTimeIcon,
+  Flag as FlagIcon,
+  Refresh as RefreshIcon
 } from '@mui/icons-material';
+import { COLORS, addAlpha } from '../../theme/themeColors';
 import { staffApi } from '../../services/staffApi';
 import { HousekeepingTask } from '../../types/operations';
 
 const HousekeepingStaffDashboard: React.FC = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
+  
   const [tasks, setTasks] = useState<HousekeepingTask[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -47,6 +65,11 @@ const HousekeepingStaffDashboard: React.FC = () => {
   const [notes, setNotes] = useState('');
   const [newStatus, setNewStatus] = useState('');
   const [stats, setStats] = useState<any>(null);
+  const [showTaskDetails, setShowTaskDetails] = useState(false);
+  
+  // Pagination state
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   useEffect(() => {
     loadMyTasks();
@@ -61,7 +84,7 @@ const HousekeepingStaffDashboard: React.FC = () => {
       setTasks(tasksData);
     } catch (err) {
       setError('Failed to load your tasks');
-      console.error('Error loading tasks:', err);
+      // console.error('Error loading tasks:', err);
     } finally {
       setLoading(false);
     }
@@ -72,7 +95,7 @@ const HousekeepingStaffDashboard: React.FC = () => {
       const statsData = await staffApi.getStaffStats('HOUSEKEEPING');
       setStats(statsData);
     } catch (err) {
-      console.error('Error loading stats:', err);
+      // console.error('Error loading stats:', err);
     }
   };
 
@@ -93,7 +116,7 @@ const HousekeepingStaffDashboard: React.FC = () => {
       await loadStats();
     } catch (err) {
       setError('Failed to update task status');
-      console.error('Error updating task:', err);
+      // console.error('Error updating task:', err);
     }
   };
 
@@ -104,7 +127,7 @@ const HousekeepingStaffDashboard: React.FC = () => {
       await loadStats();
     } catch (err) {
       setError('Failed to start task');
-      console.error('Error starting task:', err);
+      // console.error('Error starting task:', err);
     }
   };
 
@@ -115,7 +138,7 @@ const HousekeepingStaffDashboard: React.FC = () => {
       await loadStats();
     } catch (err) {
       setError('Failed to complete task');
-      console.error('Error completing task:', err);
+      // console.error('Error completing task:', err);
     }
   };
 
@@ -126,11 +149,188 @@ const HousekeepingStaffDashboard: React.FC = () => {
     setStatusDialog(true);
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status.toUpperCase()) {
-      case 'PENDING': return 'warning';
-      case 'IN_PROGRESS': return 'info';
-      case 'COMPLETED': return 'success';
+  const openTaskDetails = (task: HousekeepingTask) => {
+    setSelectedTask(task);
+    setShowTaskDetails(true);
+  };
+
+  // Elegant Mobile-optimized task card component
+  const TaskCard: React.FC<{ task: HousekeepingTask }> = ({ task }) => (
+    <Card 
+      sx={{ 
+        mb: 2, 
+        cursor: 'pointer',
+        boxShadow: `0 1px 4px ${addAlpha(COLORS.BLACK, 0.05)}`,
+        borderRadius: 2,
+        border: '1px solid',
+        borderColor: 'divider',
+        transition: 'all 0.2s ease',
+        '&:hover': { 
+          boxShadow: `0 4px 12px ${addAlpha(COLORS.BLACK, 0.08)}`,
+          borderColor: 'primary.light',
+        }
+      }}
+      onClick={() => openTaskDetails(task)}
+    >
+      <CardContent sx={{ pb: 1 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 1,
+          }}>
+            <RoomIcon sx={{ color: 'primary.main', fontSize: '1.1rem' }} />
+            <Typography 
+              variant="subtitle1" 
+              component="div"
+              sx={{ color: 'text.primary', fontWeight: 600 }}
+            >
+              Room {task.roomNumber}
+            </Typography>
+          </Box>
+          <Chip
+            label={task.status}
+            color={getStatusChipColor(task.status)}
+            size="small"
+            sx={{
+              fontWeight: 600,
+              boxShadow: `0 2px 6px ${addAlpha(COLORS.BLACK, 0.1)}`
+            }}
+          />
+        </Box>
+        
+        <Typography 
+          variant="body2" 
+          color="text.primary"
+          sx={{ 
+            mb: 2,
+            fontWeight: 500,
+            lineHeight: 1.5
+          }}
+        >
+          {task.title || task.description}
+        </Typography>
+        
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, gap: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+            <Chip
+              label={task.taskType}
+              color={getTaskTypeColor(task.taskType)}
+              size="small"
+              sx={{
+                fontWeight: 600,
+                boxShadow: `0 2px 6px ${addAlpha(COLORS.BLACK, 0.1)}`
+              }}
+            />
+            <Chip
+              label={task.priority}
+              color={task.priority === 'HIGH' ? 'error' : task.priority === 'NORMAL' ? 'warning' : 'default'}
+              size="small"
+              icon={<FlagIcon />}
+              sx={{
+                fontWeight: 600,
+                boxShadow: `0 2px 6px ${addAlpha(COLORS.BLACK, 0.1)}`
+              }}
+            />
+          </Box>
+          {task.dueDate && (
+            <Box sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: 0.5,
+              backgroundColor: 'action.hover',
+              padding: '4px 8px',
+              borderRadius: 1
+            }}>
+              <AccessTimeIcon fontSize="small" color="action" />
+              <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>
+                {new Date(task.dueDate).toLocaleDateString()}
+              </Typography>
+            </Box>
+          )}
+        </Box>
+        
+        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+          {canStartTask(task) && (
+            <Button
+              variant="outlined"
+              color="primary"
+              size="small"
+              startIcon={<PlayArrowIcon />}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleStartTask(task);
+              }}
+              sx={{ 
+                minWidth: 'auto',
+                borderWidth: 1.5,
+                fontWeight: 500,
+                '&:hover': {
+                  borderWidth: 1.5,
+                  backgroundColor: 'primary.main',
+                  color: 'white',
+                }
+              }}
+            >
+              Start
+            </Button>
+          )}
+          {canCompleteTask(task) && (
+            <Button
+              variant="outlined"
+              color="success"
+              size="small"
+              startIcon={<CheckCircleIcon />}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleCompleteTask(task);
+              }}
+              sx={{ 
+                minWidth: 'auto',
+                borderWidth: 1.5,
+                fontWeight: 500,
+                '&:hover': {
+                  borderWidth: 1.5,
+                  backgroundColor: 'success.main',
+                  color: 'white',
+                }
+              }}
+            >
+              Complete
+            </Button>
+          )}
+          {canUpdateStatus(task) && (
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<InfoIcon />}
+              onClick={(e) => {
+                e.stopPropagation();
+                openStatusDialog(task);
+              }}
+              sx={{ 
+                minWidth: 'auto',
+                borderWidth: 2,
+                fontWeight: 600,
+                '&:hover': {
+                  borderWidth: 2,
+                  backgroundColor: 'action.hover',
+                }
+              }}
+            >
+              Update
+            </Button>
+          )}
+        </Box>
+      </CardContent>
+    </Card>
+  );
+
+  const getStatusChipColor = (status: string) => {
+    switch (status) {
+      case 'ASSIGNED': return 'default';
+      case 'IN_PROGRESS': return 'warning';
+      case 'COMPLETED': return 'primary';
       case 'CANCELLED': return 'error';
       default: return 'default';
     }
@@ -168,70 +368,252 @@ const HousekeepingStaffDashboard: React.FC = () => {
   }
 
   return (
-    <Box sx={{ width: '100%', p: 3 }}>
-      <Box sx={{ py: 3 }}>
-        <Typography variant="h5" component="h1" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <CleaningIcon color="primary" />
+    <Box sx={{ 
+      width: '100%', 
+      p: { xs: 1, sm: 2, md: 3 },
+      pb: { xs: 8, sm: 3 } // Extra bottom padding on mobile for FAB
+    }}>
+      <Box sx={{ py: { xs: 2, md: 4 } }}>
+        <Typography 
+          variant={isMobile ? "h5" : "h4"} 
+          component="h1" 
+          gutterBottom 
+          sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 2,
+            mb: { xs: 3, md: 4 },
+            fontWeight: 600,
+            color: 'text.primary',
+            letterSpacing: '-0.5px'
+          }}
+        >
+          <CleaningIcon 
+            sx={{ 
+              color: 'primary.main',
+              fontSize: { xs: '1.75rem', md: '2rem' }
+            }} 
+          />
           My Housekeeping Tasks
         </Typography>
 
-        {/* Stats Cards */}
+        {/* Elegant Premium Stats Cards */}
         {stats && (
-          <Grid container spacing={3} sx={{ mb: 4 }}>
-            <Grid item xs={12} sm={6} md={3}>
-              <Card>
-                <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <AssignmentIcon color="primary" />
-                  <Box>
-                    <Typography color="textSecondary" gutterBottom>
+          <Grid container spacing={{ xs: 2, sm: 2, md: 3 }} sx={{ mb: { xs: 3, md: 4 } }}>
+            <Grid item xs={6} sm={6} md={3}>
+              <Card 
+                sx={{ 
+                  height: '100%',
+                  backgroundColor: 'background.paper',
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.04)}`,
+                  transition: 'all 0.2s ease-in-out',
+                  '&:hover': {
+                    boxShadow: `0 4px 16px ${addAlpha(COLORS.BLACK, 0.08)}`,
+                    borderColor: 'primary.main',
+                  }
+                }}
+              >
+                <CardContent sx={{ 
+                  display: 'flex', 
+                  flexDirection: 'column',
+                  alignItems: 'center', 
+                  gap: { xs: 1, sm: 1.5 },
+                  p: { xs: 2, sm: 3 },
+                  '&:last-child': { pb: { xs: 2, sm: 3 } }
+                }}>
+                  <AssignmentIcon 
+                    sx={{ 
+                      color: 'primary.main',
+                      fontSize: { xs: '1.75rem', md: '2.25rem' },
+                      opacity: 0.9
+                    }} 
+                  />
+                  <Box sx={{ textAlign: 'center' }}>
+                    <Typography 
+                      sx={{ 
+                        color: 'text.secondary',
+                        fontWeight: 500,
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                        mb: 0.5,
+                        letterSpacing: '0.5px'
+                      }}
+                    >
                       Total Tasks
                     </Typography>
-                    <Typography variant="h4">
+                    <Typography 
+                      variant={isMobile ? "h5" : "h4"}
+                      sx={{ 
+                        color: 'text.primary',
+                        fontWeight: 600
+                      }}
+                    >
                       {stats.totalTasks || 0}
                     </Typography>
                   </Box>
                 </CardContent>
               </Card>
             </Grid>
-            <Grid item xs={12} sm={6} md={3}>
-              <Card>
-                <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <ScheduleIcon color="warning" />
-                  <Box>
-                    <Typography color="textSecondary" gutterBottom>
+            <Grid item xs={6} sm={6} md={3}>
+              <Card 
+                sx={{ 
+                  height: '100%',
+                  backgroundColor: 'background.paper',
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.04)}`,
+                  transition: 'all 0.2s ease-in-out',
+                  '&:hover': {
+                    boxShadow: `0 4px 16px ${addAlpha(COLORS.BLACK, 0.08)}`,
+                    borderColor: 'warning.main',
+                  }
+                }}
+              >
+                <CardContent sx={{ 
+                  display: 'flex', 
+                  flexDirection: 'column',
+                  alignItems: 'center', 
+                  gap: { xs: 1, sm: 1.5 },
+                  p: { xs: 2, sm: 3 },
+                  '&:last-child': { pb: { xs: 2, sm: 3 } }
+                }}>
+                  <ScheduleIcon 
+                    sx={{ 
+                      color: 'warning.main',
+                      fontSize: { xs: '1.75rem', md: '2.25rem' },
+                      opacity: 0.9
+                    }} 
+                  />
+                  <Box sx={{ textAlign: 'center' }}>
+                    <Typography 
+                      sx={{ 
+                        color: 'text.secondary',
+                        fontWeight: 500,
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                        mb: 0.5,
+                        letterSpacing: '0.5px'
+                      }}
+                    >
                       Pending
                     </Typography>
-                    <Typography variant="h4">
+                    <Typography 
+                      variant={isMobile ? "h5" : "h4"}
+                      sx={{ 
+                        color: 'text.primary',
+                        fontWeight: 600
+                      }}
+                    >
                       {stats.pendingTasks || 0}
                     </Typography>
                   </Box>
                 </CardContent>
               </Card>
             </Grid>
-            <Grid item xs={12} sm={6} md={3}>
-              <Card>
-                <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <PlayArrowIcon color="info" />
-                  <Box>
-                    <Typography color="textSecondary" gutterBottom>
+            <Grid item xs={6} sm={6} md={3}>
+              <Card 
+                sx={{ 
+                  height: '100%',
+                  backgroundColor: 'background.paper',
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.04)}`,
+                  transition: 'all 0.2s ease-in-out',
+                  '&:hover': {
+                    boxShadow: `0 4px 16px ${addAlpha(COLORS.BLACK, 0.08)}`,
+                    borderColor: 'info.main',
+                  }
+                }}
+              >
+                <CardContent sx={{ 
+                  display: 'flex', 
+                  flexDirection: 'column',
+                  alignItems: 'center', 
+                  gap: { xs: 1, sm: 1.5 },
+                  p: { xs: 2, sm: 3 },
+                  '&:last-child': { pb: { xs: 2, sm: 3 } }
+                }}>
+                  <PlayArrowIcon 
+                    sx={{ 
+                      color: 'info.main',
+                      fontSize: { xs: '1.75rem', md: '2.25rem' },
+                      opacity: 0.9
+                    }} 
+                  />
+                  <Box sx={{ textAlign: 'center' }}>
+                    <Typography 
+                      sx={{ 
+                        color: 'text.secondary',
+                        fontWeight: 500,
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                        mb: 0.5,
+                        letterSpacing: '0.5px'
+                      }}
+                    >
                       In Progress
                     </Typography>
-                    <Typography variant="h4">
+                    <Typography 
+                      variant={isMobile ? "h5" : "h4"}
+                      sx={{ 
+                        color: 'text.primary',
+                        fontWeight: 600
+                      }}
+                    >
                       {stats.inProgressTasks || 0}
                     </Typography>
                   </Box>
                 </CardContent>
               </Card>
             </Grid>
-            <Grid item xs={12} sm={6} md={3}>
-              <Card>
-                <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <CheckCircleIcon color="success" />
-                  <Box>
-                    <Typography color="textSecondary" gutterBottom>
+            <Grid item xs={6} sm={6} md={3}>
+              <Card 
+                sx={{ 
+                  height: '100%',
+                  backgroundColor: 'background.paper',
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.04)}`,
+                  transition: 'all 0.2s ease-in-out',
+                  '&:hover': {
+                    boxShadow: `0 4px 16px ${addAlpha(COLORS.BLACK, 0.08)}`,
+                    borderColor: 'success.main',
+                  }
+                }}
+              >
+                <CardContent sx={{ 
+                  display: 'flex', 
+                  flexDirection: 'column',
+                  alignItems: 'center', 
+                  gap: { xs: 1, sm: 1.5 },
+                  p: { xs: 2, sm: 3 },
+                  '&:last-child': { pb: { xs: 2, sm: 3 } }
+                }}>
+                  <CheckCircleIcon 
+                    sx={{ 
+                      color: 'success.main',
+                      fontSize: { xs: '1.75rem', md: '2.25rem' },
+                      opacity: 0.9
+                    }} 
+                  />
+                  <Box sx={{ textAlign: 'center' }}>
+                    <Typography 
+                      sx={{ 
+                        color: 'text.secondary',
+                        fontWeight: 500,
+                        fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                        mb: 0.5,
+                        letterSpacing: '0.5px'
+                      }}
+                    >
                       Completed
                     </Typography>
-                    <Typography variant="h4">
+                    <Typography 
+                      variant={isMobile ? "h5" : "h4"}
+                      sx={{ 
+                        color: 'text.primary',
+                        fontWeight: 600
+                      }}
+                    >
                       {stats.completedTasks || 0}
                     </Typography>
                   </Box>
@@ -242,19 +624,63 @@ const HousekeepingStaffDashboard: React.FC = () => {
         )}
 
         {error && (
-          <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
+          <Alert 
+            severity="error" 
+            sx={{ 
+              mb: 3,
+              boxShadow: `0 4px 12px ${addAlpha(COLORS.ERROR, 0.15)}`,
+              borderRadius: 2
+            }} 
+            onClose={() => setError(null)}
+          >
             {error}
           </Alert>
         )}
 
-        {/* Tasks Table */}
-        <Card>
-          <CardContent>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-              <Typography variant="h6">
+        {/* Elegant Tasks Section */}
+        <Card 
+          sx={{ 
+            boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.04)}`,
+            borderRadius: 2,
+            overflow: 'hidden',
+            border: '1px solid',
+            borderColor: 'divider'
+          }}
+        >
+          <CardContent sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
+            <Box sx={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center', 
+              mb: 3,
+              flexDirection: { xs: 'column', sm: 'row' },
+              gap: { xs: 2, sm: 0 }
+            }}>
+              <Typography 
+                variant="h6"
+                sx={{ 
+                  fontWeight: 600,
+                  color: 'text.primary',
+                  letterSpacing: '-0.3px'
+                }}
+              >
                 My Tasks ({tasks.length})
               </Typography>
-              <Button onClick={loadMyTasks} disabled={loading}>
+              <Button 
+                onClick={loadMyTasks} 
+                disabled={loading}
+                size={isMobile ? "medium" : "large"}
+                startIcon={<RefreshIcon />}
+                variant="outlined"
+                sx={{
+                  borderWidth: 1.5,
+                  fontWeight: 500,
+                  '&:hover': {
+                    borderWidth: 1.5,
+                    backgroundColor: 'action.hover',
+                  }
+                }}
+              >
                 Refresh
               </Button>
             </Box>
@@ -266,104 +692,296 @@ const HousekeepingStaffDashboard: React.FC = () => {
                 </Typography>
               </Box>
             ) : (
-              <TableContainer component={Paper}>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Room</TableCell>
-                      <TableCell>Type</TableCell>
-                      <TableCell>Description</TableCell>
-                      <TableCell>Priority</TableCell>
-                      <TableCell>Status</TableCell>
-                      <TableCell>Due Date</TableCell>
-                      <TableCell>Actions</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {tasks.map((task) => (
-                      <TableRow key={task.id}>
-                        <TableCell>
-                          <Typography variant="subtitle2">
-                            {task.roomNumber}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Chip
-                            label={task.taskType}
-                            color={getTaskTypeColor(task.taskType)}
-                            size="small"
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="body2">
-                            {task.description}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Chip
-                            label={task.priority}
-                            color={task.priority === 'HIGH' ? 'error' : task.priority === 'NORMAL' ? 'warning' : 'default'}
-                            size="small"
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Chip
-                            label={task.status}
-                            color={getStatusColor(task.status)}
-                            size="small"
-                          />
-                        </TableCell>
-                        <TableCell>
-                          {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'N/A'}
-                        </TableCell>
-                        <TableCell>
-                          <Box sx={{ display: 'flex', gap: 1 }}>
-                            {canStartTask(task) && (
-                              <IconButton
-                                color="primary"
-                                onClick={() => handleStartTask(task)}
-                                title="Start Task"
-                              >
-                                <PlayArrowIcon />
-                              </IconButton>
-                            )}
-                            {canCompleteTask(task) && (
-                              <IconButton
-                                color="success"
-                                onClick={() => handleCompleteTask(task)}
-                                title="Complete Task"
-                              >
-                                <CheckCircleIcon />
-                              </IconButton>
-                            )}
-                            {canUpdateStatus(task) && (
-                              <IconButton
-                                color="info"
-                                onClick={() => openStatusDialog(task)}
-                                title="Update Status"
-                              >
-                                <InfoIcon />
-                              </IconButton>
-                            )}
-                          </Box>
-                        </TableCell>
-                      </TableRow>
+              <>
+                {/* Mobile Layout - Cards */}
+                {isMobile ? (
+                  <Box>
+                    {tasks.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((task) => (
+                      <TaskCard key={task.id} task={task} />
                     ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
+                    <TablePagination
+                      component="div"
+                      count={tasks.length}
+                      page={page}
+                      onPageChange={(_, newPage) => setPage(newPage)}
+                      rowsPerPage={rowsPerPage}
+                      onRowsPerPageChange={(event) => {
+                        setRowsPerPage(parseInt(event.target.value, 10));
+                        setPage(0);
+                      }}
+                      rowsPerPageOptions={[5, 10, 25]}
+                    />
+                  </Box>
+                ) : (
+                  /* Elegant Premium Desktop Layout - Table */
+                  <TableContainer 
+                    component={Paper}
+                    sx={{
+                      boxShadow: 'none',
+                      borderRadius: 0,
+                      overflow: 'hidden',
+                      border: 'none'
+                    }}
+                  >
+                    <Table>
+                      <TableHead>
+                        <TableRow
+                          sx={{
+                            backgroundColor: 'transparent',
+                            borderBottom: '1px solid',
+                            borderColor: 'divider',
+                            '& .MuiTableCell-head': {
+                              color: COLORS.SLATE_800,
+                              fontWeight: 700,
+                              fontSize: '0.6875rem',
+                              letterSpacing: '0.5px',
+                              textTransform: 'uppercase',
+                              border: 'none',
+                              padding: '12px 16px',
+                              backgroundColor: 'transparent',
+                            }
+                          }}
+                        >
+                          <TableCell>Room</TableCell>
+                          <TableCell>Type</TableCell>
+                          <TableCell>Description</TableCell>
+                          <TableCell>Priority</TableCell>
+                          <TableCell>Status</TableCell>
+                          <TableCell>Due Date</TableCell>
+                          <TableCell>Actions</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {tasks.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((task, index) => (
+                          <TableRow 
+                            key={task.id}
+                            sx={{
+                              transition: 'all 0.15s ease',
+                              '&:hover': {
+                                backgroundColor: 'action.hover',
+                              },
+                              '&:last-child .MuiTableCell-root': {
+                                borderBottom: 'none',
+                              },
+                              '& .MuiTableCell-root': {
+                                borderBottom: '1px solid',
+                                borderColor: 'divider',
+                                padding: '20px 16px',
+                              }
+                            }}
+                          >
+                            <TableCell>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <RoomIcon 
+                                  sx={{ 
+                                    color: 'text.secondary',
+                                    fontSize: '1.1rem'
+                                  }} 
+                                />
+                                <Typography 
+                                  variant="body2"
+                                  sx={{ fontWeight: 600, color: 'text.primary' }}
+                                >
+                                  {task.roomNumber}
+                                </Typography>
+                              </Box>
+                            </TableCell>
+                            <TableCell>
+                              <Chip
+                                label={task.taskType}
+                                color={getTaskTypeColor(task.taskType)}
+                                size="small"
+                                variant="outlined"
+                                sx={{
+                                  fontWeight: 500,
+                                  borderWidth: 1.5,
+                                  fontSize: '0.75rem'
+                                }}
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Typography 
+                                variant="body2"
+                                sx={{ 
+                                  fontWeight: 400,
+                                  color: 'text.primary',
+                                  lineHeight: 1.5
+                                }}
+                              >
+                                {task.title || task.description}
+                              </Typography>
+                            </TableCell>
+                            <TableCell>
+                              <Chip
+                                label={task.priority}
+                                color={task.priority === 'HIGH' ? 'error' : task.priority === 'NORMAL' ? 'warning' : 'default'}
+                                size="small"
+                                variant="outlined"
+                                sx={{
+                                  fontWeight: 500,
+                                  borderWidth: 1.5,
+                                  fontSize: '0.75rem'
+                                }}
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Chip
+                                label={task.status}
+                                color={getStatusChipColor(task.status)}
+                                size="small"
+                                variant="filled"
+                                sx={{
+                                  fontWeight: 500,
+                                  fontSize: '0.75rem'
+                                }}
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <AccessTimeIcon 
+                                  sx={{ 
+                                    color: 'text.secondary',
+                                    fontSize: '1rem'
+                                  }} 
+                                />
+                                <Typography 
+                                  variant="body2"
+                                  sx={{ color: 'text.secondary', fontWeight: 400 }}
+                                >
+                                  {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'N/A'}
+                                </Typography>
+                              </Box>
+                            </TableCell>
+                            <TableCell>
+                              <Box sx={{ display: 'flex', gap: 0.5 }}>
+                                {canStartTask(task) && (
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => handleStartTask(task)}
+                                    title="Start Task"
+                                    sx={{
+                                      color: 'primary.main',
+                                      border: '1px solid',
+                                      borderColor: 'divider',
+                                      '&:hover': {
+                                        backgroundColor: 'primary.main',
+                                        color: 'white',
+                                        borderColor: 'primary.main',
+                                      }
+                                    }}
+                                  >
+                                    <PlayArrowIcon fontSize="small" />
+                                  </IconButton>
+                                )}
+                                {canCompleteTask(task) && (
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => handleCompleteTask(task)}
+                                    title="Complete Task"
+                                    sx={{
+                                      color: 'success.main',
+                                      border: '1px solid',
+                                      borderColor: 'divider',
+                                      '&:hover': {
+                                        backgroundColor: 'success.main',
+                                        color: 'white',
+                                        borderColor: 'success.main',
+                                      }
+                                    }}
+                                  >
+                                    <CheckCircleIcon fontSize="small" />
+                                  </IconButton>
+                                )}
+                                {canUpdateStatus(task) && (
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => openStatusDialog(task)}
+                                    title="Update Status"
+                                    sx={{
+                                      color: 'text.secondary',
+                                      border: '1px solid',
+                                      borderColor: 'divider',
+                                      '&:hover': {
+                                        backgroundColor: 'action.hover',
+                                        color: 'text.primary',
+                                      }
+                                    }}
+                                  >
+                                    <InfoIcon fontSize="small" />
+                                  </IconButton>
+                                )}
+                              </Box>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                    <TablePagination
+                      component="div"
+                      count={tasks.length}
+                      page={page}
+                      onPageChange={(_, newPage) => setPage(newPage)}
+                      rowsPerPage={rowsPerPage}
+                      onRowsPerPageChange={(event) => {
+                        setRowsPerPage(parseInt(event.target.value, 10));
+                        setPage(0);
+                      }}
+                      rowsPerPageOptions={[5, 10, 25, 50]}
+                    />
+                  </TableContainer>
+                )}
+              </>
             )}
           </CardContent>
         </Card>
 
+        {/* Elegant Floating Refresh Button for Mobile */}
+        {isMobile && (
+          <Fab
+            color="primary"
+            aria-label="refresh"
+            sx={{ 
+              position: 'fixed', 
+              bottom: 16, 
+              right: 16,
+              zIndex: 1000,
+              boxShadow: `0 4px 12px ${addAlpha(COLORS.BLACK, 0.15)}`,
+              '&:hover': {
+                boxShadow: `0 6px 20px ${addAlpha(COLORS.BLACK, 0.2)}`,
+              }
+            }}
+            onClick={loadMyTasks}
+            disabled={loading}
+          >
+            {loading ? <CircularProgress size={24} color="inherit" /> : <RefreshIcon />}
+          </Fab>
+        )}
+
         {/* Status Update Dialog */}
-        <Dialog open={statusDialog} onClose={() => setStatusDialog(false)} maxWidth="sm" fullWidth>
-          <DialogTitle>Update Task Status</DialogTitle>
+        <Dialog 
+          open={statusDialog} 
+          onClose={() => setStatusDialog(false)} 
+          maxWidth="sm" 
+          fullWidth
+          fullScreen={isSmallScreen}
+        >
+          <DialogTitle>
+            {isSmallScreen ? (
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                Update Task Status
+                <IconButton onClick={() => setStatusDialog(false)}>
+                  <InfoIcon />
+                </IconButton>
+              </Box>
+            ) : (
+              'Update Task Status'
+            )}
+          </DialogTitle>
           <DialogContent>
             {selectedTask && (
               <Box sx={{ pt: 1 }}>
                 <Typography variant="subtitle2" gutterBottom>
-                  Task: {selectedTask.description} (Room {selectedTask.roomNumber})
+                  Task: {selectedTask.title || selectedTask.description} (Room {selectedTask.roomNumber})
                 </Typography>
                 
                 <FormControl fullWidth sx={{ mb: 2 }}>
@@ -392,10 +1010,188 @@ const HousekeepingStaffDashboard: React.FC = () => {
               </Box>
             )}
           </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setStatusDialog(false)}>Cancel</Button>
-            <Button onClick={handleStatusUpdate} variant="contained">
+          <DialogActions sx={{ p: { xs: 2, sm: 1 } }}>
+            <Button 
+              onClick={() => setStatusDialog(false)} 
+              size={isMobile ? "large" : "medium"}
+              sx={{
+                fontWeight: 500,
+              }}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleStatusUpdate} 
+              variant="contained"
+              size={isMobile ? "large" : "medium"}
+              sx={{
+                fontWeight: 500,
+              }}
+            >
               Update Status
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Task Details Dialog */}
+        <Dialog
+          open={showTaskDetails}
+          onClose={() => setShowTaskDetails(false)}
+          maxWidth="sm"
+          fullWidth
+          fullScreen={isSmallScreen}
+        >
+          <DialogTitle>
+            {isSmallScreen ? (
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                Task Details
+                <IconButton onClick={() => setShowTaskDetails(false)}>
+                  <InfoIcon />
+                </IconButton>
+              </Box>
+            ) : (
+              'Task Details'
+            )}
+          </DialogTitle>
+          <DialogContent>
+            {selectedTask && (
+              <Box sx={{ pt: 1 }}>
+                <List>
+                  <ListItem>
+                    <ListItemIcon>
+                      <RoomIcon />
+                    </ListItemIcon>
+                    <ListItemText 
+                      primary="Room" 
+                      secondary={selectedTask.roomNumber} 
+                    />
+                  </ListItem>
+                  <Divider />
+                  
+                  <ListItem>
+                    <ListItemIcon>
+                      <AssignmentIcon />
+                    </ListItemIcon>
+                    <ListItemText 
+                      primary="Task Type" 
+                      secondary={selectedTask.taskType} 
+                    />
+                  </ListItem>
+                  <Divider />
+                  
+                  <ListItem>
+                    <ListItemIcon>
+                      <InfoIcon />
+                    </ListItemIcon>
+                    <ListItemText 
+                      primary="Description" 
+                      secondary={selectedTask.title || selectedTask.description} 
+                    />
+                  </ListItem>
+                  <Divider />
+                  
+                  <ListItem>
+                    <ListItemIcon>
+                      <FlagIcon />
+                    </ListItemIcon>
+                    <ListItemText 
+                      primary="Priority" 
+                      secondary={
+                        <Chip
+                          label={selectedTask.priority}
+                          color={selectedTask.priority === 'HIGH' ? 'error' : selectedTask.priority === 'NORMAL' ? 'warning' : 'default'}
+                          size="small"
+                        />
+                      } 
+                    />
+                  </ListItem>
+                  <Divider />
+                  
+                  <ListItem>
+                    <ListItemIcon>
+                      <CheckCircleIcon />
+                    </ListItemIcon>
+                    <ListItemText 
+                      primary="Status" 
+                      secondary={
+                        <Chip
+                          label={selectedTask.status}
+                          color={getStatusChipColor(selectedTask.status)}
+                          size="small"
+                        />
+                      } 
+                    />
+                  </ListItem>
+                  
+                  {selectedTask.dueDate && (
+                    <>
+                      <Divider />
+                      <ListItem>
+                        <ListItemIcon>
+                          <AccessTimeIcon />
+                        </ListItemIcon>
+                        <ListItemText 
+                          primary="Due Date" 
+                          secondary={new Date(selectedTask.dueDate).toLocaleDateString()} 
+                        />
+                      </ListItem>
+                    </>
+                  )}
+                </List>
+
+                <Box sx={{ mt: 2, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                  {canStartTask(selectedTask) && (
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      startIcon={<PlayArrowIcon />}
+                      onClick={() => {
+                        setShowTaskDetails(false);
+                        handleStartTask(selectedTask);
+                      }}
+                      fullWidth={isSmallScreen}
+                    >
+                      Start Task
+                    </Button>
+                  )}
+                  {canCompleteTask(selectedTask) && (
+                    <Button
+                      variant="contained"
+                      color="success"
+                      startIcon={<CheckCircleIcon />}
+                      onClick={() => {
+                        setShowTaskDetails(false);
+                        handleCompleteTask(selectedTask);
+                      }}
+                      fullWidth={isSmallScreen}
+                    >
+                      Complete Task
+                    </Button>
+                  )}
+                  {canUpdateStatus(selectedTask) && (
+                    <Button
+                      variant="outlined"
+                      startIcon={<InfoIcon />}
+                      onClick={() => {
+                        setShowTaskDetails(false);
+                        openStatusDialog(selectedTask);
+                      }}
+                      fullWidth={isSmallScreen}
+                    >
+                      Update Status
+                    </Button>
+                  )}
+                </Box>
+              </Box>
+            )}
+          </DialogContent>
+          <DialogActions sx={{ p: { xs: 2, sm: 1 } }}>
+            <Button 
+              onClick={() => setShowTaskDetails(false)}
+              size={isMobile ? "large" : "medium"}
+              fullWidth={isSmallScreen}
+            >
+              Close
             </Button>
           </DialogActions>
         </Dialog>

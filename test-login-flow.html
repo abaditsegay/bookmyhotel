@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login and Room Cache Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .status {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        input {
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 200px;
+        }
+        pre {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 15px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Login and Room Cache Test</h1>
+    <p>This page tests the complete login → room caching flow.</p>
+    
+    <div>
+        <h3>Login Test</h3>
+        <input type="email" id="email" placeholder="Email" value="admin.grandplaza@bookmyhotel.com">
+        <input type="password" id="password" placeholder="Password" value="admin123">
+        <button onclick="testLogin()">Test Login</button>
+        <button onclick="logout()">Logout</button>
+    </div>
+    
+    <div>
+        <h3>Room Cache Test</h3>
+        <button onclick="checkCachedRooms()">Check Cached Rooms</button>
+        <button onclick="clearDatabase()">Clear Database</button>
+        <button onclick="testRoomAPI()">Test Room API (with auth)</button>
+    </div>
+    
+    <div id="output"></div>
+
+    <script>
+        let authToken = null;
+
+        // IndexedDB management
+        class TestOfflineStorage {
+            constructor() {
+                this.dbName = 'BookMyHotelOfflineDB';
+                this.version = 2;
+                this.db = null;
+            }
+
+            async initDatabase() {
+                return new Promise((resolve, reject) => {
+                    const request = indexedDB.open(this.dbName, this.version);
+                    
+                    request.onerror = () => {
+                        reject(new Error('Failed to open database'));
+                    };
+                    
+                    request.onsuccess = (event) => {
+                        this.db = event.target.result;
+                        resolve(this.db);
+                    };
+                    
+                    request.onupgradeneeded = (event) => {
+                        const db = event.target.result;
+                        
+                        if (!db.objectStoreNames.contains('rooms')) {
+                            const roomStore = db.createObjectStore('rooms', { keyPath: 'id' });
+                            roomStore.createIndex('roomNumber', 'roomNumber', { unique: false });
+                            roomStore.createIndex('isAvailable', 'isAvailable', { unique: false });
+                        }
+                        
+                        if (!db.objectStoreNames.contains('bookings')) {
+                            db.createObjectStore('bookings', { keyPath: 'id' });
+                        }
+                        
+                        if (!db.objectStoreNames.contains('staffSessions')) {
+                            db.createObjectStore('staffSessions', { keyPath: 'id' });
+                        }
+                    };
+                });
+            }
+
+            async getCachedRooms() {
+                if (!this.db) {
+                    await this.initDatabase();
+                }
+
+                return new Promise((resolve, reject) => {
+                    const transaction = this.db.transaction(['rooms'], 'readonly');
+                    const objectStore = transaction.objectStore('rooms');
+                    const request = objectStore.getAll();
+
+                    request.onerror = () => {
+                        reject(new Error('Failed to get cached rooms'));
+                    };
+
+                    request.onsuccess = () => {
+                        resolve(request.result);
+                    };
+                });
+            }
+
+            async clearDatabase() {
+                if (!this.db) {
+                    await this.initDatabase();
+                }
+
+                return new Promise((resolve, reject) => {
+                    const transaction = this.db.transaction(['rooms', 'bookings', 'staffSessions'], 'readwrite');
+                    
+                    const roomStore = transaction.objectStore('rooms');
+                    const bookingStore = transaction.objectStore('bookings');
+                    const sessionStore = transaction.objectStore('staffSessions');
+                    
+                    roomStore.clear();
+                    bookingStore.clear();
+                    sessionStore.clear();
+
+                    transaction.oncomplete = () => {
+                        resolve('Database cleared successfully');
+                    };
+
+                    transaction.onerror = () => {
+                        reject(new Error('Failed to clear database'));
+                    };
+                });
+            }
+        }
+
+        const testStorage = new TestOfflineStorage();
+
+        function addOutput(message, type = 'info') {
+            const output = document.getElementById('output');
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.innerHTML = message;
+            output.appendChild(div);
+        }
+
+        async function testLogin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            addOutput(`Attempting login with ${email}...`, 'info');
+            
+            try {
+                const response = await fetch('http://localhost:8080/managemyhotel/api/rooms', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    authToken = result.token;
+                    addOutput(`✅ Login successful! Role: ${result.role}`, 'success');
+                    
+                    // Store token in localStorage to simulate the main app
+                    localStorage.setItem('token', authToken);
+                    localStorage.setItem('user', JSON.stringify(result));
+                    
+                    // Wait a moment and then check if rooms were cached
+                    setTimeout(checkCachedRooms, 2000);
+                } else {
+                    const error = await response.json();
+                    addOutput(`❌ Login failed: ${error.message}`, 'error');
+                }
+            } catch (error) {
+                addOutput(`❌ Login error: ${error.message}`, 'error');
+            }
+        }
+
+        async function logout() {
+            authToken = null;
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            addOutput('✅ Logged out successfully', 'success');
+        }
+
+        async function checkCachedRooms() {
+            addOutput('Checking cached rooms...', 'info');
+            try {
+                const rooms = await testStorage.getCachedRooms();
+                addOutput(`📊 Found ${rooms.length} cached rooms`, 'info');
+                
+                if (rooms.length > 0) {
+                    const roomsDisplay = rooms.map(room => ({
+                        id: room.id,
+                        roomNumber: room.roomNumber,
+                        roomType: room.roomType,
+                        isAvailable: room.isAvailable,
+                        lastUpdated: room.lastUpdated
+                    }));
+                    addOutput(`<pre>${JSON.stringify(roomsDisplay, null, 2)}</pre>`, 'success');
+                } else {
+                    addOutput('No rooms found in cache.', 'info');
+                }
+            } catch (error) {
+                addOutput(`❌ Failed to check cached rooms: ${error.message}`, 'error');
+            }
+        }
+
+        async function clearDatabase() {
+            addOutput('Clearing database...', 'info');
+            try {
+                await testStorage.clearDatabase();
+                addOutput('✅ Database cleared successfully!', 'success');
+            } catch (error) {
+                addOutput(`❌ Failed to clear database: ${error.message}`, 'error');
+            }
+        }
+
+        async function testRoomAPI() {
+            if (!authToken) {
+                addOutput('❌ Please login first to get an auth token', 'error');
+                return;
+            }
+            
+            addOutput('Testing authenticated room API...', 'info');
+            try {
+                const response = await fetch('http://localhost:8080/managemyhotel/api/rooms', {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const rooms = await response.json();
+                    addOutput(`✅ API endpoint working! Found ${rooms.length} rooms`, 'success');
+                    if (rooms.length > 0) {
+                        addOutput(`<pre>${JSON.stringify(rooms.slice(0, 3), null, 2)}</pre>`, 'info');
+                    }
+                } else {
+                    addOutput(`❌ API endpoint failed: ${response.status} ${response.statusText}`, 'error');
+                }
+            } catch (error) {
+                addOutput(`❌ API request failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Initialize on load
+        window.onload = async function() {
+            addOutput('Login and Room Cache Test Tool Ready', 'info');
+            
+            // Check if there's already a token in localStorage
+            const storedToken = localStorage.getItem('token');
+            if (storedToken) {
+                authToken = storedToken;
+                addOutput('Found existing auth token in localStorage', 'info');
+            }
+            
+            // Initialize database
+            try {
+                await testStorage.initDatabase();
+                addOutput('✅ IndexedDB initialized successfully', 'success');
+            } catch (error) {
+                addOutput(`❌ IndexedDB initialization failed: ${error.message}`, 'error');
+            }
+        };
+    </script>
+</body>
+</html>

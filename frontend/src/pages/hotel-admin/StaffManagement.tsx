@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { COLORS } from '../../theme/themeColors';
 import {
   Paper,
   Table,
@@ -10,7 +11,6 @@ import {
   TablePagination,
   IconButton,
   Button,
-  TextField,
   InputAdornment,
   Box,
   Typography,
@@ -21,9 +21,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  FormControl,
-  InputLabel,
-  Select,
   MenuItem,
   Grid,
   Switch,
@@ -33,13 +30,14 @@ import {
 } from '@mui/material';
 import {
   Search as SearchIcon,
-  Delete as DeleteIcon,
   Visibility as ViewIcon,
   Refresh as RefreshIcon,
   PersonAdd as PersonAddIcon,
 } from '@mui/icons-material';
 import { hotelAdminApi, StaffResponse, StaffCreateRequest } from '../../services/hotelAdminApi';
 import { useAuth } from '../../contexts/AuthContext';
+import PremiumTextField from '../../components/common/PremiumTextField';
+import PremiumSelect from '../../components/common/PremiumSelect';
 import { useNavigate } from 'react-router-dom';
 
 interface StaffFilters {
@@ -69,8 +67,6 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
 
   // Dialog states
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [selectedStaff, setSelectedStaff] = useState<StaffResponse | null>(null);
 
   // Form state
   const [staffForm, setStaffForm] = useState<StaffCreateRequest>({
@@ -82,7 +78,7 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
     roles: ['FRONTDESK'],
   });
 
-  const staffRoles = ['FRONTDESK', 'HOUSEKEEPING', 'HOTEL_ADMIN'];
+  const staffRoles = ['FRONTDESK', 'HOUSEKEEPING', 'MAINTENANCE', 'OPERATIONAL_ADMIN'];
   const statusOptions = ['ALL', 'ACTIVE', 'INACTIVE'];
 
   const loadStaff = useCallback(async () => {
@@ -102,8 +98,8 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
       );
       
       if (response.success && response.data) {
-        console.log('Staff API Response:', response.data);
-        console.log('Page Object:', response.data.page);
+        // console.log('Staff API Response:', response.data);
+        // console.log('Page Object:', response.data.page);
         
         setStaff(response.data.content);
         
@@ -111,14 +107,14 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
         const pageInfo = response.data.page || {};
         const totalElements = pageInfo.totalElements || 0;
         
-        console.log('Total Elements from page object:', totalElements);
+        // console.log('Total Elements from page object:', totalElements);
         setTotalElements(totalElements);
       } else {
         setError(response.message || 'Failed to load staff');
         setTotalElements(0);
       }
     } catch (err) {
-      console.error('Error loading staff:', err);
+      // console.error('Error loading staff:', err);
       setError('Failed to load staff. Please try again.');
       setTotalElements(0);
     } finally {
@@ -202,30 +198,8 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
         setError(response.message || 'Failed to create staff member. Please check the email is unique.');
       }
     } catch (err) {
-      console.error('Error creating staff:', err);
+      // console.error('Error creating staff:', err);
       setError('Failed to create staff member. Please check the email is unique.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDeleteStaff = async () => {
-    if (!selectedStaff || !token) return;
-    
-    try {
-      setLoading(true);
-      const response = await hotelAdminApi.deleteStaff(token, selectedStaff.id);
-      if (response.success) {
-        setDeleteDialogOpen(false);
-        setSelectedStaff(null);
-        await loadStaff();
-        setError(null);
-      } else {
-        setError(response.message || 'Failed to delete staff member.');
-      }
-    } catch (err) {
-      console.error('Error deleting staff:', err);
-      setError('Failed to delete staff member.');
     } finally {
       setLoading(false);
     }
@@ -247,7 +221,7 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
         setError(response.message || 'Failed to update staff status');
       }
     } catch (err) {
-      console.error('Error toggling staff status:', err);
+      // console.error('Error toggling staff status:', err);
       setError('Failed to update staff status.');
     } finally {
       setLoading(false);
@@ -255,7 +229,7 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
   };
 
   const getStatusColor = (isActive: boolean) => {
-    return isActive ? 'success' : 'error';
+    return isActive ? 'primary' : 'error';
   };
 
   const resetFilters = () => {
@@ -306,10 +280,10 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
         )}
 
         {/* Search and Filters */}
-        <Paper sx={{ p: 2, mb: 2 }}>
+        <Box sx={{ mb: 2 }}>
           <Grid container spacing={2} alignItems="center">
             <Grid item xs={12} md={4}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Search staff..."
                 value={filters.search}
@@ -324,33 +298,29 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
               />
             </Grid>
             <Grid item xs={12} md={3}>
-              <FormControl fullWidth>
-                <InputLabel>Role</InputLabel>
-                <Select
-                  value={filters.role}
-                  label="Role"
-                  onChange={(e) => handleFilterChange('role', e.target.value)}
-                >
-                  <MenuItem value="">All Roles</MenuItem>
-                  {staffRoles.map(role => (
-                    <MenuItem key={role} value={role}>{role.replace('_', ' ')}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+              <PremiumSelect
+                fullWidth
+                label="Role"
+                value={filters.role}
+                onChange={(e) => handleFilterChange('role', e.target.value)}
+              >
+                <MenuItem value="">All Roles</MenuItem>
+                {staffRoles.map(role => (
+                  <MenuItem key={role} value={role}>{role.replace('_', ' ')}</MenuItem>
+                ))}
+              </PremiumSelect>
             </Grid>
             <Grid item xs={12} md={3}>
-              <FormControl fullWidth>
-                <InputLabel>Status</InputLabel>
-                <Select
-                  value={filters.status}
-                  label="Status"
-                  onChange={(e) => handleFilterChange('status', e.target.value)}
-                >
+              <PremiumSelect
+                fullWidth
+                label="Status"
+                value={filters.status}
+                onChange={(e) => handleFilterChange('status', e.target.value)}
+              >
                   {statusOptions.map(status => (
-                    <MenuItem key={status} value={status}>{status}</MenuItem>
+                    <MenuItem key={status} value={status === 'ALL' ? '' : status}>{status}</MenuItem>
                   ))}
-                </Select>
-              </FormControl>
+              </PremiumSelect>
             </Grid>
             <Grid item xs={12} md={2}>
               <Box sx={{ display: 'flex', gap: 1 }}>
@@ -370,14 +340,24 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
               </Box>
             </Grid>
           </Grid>
-        </Paper>
+        </Box>
 
         {/* Staff Table */}
         <Paper>
           <TableContainer>
             <Table>
               <TableHead>
-                <TableRow>
+                <TableRow
+                  sx={{
+                    background: `linear-gradient(135deg, ${COLORS.BG_DEFAULT} 0%, ${COLORS.BG_LIGHT} 50%, ${COLORS.BG_DEFAULT} 100%)`,
+                    borderBottom: `2px solid ${COLORS.SECONDARY}`,
+                    '& .MuiTableCell-head': {
+                      color: COLORS.PRIMARY,
+                      fontWeight: 700,
+                      textTransform: 'uppercase',
+                    }
+                  }}
+                >
                   <TableCell>Name</TableCell>
                   <TableCell>Email</TableCell>
                   <TableCell>Phone</TableCell>
@@ -448,17 +428,6 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
                           >
                             <ViewIcon />
                           </IconButton>
-                          <IconButton
-                            size="small"
-                            onClick={() => {
-                              setSelectedStaff(member);
-                              setDeleteDialogOpen(true);
-                            }}
-                            title="Delete Staff"
-                            color="error"
-                          >
-                            <DeleteIcon />
-                          </IconButton>
                         </Box>
                       </TableCell>
                     </TableRow>
@@ -489,7 +458,7 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
           <DialogContent>
             <Grid container spacing={2} sx={{ mt: 1 }}>
               <Grid item xs={12} md={6}>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="Email"
                   type="email"
@@ -499,7 +468,7 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
                 />
               </Grid>
               <Grid item xs={12} md={6}>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="Password"
                   type="password"
@@ -515,7 +484,7 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
                 />
               </Grid>
               <Grid item xs={12} md={6}>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="First Name"
                   value={staffForm.firstName}
@@ -524,7 +493,7 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
                 />
               </Grid>
               <Grid item xs={12} md={6}>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="Last Name"
                   value={staffForm.lastName}
@@ -533,7 +502,7 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
                 />
               </Grid>
               <Grid item xs={12}>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="Phone (Optional)"
                   value={staffForm.phone}
@@ -581,30 +550,7 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
           </DialogActions>
         </Dialog>
 
-        {/* Delete Confirmation Dialog */}
-        <Dialog
-          open={deleteDialogOpen}
-          onClose={() => setDeleteDialogOpen(false)}
-        >
-          <DialogTitle>Confirm Delete</DialogTitle>
-          <DialogContent>
-            <Typography>
-              Are you sure you want to delete {selectedStaff?.firstName} {selectedStaff?.lastName}? 
-              This action cannot be undone and will deactivate the staff member.
-            </Typography>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
-            <Button 
-              onClick={handleDeleteStaff}
-              variant="contained"
-              color="error"
-              disabled={loading}
-            >
-              Delete
-            </Button>
-          </DialogActions>
-        </Dialog>
+
     </Box>
   );
 };

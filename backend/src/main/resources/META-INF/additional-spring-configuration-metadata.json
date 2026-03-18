@@ -1,0 +1,323 @@
+{
+  "properties": [
+    {
+      "name": "jwt.secret.key",
+      "type": "java.lang.String",
+      "description": "JWT Secret Key for token signing and verification"
+    },
+    {
+      "name": "jwt.expiration.time",
+      "type": "java.lang.Long",
+      "description": "JWT token expiration time in milliseconds",
+      "defaultValue": 86400000
+    },
+    {
+      "name": "jwt.refresh.expiration.time",
+      "type": "java.lang.Long",
+      "description": "JWT refresh token expiration time in milliseconds",
+      "defaultValue": 604800000
+    },
+    {
+      "name": "jwt.issuer",
+      "type": "java.lang.String",
+      "description": "JWT token issuer identifier",
+      "defaultValue": "bookmyhotel-backend"
+    },
+    {
+      "name": "security.jwt.cookie-name",
+      "type": "java.lang.String",
+      "description": "Name of the JWT cookie",
+      "defaultValue": "__Secure-JWT-Token"
+    },
+    {
+      "name": "security.jwt.cookie-secure",
+      "type": "java.lang.Boolean",
+      "description": "Whether JWT cookie should be secure",
+      "defaultValue": true
+    },
+    {
+      "name": "security.jwt.cookie-http-only",
+      "type": "java.lang.Boolean",
+      "description": "Whether JWT cookie should be HTTP-only",
+      "defaultValue": true
+    },
+    {
+      "name": "security.jwt.cookie-same-site",
+      "type": "java.lang.String",
+      "description": "SameSite attribute for JWT cookie",
+      "defaultValue": "strict"
+    },
+    {
+      "name": "security.session.timeout.minutes",
+      "type": "java.lang.Integer",
+      "description": "Session timeout in minutes",
+      "defaultValue": 30
+    },
+    {
+      "name": "security.session.max-concurrent",
+      "type": "java.lang.Integer",
+      "description": "Maximum concurrent sessions per user",
+      "defaultValue": 5
+    },
+    {
+      "name": "security.session.cleanup.interval.minutes",
+      "type": "java.lang.Integer",
+      "description": "Session cleanup interval in minutes",
+      "defaultValue": 5
+    },
+    {
+      "name": "security.password.min-length",
+      "type": "java.lang.Integer",
+      "description": "Minimum password length",
+      "defaultValue": 8
+    },
+    {
+      "name": "security.password.max-length",
+      "type": "java.lang.Integer",
+      "description": "Maximum password length",
+      "defaultValue": 128
+    },
+    {
+      "name": "security.password.require-uppercase",
+      "type": "java.lang.Boolean",
+      "description": "Whether password must contain uppercase letters",
+      "defaultValue": true
+    },
+    {
+      "name": "security.password.require-lowercase",
+      "type": "java.lang.Boolean",
+      "description": "Whether password must contain lowercase letters",
+      "defaultValue": true
+    },
+    {
+      "name": "security.password.require-digits",
+      "type": "java.lang.Boolean",
+      "description": "Whether password must contain digits",
+      "defaultValue": true
+    },
+    {
+      "name": "security.password.require-special-chars",
+      "type": "java.lang.Boolean",
+      "description": "Whether password must contain special characters",
+      "defaultValue": true
+    },
+    {
+      "name": "stripe.api.key",
+      "type": "java.lang.String",
+      "description": "Stripe API secret key"
+    },
+    {
+      "name": "stripe.webhook.secret",
+      "type": "java.lang.String",
+      "description": "Stripe webhook endpoint secret"
+    },
+    {
+      "name": "mbirr.api.base-url",
+      "type": "java.lang.String",
+      "description": "M-birr API base URL",
+      "defaultValue": "https://api.mbirr.et"
+    },
+    {
+      "name": "mbirr.api.key",
+      "type": "java.lang.String",
+      "description": "M-birr API key"
+    },
+    {
+      "name": "mbirr.api.secret",
+      "type": "java.lang.String",
+      "description": "M-birr API secret"
+    },
+    {
+      "name": "mbirr.merchant.id",
+      "type": "java.lang.String",
+      "description": "M-birr merchant ID"
+    },
+    {
+      "name": "mbirr.merchant.code",
+      "type": "java.lang.String",
+      "description": "M-birr merchant code"
+    },
+    {
+      "name": "mbirr.webhook.secret",
+      "type": "java.lang.String",
+      "description": "M-birr webhook secret"
+    },
+    {
+      "name": "mbirr.payment.timeout",
+      "type": "java.lang.Integer",
+      "description": "M-birr payment timeout in seconds",
+      "defaultValue": 900
+    },
+    {
+      "name": "telebirr.api.base-url",
+      "type": "java.lang.String",
+      "description": "Telebirr API base URL",
+      "defaultValue": "https://api.telebirr.et"
+    },
+    {
+      "name": "telebirr.api.key",
+      "type": "java.lang.String",
+      "description": "Telebirr API key"
+    },
+    {
+      "name": "telebirr.api.secret",
+      "type": "java.lang.String",
+      "description": "Telebirr API secret"
+    },
+    {
+      "name": "telebirr.merchant.id",
+      "type": "java.lang.String",
+      "description": "Telebirr merchant ID"
+    },
+    {
+      "name": "telebirr.merchant.code",
+      "type": "java.lang.String",
+      "description": "Telebirr merchant code"
+    },
+    {
+      "name": "telebirr.webhook.secret",
+      "type": "java.lang.String",
+      "description": "Telebirr webhook secret"
+    },
+    {
+      "name": "telebirr.payment.timeout",
+      "type": "java.lang.Integer",
+      "description": "Telebirr payment timeout in seconds",
+      "defaultValue": 900
+    },
+    {
+      "name": "ethiopian.payment.currency",
+      "type": "java.lang.String",
+      "description": "Ethiopian payment currency",
+      "defaultValue": "ETB"
+    },
+    {
+      "name": "ethiopian.payment.country",
+      "type": "java.lang.String",
+      "description": "Ethiopian payment country code",
+      "defaultValue": "ET"
+    },
+    {
+      "name": "ethiopian.payment.return-url",
+      "type": "java.lang.String",
+      "description": "Ethiopian payment return URL"
+    },
+    {
+      "name": "ethiopian.payment.cancel-url",
+      "type": "java.lang.String",
+      "description": "Ethiopian payment cancel URL"
+    },
+    {
+      "name": "app.cors.allowed-origins",
+      "type": "java.lang.String",
+      "description": "CORS allowed origins"
+    },
+    {
+      "name": "app.cors.allowed-methods",
+      "type": "java.lang.String",
+      "description": "CORS allowed methods",
+      "defaultValue": "GET,POST,PUT,DELETE,OPTIONS"
+    },
+    {
+      "name": "app.cors.allowed-headers",
+      "type": "java.lang.String",
+      "description": "CORS allowed headers",
+      "defaultValue": "*"
+    },
+    {
+      "name": "app.cors.allow-credentials",
+      "type": "java.lang.Boolean",
+      "description": "Whether CORS should allow credentials",
+      "defaultValue": true
+    },
+    {
+      "name": "microsoft.graph.client-id",
+      "type": "java.lang.String",
+      "description": "Microsoft Graph client ID"
+    },
+    {
+      "name": "microsoft.graph.tenant-id",
+      "type": "java.lang.String",
+      "description": "Microsoft Graph tenant ID"
+    },
+    {
+      "name": "microsoft.graph.client-secret",
+      "type": "java.lang.String",
+      "description": "Microsoft Graph client secret"
+    },
+    {
+      "name": "microsoft.graph.scopes",
+      "type": "java.lang.String",
+      "description": "Microsoft Graph OAuth scopes",
+      "defaultValue": "https://graph.microsoft.com/.default"
+    },
+    {
+      "name": "aws.s3.bucket.name",
+      "type": "java.lang.String",
+      "description": "AWS S3 bucket name for file storage"
+    },
+    {
+      "name": "aws.s3.region",
+      "type": "java.lang.String",
+      "description": "AWS S3 bucket region",
+      "defaultValue": "us-east-1"
+    },
+    {
+      "name": "aws.s3.access-key-id",
+      "type": "java.lang.String",
+      "description": "AWS S3 access key ID"
+    },
+    {
+      "name": "aws.s3.secret-access-key",
+      "type": "java.lang.String",
+      "description": "AWS S3 secret access key"
+    },
+    {
+      "name": "image.upload.max-file-size",
+      "type": "java.lang.String",
+      "description": "Maximum file size for image uploads",
+      "defaultValue": "10MB"
+    },
+    {
+      "name": "image.upload.max-width",
+      "type": "java.lang.Integer",
+      "description": "Maximum width for uploaded images",
+      "defaultValue": 2048
+    },
+    {
+      "name": "image.upload.max-height",
+      "type": "java.lang.Integer",
+      "description": "Maximum height for uploaded images",
+      "defaultValue": 2048
+    },
+    {
+      "name": "image.upload.allowed-types",
+      "type": "java.lang.String",
+      "description": "Allowed MIME types for image uploads",
+      "defaultValue": "image/jpeg,image/jpg,image/png,image/webp"
+    },
+    {
+      "name": "image.upload.allowed-extensions",
+      "type": "java.lang.String",
+      "description": "Allowed file extensions for image uploads",
+      "defaultValue": "jpg,jpeg,png,webp"
+    },
+    {
+      "name": "app.name",
+      "type": "java.lang.String",
+      "description": "Application name",
+      "defaultValue": "BookMyHotel"
+    },
+    {
+      "name": "app.url",
+      "type": "java.lang.String",
+      "description": "Application base URL",
+      "defaultValue": "http://localhost:3000"
+    },
+    {
+      "name": "app.email.from",
+      "type": "java.lang.String",
+      "description": "Default email sender address"
+    }
+  ]
+}

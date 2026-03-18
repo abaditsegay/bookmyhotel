@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Date Formatting Test</title>
+</head>
+<body>
+    <h1>Date Formatting Test</h1>
+    
+    <div>
+        <h2>Test Date Input</h2>
+        <input type="date" id="testDate" value="2025-09-26">
+        <button onclick="testDateFormatting()">Test Formatting</button>
+    </div>
+    
+    <div id="results"></div>
+
+    <script>
+        // Simulate the dateUtils functions
+        function formatDateForInput(dateString) {
+            console.log('[formatDateForInput] Input:', dateString);
+            
+            if (!dateString) {
+                console.log('[formatDateForInput] No date provided, returning empty string');
+                return '';
+            }
+            
+            try {
+                // Handle different input formats
+                let date;
+                if (dateString instanceof Date) {
+                    date = dateString;
+                } else if (typeof dateString === 'string') {
+                    // If it's already in YYYY-MM-DD format, return as-is
+                    if (/^\d{4}-\d{2}-\d{2}$/.test(dateString.trim())) {
+                        console.log('[formatDateForInput] Already in YYYY-MM-DD format:', dateString.trim());
+                        return dateString.trim();
+                    }
+                    
+                    // Try parsing as ISO string or other formats
+                    date = new Date(dateString);
+                } else {
+                    console.log('[formatDateForInput] Invalid date type:', typeof dateString);
+                    return '';
+                }
+                
+                if (isNaN(date.getTime())) {
+                    console.log('[formatDateForInput] Invalid date:', dateString);
+                    return '';
+                }
+                
+                // Use UTC to avoid timezone shifts for date-only inputs
+                const year = date.getUTCFullYear();
+                const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+                const day = String(date.getUTCDate()).padStart(2, '0');
+                
+                const result = `${year}-${month}-${day}`;
+                console.log('[formatDateForInput] Final result:', result);
+                return result;
+            } catch (error) {
+                console.error('[formatDateForInput] Error formatting date:', error);
+                return '';
+            }
+        }
+
+        function formatDateForAPI(dateString) {
+            console.log('[formatDateForAPI] Input:', dateString);
+            
+            if (!dateString) {
+                console.log('[formatDateForAPI] No date provided, returning empty string');
+                return '';
+            }
+            
+            try {
+                // If already in YYYY-MM-DD format, return as-is for API
+                if (/^\d{4}-\d{2}-\d{2}$/.test(dateString.trim())) {
+                    console.log('[formatDateForAPI] Already in API format:', dateString.trim());
+                    return dateString.trim();
+                }
+                
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) {
+                    console.log('[formatDateForAPI] Invalid date:', dateString);
+                    return '';
+                }
+                
+                // Use UTC to avoid timezone issues for date-only values
+                const year = date.getUTCFullYear();
+                const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+                const day = String(date.getUTCDate()).padStart(2, '0');
+                
+                const result = `${year}-${month}-${day}`;
+                console.log('[formatDateForAPI] Final result:', result);
+                return result;
+            } catch (error) {
+                console.error('[formatDateForAPI] Error formatting date:', error);
+                return '';
+            }
+        }
+
+        function testDateFormatting() {
+            const input = document.getElementById('testDate').value;
+            const resultsDiv = document.getElementById('results');
+            
+            console.log('=== Date Formatting Test ===');
+            console.log('Input value:', input);
+            
+            const formattedForInput = formatDateForInput(input);
+            const formattedForAPI = formatDateForAPI(input);
+            
+            // Test what happens when we create a Date object
+            const dateObj = new Date(input);
+            console.log('Date object created:', dateObj);
+            console.log('Date getTime():', dateObj.getTime());
+            console.log('Date toISOString():', dateObj.toISOString());
+            console.log('Date getUTCFullYear():', dateObj.getUTCFullYear());
+            console.log('Date getUTCMonth() + 1:', dateObj.getUTCMonth() + 1);
+            console.log('Date getUTCDate():', dateObj.getUTCDate());
+            
+            resultsDiv.innerHTML = `
+                <h2>Results:</h2>
+                <p><strong>Original:</strong> ${input}</p>
+                <p><strong>formatDateForInput:</strong> ${formattedForInput}</p>
+                <p><strong>formatDateForAPI:</strong> ${formattedForAPI}</p>
+                <p><strong>Date object:</strong> ${dateObj}</p>
+                <p><strong>ISO String:</strong> ${dateObj.toISOString()}</p>
+                <h3>Check Console for detailed logs</h3>
+            `;
+        }
+
+        // Test on page load
+        window.onload = function() {
+            testDateFormatting();
+        };
+    </script>
+</body>
+</html>

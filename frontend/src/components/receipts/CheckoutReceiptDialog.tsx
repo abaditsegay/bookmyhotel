@@ -1,30 +1,36 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { formatCurrency, formatCurrencyWithDecimals } from '../../utils/currencyUtils';
 import {
   Dialog,
-  DialogTitle,
   DialogContent,
   DialogActions,
   Button,
   Typography,
   Box,
-  Paper,
-  Divider,
   Grid,
   Table,
   TableBody,
   TableCell,
-  TableContainer,
   TableHead,
   TableRow,
   IconButton,
   Tooltip,
+  useTheme,
+  CircularProgress,
+  Snackbar,
+  Alert,
+  TextField,
+  DialogTitle,
 } from '@mui/material';
 import {
   Print as PrintIcon,
   Download as DownloadIcon,
   Email as EmailIcon,
 } from '@mui/icons-material';
-import { ConsolidatedReceipt } from '../../services/frontDeskApi';
+import { ConsolidatedReceipt, frontDeskApiService } from '../../services/frontDeskApi';
+import { formatDateForDisplay } from '../../utils/dateUtils';
+import { useAuth } from '../../contexts/AuthContext';
+import { COLORS, addAlpha } from '../../theme/themeColors';
 
 interface CheckoutReceiptDialogProps {
   open: boolean;
@@ -39,127 +45,512 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
   receipt,
   guestName,
 }) => {
+  const theme = useTheme();
+  const { user, token } = useAuth();
+  const [emailLoading, setEmailLoading] = useState(false);
+  const [emailDialogOpen, setEmailDialogOpen] = useState(false);
+  const [recipientEmail, setRecipientEmail] = useState('');
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: 'success' | 'error';
+  }>({
+    open: false,
+    message: '',
+    severity: 'success',
+  });
+
   if (!receipt) return null;
 
+  const formatDate = (dateString: string) => formatDateForDisplay(dateString);
+  const formatDateTime = (dateString: string) => new Date(dateString).toLocaleString();
+
   const handlePrint = () => {
-    const printWindow = window.open('', '_blank');
-    if (printWindow) {
-      printWindow.document.write(`
+    const primaryColor = theme.palette.primary.main;
+    
+    // Create a hidden iframe for printing
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
+    
+    const iframeDoc = iframe.contentWindow?.document;
+    if (iframeDoc) {
+      iframeDoc.open();
+      iframeDoc.write(`
         <!DOCTYPE html>
         <html>
           <head>
-            <title>Final Receipt - ${receipt.receiptNumber}</title>
+            <meta charset="utf-8">
+            <title>Hotel Receipt - ${receipt.receiptNumber}</title>
             <style>
-              body { font-family: Arial, sans-serif; margin: 20px; }
-              .header { text-align: center; margin-bottom: 30px; }
-              .hotel-info { margin-bottom: 20px; }
-              .guest-info { margin-bottom: 20px; }
-              .charges-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-              .charges-table th, .charges-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-              .charges-table th { background-color: #f2f2f2; }
-              .total-row { font-weight: bold; background-color: #f8f9fa; }
-              .footer { margin-top: 30px; text-align: center; font-size: 12px; color: #666; }
+              @page {
+                size: A4;
+                margin: 0.5in;
+              }
+              
+              * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+              }
+              
+              body {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                line-height: 1.4;
+                color: ${COLORS.TEXT_PRIMARY};
+                background: ${COLORS.WHITE};
+              }
+              
+              .header {
+                padding: 30px 20px 20px;
+                border-bottom: 1px solid ${COLORS.BORDER_LIGHT};
+                margin-bottom: 20px;
+                text-align: center;
+              }
+              
+              .header h1 {
+                font-size: 28px;
+                font-weight: 700;
+                margin-bottom: 6px;
+                color: ${COLORS.TEXT_PRIMARY};
+              }
+              
+              .header .address {
+                font-size: 14px;
+                color: ${COLORS.TEXT_SECONDARY};
+                margin-bottom: 15px;
+              }
+              
+              .badges {
+                display: flex;
+                gap: 15px;
+                align-items: center;
+                justify-content: center;
+              }
+              
+              .badge {
+                font-size: 13px;
+                color: ${COLORS.TEXT_SECONDARY};
+              }
+              
+              .badge.receipt {
+                font-weight: 600;
+              }
+              
+              .badge.number {
+                color: ${COLORS.TEXT_SECONDARY};
+                font-size: 13px;
+              }
+              
+              .content {
+                max-width: 800px;
+                margin: 0 auto;
+                padding: 0 20px;
+              }
+              
+              .section {
+                background: ${COLORS.WHITE};
+                padding: 20px;
+                margin-bottom: 20px;
+                border: 1px solid ${COLORS.BORDER_LIGHT};
+                border-left: 4px solid ${primaryColor};
+              }
+              
+              .section h2 {
+                color: ${COLORS.TEXT_PRIMARY};
+                font-size: 16px;
+                font-weight: 600;
+                margin-bottom: 15px;
+              }
+              
+              .section h2::before {
+                display: none;
+              }
+              
+              .info-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 20px;
+              }
+              
+              .info-item {
+                margin-bottom: 15px;
+              }
+              
+              .info-label {
+                font-size: 12px;
+                font-weight: 600;
+                color: ${COLORS.TEXT_SECONDARY};
+                text-transform: uppercase;
+                margin-bottom: 4px;
+              }
+              
+              .info-value {
+                font-size: 14px;
+                font-weight: 500;
+                color: ${COLORS.TEXT_PRIMARY};
+              }
+              
+              .info-value.highlight {
+                font-weight: 700;
+                color: ${primaryColor};
+                font-size: 16px;
+              }
+              
+              .divider {
+                height: 1px;
+                background: ${COLORS.BORDER_LIGHT};
+                margin: 20px 0;
+              }
+              
+              .table {
+                width: 100%;
+                border-collapse: collapse;
+                background: ${COLORS.WHITE};
+                border: 1px solid ${COLORS.BORDER_LIGHT};
+              }
+              
+              .table thead th {
+                background: ${COLORS.BG_LIGHT};
+                color: ${COLORS.TEXT_SECONDARY};
+                padding: 12px;
+                text-align: left;
+                font-weight: 600;
+                font-size: 11px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                border-bottom: 1px solid ${COLORS.BORDER_LIGHT};
+              }
+              
+              .table thead th.center {
+                text-align: center;
+              }
+              
+              .table thead th.right {
+                text-align: right;
+              }
+              
+              .table tbody td {
+                padding: 15px 12px;
+                border-bottom: 1px solid ${COLORS.DIVIDER};
+                font-size: 14px;
+                font-weight: 500;
+              }
+              
+              .table tbody td.center {
+                text-align: center;
+              }
+              
+              .table tbody td.right {
+                text-align: right;
+                font-weight: 600;
+              }
+              
+              .table tbody tr:hover {
+                background-color: ${COLORS.BG_LIGHT};
+              }
+              
+              .table tbody tr.subtotal td {
+                background-color: ${COLORS.BG_DEFAULT};
+                border-top: 1px solid ${COLORS.BORDER_LIGHT};
+                font-weight: 600;
+              }
+              
+              .table tbody tr.total {
+                background: ${COLORS.WHITE};
+                border-top: 2px solid ${COLORS.TEXT_PRIMARY};
+              }
+              
+              .table tbody tr.total td {
+                color: ${COLORS.TEXT_PRIMARY};
+                border-bottom: none;
+                padding: 15px 12px;
+                font-weight: 700;
+              }
+              
+              .table tbody tr.total td.amount {
+                font-size: 16px;
+                font-weight: 700;
+              }
+              
+              .footer {
+                text-align: center;
+                margin-top: 30px;
+                padding: 20px;
+                background: ${COLORS.WHITE};
+                border-top: 1px solid ${COLORS.BORDER_LIGHT};
+              }
+              
+              .footer h3 {
+                color: ${COLORS.TEXT_PRIMARY};
+                font-size: 18px;
+                font-weight: 600;
+                margin-bottom: 10px;
+              }
+              
+              .footer p {
+                color: ${COLORS.TEXT_SECONDARY};
+                font-size: 12px;
+                margin-bottom: 5px;
+              }
+              
+              @media print {
+                .header,
+                .table thead th,
+                .table tbody tr.total td {
+                  -webkit-print-color-adjust: exact;
+                  color-adjust: exact;
+                }
+              }
             </style>
           </head>
           <body>
+            <!-- Header -->
             <div class="header">
               <h1>${receipt.hotelName}</h1>
-              <p>${receipt.hotelAddress}</p>
-              <h2>Final Receipt</h2>
-              <p>Receipt #: ${receipt.receiptNumber}</p>
+              <div class="address">${receipt.hotelAddress}</div>
+              <div class="badges">
+                <div class="badge receipt">Official Receipt</div>
+                <div class="badge number">Receipt #${receipt.receiptNumber}</div>
+              </div>
             </div>
-            
-            <div class="guest-info">
-              <h3>Guest Information</h3>
-              <p><strong>Name:</strong> ${receipt.guestName}</p>
-              <p><strong>Email:</strong> ${receipt.guestEmail}</p>
-              <p><strong>Confirmation:</strong> ${receipt.confirmationNumber}</p>
-            </div>
-            
-            <div class="stay-info">
-              <h3>Stay Information</h3>
-              <p><strong>Room:</strong> ${receipt.roomNumber} (${receipt.roomType})</p>
-              <p><strong>Check-in:</strong> ${new Date(receipt.checkInDate).toLocaleDateString()}</p>
-              <p><strong>Check-out:</strong> ${new Date(receipt.checkOutDate).toLocaleDateString()}</p>
-              <p><strong>Nights:</strong> ${receipt.numberOfNights}</p>
-            </div>
-            
-            <table class="charges-table">
-              <thead>
-                <tr>
-                  <th>Description</th>
-                  <th>Quantity</th>
-                  <th>Unit Price</th>
-                  <th>Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>Room Charges (${receipt.numberOfNights} nights)</td>
-                  <td>${receipt.numberOfNights}</td>
-                  <td>ETB ${(receipt.roomChargePerNight || 0)?.toFixed(0)}</td>
-                  <td>ETB ${(receipt.totalRoomCharges || 0)?.toFixed(0)}</td>
-                </tr>
-                ${receipt.additionalCharges?.map(charge => {
-                  const quantity = charge.quantity || 1;
-                  // If unitPrice is provided and not zero, use it; otherwise fall back to amount/quantity
-                  const unitPrice = (charge.unitPrice && charge.unitPrice > 0) 
-                    ? charge.unitPrice 
-                    : (charge.amount || 0) / quantity;
-                  const total = unitPrice * quantity;
-                  return `
-                    <tr>
-                      <td>${charge.description || 'N/A'}</td>
-                      <td>${quantity}</td>
-                      <td>ETB ${unitPrice?.toFixed(0)}</td>
-                      <td>ETB ${total?.toFixed(0)}</td>
-                    </tr>
-                  `;
-                }).join('') || ''}
-                ${receipt.taxesAndFees?.map(tax => {
-                  const quantity = tax.quantity || 1;
-                  // If unitPrice is provided and not zero, use it; otherwise fall back to amount/quantity
-                  const unitPrice = (tax.unitPrice && tax.unitPrice > 0) 
-                    ? tax.unitPrice 
-                    : (tax.amount || 0) / quantity;
-                  const total = unitPrice * quantity;
-                  return `
-                    <tr>
-                      <td>${tax.description || 'N/A'}</td>
-                      <td>${quantity}</td>
-                      <td>ETB ${unitPrice?.toFixed(0)}</td>
-                      <td>ETB ${total?.toFixed(0)}</td>
-                    </tr>
-                  `;
-                }).join('') || ''}
-                <tr class="total-row">
-                  <td colspan="3"><strong>Grand Total</strong></td>
-                  <td><strong>ETB ${(receipt.grandTotal || 0)?.toFixed(0)}</strong></td>
-                </tr>
-              </tbody>
-            </table>
-            
-            <div class="footer">
-              <p>Generated on: ${new Date(receipt.generatedAt).toLocaleString()}</p>
-              <p>Thank you for your stay!</p>
+
+            <div class="content">
+              <!-- Guest Information Section -->
+              <div class="section">
+                <h2>Guest Information</h2>
+                <div class="info-grid">
+                  <div>
+                    <div class="info-item">
+                      <div class="info-label">Full Name:</div>
+                      <div class="info-value">${receipt.guestName}</div>
+                    </div>
+                    <div class="info-item">
+                      <div class="info-label">Email:</div>
+                      <div class="info-value">${receipt.guestEmail}</div>
+                    </div>
+                    ${receipt.guestPhone ? `
+                    <div class="info-item">
+                      <div class="info-label">Phone:</div>
+                      <div class="info-value">${receipt.guestPhone}</div>
+                    </div>
+                    ` : ''}
+                  </div>
+                  <div>
+                    <div class="info-item">
+                      <div class="info-label">Confirmation:</div>
+                      <div class="info-value highlight">${receipt.confirmationNumber}</div>
+                    </div>
+                    <div class="info-item">
+                      <div class="info-label">Guests:</div>
+                      <div class="info-value">${receipt.numberOfGuests}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Stay Details Section -->
+              <div class="section">
+                <h2>Stay Details</h2>
+                <div class="info-grid">
+                  <div>
+                    <div class="info-item">
+                      <div class="info-label">Room:</div>
+                      <div class="info-value">${receipt.roomNumber} (${receipt.roomType})</div>
+                    </div>
+                    <div class="info-item">
+                      <div class="info-label">Check-in:</div>
+                      <div class="info-value">${formatDate(receipt.checkInDate)}</div>
+                    </div>
+                    <div class="info-item">
+                      <div class="info-label">Check-out:</div>
+                      <div class="info-value">${formatDate(receipt.checkOutDate)}</div>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="info-item">
+                      <div class="info-label">Duration:</div>
+                      <div class="info-value">${receipt.numberOfNights} night${receipt.numberOfNights !== 1 ? 's' : ''}</div>
+                    </div>
+                    <div class="info-item">
+                      <div class="info-label">Rate per Night:</div>
+                      <div class="info-value">${formatCurrency(receipt.roomChargePerNight)}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="divider"></div>
+
+              <!-- Billing Table -->
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>DESCRIPTION</th>
+                    <th class="center">QTY</th>
+                    <th class="center">UNIT PRICE</th>
+                    <th class="right">AMOUNT</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- Room Accommodation -->
+                  <tr>
+                    <td>Room Accommodation (${receipt.numberOfNights} night${receipt.numberOfNights !== 1 ? 's' : ''})</td>
+                    <td class="center">${receipt.numberOfNights}</td>
+                    <td class="center">${formatCurrencyWithDecimals(receipt.roomChargePerNight)}</td>
+                    <td class="right">${formatCurrencyWithDecimals(receipt.totalRoomCharges)}</td>
+                  </tr>
+
+                  ${receipt.additionalCharges?.map(charge => {
+                    const quantity = charge.quantity || 1;
+                    const unitPrice = (charge.unitPrice && charge.unitPrice > 0) 
+                      ? charge.unitPrice 
+                      : (charge.amount || 0) / quantity;
+                    const total = unitPrice * quantity;
+                    return `
+                      <tr>
+                        <td>${charge.description || 'Additional Service'}</td>
+                        <td class="center">${quantity}</td>
+                        <td class="center">${formatCurrencyWithDecimals(unitPrice)}</td>
+                        <td class="right">${formatCurrencyWithDecimals(total)}</td>
+                      </tr>
+                    `;
+                  }).join('') || ''}
+
+                  ${receipt.taxesAndFees?.map(tax => {
+                    return `
+                      <tr>
+                        <td colspan="3">${tax.description || 'Tax'}</td>
+                        <td class="right">${formatCurrencyWithDecimals(tax.amount || 0)}</td>
+                      </tr>
+                    `;
+                  }).join('') || ''}
+
+                  ${(receipt.totalTaxesAndFees || 0) > 0 ? `
+                  <tr class="subtotal">
+                    <td colspan="3">Taxes & Fees Subtotal</td>
+                    <td class="right">${formatCurrencyWithDecimals(receipt.totalTaxesAndFees)}</td>
+                  </tr>
+                  ` : ''}
+
+                  <!-- Total Amount -->
+                  <tr class="total">
+                    <td>TOTAL AMOUNT</td>
+                    <td class="center"></td>
+                    <td class="center"></td>
+                    <td class="right amount">${formatCurrencyWithDecimals(receipt.grandTotal)}</td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <!-- Footer -->
+              <div class="footer">
+                <h3>Thank you for choosing ${receipt.hotelName}!</h3>
+                <p>Generated on ${formatDateTime(receipt.generatedAt)}</p>
+                ${receipt.generatedBy ? `<p>Generated by: ${receipt.generatedBy}</p>` : ''}
+                <p>This is an official receipt for your stay.</p>
+              </div>
             </div>
           </body>
         </html>
       `);
-      printWindow.document.close();
-      printWindow.print();
+      iframeDoc.close();
+      
+      // Wait for content to load, then print
+      iframe.onload = () => {
+        iframe.contentWindow?.focus();
+        iframe.contentWindow?.print();
+        
+        // Remove iframe after printing
+        setTimeout(() => {
+          document.body.removeChild(iframe);
+        }, 1000);
+      };
     }
   };
 
   const handleDownload = () => {
-    // This could be enhanced to generate and download a PDF
-    // For now, we'll use the print functionality
+    // For now, use print functionality - can be enhanced with PDF generation later
     handlePrint();
   };
 
   const handleEmail = () => {
-    // This would integrate with the existing email receipt functionality
-    alert('Email receipt functionality would be integrated here');
+    // Open email dialog with guest's email pre-filled
+    setRecipientEmail(receipt.guestEmail || '');
+    setEmailDialogOpen(true);
+  };
+
+  const handleCloseEmailDialog = () => {
+    setEmailDialogOpen(false);
+    setRecipientEmail('');
+  };
+
+  const handleSendEmail = async () => {
+    if (!receipt.reservationId || !token) {
+      setSnackbar({
+        open: true,
+        message: 'Unable to send email: missing reservation information',
+        severity: 'error',
+      });
+      return;
+    }
+
+    if (!recipientEmail || !recipientEmail.trim()) {
+      setSnackbar({
+        open: true,
+        message: 'Please enter a valid email address',
+        severity: 'error',
+      });
+      return;
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(recipientEmail)) {
+      setSnackbar({
+        open: true,
+        message: 'Please enter a valid email address',
+        severity: 'error',
+      });
+      return;
+    }
+
+    setEmailLoading(true);
+    try {
+      const result = await frontDeskApiService.emailReceipt(
+        token,
+        receipt.reservationId,
+        user?.tenantId || null,
+        recipientEmail
+      );
+
+      if (result.success) {
+        setSnackbar({
+          open: true,
+          message: `Receipt sent successfully to ${recipientEmail}`,
+          severity: 'success',
+        });
+        handleCloseEmailDialog();
+      } else {
+        setSnackbar({
+          open: true,
+          message: result.message || 'Failed to send receipt',
+          severity: 'error',
+        });
+      }
+    } catch (error) {
+      setSnackbar({
+        open: true,
+        message: 'An error occurred while sending the receipt',
+        severity: 'error',
+      });
+    } finally {
+      setEmailLoading(false);
+    }
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
   };
 
   return (
@@ -169,186 +560,470 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
       maxWidth="md"
       fullWidth
       PaperProps={{
-        sx: { minHeight: '80vh' }
+        sx: { 
+          minHeight: '90vh',
+          borderRadius: 2,
+          bgcolor: COLORS.BG_DEFAULT,
+        }
       }}
     >
-      <DialogTitle>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography variant="h5">
-            Final Receipt - {guestName} Checkout
-          </Typography>
-          <Box>
-            <Tooltip title="Print Receipt">
-              <IconButton onClick={handlePrint} color="primary">
-                <PrintIcon />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Download Receipt">
-              <IconButton onClick={handleDownload} color="primary">
-                <DownloadIcon />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Email Receipt">
-              <IconButton onClick={handleEmail} color="primary">
-                <EmailIcon />
-              </IconButton>
-            </Tooltip>
-          </Box>
-        </Box>
-      </DialogTitle>
-
-      <DialogContent>
-        <Paper sx={{ p: 3, mb: 2 }}>
-          {/* Hotel Information */}
-          <Box sx={{ textAlign: 'center', mb: 3 }}>
-            <Typography variant="h4" gutterBottom>{receipt.hotelName}</Typography>
-            <Typography variant="body1" color="text.secondary">{receipt.hotelAddress}</Typography>
-            <Typography variant="h6" sx={{ mt: 2, color: 'primary.main' }}>
-              Final Receipt
+      <DialogContent sx={{ p: 0 }}>
+        {/* Main content wrapper with white background */}
+        <Box sx={{ 
+          bgcolor: COLORS.WHITE, 
+          m: 3, 
+          borderRadius: 2,
+          boxShadow: `0 1px 3px ${addAlpha(COLORS.BLACK, 0.1)}`
+        }}>
+          {/* Header Section */}
+          <Box sx={{ 
+            p: 4, 
+            borderBottom: `1px solid ${COLORS.BORDER_LIGHT}`,
+            textAlign: 'center'
+          }}>
+            <Typography variant="h4" sx={{ fontWeight: 700, mb: 0.5, color: COLORS.TEXT_PRIMARY }}>
+              {receipt.hotelName}
             </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Receipt #: {receipt.receiptNumber}
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              {receipt.hotelAddress}
             </Typography>
+            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', justifyContent: 'center', mb: 2 }}>
+              <Typography variant="body2" sx={{ fontWeight: 600, color: COLORS.TEXT_SECONDARY }}>
+                Official Receipt
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Receipt #{receipt.receiptNumber}
+              </Typography>
+            </Box>
+            <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
+              <Tooltip title="Print Receipt">
+                <IconButton 
+                  size="small"
+                  onClick={handlePrint} 
+                  sx={{ 
+                    border: `1px solid ${COLORS.BORDER_LIGHT}`,
+                    '&:hover': { bgcolor: COLORS.BG_DEFAULT },
+                  }}
+                >
+                  <PrintIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Download PDF">
+                <IconButton 
+                  size="small"
+                  onClick={handleDownload} 
+                  sx={{ 
+                    border: `1px solid ${COLORS.BORDER_LIGHT}`,
+                    '&:hover': { bgcolor: COLORS.BG_DEFAULT },
+                  }}
+                >
+                  <DownloadIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Email Receipt">
+                <IconButton 
+                  size="small"
+                  onClick={handleEmail} 
+                  sx={{ 
+                    border: `1px solid ${COLORS.BORDER_LIGHT}`,
+                    '&:hover': { bgcolor: COLORS.BG_DEFAULT },
+                  }}
+                >
+                  <EmailIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </Box>
           </Box>
 
-          <Divider sx={{ my: 2 }} />
-
-          {/* Guest and Stay Information */}
-          <Grid container spacing={3} sx={{ mb: 3 }}>
-            <Grid item xs={12} md={6}>
-              <Typography variant="h6" gutterBottom>Guest Information</Typography>
-              <Typography><strong>Name:</strong> {receipt.guestName}</Typography>
-              <Typography><strong>Email:</strong> {receipt.guestEmail}</Typography>
-              {receipt.guestPhone && (
-                <Typography><strong>Phone:</strong> {receipt.guestPhone}</Typography>
-              )}
-              <Typography><strong>Confirmation:</strong> {receipt.confirmationNumber}</Typography>
+          {/* Guest Information Section */}
+          <Box sx={{ 
+            mx: 4, 
+            mt: 4,
+            p: 3,
+            border: `1px solid ${COLORS.BORDER_LIGHT}`,
+            borderLeft: `4px solid ${theme.palette.primary.main}`
+          }}>
+            <Typography 
+              variant="h6" 
+              sx={{ 
+                fontWeight: 700, 
+                mb: 3,
+                color: COLORS.TEXT_PRIMARY,
+                fontSize: '1rem'
+              }}
+            >
+              Guest Information
+            </Typography>
+            <Grid container spacing={3}>
+              <Grid item xs={6}>
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="caption" sx={{ color: COLORS.TEXT_SECONDARY, textTransform: 'uppercase', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.5px' }}>
+                    Full Name:
+                  </Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 500, mt: 0.5 }}>
+                    {guestName}
+                  </Typography>
+                </Box>
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="caption" sx={{ color: COLORS.TEXT_SECONDARY, textTransform: 'uppercase', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.5px' }}>
+                    Email:
+                  </Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 500, mt: 0.5 }}>
+                    {receipt.guestEmail || 'N/A'}
+                  </Typography>
+                </Box>
+                <Box>
+                  <Typography variant="caption" sx={{ color: COLORS.TEXT_SECONDARY, textTransform: 'uppercase', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.5px' }}>
+                    Phone:
+                  </Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 500, mt: 0.5 }}>
+                    {receipt.guestPhone || 'N/A'}
+                  </Typography>
+                </Box>
+              </Grid>
+              <Grid item xs={6}>
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="caption" sx={{ color: COLORS.TEXT_SECONDARY, textTransform: 'uppercase', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.5px' }}>
+                    Confirmation:
+                  </Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 700, color: theme.palette.primary.main, mt: 0.5 }}>
+                    {receipt.confirmationNumber}
+                  </Typography>
+                </Box>
+                <Box>
+                  <Typography variant="caption" sx={{ color: COLORS.TEXT_SECONDARY, textTransform: 'uppercase', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.5px' }}>
+                    Guests:
+                  </Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 500, mt: 0.5 }}>
+                    {receipt.numberOfGuests}
+                  </Typography>
+                </Box>
+              </Grid>
             </Grid>
-            <Grid item xs={12} md={6}>
-              <Typography variant="h6" gutterBottom>Stay Information</Typography>
-              <Typography><strong>Room:</strong> {receipt.roomNumber} ({receipt.roomType})</Typography>
-              <Typography><strong>Check-in:</strong> {new Date(receipt.checkInDate).toLocaleDateString()}</Typography>
-              <Typography><strong>Check-out:</strong> {new Date(receipt.checkOutDate).toLocaleDateString()}</Typography>
-              <Typography><strong>Nights:</strong> {receipt.numberOfNights}</Typography>
-              <Typography><strong>Guests:</strong> {receipt.numberOfGuests}</Typography>
+          </Box>
+
+          {/* Stay Details Section */}
+          <Box sx={{ 
+            mx: 4, 
+            mt: 3,
+            p: 3,
+            border: `1px solid ${COLORS.BORDER_LIGHT}`,
+            borderLeft: `4px solid ${theme.palette.primary.main}`
+          }}>
+            <Typography 
+              variant="h6" 
+              sx={{ 
+                fontWeight: 700, 
+                mb: 3,
+                color: COLORS.TEXT_PRIMARY,
+                fontSize: '1rem'
+              }}
+            >
+              Stay Details
+            </Typography>
+            <Grid container spacing={3}>
+              <Grid item xs={6}>
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="caption" sx={{ color: COLORS.TEXT_SECONDARY, textTransform: 'uppercase', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.5px' }}>
+                    Room:
+                  </Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 500, mt: 0.5 }}>
+                    {receipt.roomNumber} ({receipt.roomType})
+                  </Typography>
+                </Box>
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="caption" sx={{ color: COLORS.TEXT_SECONDARY, textTransform: 'uppercase', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.5px' }}>
+                    Check-in:
+                  </Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 500, mt: 0.5 }}>
+                    {formatDate(receipt.checkInDate)}
+                  </Typography>
+                </Box>
+                <Box>
+                  <Typography variant="caption" sx={{ color: COLORS.TEXT_SECONDARY, textTransform: 'uppercase', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.5px' }}>
+                    Check-out:
+                  </Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 500, mt: 0.5 }}>
+                    {formatDate(receipt.checkOutDate)}
+                  </Typography>
+                </Box>
+              </Grid>
+              <Grid item xs={6}>
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="caption" sx={{ color: COLORS.TEXT_SECONDARY, textTransform: 'uppercase', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.5px' }}>
+                    Duration:
+                  </Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 500, mt: 0.5 }}>
+                    {receipt.numberOfNights} night{receipt.numberOfNights > 1 ? 's' : ''}
+                  </Typography>
+                </Box>
+                <Box>
+                  <Typography variant="caption" sx={{ color: COLORS.TEXT_SECONDARY, textTransform: 'uppercase', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.5px' }}>
+                    Rate per night:
+                  </Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 500, mt: 0.5 }}>
+                    {formatCurrency(receipt.roomChargePerNight)}
+                  </Typography>
+                </Box>
+              </Grid>
             </Grid>
-          </Grid>
+          </Box>
 
-          <Divider sx={{ my: 2 }} />
-
-          {/* Charges Breakdown */}
-          <Typography variant="h6" gutterBottom>Charges Summary</Typography>
-          <TableContainer component={Paper} variant="outlined">
-            <Table>
+          {/* Charges Section */}
+          <Box sx={{ mx: 4, mt: 3 }}>
+            <Table size="small">
               <TableHead>
                 <TableRow>
-                  <TableCell><strong>Description</strong></TableCell>
-                  <TableCell align="center"><strong>Quantity</strong></TableCell>
-                  <TableCell align="right"><strong>Unit Price</strong></TableCell>
-                  <TableCell align="right"><strong>Total</strong></TableCell>
+                  <TableCell sx={{ 
+                    fontWeight: 700, 
+                    bgcolor: COLORS.BG_LIGHT,
+                    textTransform: 'uppercase',
+                    fontSize: '0.7rem',
+                    letterSpacing: '0.5px',
+                    color: COLORS.TEXT_SECONDARY,
+                    border: `1px solid ${COLORS.BORDER_LIGHT}`,
+                    borderBottom: `2px solid ${COLORS.BORDER_LIGHT}`
+                  }}>
+                    Description
+                  </TableCell>
+                  <TableCell align="center" sx={{ 
+                    fontWeight: 700, 
+                    bgcolor: COLORS.BG_LIGHT,
+                    textTransform: 'uppercase',
+                    fontSize: '0.7rem',
+                    letterSpacing: '0.5px',
+                    color: COLORS.TEXT_SECONDARY,
+                    border: `1px solid ${COLORS.BORDER_LIGHT}`,
+                    borderBottom: `2px solid ${COLORS.BORDER_LIGHT}`
+                  }}>
+                    QTY
+                  </TableCell>
+                  <TableCell align="right" sx={{ 
+                    fontWeight: 700, 
+                    bgcolor: COLORS.BG_LIGHT,
+                    textTransform: 'uppercase',
+                    fontSize: '0.7rem',
+                    letterSpacing: '0.5px',
+                    color: COLORS.TEXT_SECONDARY,
+                    border: `1px solid ${COLORS.BORDER_LIGHT}`,
+                    borderBottom: `2px solid ${COLORS.BORDER_LIGHT}`
+                  }}>
+                    Unit Price
+                  </TableCell>
+                  <TableCell align="right" sx={{ 
+                    fontWeight: 700, 
+                    bgcolor: COLORS.BG_LIGHT,
+                    textTransform: 'uppercase',
+                    fontSize: '0.7rem',
+                    letterSpacing: '0.5px',
+                    color: COLORS.TEXT_SECONDARY,
+                    border: `1px solid ${COLORS.BORDER_LIGHT}`,
+                    borderBottom: `2px solid ${COLORS.BORDER_LIGHT}`
+                  }}>
+                    Amount
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {/* Room Charges */}
+                {/* Room charges */}
                 <TableRow>
-                  <TableCell>Room Charges ({receipt.numberOfNights} nights)</TableCell>
-                  <TableCell align="center">{receipt.numberOfNights}</TableCell>
-                  <TableCell align="right">ETB {(receipt.roomChargePerNight || 0).toFixed(0)}</TableCell>
-                  <TableCell align="right">ETB {(receipt.totalRoomCharges || 0).toFixed(0)}</TableCell>
+                  <TableCell sx={{ border: `1px solid ${COLORS.BORDER_LIGHT}` }}>
+                    Room Accommodation ({receipt.numberOfNights} night{receipt.numberOfNights > 1 ? 's' : ''})
+                  </TableCell>
+                  <TableCell align="center" sx={{ border: `1px solid ${COLORS.BORDER_LIGHT}` }}>
+                    {receipt.numberOfNights}
+                  </TableCell>
+                  <TableCell align="right" sx={{ border: `1px solid ${COLORS.BORDER_LIGHT}` }}>
+                    {formatCurrency(receipt.roomChargePerNight)}
+                  </TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 600, border: `1px solid ${COLORS.BORDER_LIGHT}` }}>
+                    {formatCurrency(receipt.totalRoomCharges)}
+                  </TableCell>
                 </TableRow>
 
-                {/* Additional Charges (Shop Orders, etc.) */}
-                {receipt.additionalCharges?.map((charge, index) => {
+                {/* Shop/Additional charges */}
+                {receipt.additionalCharges && receipt.additionalCharges.length > 0 && receipt.additionalCharges.map((charge: any, index: number) => {
                   const quantity = charge.quantity || 1;
-                  // If unitPrice is provided and not zero, use it; otherwise fall back to amount/quantity
-                  const unitPrice = (charge.unitPrice && charge.unitPrice > 0) 
-                    ? charge.unitPrice 
+                  const unitPrice = (charge.unitPrice && charge.unitPrice > 0)
+                    ? charge.unitPrice
                     : (charge.amount || 0) / quantity;
                   const total = unitPrice * quantity;
+
                   return (
-                    <TableRow key={`additional-${index}`}>
-                      <TableCell>{charge.description || 'N/A'}</TableCell>
-                      <TableCell align="center">{quantity}</TableCell>
-                      <TableCell align="right">ETB {unitPrice.toFixed(0)}</TableCell>
-                      <TableCell align="right">ETB {total.toFixed(0)}</TableCell>
+                    <TableRow key={index}>
+                      <TableCell sx={{ border: `1px solid ${COLORS.BORDER_LIGHT}` }}>
+                        {charge.description}
+                      </TableCell>
+                      <TableCell align="center" sx={{ border: `1px solid ${COLORS.BORDER_LIGHT}` }}>
+                        {quantity}
+                      </TableCell>
+                      <TableCell align="right" sx={{ border: `1px solid ${COLORS.BORDER_LIGHT}` }}>
+                        {formatCurrency(unitPrice)}
+                      </TableCell>
+                      <TableCell align="right" sx={{ fontWeight: 600, border: `1px solid ${COLORS.BORDER_LIGHT}` }}>
+                        {formatCurrency(total)}
+                      </TableCell>
                     </TableRow>
                   );
-                }) || []}
+                })}
 
-                {/* Taxes and Fees */}
-                {receipt.taxesAndFees?.map((tax, index) => {
-                  const quantity = tax.quantity || 1;
-                  // If unitPrice is provided and not zero, use it; otherwise fall back to amount/quantity
-                  const unitPrice = (tax.unitPrice && tax.unitPrice > 0) 
-                    ? tax.unitPrice 
-                    : (tax.amount || 0) / quantity;
-                  const total = unitPrice * quantity;
-                  return (
-                    <TableRow key={`tax-${index}`}>
-                      <TableCell>{tax.description || 'N/A'}</TableCell>
-                      <TableCell align="center">{quantity}</TableCell>
-                      <TableCell align="right">ETB {unitPrice.toFixed(0)}</TableCell>
-                      <TableCell align="right">ETB {total.toFixed(0)}</TableCell>
-                    </TableRow>
-                  );
-                }) || []}
+                {/* Taxes and fees */}
+                {receipt.taxesAndFees && receipt.taxesAndFees.length > 0 && receipt.taxesAndFees.map((tax: any, index: number) => (
+                  <TableRow key={`tax-${index}`}>
+                    <TableCell colSpan={3} sx={{ textAlign: 'right', fontWeight: 500, border: `1px solid ${COLORS.BORDER_LIGHT}` }}>
+                      {tax.description}
+                    </TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 600, border: `1px solid ${COLORS.BORDER_LIGHT}` }}>
+                      {formatCurrency(tax.amount)}
+                    </TableCell>
+                  </TableRow>
+                ))}
 
-                {/* Subtotals */}
-                <TableRow sx={{ backgroundColor: 'grey.50' }}>
-                  <TableCell><strong>Room Subtotal</strong></TableCell>
-                  <TableCell align="center">-</TableCell>
-                  <TableCell align="center">-</TableCell>
-                  <TableCell align="right"><strong>ETB {(receipt.totalRoomCharges || 0).toFixed(0)}</strong></TableCell>
+                {/* Taxes & Fees Subtotal */}
+                <TableRow>
+                  <TableCell colSpan={3} sx={{ textAlign: 'right', fontWeight: 700, border: `1px solid ${COLORS.BORDER_LIGHT}` }}>
+                    Taxes & Fees Subtotal
+                  </TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 700, border: `1px solid ${COLORS.BORDER_LIGHT}` }}>
+                    {formatCurrency(receipt.totalTaxesAndFees)}
+                  </TableCell>
                 </TableRow>
-                {(receipt.totalAdditionalCharges || 0) > 0 && (
-                  <TableRow sx={{ backgroundColor: 'grey.50' }}>
-                    <TableCell><strong>Additional Charges Subtotal</strong></TableCell>
-                    <TableCell align="center">-</TableCell>
-                    <TableCell align="center">-</TableCell>
-                    <TableCell align="right"><strong>ETB {(receipt.totalAdditionalCharges || 0).toFixed(0)}</strong></TableCell>
-                  </TableRow>
-                )}
-                {(receipt.totalTaxesAndFees || 0) > 0 && (
-                  <TableRow sx={{ backgroundColor: 'grey.50' }}>
-                    <TableCell><strong>Taxes & Fees Subtotal</strong></TableCell>
-                    <TableCell align="center">-</TableCell>
-                    <TableCell align="center">-</TableCell>
-                    <TableCell align="right"><strong>ETB {(receipt.totalTaxesAndFees || 0).toFixed(0)}</strong></TableCell>
-                  </TableRow>
-                )}
 
-                {/* Grand Total */}
-                <TableRow sx={{ backgroundColor: 'primary.light', color: 'primary.contrastText' }}>
-                  <TableCell><strong>GRAND TOTAL</strong></TableCell>
-                  <TableCell align="center">-</TableCell>
-                  <TableCell align="center">-</TableCell>
-                  <TableCell align="right"><strong>ETB {(receipt.grandTotal || 0).toFixed(0)}</strong></TableCell>
+                {/* Total Row */}
+                <TableRow>
+                  <TableCell 
+                    colSpan={3} 
+                    sx={{ 
+                      textAlign: 'right', 
+                      fontWeight: 700,
+                      fontSize: '1rem',
+                      bgcolor: COLORS.WHITE,
+                      border: `2px solid ${COLORS.TEXT_PRIMARY}`,
+                      borderRight: 'none'
+                    }}
+                  >
+                    TOTAL AMOUNT
+                  </TableCell>
+                  <TableCell 
+                    align="right" 
+                    sx={{ 
+                      fontWeight: 700,
+                      fontSize: '1rem',
+                      bgcolor: COLORS.WHITE,
+                      border: `2px solid ${COLORS.TEXT_PRIMARY}`,
+                      borderLeft: 'none'
+                    }}
+                  >
+                    {formatCurrency(receipt.grandTotal)}
+                  </TableCell>
                 </TableRow>
               </TableBody>
             </Table>
-          </TableContainer>
+          </Box>
 
-          <Box sx={{ mt: 3, textAlign: 'center' }}>
-            <Typography variant="body2" color="text.secondary">
-              Generated on: {new Date(receipt.generatedAt).toLocaleString()}
+          {/* Footer Section */}
+          <Box sx={{ 
+            mx: 4,
+            mt: 4,
+            mb: 4,
+            pt: 3,
+            borderTop: `1px solid ${COLORS.BORDER_LIGHT}`,
+            textAlign: 'center'
+          }}>
+            <Typography variant="body1" sx={{ fontWeight: 600, mb: 1 }}>
+              Thank you for choosing {receipt.hotelName}!
             </Typography>
-            {receipt.generatedBy && (
-              <Typography variant="body2" color="text.secondary">
-                Generated by: {receipt.generatedBy}
-              </Typography>
-            )}
-            <Typography variant="body1" sx={{ mt: 2, fontStyle: 'italic', color: 'primary.main' }}>
-              Thank you for your stay!
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 2 }}>
+              Generated on {formatDateTime(receipt.generatedAt)}
             </Typography>
           </Box>
-        </Paper>
+        </Box>
       </DialogContent>
 
-      <DialogActions>
-        <Button onClick={onClose} variant="contained" color="primary">
+      <DialogActions sx={{ p: 3, bgcolor: COLORS.BG_DEFAULT }}>
+        <Button 
+          onClick={onClose} 
+          variant="outlined"
+          sx={{ 
+            minWidth: 120,
+            textTransform: 'none',
+            borderColor: COLORS.BORDER_LIGHT,
+            color: COLORS.TEXT_SECONDARY,
+            '&:hover': {
+              borderColor: COLORS.TEXT_DISABLED,
+              bgcolor: COLORS.BG_LIGHT
+            }
+          }}
+        >
           Close
         </Button>
       </DialogActions>
+
+      {/* Email Dialog */}
+      <Dialog
+        open={emailDialogOpen}
+        onClose={handleCloseEmailDialog}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Send Receipt via Email</DialogTitle>
+        <DialogContent>
+          <Box sx={{ pt: 2 }}>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              Enter the email address where you want to send the receipt. The guest's email is pre-filled below.
+            </Typography>
+            <TextField
+              autoFocus
+              fullWidth
+              label="Recipient Email Address"
+              type="email"
+              value={recipientEmail}
+              onChange={(e) => setRecipientEmail(e.target.value)}
+              placeholder="guest@example.com"
+              helperText="You can modify the email address before sending"
+              disabled={emailLoading}
+              sx={{ mb: 2 }}
+            />
+            <Typography variant="caption" color="text.secondary">
+              <strong>Booking:</strong> {receipt.confirmationNumber}
+            </Typography>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button 
+            onClick={handleCloseEmailDialog}
+            disabled={emailLoading}
+            sx={{ textTransform: 'none' }}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleSendEmail}
+            variant="contained"
+            disabled={emailLoading || !recipientEmail.trim()}
+            startIcon={emailLoading ? <CircularProgress size={20} /> : <EmailIcon />}
+            sx={{ textTransform: 'none' }}
+          >
+            {emailLoading ? 'Sending...' : 'Send Email'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Snackbar for email notifications */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={handleCloseSnackbar} 
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Dialog>
   );
 };

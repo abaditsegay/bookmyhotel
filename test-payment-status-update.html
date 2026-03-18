@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Payment Status Update</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select, button {
+            padding: 8px;
+            font-size: 14px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            padding: 10px 20px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            white-space: pre-wrap;
+        }
+        .error {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        .success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Payment Status Update API</h1>
+    
+    <form id="testForm">
+        <div class="form-group">
+            <label for="hotel">Hotel:</label>
+            <select id="hotel" required>
+                <option value="">Select Hotel</option>
+                <option value="system-admin">System Admin</option>
+                <option value="addis-sunshine">Addis Sunshine Hotel</option>
+                <option value="test-hotel-001">Test Hotel 001</option>
+                <option value="test-hotel-002">Test Hotel 002</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="username">Username:</label>
+            <input type="text" id="username" required placeholder="admin">
+        </div>
+        
+        <div class="form-group">
+            <label for="password">Password:</label>
+            <input type="password" id="password" required placeholder="admin123">
+        </div>
+        
+        <div class="form-group">
+            <label for="bookingId">Booking ID:</label>
+            <input type="number" id="bookingId" required placeholder="Enter booking ID">
+        </div>
+        
+        <div class="form-group">
+            <label for="paymentStatus">Payment Status:</label>
+            <select id="paymentStatus" required>
+                <option value="">Select Status</option>
+                <option value="PENDING">PENDING</option>
+                <option value="PROCESSING">PROCESSING</option>
+                <option value="COMPLETED">COMPLETED</option>
+            </select>
+        </div>
+        
+        <button type="submit">Update Payment Status</button>
+    </form>
+    
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('testForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const hotel = document.getElementById('hotel').value;
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const bookingId = document.getElementById('bookingId').value;
+            const paymentStatus = document.getElementById('paymentStatus').value;
+            
+            const resultDiv = document.getElementById('result');
+            resultDiv.textContent = 'Testing...';
+            resultDiv.className = 'result';
+            
+            try {
+                // Step 1: Login
+                console.log('Attempting login...');
+                const loginResponse = await fetch(`http://localhost:8080/api/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        hotel: hotel,
+                        username: username,
+                        password: password
+                    })
+                });
+                
+                if (!loginResponse.ok) {
+                    throw new Error(`Login failed: ${loginResponse.status} ${loginResponse.statusText}`);
+                }
+                
+                const loginData = await loginResponse.json();
+                console.log('Login successful:', loginData);
+                
+                const token = loginData.token;
+                
+                // Step 2: Update payment status
+                console.log('Updating payment status...');
+                const updateResponse = await fetch(`http://localhost:8080/api/hotel-admin/bookings/${bookingId}/payment-status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        paymentStatus: paymentStatus
+                    })
+                });
+                
+                if (!updateResponse.ok) {
+                    const errorText = await updateResponse.text();
+                    throw new Error(`Update failed: ${updateResponse.status} ${updateResponse.statusText}\n${errorText}`);
+                }
+                
+                const updateData = await updateResponse.json();
+                console.log('Update successful:', updateData);
+                
+                resultDiv.textContent = `SUCCESS!\n\nLogin Response:\n${JSON.stringify(loginData, null, 2)}\n\nUpdate Response:\n${JSON.stringify(updateData, null, 2)}`;
+                resultDiv.className = 'result success';
+                
+            } catch (error) {
+                console.error('Error:', error);
+                resultDiv.textContent = `ERROR: ${error.message}`;
+                resultDiv.className = 'result error';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -30,16 +30,16 @@ export const useAuthenticatedApi = () => {
     
     if (!token || !user) {
       // Anonymous user
-      console.log('👤 Anonymous user - API configured for public access');
+      // console.log('👤 Anonymous user - API configured for public access');
     } else if (user?.isSystemWide || isSystemWideContext) {
       // System-wide authenticated user
-      console.log('🌐 System-wide user detected - API configured for global access');
+      // console.log('🌐 System-wide user detected - API configured for global access');
     } else if (tenantId) {
       // Tenant-bound authenticated user
-      console.log('🏢 Tenant-bound user - API configured for tenant:', tenantId);
+      // console.log('🏢 Tenant-bound user - API configured for tenant:', tenantId);
     } else {
       // Authenticated user but no tenant context
-      console.log('⚠️ Authenticated user but no tenant context available');
+      // console.log('⚠️ Authenticated user but no tenant context available');
     }
     
     // frontDeskApiService doesn't have a setToken method - it uses token as parameter

@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
+import { normalizeEthiopianPhone } from '../../utils/phoneUtils';
 import {
   Container,
   Typography,
   Paper,
   Box,
-  TextField,
   Button,
   Grid,
   FormControl,
@@ -25,6 +25,8 @@ import {
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuthenticatedApi } from '../../hooks/useAuthenticatedApi';
 import { useTenant } from '../../contexts/TenantContext';
+import { COLORS } from '../../theme/themeColors';
+import PremiumTextField from '../../components/common/PremiumTextField';
 
 interface HotelFormData {
   // Basic Information
@@ -133,13 +135,13 @@ const HotelRegistrationForm: React.FC = () => {
         address: formData.address,
         city: formData.city,
         country: formData.country,
-        phone: formData.phone,
+        phone: normalizeEthiopianPhone(formData.phone),
         email: formData.email,
         tenantId: tenantId,
       };
       
       await adminApiService.createHotel(createRequest);
-      console.log('Hotel registered successfully:', formData);
+      // console.log('Hotel registered successfully:', formData);
       setSuccess(true);
       
       // Redirect after success
@@ -148,7 +150,7 @@ const HotelRegistrationForm: React.FC = () => {
       }, 2000);
       
     } catch (err: any) {
-      console.error('Error registering hotel:', err);
+      // console.error('Error registering hotel:', err);
       setError(err.message || 'Failed to register hotel. Please try again.');
     } finally {
       setLoading(false);
@@ -161,7 +163,7 @@ const HotelRegistrationForm: React.FC = () => {
         return (
           <Grid container spacing={3}>
             <Grid item xs={12}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Hotel Name"
                 value={formData.hotelName}
@@ -171,7 +173,7 @@ const HotelRegistrationForm: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Description"
                 value={formData.description}
@@ -204,7 +206,7 @@ const HotelRegistrationForm: React.FC = () => {
         return (
           <Grid container spacing={3}>
             <Grid item xs={12}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Address"
                 value={formData.address}
@@ -214,7 +216,7 @@ const HotelRegistrationForm: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="City"
                 value={formData.city}
@@ -224,7 +226,7 @@ const HotelRegistrationForm: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="State/Province"
                 value={formData.state}
@@ -233,7 +235,7 @@ const HotelRegistrationForm: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Country"
                 value={formData.country}
@@ -243,7 +245,7 @@ const HotelRegistrationForm: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="ZIP/Postal Code"
                 value={formData.zipCode}
@@ -258,7 +260,7 @@ const HotelRegistrationForm: React.FC = () => {
         return (
           <Grid container spacing={3}>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Phone Number"
                 value={formData.phone}
@@ -268,7 +270,7 @@ const HotelRegistrationForm: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Email Address"
                 type="email"
@@ -279,7 +281,7 @@ const HotelRegistrationForm: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Website"
                 value={formData.website}
@@ -288,7 +290,7 @@ const HotelRegistrationForm: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Contact Person"
                 value={formData.contactPerson}
@@ -304,7 +306,7 @@ const HotelRegistrationForm: React.FC = () => {
         return (
           <Grid container spacing={3}>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Business License Number"
                 value={formData.licenseNumber}
@@ -314,7 +316,7 @@ const HotelRegistrationForm: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Tax ID"
                 value={formData.taxId}
@@ -335,8 +337,8 @@ const HotelRegistrationForm: React.FC = () => {
     return (
       <Container maxWidth="md" sx={{ py: 4 }}>
         <Paper sx={{ p: 4, textAlign: 'center' }}>
-          <Hotel sx={{ fontSize: 80, color: 'success.main', mb: 2 }} />
-          <Typography variant="h4" gutterBottom color="success.main">
+          <Hotel sx={{ fontSize: 80, color: COLORS.PRIMARY, mb: 2 }} />
+          <Typography variant="h4" gutterBottom sx={{ color: COLORS.PRIMARY }}>
             Hotel Registered Successfully!
           </Typography>
           <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>

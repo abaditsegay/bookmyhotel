@@ -5,7 +5,6 @@ import {
   Card,
   CardContent,
   Typography,
-  Button,
   Tabs,
   Tab,
   Alert,
@@ -32,6 +31,7 @@ import StaffDashboard from './StaffDashboard';
 
 import TokenManager from '../../utils/tokenManager';
 import { API_CONFIG } from '../../config/apiConfig';
+import { COLORS, addAlpha } from '../../theme/themeColors';
 
 const API_BASE_URL = API_CONFIG.SERVER_URL;
 
@@ -104,7 +104,7 @@ const OperationsSupervisorDashboard: React.FC = () => {
       ]);
       
     } catch (err) {
-      console.error('Failed to load dashboard data:', err);
+      // console.error('Failed to load dashboard data:', err);
       setError('Failed to load dashboard data');
     } finally {
       setLoading(false);
@@ -158,7 +158,7 @@ const OperationsSupervisorDashboard: React.FC = () => {
         });
       }
     } catch (err) {
-      console.error('Failed to load operations stats:', err);
+      // console.error('Failed to load operations stats:', err);
     }
   };
 
@@ -182,7 +182,7 @@ const OperationsSupervisorDashboard: React.FC = () => {
         setStaffPerformance(performanceData);
       }
     } catch (err) {
-      console.error('Failed to load staff performance:', err);
+      // console.error('Failed to load staff performance:', err);
     }
   };
 
@@ -244,7 +244,7 @@ const OperationsSupervisorDashboard: React.FC = () => {
         setRecentActivity(activities.slice(0, 6));
       }
     } catch (err) {
-      console.error('Failed to load recent activity:', err);
+      // console.error('Failed to load recent activity:', err);
     }
   };
 
@@ -440,7 +440,32 @@ const OperationsSupervisorDashboard: React.FC = () => {
                   <TableContainer>
                     <Table>
                       <TableHead>
-                        <TableRow>
+                        <TableRow
+                          sx={{
+                            background: COLORS.GRADIENT_SLATE,
+                            boxShadow: `0 4px 12px ${addAlpha(COLORS.SLATE_500, 0.15)}`,
+                            '& .MuiTableCell-head': {
+                              color: COLORS.WHITE,
+                              fontWeight: 600,
+                              fontSize: '0.95rem',
+                              letterSpacing: '0.5px',
+                              textTransform: 'uppercase',
+                              border: 'none',
+                              padding: '20px 16px',
+                              position: 'relative',
+                              textShadow: `0 1px 2px ${addAlpha(COLORS.BLACK, 0.1)}`,
+                              '&::after': {
+                                content: '""',
+                                position: 'absolute',
+                                bottom: 0,
+                                left: 0,
+                                right: 0,
+                                height: '3px',
+                                background: `linear-gradient(90deg, ${addAlpha(COLORS.WHITE, 0.6)} 0%, ${addAlpha(COLORS.WHITE, 0.8)} 50%, ${addAlpha(COLORS.WHITE, 0.6)} 100%)`
+                              }
+                            }
+                          }}
+                        >
                           <TableCell>Staff Member</TableCell>
                           <TableCell>Role</TableCell>
                           <TableCell align="center">Tasks Completed</TableCell>

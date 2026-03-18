@@ -175,20 +175,24 @@ export const getMaintenanceTaskTypeLabel = (type: MaintenanceTaskType): string =
 // Role and Permission helpers
 export const getUserRoleLabel = (role: UserRole): string => {
   switch (role) {
-    case UserRole.GUEST:
-      return 'Guest';
-    case UserRole.STAFF:
-      return 'Staff';
+    case UserRole.SUPER_ADMIN:
+      return 'Super Administrator';
+    case UserRole.ADMIN:
+      return 'Administrator';
     case UserRole.HOTEL_ADMIN:
-      return 'Hotel Admin';
-    case UserRole.SYSTEM_ADMIN:
-      return 'System Admin';
+      return 'Hotel Administrator';
+    case UserRole.OPERATIONAL_ADMIN:
+      return 'Operational Administrator';
+    case UserRole.FRONTDESK:
+      return 'Front Desk Agent';
     case UserRole.HOUSEKEEPING:
       return 'Housekeeping';
     case UserRole.MAINTENANCE:
       return 'Maintenance';
-    case UserRole.OPERATIONS_SUPERVISOR:
-      return 'Operations Supervisor';
+    case UserRole.CUSTOMER:
+      return 'Customer';
+    case UserRole.GUEST:
+      return 'Guest';
     default:
       return 'Unknown';
   }
@@ -196,17 +200,19 @@ export const getUserRoleLabel = (role: UserRole): string => {
 
 export const canManageTasks = (role: UserRole): boolean => {
   return [
-    UserRole.OPERATIONS_SUPERVISOR,
+    UserRole.SUPER_ADMIN,
+    UserRole.ADMIN,
     UserRole.HOTEL_ADMIN,
-    UserRole.SYSTEM_ADMIN
+    UserRole.OPERATIONAL_ADMIN,
   ].includes(role);
 };
 
 export const canAssignTasks = (role: UserRole): boolean => {
   return [
-    UserRole.OPERATIONS_SUPERVISOR,
+    UserRole.SUPER_ADMIN,
+    UserRole.ADMIN,
     UserRole.HOTEL_ADMIN,
-    UserRole.SYSTEM_ADMIN
+    UserRole.OPERATIONAL_ADMIN,
   ].includes(role);
 };
 
@@ -228,19 +234,21 @@ export const canUpdateTaskStatus = (role: UserRole, taskType: 'housekeeping' | '
 
 export const canCreateTasks = (role: UserRole): boolean => {
   return [
-    UserRole.OPERATIONS_SUPERVISOR,
+    UserRole.SUPER_ADMIN,
+    UserRole.ADMIN,
     UserRole.HOTEL_ADMIN,
-    UserRole.SYSTEM_ADMIN,
+    UserRole.OPERATIONAL_ADMIN,
     UserRole.HOUSEKEEPING,
-    UserRole.MAINTENANCE
+    UserRole.MAINTENANCE,
   ].includes(role);
 };
 
 export const canDeleteTasks = (role: UserRole): boolean => {
   return [
-    UserRole.OPERATIONS_SUPERVISOR,
+    UserRole.SUPER_ADMIN,
+    UserRole.ADMIN,
     UserRole.HOTEL_ADMIN,
-    UserRole.SYSTEM_ADMIN
+    UserRole.OPERATIONAL_ADMIN,
   ].includes(role);
 };
 
@@ -445,12 +453,12 @@ export const filterTasksByPriority = <T extends { priority: TaskPriority }>(
   return tasks.filter(task => priorities.includes(task.priority));
 };
 
-export const filterTasksByAssignee = <T extends { assignedStaffId?: number }>(
+export const filterTasksByAssignee = <T extends { assignedUserId?: number }>(
   tasks: T[],
-  staffId?: number
+  userId?: number
 ): T[] => {
-  if (staffId === undefined) return tasks;
-  return tasks.filter(task => task.assignedStaffId === staffId);
+  if (userId === undefined) return tasks;
+  return tasks.filter(task => task.assignedUserId === userId);
 };
 
 export const filterTasksByRoom = <T extends { roomNumber?: string }>(

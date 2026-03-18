@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_CONFIG } from '../../config/apiConfig';
+import { COLORS, addAlpha } from '../../theme/themeColors';
 import {
   Typography,
   Box,
   Button,
   Paper,
-  TextField,
   Grid,
   Table,
   TableBody,
@@ -22,30 +23,39 @@ import {
   DialogActions,
   Alert,
   CircularProgress,
-  FormControl,
-  InputLabel,
-  Select,
   MenuItem,
   IconButton,
   Tabs,
   Tab,
   Card,
-  CardContent
+  CardContent,
+  Stepper,
+  Step,
+  StepLabel,
+  Divider
 } from '@mui/material';
 import { 
   ArrowBack as ArrowBackIcon, 
-  Visibility as ViewIcon, 
+  Visibility as ViewIcon,
   Edit as EditIcon, 
   ToggleOn as ToggleOnIcon, 
   ToggleOff as ToggleOffIcon, 
-  Delete as DeleteIcon,
   Add as AddIcon,
-  Check as CheckIcon,
-  Close as CloseIcon,
-  Refresh as RefreshIcon
+  Refresh as RefreshIcon,
+  RateReview as ReviewIcon,
+  CheckCircle as ApproveIcon,
+  Cancel as RejectIcon,
+  NavigateNext,
+  NavigateBefore,
+  Public as PublishIcon,
+  PublicOff as UnpublishIcon
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { adminApiService, HotelDTO, UpdateHotelRequest, TenantDTO, ApproveRegistrationRequest, HotelRegistrationResponse } from '../../services/adminApi';
+import PremiumTextField from '../../components/common/PremiumTextField';
+import PremiumDisplayField from '../../components/common/PremiumDisplayField';
+import PremiumSelect from '../../components/common/PremiumSelect';
+import { formatEthiopianPhone, normalizeEthiopianPhone } from '../../utils/phoneUtils';
 import HotelEditDialog from '../../components/hotel/HotelEditDialog';
 
 interface Hotel extends HotelDTO {}
@@ -86,12 +96,19 @@ const HotelManagementAdmin: React.FC = () => {
   const [selectedRegistration, setSelectedRegistration] = useState<HotelRegistrationResponse | null>(null);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  // Delete functionality removed - use deactivation instead
   const [registerDialogOpen, setRegisterDialogOpen] = useState(false);
   const [registrationViewDialogOpen, setRegistrationViewDialogOpen] = useState(false);
   const [registrationEditMode, setRegistrationEditMode] = useState(false);
+  const [registrationWizardStep, setRegistrationWizardStep] = useState(0);
+
+  const wizardSteps = ['Hotel & Admin Info', 'Additional Details'];
   const [approveDialogOpen, setApproveDialogOpen] = useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [toggleStatusDialogOpen, setToggleStatusDialogOpen] = useState(false);
+  const [toggleStatusReason, setToggleStatusReason] = useState('');
+  const [togglePublicDialogOpen, setTogglePublicDialogOpen] = useState(false);
+  const [togglePublicReason, setTogglePublicReason] = useState('');
 
   // Approval/Rejection form state
   const [approvalComments, setApprovalComments] = useState('');
@@ -112,6 +129,8 @@ const HotelManagementAdmin: React.FC = () => {
     country: '',
     zipCode: '',
     phone: '',
+    mobilePaymentPhone: '',
+    mobilePaymentPhone2: '',
     contactEmail: '',
     contactPerson: '',
     licenseNumber: '',
@@ -133,6 +152,8 @@ const HotelManagementAdmin: React.FC = () => {
     country: '',
     zipCode: '',
     phone: '',
+    mobilePaymentPhone: '',
+    mobilePaymentPhone2: '',
     contactEmail: '',
     contactPerson: '',
     licenseNumber: '',
@@ -170,7 +191,7 @@ const HotelManagementAdmin: React.FC = () => {
       const response = await adminApiService.getHotels(0, 1000); // Get all hotels for now
       setHotels(response.content || []);
     } catch (err) {
-      console.error('Error loading hotels:', err);
+      // console.error('Error loading hotels:', err);
       setError('Failed to load hotels. Please try again.');
     } finally {
       setLoading(false);
@@ -186,9 +207,21 @@ const HotelManagementAdmin: React.FC = () => {
     try {
       adminApiService.setToken(token);
       const response = await adminApiService.getHotelRegistrations(page, rowsPerPage);
-      setRegistrations(response.content || response);
+      const registrationsData = response.content || response;
+      setRegistrations(registrationsData);
+      
+      // Calculate statistics from loaded registrations
+      if (Array.isArray(registrationsData)) {
+        setRegistrationStats({
+          total: registrationsData.length,
+          pending: registrationsData.filter(r => r.status === 'PENDING').length,
+          underReview: registrationsData.filter(r => r.status === 'UNDER_REVIEW').length,
+          approved: registrationsData.filter(r => r.status === 'APPROVED').length,
+          rejected: registrationsData.filter(r => r.status === 'REJECTED').length
+        });
+      }
     } catch (err) {
-      console.error('Error loading registrations:', err);
+      // console.error('Error loading registrations:', err);
     }
   }, [token, page, rowsPerPage]);
 
@@ -199,27 +232,11 @@ const HotelManagementAdmin: React.FC = () => {
       const response = await adminApiService.getActiveTenants();
       setTenants(response);
     } catch (err) {
-      console.error('Error loading tenants:', err);
+      // console.error('Error loading tenants:', err);
     } finally {
       setTenantsLoading(false);
     }
   }, []);
-
-  const loadRegistrationStatistics = useCallback(async () => {
-    try {
-      adminApiService.setToken(token);
-      const data = await adminApiService.getHotelRegistrationStatistics();
-      setRegistrationStats({
-        pending: data.pendingRegistrations,
-        underReview: data.underReviewRegistrations,
-        approved: data.approvedRegistrations,
-        rejected: data.rejectedRegistrations,
-        total: data.totalRegistrations
-      });
-    } catch (err) {
-      console.error('Error loading registration statistics:', err);
-    }
-  }, [token]);
 
   // Load registrations when tab changes
   useEffect(() => {
@@ -227,10 +244,9 @@ const HotelManagementAdmin: React.FC = () => {
       loadTenants(); // Load tenants when hotels tab is accessed to show tenant names
     } else if (activeTab === 1) {
       loadRegistrations();
-      loadRegistrationStatistics();
       loadTenants(); // Load tenants when registration tab is accessed
     }
-  }, [activeTab, loadRegistrations, loadRegistrationStatistics, loadTenants]);
+  }, [activeTab, loadRegistrations, loadTenants]);
 
   // Filter hotels based on search term and status
   const filteredHotels = useMemo(() => {
@@ -268,7 +284,6 @@ const HotelManagementAdmin: React.FC = () => {
     } else if (newValue === 1) {
       // Loading registrations for Hotel Registrations tab
       loadRegistrations();
-      loadRegistrationStatistics();
       loadTenants();
     }
   };
@@ -306,7 +321,7 @@ const HotelManagementAdmin: React.FC = () => {
         return;
       }
 
-      const response = await fetch('/api/admin/hotel-registrations', {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/admin/hotel-registrations`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -318,7 +333,9 @@ const HotelManagementAdmin: React.FC = () => {
           address: registrationForm.address,
           city: registrationForm.city,
           country: registrationForm.country,
-          phone: registrationForm.phone,
+          phone: normalizeEthiopianPhone(registrationForm.phone),
+          mobilePaymentPhone: normalizeEthiopianPhone(registrationForm.mobilePaymentPhone),
+          mobilePaymentPhone2: normalizeEthiopianPhone(registrationForm.mobilePaymentPhone2),
           contactEmail: registrationForm.contactEmail,
           contactPerson: registrationForm.contactPerson,
           licenseNumber: registrationForm.licenseNumber,
@@ -342,6 +359,8 @@ const HotelManagementAdmin: React.FC = () => {
           country: '',
           zipCode: '',
           phone: '',
+          mobilePaymentPhone: '',
+          mobilePaymentPhone2: '',
           contactEmail: '',
           contactPerson: '',
           licenseNumber: '',
@@ -356,15 +375,14 @@ const HotelManagementAdmin: React.FC = () => {
         setTimeout(() => setSuccess(null), 3000);
         if (activeTab === 1) {
           loadRegistrations();
-          loadRegistrationStatistics();
         }
       } else {
         const errorData = await response.text();
-        console.error('Registration failed:', response.status, errorData);
+        // console.error('Registration failed:', response.status, errorData);
         throw new Error(`Failed to submit registration: ${response.status} ${errorData}`);
       }
     } catch (err) {
-      console.error('Error submitting registration:', err);
+      // console.error('Error submitting registration:', err);
       setError('Failed to submit hotel registration. Please try again.');
     }
   };
@@ -379,6 +397,11 @@ const HotelManagementAdmin: React.FC = () => {
   const viewRegistration = (registration: HotelRegistrationResponse) => {
     setSelectedRegistration(registration);
     setRegistrationEditMode(false);
+    setRegistrationWizardStep(0);
+    // Reset approval/rejection fields
+    setApprovalComments('');
+    setRejectionReason('');
+    setTenantId('');
     // Initialize edit form with registration data
     setEditRegistrationForm({
       hotelName: registration.hotelName || '',
@@ -389,6 +412,8 @@ const HotelManagementAdmin: React.FC = () => {
       country: registration.country || '',
       zipCode: registration.zipCode || '',
       phone: registration.phone || '',
+      mobilePaymentPhone: '', // Not available in backend yet
+      mobilePaymentPhone2: '', // Not available in backend yet
       contactEmail: registration.contactEmail || '',
       contactPerson: registration.contactPerson || '',
       licenseNumber: registration.licenseNumber || '',
@@ -453,7 +478,7 @@ const HotelManagementAdmin: React.FC = () => {
         throw new Error('Failed to update registration');
       }
     } catch (err) {
-      console.error('Error updating registration:', err);
+      // console.error('Error updating registration:', err);
       setError('Failed to update hotel registration. Please try again.');
       setTimeout(() => setError(null), 3000);
     }
@@ -472,6 +497,8 @@ const HotelManagementAdmin: React.FC = () => {
         country: selectedRegistration.country || '',
         zipCode: selectedRegistration.zipCode || '',
         phone: selectedRegistration.phone || '',
+        mobilePaymentPhone: '', // Not available in backend yet
+        mobilePaymentPhone2: '', // Not available in backend yet
         contactEmail: selectedRegistration.contactEmail || '',
         contactPerson: selectedRegistration.contactPerson || '',
         licenseNumber: selectedRegistration.licenseNumber || '',
@@ -501,32 +528,29 @@ const HotelManagementAdmin: React.FC = () => {
 
 
   const handleApproveRegistration = async () => {
-    if (!selectedRegistration || !tenantId.trim()) {
-      setError('Tenant is required for approval');
+    if (!selectedRegistration) {
       return;
     }
 
     try {
       const request: ApproveRegistrationRequest = {
-        comments: approvalComments,
-        tenantId: tenantId
+        comments: approvalComments
       };
 
       await adminApiService.approveHotelRegistration(selectedRegistration.id, request);
       
       setApproveDialogOpen(false);
+      setRegistrationViewDialogOpen(false);
       setSelectedRegistration(null);
       setApprovalComments('');
-      setTenantId('');
-      setSuccess('Hotel registration approved successfully! The hotel is now active and available in the Existing Hotels list.');
+      setSuccess('Hotel registration approved successfully! The hotel has been automatically assigned to the default tenant and is now active.');
       setTimeout(() => setSuccess(null), 5000);
       
       // Refresh both registrations and hotels list
       loadRegistrations();
-      loadRegistrationStatistics();
       loadHotels(); // Refresh hotels list to show the newly created hotel
     } catch (err) {
-      console.error('Error approving registration:', err);
+      // console.error('Error approving registration:', err);
       setError('Failed to approve registration. Please try again.');
       setTimeout(() => setError(null), 3000);
     }
@@ -535,35 +559,29 @@ const HotelManagementAdmin: React.FC = () => {
   const handleRejectRegistration = async () => {
     if (!selectedRegistration || !rejectionReason.trim()) {
       setError('Rejection reason is required');
+      setTimeout(() => setError(null), 3000);
       return;
     }
 
     try {
-      const response = await fetch(`/api/admin/hotel-registrations/${selectedRegistration.id}/reject`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          reason: rejectionReason
-        })
-      });
+      const request = {
+        reason: rejectionReason
+      };
 
-      if (response.ok) {
-        setRejectDialogOpen(false);
-        setSelectedRegistration(null);
-        setRejectionReason('');
-        setSuccess('Hotel registration rejected successfully');
-        setTimeout(() => setSuccess(null), 3000);
-        loadRegistrations();
-        loadRegistrationStatistics();
-      } else {
-        throw new Error('Failed to reject registration');
-      }
+      await adminApiService.rejectHotelRegistration(selectedRegistration.id, request);
+
+      setRejectDialogOpen(false);
+      setRegistrationViewDialogOpen(false);
+      setSelectedRegistration(null);
+      setRejectionReason('');
+      setSuccess('Hotel registration rejected successfully');
+      setTimeout(() => setSuccess(null), 3000);
+      
+      // Refresh data
+      loadRegistrations();
     } catch (err) {
-      console.error('Error rejecting registration:', err);
       setError('Failed to reject hotel registration. Please try again.');
+      setTimeout(() => setError(null), 3000);
     }
   };
 
@@ -621,7 +639,7 @@ const HotelManagementAdmin: React.FC = () => {
         country: hotelData.country || selectedHotel.country || '',
         phone: hotelData.phone || selectedHotel.phone || '',
         email: hotelData.email || selectedHotel.email || '',
-        tenantId: selectedHotel.tenantId || null
+        tenantId: hotelData.tenantId || selectedHotel.tenantId || null
       };
 
       await adminApiService.updateHotel(selectedHotel.id, updateRequest);
@@ -631,7 +649,7 @@ const HotelManagementAdmin: React.FC = () => {
       setSuccess('Hotel updated successfully');
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
-      console.error('Error updating hotel:', err);
+      // console.error('Error updating hotel:', err);
       setError('Failed to update hotel. Please try again.');
     }
   };
@@ -642,40 +660,38 @@ const HotelManagementAdmin: React.FC = () => {
     
     try {
       setLoading(true);
-      await adminApiService.toggleHotelStatus(hotel.id);
-      loadHotels(); // Refresh the list
+      await adminApiService.toggleHotelStatus(hotel.id, toggleStatusReason);
+      setToggleStatusDialogOpen(false);
+      setToggleStatusReason('');
+      setSelectedHotel(null);
+      loadHotels();
       setError(null);
       setSuccess(`Hotel ${hotel.isActive ? 'deactivated' : 'activated'} successfully`);
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
-      console.error('Error toggling hotel status:', err);
+      // console.error('Error toggling hotel status:', err);
       setError('Failed to update hotel status. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  // Delete hotel functions
-  const openDeleteDialog = (hotel: Hotel) => {
-    setSelectedHotel(hotel);
-    setDeleteDialogOpen(true);
-  };
-
-  const handleDeleteHotel = async () => {
-    if (!selectedHotel || !token) return;
-
+  // Toggle hotel public listing
+  const handleTogglePublicListing = async (hotel: Hotel) => {
+    if (!token) return;
     try {
       setLoading(true);
-      await adminApiService.deleteHotel(selectedHotel.id);
-      setDeleteDialogOpen(false);
+      await adminApiService.toggleHotelPublicListing(hotel.id, togglePublicReason);
+      setTogglePublicDialogOpen(false);
+      setTogglePublicReason('');
       setSelectedHotel(null);
-      loadHotels(); // Refresh the list
+      loadHotels();
       setError(null);
-      setSuccess('Hotel deleted successfully');
+      setSuccess(`Hotel ${hotel.isPubliclyListed ? 'unpublished' : 'published'} successfully`);
       setTimeout(() => setSuccess(null), 3000);
-    } catch (err) {
-      console.error('Error deleting hotel:', err);
-      setError('Failed to delete hotel. Please try again.');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to update public listing.';
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -686,13 +702,12 @@ const HotelManagementAdmin: React.FC = () => {
       <Box sx={{ py: 4 }}>
         {/* Header */}
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-          <IconButton 
-            onClick={() => navigate('/system-dashboard')}
-            sx={{ mr: 2 }}
-          >
-            <ArrowBackIcon />
-          </IconButton>
-          <Typography variant="h5" component="h1" sx={{ flexGrow: 1 }}>
+          <Typography variant="h5" component="h1" sx={{ 
+            flexGrow: 1,
+            color: COLORS.PRIMARY,
+            fontWeight: 600,
+            letterSpacing: '0.5px'
+          }}>
             Hotel Management
           </Typography>
           <Button
@@ -703,7 +718,6 @@ const HotelManagementAdmin: React.FC = () => {
                 loadHotels();
               } else {
                 loadRegistrations();
-                loadRegistrationStatistics();
               }
             }}
             sx={{ mr: 2 }}
@@ -748,7 +762,7 @@ const HotelManagementAdmin: React.FC = () => {
             <Paper sx={{ p: 2, mb: 2 }}>
               <Grid container spacing={2}>
                 <Grid item xs={12} md={6}>
-                  <TextField
+                  <PremiumTextField
                     fullWidth
                     label="Search hotels..."
                     value={searchTerm}
@@ -757,18 +771,16 @@ const HotelManagementAdmin: React.FC = () => {
                   />
                 </Grid>
                 <Grid item xs={12} md={3}>
-                  <FormControl fullWidth>
-                    <InputLabel>Status</InputLabel>
-                    <Select
-                      value={statusFilter}
-                      label="Status"
-                      onChange={(e) => setStatusFilter(e.target.value)}
-                    >
-                      <MenuItem value="all">All Hotels</MenuItem>
-                      <MenuItem value="active">Active Only</MenuItem>
-                      <MenuItem value="inactive">Inactive Only</MenuItem>
-                    </Select>
-                  </FormControl>
+                  <PremiumSelect
+                    fullWidth
+                    label="Status"
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                  >
+                    <MenuItem value="all">All Hotels</MenuItem>
+                    <MenuItem value="active">Active Only</MenuItem>
+                    <MenuItem value="inactive">Inactive Only</MenuItem>
+                  </PremiumSelect>
                 </Grid>
               </Grid>
             </Paper>
@@ -777,7 +789,22 @@ const HotelManagementAdmin: React.FC = () => {
             <TableContainer component={Paper}>
               <Table>
                 <TableHead>
-                  <TableRow>
+                  <TableRow
+                    sx={{
+                      background: `linear-gradient(135deg, ${addAlpha(COLORS.PRIMARY, 0.08)} 0%, ${addAlpha(COLORS.PRIMARY, 0.16)} 100%)`,
+                      borderBottom: `2px solid ${COLORS.PRIMARY}`,
+                      '& .MuiTableCell-head': {
+                        color: COLORS.PRIMARY,
+                        fontWeight: 600,
+                        fontSize: '0.95rem',
+                        letterSpacing: '0.5px',
+                        textTransform: 'uppercase',
+                        border: 'none',
+                        padding: '20px 16px',
+                        position: 'relative'
+                      }
+                    }}
+                  >
                     <TableCell>Hotel Name</TableCell>
                     <TableCell>Location</TableCell>
                     <TableCell>Tenant</TableCell>
@@ -785,19 +812,20 @@ const HotelManagementAdmin: React.FC = () => {
                     <TableCell>Rooms</TableCell>
                     <TableCell>Rating</TableCell>
                     <TableCell>Status</TableCell>
+                    <TableCell>Public Listing</TableCell>
                     <TableCell>Actions</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {loading ? (
                     <TableRow>
-                      <TableCell colSpan={8} align="center">
+                      <TableCell colSpan={9} align="center">
                         <CircularProgress />
                       </TableCell>
                     </TableRow>
                   ) : filteredHotels.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={8} align="center">
+                      <TableCell colSpan={9} align="center">
                         <Typography variant="body2" color="text.secondary">
                           No hotels found
                         </Typography>
@@ -827,7 +855,7 @@ const HotelManagementAdmin: React.FC = () => {
                           <TableCell>
                             <Typography variant="body2">{hotel.email}</Typography>
                             <Typography variant="caption" color="text.secondary">
-                              {hotel.phone}
+                              {formatEthiopianPhone(hotel.phone)}
                             </Typography>
                           </TableCell>
                           <TableCell>
@@ -848,6 +876,14 @@ const HotelManagementAdmin: React.FC = () => {
                             />
                           </TableCell>
                           <TableCell>
+                            <Chip
+                              label={hotel.isPubliclyListed ? 'Published' : 'Unlisted'}
+                              color={hotel.isPubliclyListed ? 'info' : 'default'}
+                              size="small"
+                              icon={hotel.isPubliclyListed ? <PublishIcon fontSize="small" /> : <UnpublishIcon fontSize="small" />}
+                            />
+                          </TableCell>
+                          <TableCell>
                             <Box sx={{ display: 'flex', gap: 1 }}>
                               <IconButton
                                 size="small"
@@ -858,7 +894,11 @@ const HotelManagementAdmin: React.FC = () => {
                               </IconButton>
                               <IconButton
                                 size="small"
-                                onClick={() => handleToggleHotelStatus(hotel)}
+                                onClick={() => {
+                                  setSelectedHotel(hotel);
+                                  setToggleStatusReason('');
+                                  setToggleStatusDialogOpen(true);
+                                }}
                                 title={hotel.isActive ? "Deactivate" : "Activate"}
                                 color={hotel.isActive ? "success" : "error"}
                               >
@@ -866,11 +906,16 @@ const HotelManagementAdmin: React.FC = () => {
                               </IconButton>
                               <IconButton
                                 size="small"
-                                onClick={() => openDeleteDialog(hotel)}
-                                title="Delete Hotel"
-                                color="error"
+                                onClick={() => {
+                                  setSelectedHotel(hotel);
+                                  setTogglePublicReason('');
+                                  setTogglePublicDialogOpen(true);
+                                }}
+                                title={hotel.isPubliclyListed ? 'Unpublish from public search' : 'Publish to public search'}
+                                color={hotel.isPubliclyListed ? 'info' : 'default'}
+                                disabled={!hotel.isActive}
                               >
-                                <DeleteIcon />
+                                {hotel.isPubliclyListed ? <PublishIcon /> : <UnpublishIcon />}
                               </IconButton>
                             </Box>
                           </TableCell>
@@ -928,7 +973,7 @@ const HotelManagementAdmin: React.FC = () => {
                       <Typography color="textSecondary" gutterBottom>
                         Approved
                       </Typography>
-                      <Typography variant="h4" color="success.main">
+                      <Typography variant="h4" sx={{ color: COLORS.PRIMARY }}>
                         {registrationStats.approved}
                       </Typography>
                     </CardContent>
@@ -953,7 +998,22 @@ const HotelManagementAdmin: React.FC = () => {
             <TableContainer component={Paper}>
               <Table>
                 <TableHead>
-                  <TableRow>
+                  <TableRow
+                    sx={{
+                      background: `linear-gradient(135deg, ${addAlpha(COLORS.PRIMARY, 0.08)} 0%, ${addAlpha(COLORS.PRIMARY, 0.16)} 100%)`,
+                      borderBottom: `2px solid ${COLORS.PRIMARY}`,
+                      '& .MuiTableCell-head': {
+                        color: COLORS.PRIMARY,
+                        fontWeight: 600,
+                        fontSize: '0.95rem',
+                        letterSpacing: '0.5px',
+                        textTransform: 'uppercase',
+                        border: 'none',
+                        padding: '20px 16px',
+                        position: 'relative'
+                      }
+                    }}
+                  >
                     <TableCell>Hotel Name</TableCell>
                     <TableCell>Contact Person</TableCell>
                     <TableCell>Email</TableCell>
@@ -986,40 +1046,22 @@ const HotelManagementAdmin: React.FC = () => {
                       </TableCell>
                       <TableCell>{formatDate(registration.submittedAt)}</TableCell>
                       <TableCell>
-                        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                          <Button
-                            size="small"
-                            startIcon={<ViewIcon />}
-                            onClick={() => viewRegistration(registration)}
-                            variant="outlined"
-                          >
-                            View
-                          </Button>
-                          
-                          {registration.status === 'PENDING' && (
-                            <>
-                              <Button
-                                size="small"
-                                startIcon={<CheckIcon />}
-                                onClick={() => openApprovalDialog(registration)}
-                                variant="contained"
-                                color="success"
-                              >
-                                Approve
-                              </Button>
-                              <Button
-                                size="small"
-                                startIcon={<CloseIcon />}
-                                onClick={() => openRejectionDialog(registration)}
-                                variant="contained"
-                                color="error"
-                              >
-                                Reject
-                              </Button>
-                            </>
-                          )}
-
-                        </Box>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          startIcon={<ReviewIcon />}
+                          onClick={() => viewRegistration(registration)}
+                          sx={{
+                            borderColor: COLORS.PRIMARY,
+                            color: COLORS.PRIMARY,
+                            '&:hover': {
+                              borderColor: COLORS.PRIMARY_PRESSED,
+                              backgroundColor: COLORS.SLATE_50
+                            }
+                          }}
+                        >
+                          Review
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -1035,7 +1077,7 @@ const HotelManagementAdmin: React.FC = () => {
           <DialogContent>
             <Grid container spacing={2} sx={{ mt: 1 }}>
               <Grid item xs={12} sm={6}>
-                <TextField
+                <PremiumTextField
                   label="Hotel Name"
                   fullWidth
                   required
@@ -1045,7 +1087,7 @@ const HotelManagementAdmin: React.FC = () => {
               </Grid>
               
               <Grid item xs={12} sm={6}>
-                <TextField
+                <PremiumTextField
                   label="Contact Person"
                   fullWidth
                   required
@@ -1055,7 +1097,7 @@ const HotelManagementAdmin: React.FC = () => {
               </Grid>
               
               <Grid item xs={12}>
-                <TextField
+                <PremiumTextField
                   label="Description"
                   multiline
                   rows={3}
@@ -1066,7 +1108,7 @@ const HotelManagementAdmin: React.FC = () => {
               </Grid>
               
               <Grid item xs={12}>
-                <TextField
+                <PremiumTextField
                   label="Address"
                   fullWidth
                   required
@@ -1076,7 +1118,7 @@ const HotelManagementAdmin: React.FC = () => {
               </Grid>
               
               <Grid item xs={12} sm={6}>
-                <TextField
+                <PremiumTextField
                   label="City"
                   fullWidth
                   required
@@ -1086,7 +1128,7 @@ const HotelManagementAdmin: React.FC = () => {
               </Grid>
               
               <Grid item xs={12} sm={6}>
-                <TextField
+                <PremiumTextField
                   label="Country"
                   fullWidth
                   required
@@ -1095,18 +1137,9 @@ const HotelManagementAdmin: React.FC = () => {
                 />
               </Grid>
               
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  label="Phone"
-                  fullWidth
-                  required
-                  value={registrationForm.phone}
-                  onChange={(e) => handleRegistrationFormChange('phone', e.target.value)}
-                />
-              </Grid>
-
-              <Grid item xs={12} sm={6}>
-                <TextField
+              {/* Row 5: Contact Email - moved before phone numbers */}
+              <Grid item xs={12}>
+                <PremiumTextField
                   label="Contact Email"
                   type="email"
                   fullWidth
@@ -1116,8 +1149,56 @@ const HotelManagementAdmin: React.FC = () => {
                 />
               </Grid>
 
+              {/* Phone Numbers Section with grouped styling */}
+              <Grid item xs={12}>
+                <Box sx={{ 
+                  border: `1px solid ${COLORS.BG_INFO_LIGHT}`, 
+                  borderRadius: 2, 
+                  p: 2, 
+                  backgroundColor: COLORS.BG_INFO_LIGHT,
+                  mt: 1
+                }}>
+                  <Typography variant="subtitle1" sx={{ mb: 2, color: COLORS.PRIMARY, fontWeight: 600 }}>
+                    Phone Numbers
+                  </Typography>
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} sm={6}>
+                      <PremiumTextField
+                        label="Phone (Communication)"
+                        fullWidth
+                        required
+                        value={registrationForm.phone}
+                        onChange={(e) => handleRegistrationFormChange('phone', e.target.value)}
+                        helperText="Primary phone for general communication"
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      {/* Empty space to match screenshot layout */}
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <PremiumTextField
+                        label="Mobile Payment Phone"
+                        fullWidth
+                        value={registrationForm.mobilePaymentPhone}
+                        onChange={(e) => handleRegistrationFormChange('mobilePaymentPhone', e.target.value)}
+                        helperText="Primary mobile money account for payments"
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <PremiumTextField
+                        label="Mobile Payment Phone 2 (Optional)"
+                        fullWidth
+                        value={registrationForm.mobilePaymentPhone2}
+                        onChange={(e) => handleRegistrationFormChange('mobilePaymentPhone2', e.target.value)}
+                        helperText="Optional secondary mobile money account"
+                      />
+                    </Grid>
+                  </Grid>
+                </Box>
+              </Grid>
+
               <Grid item xs={12} sm={6}>
-                <TextField
+                <PremiumTextField
                   label="License Number"
                   fullWidth
                   value={registrationForm.licenseNumber}
@@ -1126,7 +1207,7 @@ const HotelManagementAdmin: React.FC = () => {
               </Grid>
 
               <Grid item xs={12} sm={6}>
-                <TextField
+                <PremiumTextField
                   label="Tax ID"
                   fullWidth
                   value={registrationForm.taxId}
@@ -1135,7 +1216,7 @@ const HotelManagementAdmin: React.FC = () => {
               </Grid>
 
               <Grid item xs={12}>
-                <TextField
+                <PremiumTextField
                   label="Website URL"
                   fullWidth
                   value={registrationForm.websiteUrl}
@@ -1144,7 +1225,7 @@ const HotelManagementAdmin: React.FC = () => {
               </Grid>
 
               <Grid item xs={12}>
-                <TextField
+                <PremiumTextField
                   label="Facility Amenities"
                   multiline
                   rows={2}
@@ -1156,7 +1237,7 @@ const HotelManagementAdmin: React.FC = () => {
               </Grid>
 
               <Grid item xs={12} sm={4}>
-                <TextField
+                <PremiumTextField
                   label="Number of Rooms"
                   fullWidth
                   value={registrationForm.numberOfRooms}
@@ -1166,7 +1247,7 @@ const HotelManagementAdmin: React.FC = () => {
               </Grid>
 
               <Grid item xs={12} sm={4}>
-                <TextField
+                <PremiumTextField
                   label="Check-in Time"
                   type="time"
                   fullWidth
@@ -1176,7 +1257,7 @@ const HotelManagementAdmin: React.FC = () => {
               </Grid>
 
               <Grid item xs={12} sm={4}>
-                <TextField
+                <PremiumTextField
                   label="Check-out Time"
                   type="time"
                   fullWidth
@@ -1198,11 +1279,18 @@ const HotelManagementAdmin: React.FC = () => {
           </DialogActions>
         </Dialog>
 
-        {/* Registration View Dialog */}
+        {/* Registration View Dialog - 2-Step Wizard */}
         <Dialog open={registrationViewDialogOpen} onClose={() => setRegistrationViewDialogOpen(false)} maxWidth="md" fullWidth>
-          <DialogTitle>
+          <DialogTitle
+            sx={{
+              borderBottom: `2px solid ${COLORS.SECONDARY}`,
+              pb: 2,
+              fontWeight: 600,
+              color: COLORS.PRIMARY
+            }}
+          >
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span>Hotel Registration Details</span>
+              <span>Review Hotel Registration</span>
               {selectedRegistration?.status === 'PENDING' && !registrationEditMode && (
                 <Button
                   startIcon={<EditIcon />}
@@ -1215,318 +1303,485 @@ const HotelManagementAdmin: React.FC = () => {
               )}
             </Box>
           </DialogTitle>
+          <Box sx={{ px: 3, pt: 2 }}>
+            <Stepper activeStep={registrationWizardStep} alternativeLabel>
+              {wizardSteps.map((label) => (
+                <Step key={label}>
+                  <StepLabel>{label}</StepLabel>
+                </Step>
+              ))}
+            </Stepper>
+          </Box>
           <DialogContent>
             {selectedRegistration && (
-              <Grid container spacing={2} sx={{ mt: 1 }}>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    label="Hotel Name"
-                    fullWidth
-                    value={registrationEditMode ? editRegistrationForm.hotelName : selectedRegistration.hotelName}
-                    disabled={!registrationEditMode}
-                    variant={registrationEditMode ? "outlined" : "filled"}
-                    onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('hotelName', e.target.value) : undefined}
-                    required={registrationEditMode}
-                  />
-                </Grid>
-                
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    label="Contact Person"
-                    fullWidth
-                    value={registrationEditMode ? editRegistrationForm.contactPerson : selectedRegistration.contactPerson}
-                    disabled={!registrationEditMode}
-                    variant={registrationEditMode ? "outlined" : "filled"}
-                    onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('contactPerson', e.target.value) : undefined}
-                    required={registrationEditMode}
-                  />
-                </Grid>
-                
-                <Grid item xs={12}>
-                  <TextField
-                    label="Description"
-                    multiline
-                    rows={3}
-                    fullWidth
-                    value={registrationEditMode ? editRegistrationForm.description : selectedRegistration.description}
-                    disabled={!registrationEditMode}
-                    variant={registrationEditMode ? "outlined" : "filled"}
-                    onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('description', e.target.value) : undefined}
-                  />
-                </Grid>
-                
-                <Grid item xs={12}>
-                  <TextField
-                    label="Address"
-                    fullWidth
-                    value={registrationEditMode ? editRegistrationForm.address : selectedRegistration.address}
-                    disabled={!registrationEditMode}
-                    variant={registrationEditMode ? "outlined" : "filled"}
-                    onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('address', e.target.value) : undefined}
-                    required={registrationEditMode}
-                  />
-                </Grid>
-                
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    label="City"
-                    fullWidth
-                    value={registrationEditMode ? editRegistrationForm.city : selectedRegistration.city}
-                    disabled={!registrationEditMode}
-                    variant={registrationEditMode ? "outlined" : "filled"}
-                    onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('city', e.target.value) : undefined}
-                    required={registrationEditMode}
-                  />
-                </Grid>
-                
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    label="Country"
-                    fullWidth
-                    value={registrationEditMode ? editRegistrationForm.country : selectedRegistration.country}
-                    disabled={!registrationEditMode}
-                    variant={registrationEditMode ? "outlined" : "filled"}
-                    onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('country', e.target.value) : undefined}
-                    required={registrationEditMode}
-                  />
-                </Grid>
-
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    label="State"
-                    fullWidth
-                    value={registrationEditMode ? editRegistrationForm.state : (selectedRegistration.state || '')}
-                    disabled={!registrationEditMode}
-                    variant={registrationEditMode ? "outlined" : "filled"}
-                    onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('state', e.target.value) : undefined}
-                  />
-                </Grid>
-
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    label="Zip Code"
-                    fullWidth
-                    value={registrationEditMode ? editRegistrationForm.zipCode : (selectedRegistration.zipCode || '')}
-                    disabled={!registrationEditMode}
-                    variant={registrationEditMode ? "outlined" : "filled"}
-                    onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('zipCode', e.target.value) : undefined}
-                  />
-                </Grid>
-                
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    label="Phone"
-                    fullWidth
-                    value={registrationEditMode ? editRegistrationForm.phone : selectedRegistration.phone}
-                    disabled={!registrationEditMode}
-                    variant={registrationEditMode ? "outlined" : "filled"}
-                    onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('phone', e.target.value) : undefined}
-                    required={registrationEditMode}
-                  />
-                </Grid>
-
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    label="Contact Email"
-                    fullWidth
-                    value={registrationEditMode ? editRegistrationForm.contactEmail : selectedRegistration.contactEmail}
-                    disabled={!registrationEditMode}
-                    variant={registrationEditMode ? "outlined" : "filled"}
-                    onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('contactEmail', e.target.value) : undefined}
-                    required={registrationEditMode}
-                    type="email"
-                  />
-                </Grid>
-
-                {!registrationEditMode && (
-                  <>
+              <Box sx={{ mt: 1 }}>
+                {/* Step 1: Hotel & Admin Info */}
+                {registrationWizardStep === 0 && (
+                  <Grid container spacing={2}>
+                    <Grid item xs={12}>
+                      <Typography variant="subtitle1" fontWeight={600} color="primary" sx={{ mb: 1 }}>
+                        Hotel Information
+                      </Typography>
+                      <Divider sx={{ mb: 2 }} />
+                    </Grid>
                     <Grid item xs={12} sm={6}>
-                      <TextField
+                      {registrationEditMode ? (
+                        <PremiumTextField
+                          label="Hotel Name"
+                          fullWidth
+                          value={editRegistrationForm.hotelName}
+                          onChange={(e) => handleEditRegistrationFormChange('hotelName', e.target.value)}
+                          required
+                        />
+                      ) : (
+                        <PremiumDisplayField
+                          label="Hotel Name"
+                          value={selectedRegistration.hotelName}
+                          isEditMode={false}
+                        />
+                      )}
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <PremiumDisplayField
                         label="Status"
-                        fullWidth
                         value={selectedRegistration.status}
-                        disabled
-                        variant="filled"
+                        isEditMode={false}
                       />
                     </Grid>
-
+                    <Grid item xs={12}>
+                      {registrationEditMode ? (
+                        <PremiumTextField
+                          label="Address"
+                          fullWidth
+                          value={editRegistrationForm.address}
+                          onChange={(e) => handleEditRegistrationFormChange('address', e.target.value)}
+                          required
+                        />
+                      ) : (
+                        <PremiumDisplayField
+                          label="Address"
+                          value={selectedRegistration.address}
+                          isEditMode={false}
+                        />
+                      )}
+                    </Grid>
                     <Grid item xs={12} sm={6}>
-                      <TextField
-                        label="Submitted At"
-                        fullWidth
-                        value={formatDate(selectedRegistration.submittedAt)}
-                        disabled
-                        variant="filled"
+                      <PremiumDisplayField
+                        label="City"
+                        value={registrationEditMode ? editRegistrationForm.city : selectedRegistration.city}
+                        isEditMode={registrationEditMode}
+                        onChange={(value) => handleEditRegistrationFormChange('city', value)}
+                        required
                       />
                     </Grid>
-                  </>
-                )}
+                    <Grid item xs={12} sm={6}>
+                      <PremiumDisplayField
+                        label="Country"
+                        value={registrationEditMode ? editRegistrationForm.country : selectedRegistration.country}
+                        isEditMode={registrationEditMode}
+                        onChange={(value) => handleEditRegistrationFormChange('country', value)}
+                        required
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <PremiumDisplayField
+                        label="Submitted At"
+                        value={formatDate(selectedRegistration.submittedAt)}
+                        isEditMode={false}
+                      />
+                    </Grid>
+                    {selectedRegistration.reviewedAt && (
+                      <Grid item xs={12} sm={6}>
+                        <PremiumDisplayField
+                          label="Reviewed At"
+                          value={formatDate(selectedRegistration.reviewedAt)}
+                          isEditMode={false}
+                        />
+                      </Grid>
+                    )}
 
-                {(selectedRegistration.licenseNumber || registrationEditMode) && (
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      label="License Number"
-                      fullWidth
-                      value={registrationEditMode ? editRegistrationForm.licenseNumber : (selectedRegistration.licenseNumber || '')}
-                      disabled={!registrationEditMode}
-                      variant={registrationEditMode ? "outlined" : "filled"}
-                      onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('licenseNumber', e.target.value) : undefined}
-                    />
+                    <Grid item xs={12}>
+                      <Typography variant="subtitle1" fontWeight={600} color="primary" sx={{ mt: 1, mb: 1 }}>
+                        Registered Hotel Admin
+                      </Typography>
+                      <Divider sx={{ mb: 2 }} />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      {registrationEditMode ? (
+                        <PremiumTextField
+                          label="Contact Person"
+                          fullWidth
+                          value={editRegistrationForm.contactPerson}
+                          onChange={(e) => handleEditRegistrationFormChange('contactPerson', e.target.value)}
+                          required
+                        />
+                      ) : (
+                        <PremiumDisplayField
+                          label="Contact Person"
+                          value={selectedRegistration.contactPerson}
+                          isEditMode={false}
+                        />
+                      )}
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <PremiumDisplayField
+                        label="Contact Email"
+                        value={registrationEditMode ? editRegistrationForm.contactEmail : selectedRegistration.contactEmail}
+                        isEditMode={registrationEditMode}
+                        onChange={(value) => handleEditRegistrationFormChange('contactEmail', value)}
+                        type="email"
+                        required
+                      />
+                    </Grid>
                   </Grid>
                 )}
 
-                {(selectedRegistration.taxId || registrationEditMode) && (
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      label="Tax ID"
-                      fullWidth
-                      value={registrationEditMode ? editRegistrationForm.taxId : (selectedRegistration.taxId || '')}
-                      disabled={!registrationEditMode}
-                      variant={registrationEditMode ? "outlined" : "filled"}
-                      onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('taxId', e.target.value) : undefined}
-                    />
-                  </Grid>
-                )}
+                {/* Step 2: Additional Details */}
+                {registrationWizardStep === 1 && (
+                  <Grid container spacing={2}>
+                    <Grid item xs={12}>
+                      <Typography variant="subtitle1" fontWeight={600} color="primary" sx={{ mb: 1 }}>
+                        Business Details
+                      </Typography>
+                      <Divider sx={{ mb: 2 }} />
+                    </Grid>
+                    <Grid item xs={12}>
+                      {registrationEditMode ? (
+                        <PremiumTextField
+                          label="Description"
+                          multiline
+                          rows={3}
+                          fullWidth
+                          value={editRegistrationForm.description}
+                          onChange={(e) => handleEditRegistrationFormChange('description', e.target.value)}
+                        />
+                      ) : (
+                        <PremiumDisplayField
+                          label="Description"
+                          value={selectedRegistration.description}
+                          isEditMode={false}
+                          multiline
+                          rows={3}
+                        />
+                      )}
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <PremiumDisplayField
+                        label="Phone"
+                        value={registrationEditMode ? editRegistrationForm.phone : selectedRegistration.phone}
+                        isEditMode={registrationEditMode}
+                        onChange={(value) => handleEditRegistrationFormChange('phone', value)}
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <PremiumDisplayField
+                        label="Website URL"
+                        value={registrationEditMode ? editRegistrationForm.websiteUrl : (selectedRegistration.websiteUrl || '')}
+                        isEditMode={registrationEditMode}
+                        onChange={(value) => handleEditRegistrationFormChange('websiteUrl', value)}
+                      />
+                    </Grid>
 
-                {(selectedRegistration.websiteUrl || registrationEditMode) && (
-                  <Grid item xs={12}>
-                    <TextField
-                      label="Website URL"
-                      fullWidth
-                      value={registrationEditMode ? editRegistrationForm.websiteUrl : (selectedRegistration.websiteUrl || '')}
-                      disabled={!registrationEditMode}
-                      variant={registrationEditMode ? "outlined" : "filled"}
-                      onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('websiteUrl', e.target.value) : undefined}
-                    />
-                  </Grid>
-                )}
+                    <Grid item xs={12}>
+                      <Typography variant="subtitle1" fontWeight={600} color="primary" sx={{ mt: 1, mb: 1 }}>
+                        Payment Information
+                      </Typography>
+                      <Divider sx={{ mb: 2 }} />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <PremiumDisplayField
+                        label="Mobile Payment Phone"
+                        value={registrationEditMode ? editRegistrationForm.mobilePaymentPhone : (selectedRegistration.mobilePaymentPhone || '')}
+                        isEditMode={registrationEditMode}
+                        onChange={(value) => handleEditRegistrationFormChange('mobilePaymentPhone', value)}
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <PremiumDisplayField
+                        label="Mobile Payment Phone 2"
+                        value={registrationEditMode ? editRegistrationForm.mobilePaymentPhone2 : (selectedRegistration.mobilePaymentPhone2 || '')}
+                        isEditMode={registrationEditMode}
+                        onChange={(value) => handleEditRegistrationFormChange('mobilePaymentPhone2', value)}
+                      />
+                    </Grid>
 
-                {(selectedRegistration.facilityAmenities || registrationEditMode) && (
-                  <Grid item xs={12}>
-                    <TextField
-                      label="Facility Amenities"
-                      multiline
-                      rows={2}
-                      fullWidth
-                      value={registrationEditMode ? editRegistrationForm.facilityAmenities : (selectedRegistration.facilityAmenities || '')}
-                      disabled={!registrationEditMode}
-                      variant={registrationEditMode ? "outlined" : "filled"}
-                      onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('facilityAmenities', e.target.value) : undefined}
-                      placeholder={registrationEditMode ? "WiFi, Pool, Spa, Restaurant, etc." : undefined}
-                    />
-                  </Grid>
-                )}
+                    <Grid item xs={12}>
+                      <Typography variant="subtitle1" fontWeight={600} color="primary" sx={{ mt: 1, mb: 1 }}>
+                        Tax & License
+                      </Typography>
+                      <Divider sx={{ mb: 2 }} />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <PremiumDisplayField
+                        label="License Number"
+                        value={registrationEditMode ? editRegistrationForm.licenseNumber : (selectedRegistration.licenseNumber || '')}
+                        isEditMode={registrationEditMode}
+                        onChange={(value) => handleEditRegistrationFormChange('licenseNumber', value)}
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <PremiumDisplayField
+                        label="Tax ID"
+                        value={registrationEditMode ? editRegistrationForm.taxId : (selectedRegistration.taxId || '')}
+                        isEditMode={registrationEditMode}
+                        onChange={(value) => handleEditRegistrationFormChange('taxId', value)}
+                      />
+                    </Grid>
 
-                {(selectedRegistration.numberOfRooms || registrationEditMode) && (
-                  <Grid item xs={12} sm={4}>
-                    <TextField
-                      label="Number of Rooms"
-                      fullWidth
-                      value={registrationEditMode ? editRegistrationForm.numberOfRooms : (selectedRegistration.numberOfRooms?.toString() || '')}
-                      disabled={!registrationEditMode}
-                      variant={registrationEditMode ? "outlined" : "filled"}
-                      onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('numberOfRooms', e.target.value) : undefined}
-                      placeholder={registrationEditMode ? "Enter number of rooms" : undefined}
-                    />
-                  </Grid>
-                )}
+                    <Grid item xs={12}>
+                      <Typography variant="subtitle1" fontWeight={600} color="primary" sx={{ mt: 1, mb: 1 }}>
+                        Facility Information
+                      </Typography>
+                      <Divider sx={{ mb: 2 }} />
+                    </Grid>
+                    <Grid item xs={12}>
+                      <PremiumDisplayField
+                        label="Facility Amenities"
+                        value={registrationEditMode ? editRegistrationForm.facilityAmenities : (selectedRegistration.facilityAmenities || '')}
+                        isEditMode={registrationEditMode}
+                        onChange={(value) => handleEditRegistrationFormChange('facilityAmenities', value)}
+                        multiline
+                        rows={2}
+                        placeholder="WiFi, Pool, Spa, Restaurant, etc."
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={4}>
+                      <PremiumDisplayField
+                        label="Number of Rooms"
+                        value={registrationEditMode ? editRegistrationForm.numberOfRooms : (selectedRegistration.numberOfRooms?.toString() || '')}
+                        isEditMode={registrationEditMode}
+                        onChange={(value) => handleEditRegistrationFormChange('numberOfRooms', value)}
+                        placeholder="Enter number of rooms"
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={4}>
+                      <PremiumDisplayField
+                        label="Check-in Time"
+                        value={registrationEditMode ? editRegistrationForm.checkInTime : (selectedRegistration.checkInTime || '')}
+                        isEditMode={registrationEditMode}
+                        onChange={(value) => handleEditRegistrationFormChange('checkInTime', value)}
+                        type="time"
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={4}>
+                      <PremiumDisplayField
+                        label="Check-out Time"
+                        value={registrationEditMode ? editRegistrationForm.checkOutTime : (selectedRegistration.checkOutTime || '')}
+                        isEditMode={registrationEditMode}
+                        onChange={(value) => handleEditRegistrationFormChange('checkOutTime', value)}
+                        type="time"
+                      />
+                    </Grid>
 
-                {(selectedRegistration.checkInTime || registrationEditMode) && (
-                  <Grid item xs={12} sm={4}>
-                    <TextField
-                      label="Check-in Time"
-                      fullWidth
-                      value={registrationEditMode ? editRegistrationForm.checkInTime : (selectedRegistration.checkInTime || '')}
-                      disabled={!registrationEditMode}
-                      variant={registrationEditMode ? "outlined" : "filled"}
-                      onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('checkInTime', e.target.value) : undefined}
-                      type="time"
-                    />
+                    {!registrationEditMode && selectedRegistration.reviewComments && (
+                      <>
+                        <Grid item xs={12}>
+                          <Divider sx={{ my: 1 }} />
+                        </Grid>
+                        <Grid item xs={12}>
+                          <PremiumDisplayField
+                            label="Review Comments"
+                            value={selectedRegistration.reviewComments}
+                            isEditMode={false}
+                            multiline
+                            rows={3}
+                          />
+                        </Grid>
+                      </>
+                    )}
                   </Grid>
                 )}
-
-                {(selectedRegistration.checkOutTime || registrationEditMode) && (
-                  <Grid item xs={12} sm={4}>
-                    <TextField
-                      label="Check-out Time"
-                      fullWidth
-                      value={registrationEditMode ? editRegistrationForm.checkOutTime : (selectedRegistration.checkOutTime || '')}
-                      disabled={!registrationEditMode}
-                      variant={registrationEditMode ? "outlined" : "filled"}
-                      onChange={registrationEditMode ? (e) => handleEditRegistrationFormChange('checkOutTime', e.target.value) : undefined}
-                      type="time"
-                    />
-                  </Grid>
-                )}
-
-                {!registrationEditMode && selectedRegistration.reviewedAt && (
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      label="Reviewed At"
-                      fullWidth
-                      value={formatDate(selectedRegistration.reviewedAt)}
-                      disabled
-                      variant="filled"
-                    />
-                  </Grid>
-                )}
-
-                {!registrationEditMode && selectedRegistration.reviewComments && (
-                  <Grid item xs={12}>
-                    <TextField
-                      label="Review Comments"
-                      multiline
-                      rows={3}
-                      fullWidth
-                      value={selectedRegistration.reviewComments}
-                      disabled
-                      variant="filled"
-                    />
-                  </Grid>
-                )}
-
-                {/* Approved hotel ID field removed - not part of API response */}
-                {false && selectedRegistration && (
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      label="Created Hotel ID"
-                      fullWidth
-                      value=""
-                      disabled
-                      variant="filled"
-                    />
-                  </Grid>
-                )}
-
-                {!registrationEditMode && selectedRegistration.tenantId && (
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      label="Tenant ID"
-                      fullWidth
-                      value={selectedRegistration.tenantId}
-                      disabled
-                      variant="filled"
-                    />
-                  </Grid>
-                )}
-              </Grid>
+              </Box>
             )}
           </DialogContent>
-          <DialogActions>
+          <DialogActions sx={{ px: 3, py: 2, borderTop: `1px solid ${COLORS.BORDER_LIGHT}` }}>
             {registrationEditMode ? (
               <>
                 <Button onClick={handleCancelRegistrationEdit}>Cancel</Button>
-                <Button 
-                  variant="contained" 
-                  onClick={handleSaveRegistrationEdit}
-                  disabled={!editRegistrationForm.hotelName || !editRegistrationForm.contactPerson || !editRegistrationForm.contactEmail}
-                >
-                  Save Changes
-                </Button>
+                <Box sx={{ flex: 1 }} />
+                {registrationWizardStep === 0 ? (
+                  <Button
+                    variant="contained"
+                    endIcon={<NavigateNext />}
+                    onClick={() => setRegistrationWizardStep(1)}
+                  >
+                    Next
+                  </Button>
+                ) : (
+                  <>
+                    <Button
+                      startIcon={<NavigateBefore />}
+                      onClick={() => setRegistrationWizardStep(0)}
+                    >
+                      Back
+                    </Button>
+                    <Button 
+                      variant="contained" 
+                      onClick={handleSaveRegistrationEdit}
+                      disabled={!editRegistrationForm.hotelName || !editRegistrationForm.contactPerson || !editRegistrationForm.contactEmail}
+                    >
+                      Save Changes
+                    </Button>
+                  </>
+                )}
               </>
             ) : (
-              <Button onClick={() => setRegistrationViewDialogOpen(false)}>Close</Button>
+              registrationWizardStep === 0 ? (
+                <>
+                  <Button 
+                    onClick={() => setRegistrationViewDialogOpen(false)}
+                    sx={{ color: COLORS.TEXT_SECONDARY }}
+                  >
+                    Cancel
+                  </Button>
+                  <Box sx={{ flex: 1 }} />
+                  <Button
+                    variant="contained"
+                    endIcon={<NavigateNext />}
+                    onClick={() => setRegistrationWizardStep(1)}
+                  >
+                    Next
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button
+                    startIcon={<NavigateBefore />}
+                    onClick={() => setRegistrationWizardStep(0)}
+                  >
+                    Back
+                  </Button>
+                  <Box sx={{ flex: 1 }} />
+                  <Button 
+                    onClick={() => setRegistrationViewDialogOpen(false)}
+                    sx={{ color: COLORS.TEXT_SECONDARY }}
+                  >
+                    Cancel
+                  </Button>
+                  {selectedRegistration?.status === 'PENDING' && (
+                    <>
+                      <Button
+                        variant="outlined"
+                        color="error"
+                        startIcon={<RejectIcon />}
+                        onClick={() => openRejectionDialog(selectedRegistration)}
+                        sx={{
+                          borderColor: COLORS.ERROR,
+                          '&:hover': {
+                            backgroundColor: COLORS.BG_ERROR_LIGHT,
+                            borderColor: COLORS.ERROR
+                          }
+                        }}
+                      >
+                        Reject
+                      </Button>
+                      <Button
+                        variant="contained"
+                        color="success"
+                        startIcon={<ApproveIcon />}
+                        onClick={() => openApprovalDialog(selectedRegistration)}
+                        sx={{
+                          backgroundColor: (theme) => theme.palette.success.main,
+                          '&:hover': {
+                            backgroundColor: (theme) => theme.palette.success.dark
+                          }
+                        }}
+                      >
+                        Approve
+                      </Button>
+                    </>
+                  )}
+                </>
+              )
             )}
+          </DialogActions>
+        </Dialog>
+
+        {/* Toggle Status Confirmation Dialog */}
+        <Dialog
+          open={toggleStatusDialogOpen}
+          onClose={() => {
+            setToggleStatusDialogOpen(false);
+            setToggleStatusReason('');
+          }}
+          maxWidth="sm"
+          fullWidth
+        >
+          <DialogTitle>
+            {selectedHotel?.isActive ? 'Deactivate Hotel' : 'Activate Hotel'}
+          </DialogTitle>
+          <DialogContent>
+            <Typography sx={{ mb: 2 }}>
+              Are you sure you want to {selectedHotel?.isActive ? 'deactivate' : 'activate'} hotel "{selectedHotel?.name}"?
+            </Typography>
+            <PremiumTextField
+              label="Reason"
+              fullWidth
+              required
+              multiline
+              rows={3}
+              value={toggleStatusReason}
+              onChange={(e) => setToggleStatusReason(e.target.value)}
+              placeholder={`Enter reason for ${selectedHotel?.isActive ? 'deactivation' : 'activation'}...`}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => {
+              setToggleStatusDialogOpen(false);
+              setToggleStatusReason('');
+            }}>
+              Cancel
+            </Button>
+            <Button
+              onClick={() => selectedHotel && handleToggleHotelStatus(selectedHotel)}
+              variant="contained"
+              color={selectedHotel?.isActive ? 'error' : 'success'}
+              disabled={!toggleStatusReason.trim() || loading}
+            >
+              {loading ? <CircularProgress size={20} /> : (selectedHotel?.isActive ? 'Deactivate' : 'Activate')}
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Toggle Public Listing Confirmation Dialog */}
+        <Dialog
+          open={togglePublicDialogOpen}
+          onClose={() => { setTogglePublicDialogOpen(false); setTogglePublicReason(''); }}
+          maxWidth="sm"
+          fullWidth
+        >
+          <DialogTitle>
+            {selectedHotel?.isPubliclyListed ? 'Unpublish Hotel' : 'Publish Hotel to Public Search'}
+          </DialogTitle>
+          <DialogContent>
+            <Typography sx={{ mb: 2 }}>
+              {selectedHotel?.isPubliclyListed
+                ? `Unpublishing "${selectedHotel?.name}" will hide it from public guest search. Hotel admin will retain management access.`
+                : `Publishing "${selectedHotel?.name}" will make it visible to guests in the public hotel search. Ensure all hotel details, rooms, and pricing are configured before publishing.`}
+            </Typography>
+            <PremiumTextField
+              label="Reason"
+              fullWidth
+              required
+              multiline
+              rows={3}
+              value={togglePublicReason}
+              onChange={(e) => setTogglePublicReason(e.target.value)}
+              placeholder={selectedHotel?.isPubliclyListed ? 'Reason for unpublishing...' : 'Reason for publishing...'}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => { setTogglePublicDialogOpen(false); setTogglePublicReason(''); }}>
+              Cancel
+            </Button>
+            <Button
+              onClick={() => selectedHotel && handleTogglePublicListing(selectedHotel)}
+              variant="contained"
+              color={selectedHotel?.isPubliclyListed ? 'warning' : 'info'}
+              disabled={!togglePublicReason.trim() || loading}
+            >
+              {loading ? <CircularProgress size={20} /> : (selectedHotel?.isPubliclyListed ? 'Unpublish' : 'Publish')}
+            </Button>
           </DialogActions>
         </Dialog>
 
@@ -1537,125 +1792,113 @@ const HotelManagementAdmin: React.FC = () => {
             {selectedHotel && (
               <Grid container spacing={2} sx={{ mt: 1 }}>
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     label="Hotel Name"
                     fullWidth
                     value={selectedHotel.name || ''}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
                 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     label="Email"
                     type="email"
                     fullWidth
                     value={selectedHotel.email || ''}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
                 
                 <Grid item xs={12}>
-                  <TextField
+                  <PremiumTextField
                     label="Description"
                     multiline
                     rows={3}
                     fullWidth
                     value={selectedHotel.description || ''}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
                 
                 <Grid item xs={12}>
-                  <TextField
+                  <PremiumTextField
                     label="Address"
                     fullWidth
                     value={selectedHotel.address || ''}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
                 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     label="City"
                     fullWidth
                     value={selectedHotel.city || ''}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
                 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     label="Country"
                     fullWidth
                     value={selectedHotel.country || ''}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
                 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     label="Phone"
                     fullWidth
                     value={selectedHotel.phone || ''}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     label="Status"
                     fullWidth
                     value={selectedHotel.isActive ? 'Active' : 'Inactive'}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     label="Total Rooms"
                     fullWidth
                     value={selectedHotel.totalRooms?.toString() || '0'}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     label="Available Rooms"
                     fullWidth
                     value={selectedHotel.availableRooms?.toString() || '0'}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     label="Created At"
                     fullWidth
                     value={selectedHotel.createdAt ? new Date(selectedHotel.createdAt).toLocaleString() : ''}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     label="Last Updated"
                     fullWidth
                     value={selectedHotel.updatedAt ? new Date(selectedHotel.updatedAt).toLocaleString() : ''}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
               </Grid>
@@ -1687,31 +1930,6 @@ const HotelManagementAdmin: React.FC = () => {
           loading={loading}
         />
 
-        {/* Delete Confirmation Dialog */}
-        <Dialog
-          open={deleteDialogOpen}
-          onClose={() => setDeleteDialogOpen(false)}
-        >
-          <DialogTitle>Confirm Delete</DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              Are you sure you want to delete the hotel "{selectedHotel?.name}"? This action cannot be undone.
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setDeleteDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              onClick={handleDeleteHotel}
-              color="error"
-              variant="contained"
-            >
-              Delete
-            </Button>
-          </DialogActions>
-        </Dialog>
-
         {/* Approve Registration Dialog */}
         <Dialog
           open={approveDialogOpen}
@@ -1719,38 +1937,24 @@ const HotelManagementAdmin: React.FC = () => {
           maxWidth="sm"
           fullWidth
         >
-          <DialogTitle>Approve Hotel Registration</DialogTitle>
+          <DialogTitle
+            sx={{
+              borderBottom: `2px solid ${COLORS.SECONDARY}`,
+              pb: 2,
+              fontWeight: 600,
+              color: COLORS.PRIMARY
+            }}
+          >
+            Approve Hotel Registration
+          </DialogTitle>
           <DialogContent>
             <DialogContentText sx={{ mb: 2 }}>
               You are about to approve the registration for "{selectedRegistration?.hotelName}". 
-              This will create a new hotel in the system.
+              This will create a new hotel in the system and automatically assign it to the default tenant.
             </DialogContentText>
             <Grid container spacing={2}>
               <Grid item xs={12}>
-                <FormControl fullWidth required>
-                  <InputLabel>Tenant</InputLabel>
-                  <Select
-                    value={tenantId}
-                    onChange={(e) => setTenantId(e.target.value)}
-                    disabled={tenantsLoading}
-                  >
-                    {tenantsLoading ? (
-                      <MenuItem disabled>
-                        <CircularProgress size={20} sx={{ mr: 1 }} />
-                        Loading tenants...
-                      </MenuItem>
-                    ) : (
-                      tenants.map((tenant) => (
-                        <MenuItem key={tenant.id} value={tenant.id}>
-                          {tenant.name} ({tenant.tenantId})
-                        </MenuItem>
-                      ))
-                    )}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
+                <PremiumTextField
                   label="Approval Comments (Optional)"
                   multiline
                   rows={3}
@@ -1768,9 +1972,17 @@ const HotelManagementAdmin: React.FC = () => {
             </Button>
             <Button
               onClick={handleApproveRegistration}
-              color="success"
               variant="contained"
-              disabled={!tenantId.trim()}
+              sx={{
+                  backgroundColor: COLORS.PRIMARY,
+                '&:hover': {
+                  backgroundColor: COLORS.PRIMARY,
+                  filter: 'brightness(0.9)'
+                },
+                '&:disabled': {
+                    backgroundColor: addAlpha(COLORS.BLACK, 0.12)
+                }
+              }}
             >
               Approve Registration
             </Button>
@@ -1784,13 +1996,22 @@ const HotelManagementAdmin: React.FC = () => {
           maxWidth="sm"
           fullWidth
         >
-          <DialogTitle>Reject Hotel Registration</DialogTitle>
+          <DialogTitle
+            sx={{
+              borderBottom: `2px solid ${COLORS.SECONDARY}`,
+              pb: 2,
+              fontWeight: 600,
+              color: COLORS.PRIMARY
+            }}
+          >
+            Reject Hotel Registration
+          </DialogTitle>
           <DialogContent>
             <DialogContentText sx={{ mb: 2 }}>
               You are about to reject the registration for "{selectedRegistration?.hotelName}". 
               Please provide a reason for the rejection.
             </DialogContentText>
-            <TextField
+            <PremiumTextField
               label="Rejection Reason"
               multiline
               rows={4}
@@ -1799,8 +2020,10 @@ const HotelManagementAdmin: React.FC = () => {
               value={rejectionReason}
               onChange={(e) => setRejectionReason(e.target.value)}
               placeholder="Please provide a detailed reason for rejecting this registration..."
-              helperText="This reason will be visible to the hotel applicant"
             />
+            <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+              This reason will be visible to the hotel applicant
+            </Typography>
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setRejectDialogOpen(false)}>

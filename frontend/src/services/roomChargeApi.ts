@@ -42,7 +42,7 @@ class RoomChargeApiService {
 
       return await response.json();
     } catch (error) {
-      console.error(`API request failed for ${endpoint}:`, error);
+      // console.error(`API request failed for ${endpoint}:`, error);
       throw error;
     }
   }

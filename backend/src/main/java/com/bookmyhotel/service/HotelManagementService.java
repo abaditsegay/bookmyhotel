@@ -9,14 +9,19 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.bookmyhotel.dto.HotelDTO;
 import com.bookmyhotel.dto.RoomDTO;
 import com.bookmyhotel.entity.Hotel;
 import com.bookmyhotel.entity.Room;
+import com.bookmyhotel.entity.Tenant;
 import com.bookmyhotel.entity.User;
 import com.bookmyhotel.exception.ResourceNotFoundException;
 import com.bookmyhotel.repository.HotelRepository;
 import com.bookmyhotel.repository.RoomRepository;
+import com.bookmyhotel.repository.TenantRepository;
 import com.bookmyhotel.repository.UserRepository;
 
 /**
@@ -26,6 +31,8 @@ import com.bookmyhotel.repository.UserRepository;
 @Transactional
 public class HotelManagementService {
 
+    private static final Logger logger = LoggerFactory.getLogger(HotelManagementService.class);
+
     @Autowired
     private HotelRepository hotelRepository;
 
@@ -34,6 +41,9 @@ public class HotelManagementService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private TenantRepository tenantRepository;
 
     /**
      * Get all hotels with pagination
@@ -99,7 +109,7 @@ public class HotelManagementService {
     }
 
     /**
-     * Delete hotel (soft delete by setting inactive)
+     * Soft-delete hotel (deactivates it and all its hotel-scoped users).
      */
     public void deleteHotel(Long hotelId) {
         Hotel hotel = hotelRepository.findById(hotelId)
@@ -108,20 +118,90 @@ public class HotelManagementService {
         // Soft delete by setting inactive
         hotel.setIsActive(false);
         hotelRepository.save(hotel);
+
+        // Cascade: deactivate all users belonging to this hotel
+        deactivateHotelUsers(hotelId);
+        logger.info("Hotel '{}' (ID: {}) soft-deleted — all hotel users deactivated", hotel.getName(), hotelId);
     }
 
     /**
-     * Toggle hotel active status
+     * Toggle hotel active status and cascade to hotel users.
      */
-    public HotelDTO toggleHotelStatus(Long hotelId) {
+    public HotelDTO toggleHotelStatus(Long hotelId, String reason) {
         Hotel hotel = hotelRepository.findById(hotelId)
                 .orElseThrow(() -> new ResourceNotFoundException("Hotel not found with id: " + hotelId));
 
-        // Toggle the active status
-        hotel.setIsActive(!Boolean.TRUE.equals(hotel.getIsActive()));
+        boolean wasActive = Boolean.TRUE.equals(hotel.getIsActive());
+        hotel.setIsActive(!wasActive);
+        // Deactivating a hotel also removes it from public search.
+        if (wasActive) {
+            hotel.setIsPubliclyListed(false);
+        }
         hotel = hotelRepository.save(hotel);
 
+        if (wasActive) {
+            // Hotel was deactivated → deactivate all its users
+            deactivateHotelUsers(hotelId);
+        } else {
+            // Hotel was reactivated → reactivate all its hotel-scoped users
+            reactivateHotelUsers(hotelId);
+        }
+
+        logger.info("Hotel '{}' (ID: {}) {} by admin. Reason: {}",
+                hotel.getName(), hotelId, wasActive ? "deactivated" : "activated", reason);
+
         return convertToDTO(hotel);
+    }
+
+    /**
+     * Toggle public listing for a hotel.
+     * Publishing makes the hotel appear in public guest search.
+     * Unpublishing hides it without affecting hotel-admin management access.
+     */
+    public HotelDTO togglePublicListing(Long hotelId, String reason) {
+        Hotel hotel = hotelRepository.findById(hotelId)
+                .orElseThrow(() -> new ResourceNotFoundException("Hotel not found with id: " + hotelId));
+
+        if (!Boolean.TRUE.equals(hotel.getIsActive())) {
+            throw new IllegalStateException("Cannot publish an inactive hotel. Activate the hotel first.");
+        }
+
+        boolean wasListed = Boolean.TRUE.equals(hotel.getIsPubliclyListed());
+        hotel.setIsPubliclyListed(!wasListed);
+        hotel = hotelRepository.save(hotel);
+
+        logger.info("Hotel '{}' (ID: {}) {} by admin. Reason: {}",
+                hotel.getName(), hotelId, wasListed ? "unpublished" : "published", reason);
+
+        return convertToDTO(hotel);
+    }
+
+    /** Deactivates all users associated with the given hotel. */
+    private void deactivateHotelUsers(Long hotelId) {
+        List<User> hotelUsers = userRepository.findByHotel_Id(hotelId);
+        for (User u : hotelUsers) {
+            if (Boolean.TRUE.equals(u.getIsActive())) {
+                u.setIsActive(false);
+            }
+        }
+        if (!hotelUsers.isEmpty()) {
+            userRepository.saveAll(hotelUsers);
+            logger.info("Deactivated {} users for hotel ID {}", hotelUsers.size(), hotelId);
+        }
+    }
+
+    /** Reactivates all users associated with the given hotel. */
+    private void reactivateHotelUsers(Long hotelId) {
+        List<User> hotelUsers = userRepository.findByHotel_Id(hotelId);
+        for (User u : hotelUsers) {
+            if (!Boolean.TRUE.equals(u.getIsActive())) {
+                u.setIsActive(true);
+            }
+        }
+        if (!hotelUsers.isEmpty()) {
+            userRepository.saveAll(hotelUsers);
+            logger.info("Reactivated {} users for hotel ID {}", hotelUsers.size(), hotelId);
+        }
     }
 
     /**
@@ -275,6 +355,7 @@ public class HotelManagementService {
         dto.setPhone(hotel.getPhone());
         dto.setEmail(hotel.getEmail());
         dto.setIsActive(hotel.getIsActive());
+        dto.setIsPubliclyListed(hotel.getIsPubliclyListed());
         dto.setTenantId(hotel.getTenantId());
         dto.setCreatedAt(hotel.getCreatedAt());
         dto.setUpdatedAt(hotel.getUpdatedAt());
@@ -321,9 +402,14 @@ public class HotelManagementService {
         hotel.setCountry(dto.getCountry());
         hotel.setPhone(dto.getPhone());
         hotel.setEmail(dto.getEmail());
-        // Note: tenant relationship should be set through proper tenant reference, not
-        // by string ID
-        // hotel.setTenantId(dto.getTenantId());
+
+        // Handle tenant relationship update
+        if (dto.getTenantId() != null) {
+            Tenant tenant = tenantRepository.findById(dto.getTenantId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Tenant not found with id: " + dto.getTenantId()));
+            hotel.setTenant(tenant);
+        }
+
         if (dto.getIsActive() != null) {
             hotel.setIsActive(dto.getIsActive());
         }

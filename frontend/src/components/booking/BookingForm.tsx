@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { normalizeEthiopianPhone } from '../../utils/phoneUtils';
 import {
   Dialog,
   DialogTitle,
@@ -12,16 +13,21 @@ import {
   Paper,
   Box,
   LinearProgress,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import dayjs, { Dayjs } from 'dayjs';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { addDays, format, differenceInDays } from 'date-fns';
 import { BookingRequest, AvailableRoom } from '../../types/hotel';
 import { LoadingSpinner } from '../common/LoadingComponents';
 import { ValidatedInput, ValidationSummary, ValidationStatus } from '../common/ValidationComponents';
 import { useAsyncOperation } from '../../hooks/useLoading';
 import { useFormValidation } from '../../hooks/useFormValidation';
+import PremiumDatePicker from '../common/PremiumDatePicker';
+import NumberStepper from '../common/NumberStepper';
+import { COLORS, addAlpha } from '../../theme/themeColors';
+import { formatCurrencyWithDecimals } from '../../utils/currencyUtils';
 
 interface BookingFormProps {
   open: boolean;
@@ -44,11 +50,27 @@ const BookingForm: React.FC<BookingFormProps> = ({
   defaultCheckOut,
   defaultGuests = 1,
 }) => {
-  const [checkInDate, setCheckInDate] = useState<Dayjs | null>(
-    defaultCheckIn ? dayjs(defaultCheckIn) : dayjs()
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  
+  // Focus management - auto-focus first input when dialog opens
+  const firstInputRef = useRef<HTMLInputElement>(null);
+  
+  useEffect(() => {
+    if (open && firstInputRef.current) {
+      // Delay focus to ensure dialog is fully rendered
+      const timeoutId = setTimeout(() => {
+        firstInputRef.current?.focus();
+      }, 100);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [open]);
+  
+  const [checkInDate, setCheckInDate] = useState<Date | null>(
+    defaultCheckIn ? defaultCheckIn : new Date()
   );
-  const [checkOutDate, setCheckOutDate] = useState<Dayjs | null>(
-    defaultCheckOut ? dayjs(defaultCheckOut) : dayjs().add(1, 'day')
+  const [checkOutDate, setCheckOutDate] = useState<Date | null>(
+    defaultCheckOut ? defaultCheckOut : addDays(new Date(), 1)
   );
   const [error, setError] = useState('');
   const bookingOperation = useAsyncOperation();
@@ -98,11 +120,13 @@ const BookingForm: React.FC<BookingFormProps> = ({
     },
     guestPhone: {
       rules: {
+        required: true,
         phone: true,
         minLength: 10,
         maxLength: 15,
       },
       messages: {
+        required: 'Phone number is required',
         phone: 'Please enter a valid phone number',
         minLength: 'Phone number must be at least 10 digits',
         maxLength: 'Phone number must be less than 15 digits',
@@ -122,7 +146,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
 
   const calculateTotalAmount = () => {
     if (!room || !checkInDate || !checkOutDate) return 0;
-    const nights = checkOutDate.diff(checkInDate, 'day');
+    const nights = differenceInDays(checkOutDate, checkInDate);
     return room.pricePerNight * nights;
   };
 
@@ -149,13 +173,13 @@ const BookingForm: React.FC<BookingFormProps> = ({
 
     const bookingRequest: BookingRequest = {
       roomId: room.id,
-      checkInDate: checkInDate.format('YYYY-MM-DD'),
-      checkOutDate: checkOutDate.format('YYYY-MM-DD'),
+      checkInDate: format(checkInDate, 'yyyy-MM-dd'),
+      checkOutDate: format(checkOutDate, 'yyyy-MM-dd'),
       guests: formValidation.values.guests,
       specialRequests: formValidation.values.specialRequests?.trim() || undefined,
       guestName: formValidation.values.guestName.trim(),
       guestEmail: formValidation.values.guestEmail.trim(),
-      guestPhone: formValidation.values.guestPhone?.trim() || undefined,
+      guestPhone: formValidation.values.guestPhone?.trim() ? normalizeEthiopianPhone(formValidation.values.guestPhone.trim()) : undefined,
     };
 
     await bookingOperation.execute(
@@ -174,24 +198,31 @@ const BookingForm: React.FC<BookingFormProps> = ({
 
   const totalAmount = calculateTotalAmount();
   const nights = checkInDate && checkOutDate 
-    ? checkOutDate.diff(checkInDate, 'day')
+    ? differenceInDays(checkOutDate, checkInDate)
     : 0;
 
   return (
-    <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-        <DialogTitle>
-          <Typography variant="h5" component="h2">
-            Book Your Stay
-          </Typography>
+    <LocalizationProvider dateAdapter={AdapterDateFns}>
+      <Dialog 
+        open={open} 
+        onClose={onClose} 
+        maxWidth="md" 
+        fullWidth
+        fullScreen={isMobile}
+      >
+        <DialogTitle sx={{ p: { xs: 2, md: 3 } }}>
           {hotelName && (
-            <Typography variant="subtitle1" color="text.secondary">
+            <Typography variant={isMobile ? "body1" : "subtitle1"} color="text.secondary">
               {hotelName}
             </Typography>
           )}
         </DialogTitle>
 
-        <DialogContent sx={{ position: 'relative' }}>
+        <DialogContent sx={{ 
+          position: 'relative',
+          p: { xs: 2, md: 3 },
+          pt: { xs: 1, md: 2 }
+        }}>
           {error && (
             <Alert severity="error" sx={{ mb: 2 }}>
               {error}
@@ -245,40 +276,86 @@ const BookingForm: React.FC<BookingFormProps> = ({
           )}
 
           {room && (
-            <Paper elevation={1} sx={{ p: 2, mb: 3, bgcolor: 'grey.50' }}>
-              <Typography variant="h6" component="div" gutterBottom>
+            <Paper 
+              elevation={0} 
+              sx={{ 
+                p: { xs: 2, md: 3 }, 
+                mb: { xs: 2, md: 3 }, 
+                backgroundColor: 'background.paper',
+                border: `1px solid ${COLORS.CARD_BORDER}`,
+                borderRadius: 2,
+                boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.08)}`,
+              }}
+            >
+              <Typography 
+                variant="h6" 
+                component="div" 
+                gutterBottom
+                sx={{ 
+                  fontWeight: 700,
+                  color: 'text.primary',
+                  mb: 2,
+                }}
+              >
                 Room Details
               </Typography>
-              <Grid container spacing={2}>
+              <Grid container spacing={{ xs: 1.5, md: 2 }}>
                 <Grid item xs={12} sm={6}>
-                  <Typography variant="body2">
+                  <Typography variant="body2" sx={{ mb: 0.5, fontWeight: 500 }}>
                     <strong>Room:</strong> {room.roomNumber}
                   </Typography>
-                  <Typography variant="body2">
+                  <Typography variant="body2" sx={{ mb: 0.5, fontWeight: 500 }}>
                     <strong>Type:</strong> {room.roomType}
                   </Typography>
-                  <Typography variant="body2">
+                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
                     <strong>Capacity:</strong> Up to {room.capacity} guests
                   </Typography>
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <Typography variant="body2">
-                    <strong>Price per night:</strong> ${room.pricePerNight}
+                  <Typography variant="body2" sx={{ mb: 0.5, fontWeight: 500 }}>
+                    <strong>Price per night:</strong> ETB {room.pricePerNight}
                   </Typography>
                   {nights > 0 && (
                     <>
-                      <Typography variant="body2">
+                      <Typography variant="body2" sx={{ mb: 0.5, fontWeight: 500 }}>
                         <strong>Nights:</strong> {nights}
                       </Typography>
-                      <Typography variant="h6" component="div" color="primary.main">
-                        <strong>Total: ${totalAmount}</strong>
-                      </Typography>
+                      <Box 
+                        sx={{ 
+                          backgroundColor: addAlpha(COLORS.PRIMARY, 0.1),
+                          border: `1px solid ${addAlpha(COLORS.PRIMARY, 0.3)}`,
+                          borderRadius: 2,
+                          padding: 1.5,
+                          mt: 1,
+                        }}
+                      >
+                        <Typography 
+                          variant="h6" 
+                          component="div" 
+                          sx={{ 
+                            color: COLORS.SUCCESS,
+                            fontWeight: 700,
+                            textAlign: 'center',
+                          }}
+                        >
+                          <strong>Total: ${totalAmount}</strong>
+                        </Typography>
+                      </Box>
                     </>
                   )}
                 </Grid>
               </Grid>
               {room.description && (
-                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                <Typography 
+                  variant="body2" 
+                  color="text.secondary" 
+                  sx={{ 
+                    mt: 2, 
+                    pt: 2,
+                    borderTop: `1px solid ${COLORS.CARD_BORDER}`,
+                    fontStyle: 'italic',
+                  }}
+                >
                   {room.description}
                 </Typography>
               )}
@@ -286,57 +363,59 @@ const BookingForm: React.FC<BookingFormProps> = ({
           )}
 
           <form onSubmit={handleSubmit}>
-            <Grid container spacing={3}>
+            <Grid container spacing={{ xs: 2, md: 3 }}>
               {/* Dates and Guests */}
               <Grid item xs={12} sm={4}>
-                <DatePicker
+                <PremiumDatePicker
                   label="Check-in Date"
                   value={checkInDate}
                   onChange={setCheckInDate}
-                  minDate={dayjs()}
+                  minDate={new Date()}
                   slotProps={{
                     textField: {
                       fullWidth: true,
                       required: true,
+                      size: isMobile ? "small" : "medium",
                     },
                   }}
                 />
               </Grid>
 
               <Grid item xs={12} sm={4}>
-                <DatePicker
+                <PremiumDatePicker
                   label="Check-out Date"
                   value={checkOutDate}
                   onChange={setCheckOutDate}
-                  minDate={checkInDate || dayjs()}
+                  minDate={checkInDate || new Date()}
                   slotProps={{
                     textField: {
                       fullWidth: true,
                       required: true,
+                      size: isMobile ? "small" : "medium",
                     },
                   }}
                 />
               </Grid>
 
               <Grid item xs={12} sm={4}>
-                <ValidatedInput
-                  fullWidth
+                <NumberStepper
+                  value={formValidation.values.guests || 1}
+                  onChange={(newValue) => formValidation.setFieldValue('guests', newValue)}
+                  min={1}
+                  max={room?.capacity || 10}
                   label="Number of Guests"
-                  type="number"
-                  {...formValidation.getFieldProps('guests')}
-                  InputProps={{ inputProps: { min: 1, max: room?.capacity || 10 } }}
-                  required
-                  validationState={
-                    formValidation.validation.guests?.error ? 'error' : 
-                    formValidation.validation.guests?.touched && !formValidation.validation.guests?.error ? 'success' : 
-                    undefined
-                  }
+                  fullWidth
                 />
+                {formValidation.validation.guests?.error && (
+                  <Typography variant="caption" color="error" sx={{ mt: 0.5, display: 'block' }}>
+                    {formValidation.validation.guests.error}
+                  </Typography>
+                )}
               </Grid>
 
               <Grid item xs={12}>
-                <Divider sx={{ my: 1 }} />
-                <Typography variant="h6" component="div" gutterBottom>
+                <Divider sx={{ my: { xs: 1, md: 1 } }} />
+                <Typography variant={isMobile ? "subtitle1" : "h6"} component="div" gutterBottom>
                   Guest Information
                 </Typography>
               </Grid>
@@ -349,6 +428,8 @@ const BookingForm: React.FC<BookingFormProps> = ({
                   {...formValidation.getFieldProps('guestName')}
                   helperText={formValidation.getFieldProps('guestName').helperText || undefined}
                   required
+                  size={isMobile ? "small" : "medium"}
+                  inputRef={firstInputRef}
                   validationState={
                     formValidation.validation.guestName?.error ? 'error' : 
                     formValidation.validation.guestName?.touched && !formValidation.validation.guestName?.error ? 'success' : 
@@ -365,6 +446,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
                   {...formValidation.getFieldProps('guestEmail')}
                   helperText={formValidation.getFieldProps('guestEmail').helperText || undefined}
                   required
+                  size={isMobile ? "small" : "medium"}
                   validationState={
                     formValidation.validation.guestEmail?.error ? 'error' : 
                     formValidation.validation.guestEmail?.touched && !formValidation.validation.guestEmail?.error ? 'success' : 
@@ -378,8 +460,10 @@ const BookingForm: React.FC<BookingFormProps> = ({
                   fullWidth
                   label="Phone Number"
                   {...formValidation.getFieldProps('guestPhone')}
-                  helperText={formValidation.getFieldProps('guestPhone').helperText || 'Optional'}
-                  placeholder="Optional"
+                  helperText={formValidation.getFieldProps('guestPhone').helperText || 'Enter your phone number'}
+                  placeholder="Enter your phone number"
+                  required
+                  size={isMobile ? "small" : "medium"}
                   validationState={
                     formValidation.validation.guestPhone?.error ? 'error' : 
                     formValidation.validation.guestPhone?.touched && !formValidation.validation.guestPhone?.error ? 'success' : 
@@ -393,10 +477,11 @@ const BookingForm: React.FC<BookingFormProps> = ({
                   fullWidth
                   label="Special Requests"
                   multiline
-                  rows={3}
+                  rows={isMobile ? 2 : 3}
                   {...formValidation.getFieldProps('specialRequests')}
                   helperText={formValidation.getFieldProps('specialRequests').helperText || 'Any special requests or requirements...'}
                   placeholder="Any special requests or requirements..."
+                  size={isMobile ? "small" : "medium"}
                   validationState={
                     formValidation.validation.specialRequests?.error ? 'error' : 
                     formValidation.validation.specialRequests?.touched && !formValidation.validation.specialRequests?.error ? 'success' : 
@@ -408,16 +493,28 @@ const BookingForm: React.FC<BookingFormProps> = ({
           </form>
         </DialogContent>
 
-        <DialogActions sx={{ p: 3, pt: 1 }}>
-          <Button onClick={onClose} disabled={bookingOperation.loading}>
+        <DialogActions sx={{ 
+          p: { xs: 2, md: 3 }, 
+          pt: { xs: 1, md: 1 },
+          flexDirection: { xs: 'column', sm: 'row' },
+          gap: { xs: 1, sm: 0 }
+        }}>
+          <Button 
+            onClick={onClose} 
+            disabled={bookingOperation.loading}
+            fullWidth={isMobile}
+            size={isMobile ? "medium" : "large"}
+          >
             Cancel
           </Button>
           <Button
             onClick={() => handleSubmit({ preventDefault: () => {} } as React.FormEvent)}
             variant="contained"
             disabled={bookingOperation.loading}
+            fullWidth={isMobile}
+            size={isMobile ? "medium" : "large"}
             sx={{ 
-              ml: 1,
+              ml: { xs: 0, sm: 1 },
               position: 'relative'
             }}
             startIcon={bookingOperation.loading ? (
@@ -435,7 +532,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
               </Box>
             ) : undefined}
           >
-            {bookingOperation.loading ? 'Processing...' : `Book Now - ETB ${totalAmount?.toFixed(0)}`}
+            {bookingOperation.loading ? 'Processing...' : `Book Now - ${formatCurrencyWithDecimals(totalAmount || 0)}`}
           </Button>
         </DialogActions>
       </Dialog>

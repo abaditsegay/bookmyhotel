@@ -171,11 +171,10 @@ public class GlobalExceptionHandler {
                                 .timestamp(LocalDateTime.now())
                                 .status(HttpStatus.BAD_REQUEST.value())
                                 .error("Booking Error")
-                                .message("There was an issue with your booking request")
+                                .message(ex.getMessage())
                                 .details(ex.getMessage())
                                 .path(getPath(request))
-                                .userFriendlyMessage(
-                                                "We couldn't process your booking. Please check the details and try again.")
+                                .userFriendlyMessage(ex.getMessage())
                                 .build();
 
                 logger.warn("Booking error for request {}: {}", getPath(request), ex.getMessage());

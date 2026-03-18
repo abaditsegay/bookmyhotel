@@ -1,53 +1,116 @@
-import React from 'react';
-import { Typography, Box, Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
+import React, { lazy, Suspense } from 'react';
+import { Typography, Box, CircularProgress } from '@mui/material';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { SnackbarProvider } from 'notistack';
 import './i18n'; // Initialize i18n
 import EnhancedLayout from './components/layout/EnhancedLayout';
-// PWA install functionality disabled
-// import PWAInstallPrompt from './components/common/PWAInstallPrompt';
-// import { usePWAInstall } from './hooks/usePWAInstall';
+import AdminLayout from './components/layout/AdminLayout';
+import { ErrorBoundary } from './components/common';
+import { NotificationProvider } from './components/common';
 import ProtectedRoute from './components/ProtectedRoute';
 import { useAuth } from './contexts/AuthContext';
-import HotelSearchPage from './pages/HotelSearchPage';
-import SearchResultsPage from './pages/SearchResultsPage';
-import HotelListPage from './pages/HotelListPage';
-import HotelDetailPage from './pages/HotelDetailPage';
-import BookingPage from './pages/BookingPage';
-import BookingConfirmationPage from './pages/BookingConfirmationPage';
-import FindBookingPage from './pages/FindBookingPage';
-import BookingSearchPage from './pages/BookingSearchPage';
-import LoginPage from './pages/LoginPage';
-import GuestAuthPage from './pages/GuestAuthPage';
-import ProfilePage from './pages/ProfilePage';
-import AdminDashboard from './pages/admin/AdminDashboard';
-import HotelRegistrationAdmin from './pages/admin/HotelRegistrationAdmin';
-import HotelRegistrationForm from './pages/admin/HotelRegistrationForm';
-import HotelManagementAdmin from './pages/admin/HotelManagementAdmin';
-import TenantManagementAdmin from './pages/admin/TenantManagementAdmin';
-import UserManagementAdmin from './pages/admin/UserManagementAdmin';
-import UserRegistrationForm from './pages/admin/UserRegistrationForm';
-import HotelViewEdit from './pages/admin/HotelViewEdit';
-import UserViewEdit from './pages/admin/UserViewEdit';
-import HotelAdminDashboard from './pages/hotel-admin/HotelAdminDashboard';
-import RoomManagement from './pages/hotel-admin/RoomManagement';
-import RoomViewEdit from './pages/hotel-admin/RoomViewEdit';
-import StaffManagement from './pages/hotel-admin/StaffManagement';
-import StaffDetails from './pages/hotel-admin/StaffDetails';
-import StaffScheduleManagement from './components/StaffScheduleManagement';
-import StaffScheduleDashboard from './components/StaffScheduleDashboard';
-import FrontDeskDashboard from './pages/frontdesk/FrontDeskDashboard';
-import FrontDeskUnifiedBookingDetails from './pages/frontdesk/FrontDeskUnifiedBookingDetails';
-import HotelAdminBookingDetails from './pages/hotel-admin/HotelAdminBookingDetails';
-import BookingManagementPage from './pages/BookingManagementPage';
-import GuestBookingManagementPage from './pages/GuestBookingManagementPage';
+// Eager-loaded components (small or critical)
+import NotFoundPage from './pages/NotFoundPage';
 import { SystemDashboardPage } from './pages/SystemDashboardPage';
 import MyBookings from './components/MyBookings';
+import HousekeepingPage from './pages/housekeeping/HousekeepingPage';
 import OperationsPage from './pages/operations/OperationsPage';
 import StaffDashboardPage from './pages/StaffDashboardPage';
 import ShopRoutes from './pages/shop/ShopRoutes';
 import PublicHotelRegistration from './pages/PublicHotelRegistration';
-import UserDebugPage from './pages/UserDebugPage';
+import LandingPage from './pages/LandingPage';
 import NotificationsPage from './pages/NotificationsPage';
+
+// Retry wrapper for lazy imports — handles stale chunk errors after deployment
+function lazyWithRetry(importFn: () => Promise<any>) {
+  return lazy(() =>
+    importFn().catch((error: Error) => {
+      // Only reload once to avoid infinite loops
+      const hasReloaded = sessionStorage.getItem('chunk_reload');
+      if (!hasReloaded) {
+        sessionStorage.setItem('chunk_reload', '1');
+        window.location.reload();
+        return new Promise(() => {}); // never resolves — page is reloading
+      }
+      sessionStorage.removeItem('chunk_reload');
+      throw error;
+    })
+  );
+}
+
+// Lazy load all page components for code splitting
+const HotelSearchPage = lazyWithRetry(() => import('./pages/HotelSearchPage'));
+const SearchResultsPage = lazyWithRetry(() => import('./pages/SearchResultsPage'));
+const HotelListPage = lazyWithRetry(() => import('./pages/HotelListPage'));
+const HotelDetailPage = lazyWithRetry(() => import('./pages/HotelDetailPage'));
+const BookingPage = lazyWithRetry(() => import('./pages/BookingPage'));
+const BookingConfirmationPage = lazyWithRetry(() => import('./pages/BookingConfirmationPage'));
+const FindBookingPage = lazyWithRetry(() => import('./pages/FindBookingPage'));
+const BookingSearchPage = lazyWithRetry(() => import('./pages/BookingSearchPage'));
+const LoginPage = lazyWithRetry(() => import('./pages/LoginPage'));
+const GuestAuthPage = lazyWithRetry(() => import('./pages/GuestAuthPage'));
+const ForgotPasswordPage = lazyWithRetry(() => import('./pages/ForgotPasswordPage'));
+const ResetPasswordPage = lazyWithRetry(() => import('./pages/ResetPasswordPage'));
+const ProfilePage = lazyWithRetry(() => import('./pages/ProfilePage'));
+const AccountStatusPage = lazyWithRetry(() => import('./pages/AccountStatusPage'));
+
+// Admin pages
+const AdminDashboard = lazyWithRetry(() => import('./pages/admin/AdminDashboard'));
+const HotelRegistrationAdmin = lazyWithRetry(() => import('./pages/admin/HotelRegistrationAdmin'));
+const HotelRegistrationForm = lazyWithRetry(() => import('./pages/admin/HotelRegistrationForm'));
+const HotelManagementAdmin = lazyWithRetry(() => import('./pages/admin/HotelManagementAdmin'));
+const UserManagementAdmin = lazyWithRetry(() => import('./pages/admin/UserManagementAdmin'));
+const UserRegistrationForm = lazyWithRetry(() => import('./pages/admin/UserRegistrationForm'));
+const UserViewEdit = lazyWithRetry(() => import('./pages/admin/UserViewEdit'));
+const HotelViewEdit = lazyWithRetry(() => import('./pages/admin/HotelViewEdit'));
+const HotelOnboarding = lazyWithRetry(() => import('./pages/HotelOnboarding'));
+
+// Hotel Admin pages
+const HotelAdminDashboard = lazyWithRetry(() => import('./pages/hotel-admin/HotelAdminDashboard'));
+const MyRegistrationPage = lazyWithRetry(() => import('./pages/hotel-admin/MyRegistrationPage'));
+const RoomManagement = lazyWithRetry(() => import('./pages/hotel-admin/RoomManagement'));
+const RoomViewEdit = lazyWithRetry(() => import('./pages/hotel-admin/RoomViewEdit'));
+const StaffManagement = lazyWithRetry(() => import('./pages/hotel-admin/StaffManagement'));
+const StaffDetails = lazyWithRetry(() => import('./pages/hotel-admin/StaffDetails'));
+const HotelAdminBookingDetails = lazyWithRetry(() => import('./pages/hotel-admin/HotelAdminBookingDetails'));
+
+// Front Desk pages
+const FrontDeskDashboard = lazyWithRetry(() => import('./pages/frontdesk/FrontDeskDashboard'));
+const FrontDeskUnifiedBookingDetails = lazyWithRetry(() => import('./pages/frontdesk/FrontDeskUnifiedBookingDetails'));
+
+// Debug pages
+const RoleDashboardDebug = lazyWithRetry(() => import('./pages/RoleDashboardDebug'));
+
+// Booking Management
+const BookingManagementPage = lazyWithRetry(() => import('./pages/BookingManagementPage'));
+const GuestBookingManagementPage = lazy(() => import('./pages/GuestBookingManagementPage'));
+
+// Staff components
+const StaffScheduleManagement = lazy(() => import('./components/StaffScheduleManagement'));
+const StaffScheduleDashboard = lazy(() => import('./components/StaffScheduleDashboard'));
+const ErrorBoundaryDemo = lazy(() => import('./components/demo').then(m => ({ default: m.ErrorBoundaryDemo })));
+
+// Loading fallback component
+const PageLoader: React.FC = () => (
+  <Box
+    sx={{
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      minHeight: '60vh',
+      flexDirection: 'column',
+      gap: 2,
+    }}
+  >
+    <CircularProgress size={60} />
+    <Typography variant="body1" color="text.secondary">
+      Loading...
+    </Typography>
+  </Box>
+);
+
+// Lazy load SystemModule for better performance
+const SystemModule = React.lazy(() => import('./modules/SystemModule'));
 
 // Role-based Router Component - redirects based on user role
 const RoleBasedRouter: React.FC = () => {
@@ -73,13 +136,13 @@ const RoleBasedRouter: React.FC = () => {
   
   // If user is authenticated, check their roles and redirect to appropriate dashboard
   if (isAuthenticated && user?.roles) {
-    // System-wide users (no tenant binding) - SYSTEM_ADMIN or ADMIN without tenantId
-    if (user.roles.includes('SYSTEM_ADMIN') || (user.roles.includes('ADMIN') && !user.tenantId)) {
+    // System-wide users (no tenant binding) - SUPER_ADMIN or ADMIN without tenantId
+    if (user.roles.includes('SUPER_ADMIN') || (user.roles.includes('ADMIN') && !user.tenantId)) {
       return <Navigate to="/system-dashboard" replace />;
     }
     
     // Tenant-bound users - redirect to their respective dashboards
-    // Priority order: HOTEL_ADMIN > ADMIN (tenant-bound) > FRONTDESK > OPERATIONS_SUPERVISOR > HOUSEKEEPING/MAINTENANCE
+    // Priority order: HOTEL_ADMIN > ADMIN (tenant-bound) > FRONTDESK > OPERATIONAL_ADMIN > HOUSEKEEPING/MAINTENANCE
     if (user.roles.includes('HOTEL_ADMIN')) {
       return <Navigate to="/hotel-admin/dashboard" replace />;
     }
@@ -92,7 +155,7 @@ const RoleBasedRouter: React.FC = () => {
       return <Navigate to="/frontdesk/dashboard" replace />;
     }
     
-    if (user.roles.includes('OPERATIONS_SUPERVISOR')) {
+    if (user.roles.includes('OPERATIONAL_ADMIN')) {
       return <Navigate to="/operations/dashboard" replace />;
     }
     
@@ -101,7 +164,7 @@ const RoleBasedRouter: React.FC = () => {
     }
     
     // Legacy single role handling for backward compatibility
-    if (user.role === 'SYSTEM_ADMIN') {
+    if (user.role === 'SUPER_ADMIN') {
       return <Navigate to="/system-dashboard" replace />;
     }
     
@@ -121,7 +184,7 @@ const RoleBasedRouter: React.FC = () => {
       return <Navigate to="/frontdesk/dashboard" replace />;
     }
     
-    if (user.role === 'OPERATIONS_SUPERVISOR') {
+    if (user.role === 'OPERATIONAL_ADMIN') {
       return <Navigate to="/operations/dashboard" replace />;
     }
     
@@ -145,8 +208,11 @@ const PlaceholderPage: React.FC<{ title: string; message: string }> = ({ title, 
 );
 
 function App() {
-  const { isAuthenticated, sessionExpired, clearSessionExpired } = useAuth();
+  const { isAuthenticated } = useAuth();
   const location = useLocation();
+  
+
+  
   // PWA install functionality disabled
   // const { 
   //   showIOSPrompt, 
@@ -165,46 +231,35 @@ function App() {
                            location.pathname.startsWith('/operations') ||
                            location.pathname.startsWith('/staff') ||
                            location.pathname.startsWith('/shop') ||
+                           location.pathname.startsWith('/notifications') ||
                            location.pathname.startsWith('/hotels/search') ||
                            location.pathname === '/home';
 
-  const handleSessionExpiredClose = () => {
-    clearSessionExpired();
-  };
-  
   return (
     <>
-      {/* Session Expired Dialog */}
-      <Dialog
-        open={sessionExpired}
-        onClose={handleSessionExpiredClose}
-        maxWidth="sm"
-        fullWidth
+      <SnackbarProvider 
+        maxSnack={3}
+        anchorOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        autoHideDuration={3000}
       >
-        <DialogTitle>Session Expired</DialogTitle>
-        <DialogContent>
-          <Typography>
-            Your session has expired. Please log in again to continue.
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button 
-            onClick={handleSessionExpiredClose} 
-            color="primary" 
-            variant="contained"
-            fullWidth
+        <NotificationProvider>
+          <ErrorBoundary 
+            level="critical"
+            showDetails={process.env.NODE_ENV === 'development'}
+            onError={(error, errorInfo) => {
+              // console.error('Critical App Error:', error, errorInfo);
+              // In production, send to error tracking service
+            }}
           >
-            OK
-          </Button>
-        </DialogActions>
-      </Dialog>
-      
-      {/* Main App Content */}
-    <EnhancedLayout hideSidebar={!isAuthenticated} maxWidth={isFullWidthRoute ? false : 'xl'}>
-      <Routes>
-        <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />} />
+          <EnhancedLayout hideSidebar={!isAuthenticated} maxWidth={isFullWidthRoute ? false : 'xl'}>
+          <Suspense fallback={<PageLoader />}>
+          <Routes>
+        <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <LandingPage />} />
         <Route path="/dashboard" element={<RoleBasedRouter />} />
-        <Route path="/home" element={<HotelSearchPage />} />
+        <Route path="/home" element={<LandingPage />} />
         <Route path="/hotels" element={
           <PlaceholderPage 
             title="Hotels" 
@@ -228,8 +283,22 @@ function App() {
           />
         } />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/guest-auth" element={<GuestAuthPage />} />
+        <Route path="/account-status" element={<AccountStatusPage />} />
+        {/* Development Demo Routes - only available in development mode */}
+        {process.env.NODE_ENV === 'development' && (
+          <Route path="/demo/error-boundary" element={<ErrorBoundaryDemo />} />
+        )}
         <Route path="/register-hotel" element={<PublicHotelRegistration />} />
+        {/* Business onboarding — shared by system admin, not linked from public nav */}
+        <Route path="/business-onboarding" element={<PublicHotelRegistration />} />
+        <Route path="/hotel-onboarding" element={
+          <ProtectedRoute>
+            <HotelOnboarding />
+          </ProtectedRoute>
+        } />
         <Route path="/register-hotel-admin" element={
           <PlaceholderPage 
             title="Admin Hotel Registration" 
@@ -240,12 +309,6 @@ function App() {
           <PlaceholderPage 
             title="Register" 
             message="User registration feature coming soon!" 
-          />
-        } />
-        <Route path="/dashboard" element={
-          <PlaceholderPage 
-            title="Dashboard" 
-            message="User dashboard coming soon!" 
           />
         } />
         <Route path="/bookings" element={
@@ -259,47 +322,56 @@ function App() {
             <ProfilePage />
           </ProtectedRoute>
         } />
-        <Route path="/debug-user" element={
-          <ProtectedRoute>
-            <UserDebugPage />
-          </ProtectedRoute>
-        } />
         
-        {/* System-Wide User Routes */}
+        {/* System-Wide User Routes — wrapped in AdminLayout for persistent sidebar */}
         <Route path="/system-dashboard" element={
           <ProtectedRoute>
-            <SystemDashboardPage />
+            <AdminLayout>
+              <SystemDashboardPage />
+            </AdminLayout>
+          </ProtectedRoute>
+        } />
+        <Route path="/system/*" element={
+          <ProtectedRoute requiredRole="ADMIN">
+            <AdminLayout>
+              <React.Suspense fallback={<div>Loading...</div>}>
+                <SystemModule />
+              </React.Suspense>
+            </AdminLayout>
           </ProtectedRoute>
         } />
         <Route path="/system/hotels" element={
           <ProtectedRoute requiredRole="ADMIN">
-            <HotelManagementAdmin />
-          </ProtectedRoute>
-        } />
-        <Route path="/system/tenants" element={
-          <ProtectedRoute requiredRole="ADMIN">
-            <TenantManagementAdmin />
+            <AdminLayout>
+              <HotelManagementAdmin />
+            </AdminLayout>
           </ProtectedRoute>
         } />
         <Route path="/system/users" element={
           <ProtectedRoute requiredRole="ADMIN">
-            <UserManagementAdmin />
+            <AdminLayout>
+              <UserManagementAdmin />
+            </AdminLayout>
           </ProtectedRoute>
         } />
         <Route path="/system/analytics" element={
           <ProtectedRoute requiredRole="ADMIN">
-            <PlaceholderPage 
-              title="System Analytics" 
-              message="Platform-wide analytics dashboard coming soon!" 
-            />
+            <AdminLayout>
+              <PlaceholderPage 
+                title="System Analytics" 
+                message="Platform-wide analytics dashboard coming soon!" 
+              />
+            </AdminLayout>
           </ProtectedRoute>
         } />
         <Route path="/system/settings" element={
           <ProtectedRoute requiredRole="ADMIN">
-            <PlaceholderPage 
-              title="System Settings" 
-              message="Global system configuration coming soon!" 
-            />
+            <AdminLayout>
+              <PlaceholderPage 
+                title="System Settings" 
+                message="Global system configuration coming soon!" 
+              />
+            </AdminLayout>
           </ProtectedRoute>
         } />
         <Route path="/my-bookings" element={
@@ -376,6 +448,11 @@ function App() {
             <HotelAdminDashboard />
           </ProtectedRoute>
         } />
+        <Route path="/hotel-admin/my-registration" element={
+          <ProtectedRoute requiredRole="HOTEL_ADMIN">
+            <MyRegistrationPage />
+          </ProtectedRoute>
+        } />
         <Route path="/hotel-admin/bookings/:id" element={
           <ProtectedRoute requiredRole="HOTEL_ADMIN">
             <HotelAdminBookingDetails />
@@ -424,6 +501,11 @@ function App() {
             <RoomViewEdit />
           </ProtectedRoute>
         } />
+        <Route path="/hotel-admin/housekeeping" element={
+          <ProtectedRoute requiredRoles={['HOTEL_ADMIN', 'FRONTDESK', 'HOUSEKEEPING', 'OPERATIONAL_ADMIN']}>
+            <HousekeepingPage />
+          </ProtectedRoute>
+        } />
         
         {/* Front Desk Routes */}
         <Route path="/frontdesk" element={
@@ -449,6 +531,11 @@ function App() {
         <Route path="/frontdesk/schedules" element={
           <ProtectedRoute requiredRole="FRONTDESK">
             <StaffScheduleDashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/frontdesk/housekeeping" element={
+          <ProtectedRoute requiredRoles={['HOTEL_ADMIN', 'FRONTDESK', 'HOUSEKEEPING', 'OPERATIONAL_ADMIN']}>
+            <HousekeepingPage />
           </ProtectedRoute>
         } />
         
@@ -480,31 +567,42 @@ function App() {
         
         {/* Operations Routes */}
         <Route path="/operations" element={
-          <ProtectedRoute requiredRoles={['OPERATIONS_SUPERVISOR', 'MAINTENANCE']}>
+          <ProtectedRoute requiredRoles={['OPERATIONAL_ADMIN', 'MAINTENANCE']}>
             <Navigate to="/operations/dashboard" replace />
           </ProtectedRoute>
         } />
         <Route path="/operations/dashboard" element={
-          <ProtectedRoute requiredRoles={['OPERATIONS_SUPERVISOR', 'MAINTENANCE']}>
+          <ProtectedRoute requiredRoles={['OPERATIONAL_ADMIN', 'MAINTENANCE']}>
             <OperationsPage />
           </ProtectedRoute>
         } />
         
-        {/* Housekeeping Routes */}
+        {/* Housekeeping Routes - Accessible by Hotel Admin, Front Desk, and Housekeeping Staff */}
         <Route path="/housekeeping" element={
-          <ProtectedRoute requiredRole="HOUSEKEEPING">
-            <Navigate to="/housekeeping/schedules" replace />
+          <ProtectedRoute requiredRoles={['HOTEL_ADMIN', 'FRONTDESK', 'HOUSEKEEPING', 'OPERATIONAL_ADMIN']}>
+            <Navigate to="/housekeeping/dashboard" replace />
+          </ProtectedRoute>
+        } />
+        <Route path="/housekeeping/dashboard" element={
+          <ProtectedRoute requiredRoles={['HOTEL_ADMIN', 'FRONTDESK', 'HOUSEKEEPING', 'OPERATIONAL_ADMIN']}>
+            <HousekeepingPage />
           </ProtectedRoute>
         } />
         <Route path="/housekeeping/schedules" element={
-          <ProtectedRoute requiredRole="HOUSEKEEPING">
+          <ProtectedRoute requiredRoles={['HOTEL_ADMIN', 'FRONTDESK', 'HOUSEKEEPING', 'OPERATIONAL_ADMIN']}>
             <StaffScheduleDashboard />
           </ProtectedRoute>
         } />
+        
+        {/* Debug Route for Dashboard Testing */}
+        <Route path="/debug/role-dashboard" element={<RoleDashboardDebug />} />
+        
+        {/* Catch-all route for 404 Not Found */}
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
+      </Suspense>
       
-      {/* PWA Install Prompt functionality disabled */}
-      {/* 
+      {/* PWA Install Prompt functionality disabled 
       <PWAInstallPrompt 
         open={showIOSPrompt} 
         onClose={() => dismissIOSPrompt(false)}
@@ -520,7 +618,10 @@ function App() {
         onInstall={installApp}
       />
       */}
-    </EnhancedLayout>
+        </EnhancedLayout>
+      </ErrorBoundary>
+      </NotificationProvider>
+      </SnackbarProvider>
     </>
   );
 }

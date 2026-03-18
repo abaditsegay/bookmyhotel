@@ -8,9 +8,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,21 +21,25 @@ import org.springframework.web.bind.annotation.RestController;
 import com.bookmyhotel.dto.admin.ApproveRegistrationRequest;
 import com.bookmyhotel.dto.admin.HotelRegistrationRequest;
 import com.bookmyhotel.dto.admin.HotelRegistrationResponse;
+import com.bookmyhotel.dto.admin.HotelRegistrationSubmitResponse;
 import com.bookmyhotel.dto.admin.RejectRegistrationRequest;
 import com.bookmyhotel.entity.RegistrationStatus;
+import com.bookmyhotel.annotation.Auditable;
 import com.bookmyhotel.service.HotelRegistrationService;
 
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Admin controller for hotel registration management
  */
 @RestController
 @RequestMapping("/api/admin/hotel-registrations")
-// Temporarily commenting out authorization for debugging
-// @PreAuthorize("hasRole('ADMIN')")
-@CrossOrigin(origins = "*", maxAge = 3600)
+@PreAuthorize("hasRole('ADMIN') or hasRole('SUPER_ADMIN')")
 public class HotelRegistrationAdminController {
+
+    private static final Logger logger = LoggerFactory.getLogger(HotelRegistrationAdminController.class);
 
     @Autowired
     private HotelRegistrationService registrationService;
@@ -44,11 +47,12 @@ public class HotelRegistrationAdminController {
     /**
      * Submit new hotel registration
      */
+    @Auditable(action = "CREATE", entityType = "HOTEL_REGISTRATION", description = "Hotel registration submitted")
     @PostMapping
-    public ResponseEntity<HotelRegistrationResponse> submitRegistration(
+    public ResponseEntity<HotelRegistrationSubmitResponse> submitRegistration(
             @Valid @RequestBody HotelRegistrationRequest request) {
         try {
-            HotelRegistrationResponse response = registrationService.submitRegistration(request);
+            HotelRegistrationSubmitResponse response = registrationService.submitRegistration(request);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();
@@ -121,6 +125,7 @@ public class HotelRegistrationAdminController {
     /**
      * Approve hotel registration
      */
+    @Auditable(action = "APPROVE", entityType = "HOTEL_REGISTRATION", description = "Admin approved hotel registration")
     @PostMapping("/{id}/approve")
     public ResponseEntity<HotelRegistrationResponse> approveRegistration(
             @PathVariable Long id,
@@ -128,20 +133,24 @@ public class HotelRegistrationAdminController {
             Authentication authentication) {
 
         try {
-            // Temporarily handle null authentication for testing
-            UserDetails userDetails = null;
-            if (authentication != null) {
-                userDetails = (UserDetails) authentication.getPrincipal();
+            // Extract reviewer ID from authenticated user
+            if (authentication == null) {
+                throw new IllegalStateException("Authentication required for hotel registration approval");
             }
-            // In a real application, you would get the user ID from the authentication
-            Long reviewerId = 1L; // Placeholder - should be extracted from authenticated user
+
+            String reviewerEmail = authentication.getName();
+
+            // For now, use a placeholder until proper user lookup is implemented
+            // TODO: Implement proper user repository lookup
+            Long reviewerId = null; // This will force the service to handle the null case properly
 
             HotelRegistrationResponse response = registrationService.approveRegistration(id, request, reviewerId);
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
             // Log the error for debugging
-            System.err.println("Error approving registration " + id + ": " + e.getMessage());
-            e.printStackTrace();
+            // System.err.println("Error approving registration " + id + ": " +
+            // e.getMessage());
+            logger.error("Operation failed", e);
             return ResponseEntity.badRequest().body(null);
         }
     }
@@ -149,6 +158,7 @@ public class HotelRegistrationAdminController {
     /**
      * Reject hotel registration
      */
+    @Auditable(action = "REJECT", entityType = "HOTEL_REGISTRATION", description = "Admin rejected hotel registration")
     @PostMapping("/{id}/reject")
     public ResponseEntity<HotelRegistrationResponse> rejectRegistration(
             @PathVariable Long id,
@@ -156,9 +166,14 @@ public class HotelRegistrationAdminController {
             Authentication authentication) {
 
         try {
-            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-            // In a real application, you would get the user ID from the authentication
-            Long reviewerId = 1L; // Placeholder - should be extracted from authenticated user
+            // Extract reviewer ID from authenticated user
+            if (authentication == null) {
+                throw new IllegalStateException("Authentication required for hotel registration rejection");
+            }
+
+            String reviewerEmail = authentication.getName();
+            // TODO: Implement proper user repository lookup
+            Long reviewerId = null; // Force service to handle null case properly
 
             HotelRegistrationResponse response = registrationService.rejectRegistration(id, request, reviewerId);
             return ResponseEntity.ok(response);
@@ -170,15 +185,21 @@ public class HotelRegistrationAdminController {
     /**
      * Mark registration as under review
      */
+    @Auditable(action = "UNDER_REVIEW", entityType = "HOTEL_REGISTRATION", description = "Admin marked registration as under review")
     @PostMapping("/{id}/under-review")
     public ResponseEntity<HotelRegistrationResponse> markUnderReview(
             @PathVariable Long id,
             Authentication authentication) {
 
         try {
-            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-            // In a real application, you would get the user ID from the authentication
-            Long reviewerId = 1L; // Placeholder - should be extracted from authenticated user
+            // Extract reviewer ID from authenticated user
+            if (authentication == null) {
+                throw new IllegalStateException("Authentication required for marking hotel under review");
+            }
+
+            String reviewerEmail = authentication.getName();
+            // TODO: Implement proper user repository lookup
+            Long reviewerId = null; // Force service to handle null case properly
 
             HotelRegistrationResponse response = registrationService.markUnderReview(id, reviewerId);
             return ResponseEntity.ok(response);

@@ -5,6 +5,7 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 // Import translation objects
 import { enTranslations } from './locales/en';
 import { amTranslations } from './locales/am';
+import { omTranslations } from './locales/om';
 
 const resources = {
   en: {
@@ -13,6 +14,9 @@ const resources = {
   am: {
     translation: amTranslations,
   },
+  om: {
+    translation: omTranslations,
+  },
 };
 
 i18n
@@ -20,7 +24,7 @@ i18n
   .use(initReactI18next)
   .init({
     resources,
-    lng: 'en', // Default language
+    // Remove lng to let LanguageDetector handle it
     fallbackLng: 'en',
     
     interpolation: {
@@ -30,6 +34,7 @@ i18n
     detection: {
       order: ['localStorage', 'navigator', 'htmlTag'],
       caches: ['localStorage'],
+      lookupLocalStorage: 'i18nextLng',
     },
     
     // Configure for RTL/LTR support

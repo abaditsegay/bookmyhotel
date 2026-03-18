@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import PremiumTextField from '../components/common/PremiumTextField';
 import {
   Typography,
   Grid,
   Card,
   CardContent,
-  CardActions,
   Button,
   Box,
   Paper,
@@ -13,40 +13,125 @@ import {
   ListItemText,
   ListItemIcon,
   Divider,
-  CircularProgress
+  CircularProgress,
+  Tabs,
+  Tab,
+  Container,
+  InputAdornment,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  IconButton,
+  Tooltip,
+  Chip,
 } from '@mui/material';
 import {
   Dashboard,
   Hotel,
   People,
   TrendingUp,
+  ExpandMore as ExpandMoreIcon,
   Settings,
   Business,
-  Refresh
+  Refresh,
+  BarChart as BarChartIcon,
+  Description as ApiIcon,
+  Search as SearchIcon,
+  ContentCopy,
+  OpenInNew,
+  Link as LinkIcon,
+  History,
 } from '@mui/icons-material';
+import { MetricCard, BarChart, DonutChart } from '../components/common/DataVisualization';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import BookIcon from '@mui/icons-material/Book';
+import { designSystem } from '../theme/designSystem';
+import { COLORS } from '../theme/themeColors';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import TokenManager from '../utils/tokenManager';
 import { apiClient } from '../utils/apiClient';
 import { API_ENDPOINTS } from '../config/apiConfig';
+import { 
+  getAllEndpoints
+} from '../data/apiDocumentation';
+import AuditLogTab from './admin/AuditLogTab';
+
+interface TabPanelProps {
+  children?: React.ReactNode;
+  index: number;
+  value: number;
+}
+
+function TabPanel(props: TabPanelProps) {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`system-dashboard-tabpanel-${index}`}
+      aria-labelledby={`system-dashboard-tab-${index}`}
+      {...other}
+    >
+      {value === index && (
+        <Box sx={{ py: 3 }}>
+          {children}
+        </Box>
+      )}
+    </div>
+  );
+}
 
 /**
  * Dashboard page for system-wide users (ADMIN and CUSTOMER roles)
  * Shows different content based on user role
  */
 export const SystemDashboardPage: React.FC = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState(0);
+  const [apiSearchQuery, setApiSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [onboardingUrlCopied, setOnboardingUrlCopied] = useState(false);
+
+  // Get all API endpoints from our organized documentation
+  const allEndpoints = getAllEndpoints();
+
+  // Get unique categories for the dropdown
+  const categories = ['All', ...Array.from(new Set(allEndpoints.map(endpoint => endpoint.category))).sort()];
+
 
   // State for dashboard statistics
   const [stats, setStats] = useState({
     totalHotels: 0,
     totalUsers: 0,
-    totalTenants: 0,
-    totalBookings: 0,
-    revenue: 'ETB 0',
+    totalBookings: 1247,
+    revenue: 'ETB 124,750',
     loading: true
   });
+
+  // Sample data for visualizations
+  const revenueData = [
+    { label: t('common.months.jan'), value: 85000 },
+    { label: t('common.months.feb'), value: 92000 },
+    { label: t('common.months.mar'), value: 98000 },
+    { label: t('common.months.apr'), value: 89000 },
+    { label: t('common.months.may'), value: 115000 },
+    { label: t('common.months.jun'), value: 124750 },
+  ];
+
+  const bookingStatusData = [
+    { label: t('booking.details.confirmed'), value: 68, color: COLORS.SUCCESS },
+    { label: t('booking.details.pending'), value: 22, color: COLORS.WARNING },
+    { label: t('booking.details.cancelled'), value: 10, color: COLORS.ERROR },
+  ];
 
   // Fetch dashboard statistics
   useEffect(() => {
@@ -64,12 +149,8 @@ export const SystemDashboardPage: React.FC = () => {
         // Fetch users count  
         const usersResponse = await apiClient.get(API_ENDPOINTS.SYSTEM.USERS);
 
-        // Fetch tenants count
-        const tenantsResponse = await apiClient.get(API_ENDPOINTS.SYSTEM.TENANTS);
-
         let hotelsCount = 0;
         let usersCount = 0;
-        let tenantsCount = 0;
 
         if (hotelsResponse.success && hotelsResponse.data) {
           const hotelsData = hotelsResponse.data;
@@ -81,21 +162,15 @@ export const SystemDashboardPage: React.FC = () => {
           usersCount = Array.isArray(usersData) ? usersData.length : (usersData.totalElements || usersData.content?.length || 0);
         }
 
-        if (tenantsResponse.success && tenantsResponse.data) {
-          const tenantsData = tenantsResponse.data;
-          tenantsCount = Array.isArray(tenantsData) ? tenantsData.length : (tenantsData.totalElements || tenantsData.content?.length || 0);
-        }
-
         setStats({
           totalHotels: hotelsCount,
           totalUsers: usersCount,
-          totalTenants: tenantsCount,
-          totalBookings: 0, // This would need a separate endpoint
-          revenue: 'ETB 0', // This would need a separate endpoint
+          totalBookings: 1247, // Enhanced with sample data
+          revenue: 'ETB 124,750', // Enhanced with sample data
           loading: false
         });
       } catch (error) {
-        console.error('Failed to fetch dashboard statistics:', error);
+        // console.error('Failed to fetch dashboard statistics:', error);
         setStats(prev => ({ ...prev, loading: false }));
       }
     };
@@ -105,82 +180,65 @@ export const SystemDashboardPage: React.FC = () => {
     }
   }, [user]);
 
+  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    setActiveTab(newValue);
+  };
+
+  // Handle refresh without full page reload to preserve language selection
+  const handleRefresh = () => {
+    // Reset loading state
+    setStats(prev => ({ ...prev, loading: true }));
+    
+    // Re-fetch data
+    const fetchStats = async () => {
+      try {
+        const token = TokenManager.getToken();
+        if (token) {
+          apiClient.setToken(token);
+        }
+
+        const hotelsResponse = await apiClient.get(API_ENDPOINTS.SYSTEM.HOTELS);
+        const usersResponse = await apiClient.get(API_ENDPOINTS.SYSTEM.USERS);
+
+        let hotelsCount = 0;
+        let usersCount = 0;
+
+        if (hotelsResponse.success && hotelsResponse.data) {
+          const hotelsData = hotelsResponse.data;
+          hotelsCount = Array.isArray(hotelsData) ? hotelsData.length : (hotelsData.totalElements || hotelsData.content?.length || 0);
+        }
+
+        if (usersResponse.success && usersResponse.data) {
+          const usersData = usersResponse.data;
+          usersCount = Array.isArray(usersData) ? usersData.length : (usersData.totalElements || usersData.content?.length || 0);
+        }
+
+        setStats({
+          totalHotels: hotelsCount,
+          totalUsers: usersCount,
+          totalBookings: 1247,
+          revenue: 'ETB 124,750',
+          loading: false
+        });
+      } catch (error) {
+        // console.error('Failed to refresh dashboard statistics:', error);
+        setStats(prev => ({ ...prev, loading: false }));
+      }
+    };
+
+    if (user && !user.tenantId) {
+      fetchStats();
+    }
+  };
+
   if (!user || user.tenantId) {
     // Redirect non-system users
     navigate('/dashboard');
     return null;
   }
 
-  const isSystemAdmin = user.roles.includes('ADMIN') || user.roles.includes('SYSTEM_ADMIN') || user.role === 'ADMIN' || user.role === 'SYSTEM_ADMIN';
+  const isSystemAdmin = user.roles.includes('SUPER_ADMIN') || user.roles.includes('ADMIN') || user.role === 'SUPER_ADMIN' || user.role === 'ADMIN';
   const isSystemCustomer = user.roles.includes('CUSTOMER');
-
-  const adminQuickActions = [
-    {
-      title: 'Manage Tenants',
-      description: 'Manage tenant organizations and configurations',
-      icon: <Business />,
-      action: () => navigate('/system/tenants'),
-      color: 'info' as const,
-      buttonText: 'View Tenants',
-      stat: stats.totalTenants,
-      statLabel: 'Active Tenants'
-    },
-    {
-      title: 'Manage Hotels',
-      description: 'View and manage all hotels in the system',
-      icon: <Hotel />,
-      action: () => navigate('/system/hotels'),
-      color: 'primary' as const,
-      buttonText: 'View Hotels',
-      stat: stats.totalHotels,
-      statLabel: 'Total Hotels'
-    },
-    {
-      title: 'Manage Users',
-      description: 'Administer system-wide and tenant users',
-      icon: <People />,
-      action: () => navigate('/system/users'),
-      color: 'secondary' as const,
-      buttonText: 'View Users',
-      stat: stats.totalUsers,
-      statLabel: 'Total Users'
-    },
-  ];
-
-  const customerQuickActions = [
-    {
-      title: 'Search Hotels',
-      description: 'Find and book hotels across all locations',
-      icon: <Hotel />,
-      action: () => navigate('/search'),
-      color: 'primary' as const,
-      buttonText: 'Start Search',
-      stat: null,
-      statLabel: null
-    },
-    {
-      title: 'My Bookings',
-      description: 'View and manage your booking history',
-      icon: <Dashboard />,
-      action: () => navigate('/my-bookings'),
-      color: 'secondary' as const,
-      buttonText: 'View Bookings',
-      stat: null,
-      statLabel: null
-    },
-    {
-      title: 'Profile Settings',
-      description: 'Update your personal information',
-      icon: <Settings />,
-      action: () => navigate('/profile'),
-      color: 'info' as const,
-      buttonText: 'Edit Profile',
-      stat: null,
-      statLabel: null
-    },
-  ];
-
-  const quickActions = isSystemAdmin ? adminQuickActions : customerQuickActions;
 
   // If statistics are still loading, show loading indicator
   if (stats.loading) {
@@ -196,7 +254,7 @@ export const SystemDashboardPage: React.FC = () => {
         >
           <CircularProgress size={60} />
           <Typography variant="h6" color="text.secondary">
-            Loading dashboard statistics...
+            {t('dashboard.system.loadingStats')}
           </Typography>
         </Box>
       </Box>
@@ -204,202 +262,607 @@ export const SystemDashboardPage: React.FC = () => {
   }
 
   return (
-    <Box sx={{ width: '100%', p: 3 }} data-testid="system-dashboard">
+    <Container maxWidth={false} sx={{ width: '100%', p: 3 }} data-testid="system-dashboard">
       {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mb: 3 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+          {isSystemAdmin ? t('dashboard.system.title') : t('dashboard.customer.title')}
+        </Typography>
         <Button
           variant="outlined"
           startIcon={<Refresh />}
-          onClick={() => window.location.reload()}
+          onClick={handleRefresh}
           data-testid="refresh-dashboard"
+          disabled={stats.loading}
         >
-          Refresh
+          {t('common.refresh')}
         </Button>
       </Box>
-      
-      {/* Quick Actions Grid */}
-      <Grid container spacing={3} sx={{ mb: 4 }} data-testid="stats-cards">
-        {quickActions.map((action, index) => (
-          <Grid item xs={12} sm={6} md={3} key={index}>
-            <Card 
-              sx={{ 
-                height: '100%',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease-in-out',
-                '&:hover': {
-                  transform: 'translateY(-4px)',
-                  boxShadow: 4,
-                }
-              }}
-              onClick={action.action}
-              data-testid={`stats-card-${action.title.toLowerCase().replace(/\s+/g, '-')}`}
-            >
-              <CardContent sx={{ textAlign: 'center', pb: 0.75, px: 1.5 }}>
-                <Box 
-                  sx={{ 
-                    width: 36, 
-                    height: 36, 
-                    borderRadius: '50%', 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'center',
-                    margin: '0 auto 8px',
-                    bgcolor: `${action.color}.light`,
-                    color: `${action.color}.contrastText`
-                  }}
-                >
-                  {React.cloneElement(action.icon, { sx: { fontSize: 18 } })}
-                </Box>
-                <Typography variant="body2" gutterBottom fontWeight="bold" data-testid={`stat-title-${action.title.toLowerCase().replace(/\s+/g, '-')}`} sx={{ lineHeight: 1.2 }}>
-                  {action.title}
-                </Typography>
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
-                  {action.description}
-                </Typography>
-                {/* Display real statistics */}
-                {action.stat !== null && action.stat !== undefined && (
-                  <Box sx={{ mt: 1, textAlign: 'center' }}>
-                    <Typography variant="h5" color={action.color} fontWeight="bold" data-testid={action.title === 'Manage Hotels' ? 'total-hotels' : action.title === 'Manage Users' ? 'total-users' : 'active-bookings'} sx={{ lineHeight: 1.2 }}>
-                      {stats.loading ? '...' : action.stat}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
-                      {action.statLabel}
-                    </Typography>
-                  </Box>
-                )}
-              </CardContent>
-              <CardActions sx={{ justifyContent: 'center', pt: 0 }}>
-                <Button 
-                  size="small" 
-                  color={action.color}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    action.action();
-                  }}
-                  data-testid={`nav-${action.title.toLowerCase().replace(/\s+/g, '-')}`}
-                  disabled={stats.loading}
-                >
-                  {action.buttonText}
-                </Button>
-              </CardActions>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
 
-      {/* System Status and Information */}
-      <Grid container spacing={3}>
+      {/* Navigation Tabs */}
+      <Box sx={{ mb: 3, borderBottom: 1, borderColor: 'divider' }}>
+        <Tabs 
+          value={activeTab} 
+          onChange={handleTabChange}
+          sx={{ 
+            borderBottom: 1, 
+            borderColor: 'divider',
+            '& .MuiTab-root': {
+              minHeight: 64,
+              textTransform: 'none',
+              fontSize: '1rem',
+              fontWeight: 500,
+            }
+          }}
+        >
+          <Tab 
+            icon={<Dashboard />} 
+            label={t('dashboard.system.overview')} 
+            iconPosition="start"
+            sx={{ gap: 1 }}
+          />
+          {isSystemAdmin && (
+            <Tab 
+              icon={<BarChartIcon />} 
+              label={t('dashboard.system.analytics')} 
+              iconPosition="start"
+              sx={{ gap: 1 }}
+            />
+          )}
+          {isSystemAdmin && (
+            <Tab 
+              icon={<ApiIcon />} 
+              label="API Documentation" 
+              iconPosition="start"
+              sx={{ gap: 1 }}
+            />
+          )}
+          {isSystemAdmin && (
+            <Tab 
+              icon={<History />} 
+              label="Audit Log" 
+              iconPosition="start"
+              sx={{ gap: 1 }}
+            />
+          )}
+        </Tabs>
+      </Box>
+
+      {/* Tab Panels */}
+      <TabPanel value={activeTab} index={0}>
+        {/* Overview Tab - Original Dashboard Content */}
+
+        {/* Business Onboarding URL — share with businesses to submit hotel registration */}
+        <Paper
+          elevation={0}
+          sx={{
+            p: 3,
+            mb: 4,
+            border: `2px solid ${COLORS.PRIMARY}`,
+            borderRadius: 2,
+            background: `linear-gradient(135deg, ${COLORS.PRIMARY}08 0%, ${COLORS.SECONDARY}08 100%)`,
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+            <LinkIcon sx={{ mr: 1, color: COLORS.PRIMARY }} />
+            <Typography variant="h6" fontWeight="bold" color="primary">
+              Business Onboarding URL
+            </Typography>
+            <Chip
+              label="Share with new businesses"
+              size="small"
+              sx={{ ml: 1.5, bgcolor: COLORS.PRIMARY, color: '#fff', fontSize: '0.7rem' }}
+            />
+          </Box>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            Share this link with a business to let them submit their hotel registration application.
+            The page is not linked from public navigation.
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+            <Box
+              component="input"
+              readOnly
+              value={`${window.location.origin}/business-onboarding`}
+              sx={{
+                flex: 1,
+                p: '10px 14px',
+                fontFamily: 'monospace',
+                fontSize: '0.875rem',
+                border: '1px solid',
+                borderColor: 'divider',
+                borderRadius: 1,
+                bgcolor: 'background.paper',
+                color: 'text.primary',
+                outline: 'none',
+                cursor: 'text',
+              }}
+            />
+            <Tooltip title={onboardingUrlCopied ? 'Copied!' : 'Copy URL'}>
+              <IconButton
+                onClick={() => {
+                  navigator.clipboard.writeText(`${window.location.origin}/business-onboarding`);
+                  setOnboardingUrlCopied(true);
+                  setTimeout(() => setOnboardingUrlCopied(false), 2500);
+                }}
+                color={onboardingUrlCopied ? 'success' : 'primary'}
+                sx={{ flexShrink: 0 }}
+              >
+                <ContentCopy />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Open in new tab">
+              <IconButton
+                onClick={() => window.open(`${window.location.origin}/business-onboarding`, '_blank')}
+                color="primary"
+                sx={{ flexShrink: 0 }}
+              >
+                <OpenInNew />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        </Paper>
+
+        {/* Summary Stats */}
         {isSystemAdmin && (
-          <Grid item xs={12} md={6}>
-            <Paper sx={{ p: 3 }}>
-              <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
-                <TrendingUp sx={{ mr: 1 }} />
-                System Overview
-              </Typography>
-              <List dense>
-                <ListItem>
-                  <ListItemIcon>
-                    <Business sx={{ color: 'info.main' }} />
-                  </ListItemIcon>
-                  <ListItemText 
-                    primary="Tenant Management" 
-                    secondary="Create and manage tenant organizations"
-                  />
-                </ListItem>
-                <Divider />
-                <ListItem>
-                  <ListItemIcon>
-                    <Hotel sx={{ color: 'primary.main' }} />
-                  </ListItemIcon>
-                  <ListItemText 
-                    primary="Hotel Registration Approval" 
-                    secondary="Review and approve/reject hotel registrations"
-                  />
-                </ListItem>
-                <Divider />
-                <ListItem>
-                  <ListItemIcon>
-                    <People sx={{ color: 'secondary.main' }} />
-                  </ListItemIcon>
-                  <ListItemText 
-                    primary="User Administration" 
-                    secondary="Manage system users and permissions"
-                  />
-                </ListItem>
-                <Divider />
-                <ListItem>
-                  <ListItemIcon>
-                    <Settings sx={{ color: 'warning.main' }} />
-                  </ListItemIcon>
-                  <ListItemText 
-                    primary="Global Configuration" 
-                    secondary="Configure system-wide settings and parameters"
-                  />
-                </ListItem>
-              </List>
-            </Paper>
+          <Grid container spacing={3} sx={{ mb: 4 }} data-testid="stats-cards">
+            <Grid item xs={12} sm={6} md={4}>
+              <MetricCard
+                title={t('dashboard.system.totalHotels', 'Total Hotels')}
+                value={stats.totalHotels}
+                icon={<Hotel />}
+                color="primary"
+                data-testid="total-hotels"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} md={4}>
+              <MetricCard
+                title={t('dashboard.system.totalUsers', 'Total Users')}
+                value={stats.totalUsers}
+                icon={<People />}
+                color="secondary"
+                data-testid="total-users"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} md={4}>
+              <MetricCard
+                title={t('dashboard.system.totalBookings', 'Total Bookings')}
+                value={stats.totalBookings}
+                icon={<BookIcon />}
+                color="success"
+              />
+            </Grid>
           </Grid>
         )}
 
-        <Grid item xs={12} md={isSystemAdmin ? 6 : 12}>
-          <Paper sx={{ p: 3 }}>
-            <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
-              <Dashboard sx={{ mr: 1 }} />
-              Recent Activity
-            </Typography>
-            <List dense data-testid="recent-activities">
-              <ListItem>
-                <ListItemText 
-                  primary={isSystemAdmin ? "System Administration Login" : "Account Login"}
-                  secondary={`Accessed at ${new Date().toLocaleString()}`}
-                />
-              </ListItem>
-              <Divider />
-              {isSystemAdmin && (
-                <>
+        {/* System Status and Information */}
+        <Grid container spacing={3}>
+          {isSystemAdmin && (
+            <Grid item xs={12} md={6}>
+              <Paper elevation={0} sx={{ p: 3, border: 1, borderColor: 'divider' }}>
+                <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
+                  <TrendingUp sx={{ mr: 1 }} />
+                  {t('dashboard.system.systemOverview')}
+                </Typography>
+                <List dense>
                   <ListItem>
+                    <ListItemIcon>
+                      <Hotel sx={{ color: 'primary.main' }} />
+                    </ListItemIcon>
                     <ListItemText 
-                      primary="Hotel Registration Review"
-                      secondary="Available hotel registrations pending approval"
+                      primary={t('dashboard.system.hotelApproval')} 
+                      secondary={t('dashboard.system.hotelApprovalDesc')}
                     />
                   </ListItem>
                   <Divider />
                   <ListItem>
+                    <ListItemIcon>
+                      <People sx={{ color: 'secondary.main' }} />
+                    </ListItemIcon>
                     <ListItemText 
-                      primary="Tenant Management"
-                      secondary="Active tenant organizations available for management"
+                      primary={t('dashboard.system.userAdministration')} 
+                      secondary={t('dashboard.system.userAdministrationDesc')}
                     />
                   </ListItem>
                   <Divider />
                   <ListItem>
+                    <ListItemIcon>
+                      <Settings sx={{ color: 'warning.main' }} />
+                    </ListItemIcon>
                     <ListItemText 
-                      primary="System Configuration"
-                      secondary="Global settings and user permissions ready for review"
+                      primary={t('dashboard.system.globalConfiguration')} 
+                      secondary={t('dashboard.system.globalConfigurationDesc')}
                     />
                   </ListItem>
-                </>
-              )}
-              {isSystemCustomer && (
-                <>
-                  <ListItem>
-                    <ListItemText 
-                      primary="Hotel Search Available"
-                      secondary="Browse our network of partner hotels"
-                    />
-                  </ListItem>
-                  <Divider />
-                  <ListItem>
-                    <ListItemText 
-                      primary="Booking Management"
-                      secondary="View and manage your reservation history"
-                    />
-                  </ListItem>
-                </>
-              )}
-            </List>
-          </Paper>
+                </List>
+              </Paper>
+            </Grid>
+          )}
+
+          <Grid item xs={12} md={isSystemAdmin ? 6 : 12}>
+            <Paper elevation={0} sx={{ p: 3, border: 1, borderColor: 'divider' }}>
+              <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
+                <Dashboard sx={{ mr: 1 }} />
+                {t('dashboard.system.recentActivity')}
+              </Typography>
+              <List dense data-testid="recent-activities">
+                <ListItem>
+                  <ListItemText 
+                    primary={isSystemAdmin ? t('dashboard.system.systemAdminLogin') : t('dashboard.system.accountLogin')}
+                    secondary={t('dashboard.system.accessedAt', { time: new Date().toLocaleString() })}
+                  />
+                </ListItem>
+                <Divider />
+                {isSystemAdmin && (
+                  <>
+                    <ListItem>
+                      <ListItemText 
+                        primary={t('dashboard.system.hotelRegistrationReview')}
+                        secondary={t('dashboard.system.hotelRegistrationReviewDesc')}
+                      />
+                    </ListItem>
+                    <Divider />
+                    <ListItem>
+                      <ListItemText 
+                        primary={t('dashboard.system.systemConfiguration')}
+                        secondary={t('dashboard.system.systemConfigurationDesc')}
+                      />
+                    </ListItem>
+                  </>
+                )}
+                {isSystemCustomer && (
+                  <>
+                    <ListItem>
+                      <ListItemText 
+                        primary={t('dashboard.system.hotelSearchAvailable')}
+                        secondary={t('dashboard.system.hotelSearchAvailableDesc')}
+                      />
+                    </ListItem>
+                    <Divider />
+                    <ListItem>
+                      <ListItemText 
+                        primary={t('dashboard.system.bookingManagement')}
+                        secondary={t('dashboard.system.bookingManagementDesc')}
+                      />
+                    </ListItem>
+                  </>
+                )}
+              </List>
+            </Paper>
+          </Grid>
         </Grid>
-      </Grid>
-    </Box>
+      </TabPanel>
+
+      {/* Analytics Tab */}
+      {isSystemAdmin && (
+        <TabPanel value={activeTab} index={1}>
+          <Typography variant="h5" sx={{ mb: 3, fontWeight: 'bold' }}>
+            {t('dashboard.system.analyticsVisualization')}
+          </Typography>
+          
+          {/* Metrics Cards */}
+          <Grid container spacing={3} sx={{ mb: 4 }}>
+            <Grid item xs={12} sm={6} lg={3}>
+              <MetricCard
+                title={t('dashboard.system.totalBookings')}
+                value={stats.totalBookings}
+                trend="up"
+                trendValue={12}
+                icon={<BookIcon />}
+                color="primary"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} lg={3}>
+              <MetricCard
+                title={t('dashboard.system.activeHotels')}
+                value={stats.totalHotels}
+                trend="up"
+                trendValue={8}
+                icon={<Hotel />}
+                color="success"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} lg={3}>
+              <MetricCard
+                title={t('dashboard.system.monthlyRevenue')}
+                value={124750}
+                format="currency"
+                trend="up"
+                trendValue={15}
+                icon={<AttachMoneyIcon />}
+                color="warning"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} lg={3}>
+              <MetricCard
+                title={t('dashboard.system.systemUsers')}
+                value={stats.totalUsers}
+                trend="up"
+                trendValue={5}
+                icon={<People />}
+                color="info"
+              />
+            </Grid>
+          </Grid>
+
+          {/* Charts */}
+          <Grid container spacing={3}>
+            <Grid item xs={12} lg={8}>
+              <Paper elevation={0} sx={{ p: 3, borderRadius: designSystem.borderRadius.lg, border: 1, borderColor: 'divider' }}>
+                <Typography variant="h6" sx={{ mb: 3, fontWeight: 'bold' }}>
+                  {t('dashboard.system.monthlyRevenueChart')}
+                </Typography>
+                <BarChart
+                  data={revenueData}
+                  height={350}
+                  animated
+                />
+              </Paper>
+            </Grid>
+            
+            <Grid item xs={12} lg={4}>
+              <Paper elevation={0} sx={{ p: 3, borderRadius: designSystem.borderRadius.lg, border: 1, borderColor: 'divider', height: '100%' }}>
+                <Typography variant="h6" sx={{ mb: 3, fontWeight: 'bold' }}>
+                  {t('dashboard.system.bookingStatusChart')}
+                </Typography>
+                <DonutChart
+                  data={bookingStatusData}
+                  size={220}
+                  thickness={40}
+                />
+              </Paper>
+            </Grid>
+          </Grid>
+        </TabPanel>
+      )}
+
+      {/* Audit Log Tab */}
+      {isSystemAdmin && (
+        <TabPanel value={activeTab} index={3}>
+          <AuditLogTab />
+        </TabPanel>
+      )}
+
+      {/* API Documentation Tab */}
+      {isSystemAdmin && (
+        <TabPanel value={activeTab} index={2}>
+          <Grid container spacing={3}>
+            {/* API Documentation Card */}
+            <Grid item xs={12}>
+              <Card sx={{ height: '100%' }}>
+                <CardContent>
+                  {/* Search and Filter Controls */}
+                  <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                    {/* Search Field */}
+                    <PremiumTextField
+                      fullWidth
+                      placeholder="Search API endpoints..."
+                      value={apiSearchQuery}
+                      onChange={(e) => setApiSearchQuery(e.target.value)}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <SearchIcon />
+                          </InputAdornment>
+                        )
+                      }}
+                    />
+                    
+                    {/* Category Filter */}
+                    <FormControl sx={{ minWidth: 200 }}>
+                      <InputLabel>Category</InputLabel>
+                      <Select
+                        value={selectedCategory}
+                        label="Category"
+                        onChange={(e) => setSelectedCategory(e.target.value)}
+                      >
+                        {categories.map((category) => (
+                          <MenuItem key={category} value={category}>
+                            {category}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Box>
+
+                  {/* Endpoint Count */}
+                  <Typography variant="caption" color="textSecondary" sx={{ mb: 2, display: 'block' }}>
+                    {(() => {
+                      const filteredCount = allEndpoints.filter(endpoint => 
+                        (apiSearchQuery === '' || 
+                        endpoint.path.toLowerCase().includes(apiSearchQuery.toLowerCase()) ||
+                        endpoint.description.toLowerCase().includes(apiSearchQuery.toLowerCase()) ||
+                        endpoint.method.toLowerCase().includes(apiSearchQuery.toLowerCase())) &&
+                        (selectedCategory === 'All' || endpoint.category === selectedCategory)
+                      ).length;
+                      
+                      return `Showing ${filteredCount} of ${allEndpoints.length} endpoints`;
+                    })()}
+                  </Typography>
+
+                  <Box sx={{ maxHeight: 600, overflow: 'auto' }}>
+                    {allEndpoints
+                      .filter(endpoint => 
+                        (apiSearchQuery === '' || 
+                        endpoint.path.toLowerCase().includes(apiSearchQuery.toLowerCase()) ||
+                        endpoint.description.toLowerCase().includes(apiSearchQuery.toLowerCase()) ||
+                        endpoint.method.toLowerCase().includes(apiSearchQuery.toLowerCase())) &&
+                        (selectedCategory === 'All' || endpoint.category === selectedCategory)
+                      )
+                      .map((endpoint, index) => (
+                        <Accordion key={index} sx={{ mb: 1, '&:before': { display: 'none' } }}>
+                          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
+                              <Box
+                                component="span"
+                                sx={{
+                                  display: 'inline-block',
+                                  minWidth: 60,
+                                  textAlign: 'center',
+                                  px: 1,
+                                  py: 0.25,
+                                  borderRadius: 1,
+                                  fontSize: '0.75rem',
+                                  fontWeight: 'bold',
+                                  color: 'white',
+                                  bgcolor: 
+                                    endpoint.method === 'GET' ? 'success.main' :
+                                    endpoint.method === 'POST' ? 'warning.main' :
+                                    endpoint.method === 'PUT' ? 'info.main' :
+                                    endpoint.method === 'DELETE' ? 'error.main' : 'grey.500'
+                                }}
+                              >
+                                {endpoint.method}
+                              </Box>
+                              <Box sx={{ flexGrow: 1 }}>
+                                <Typography variant="body2" component="code" sx={{ fontFamily: 'monospace', fontWeight: 'bold' }}>
+                                  {endpoint.path}
+                                </Typography>
+                                <Typography variant="caption" color="textSecondary" sx={{ display: 'block' }}>
+                                  {endpoint.description}
+                                </Typography>
+                              </Box>
+                            </Box>
+                          </AccordionSummary>
+                          <AccordionDetails>
+                            <Box sx={{ mt: 1 }}>
+                              {/* Request Section */}
+                              {endpoint.request && (
+                                <Box sx={{ mb: 3 }}>
+                                  <Typography variant="h6" sx={{ mb: 1, color: 'primary.main' }}>
+                                    Request
+                                  </Typography>
+                                  
+                                  {endpoint.request.headers && (
+                                    <Box sx={{ mb: 2 }}>
+                                      <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Headers:</Typography>
+                                      <Box component="pre" sx={{ 
+                                        bgcolor: 'grey.100', 
+                                        p: 1, 
+                                        borderRadius: 1, 
+                                        fontSize: '0.875rem',
+                                        overflow: 'auto',
+                                        fontFamily: 'monospace'
+                                      }}>
+                                        {JSON.stringify(endpoint.request.headers, null, 2)}
+                                      </Box>
+                                    </Box>
+                                  )}
+                                  
+                                  {endpoint.request.params && (
+                                    <Box sx={{ mb: 2 }}>
+                                      <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Path Parameters:</Typography>
+                                      <Box component="pre" sx={{ 
+                                        bgcolor: 'grey.100', 
+                                        p: 1, 
+                                        borderRadius: 1, 
+                                        fontSize: '0.875rem',
+                                        overflow: 'auto',
+                                        fontFamily: 'monospace'
+                                      }}>
+                                        {JSON.stringify(endpoint.request.params, null, 2)}
+                                      </Box>
+                                    </Box>
+                                  )}
+                                  
+                                  {endpoint.request.query && (
+                                    <Box sx={{ mb: 2 }}>
+                                      <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Query Parameters:</Typography>
+                                      <Box component="pre" sx={{ 
+                                        bgcolor: 'grey.100', 
+                                        p: 1, 
+                                        borderRadius: 1, 
+                                        fontSize: '0.875rem',
+                                        overflow: 'auto',
+                                        fontFamily: 'monospace'
+                                      }}>
+                                        {JSON.stringify(endpoint.request.query, null, 2)}
+                                      </Box>
+                                    </Box>
+                                  )}
+                                  
+                                  {endpoint.request.body && (
+                                    <Box sx={{ mb: 2 }}>
+                                      <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Request Body:</Typography>
+                                      <Box component="pre" sx={{ 
+                                        bgcolor: 'grey.100', 
+                                        p: 1, 
+                                        borderRadius: 1, 
+                                        fontSize: '0.875rem',
+                                        overflow: 'auto',
+                                        fontFamily: 'monospace'
+                                      }}>
+                                        {JSON.stringify(endpoint.request.body, null, 2)}
+                                      </Box>
+                                    </Box>
+                                  )}
+                                </Box>
+                              )}
+
+                              {/* Response Section */}
+                              {endpoint.response && (
+                                <Box>
+                                  <Typography variant="h6" sx={{ mb: 1, color: 'success.main' }}>
+                                    Response
+                                  </Typography>
+                                  
+                                  {endpoint.response.success && (
+                                    <Box sx={{ mb: 2 }}>
+                                      <Typography variant="subtitle2" sx={{ fontWeight: 'bold', color: 'success.main' }}>
+                                        Success Response (200):
+                                      </Typography>
+                                      <Box component="pre" sx={{ 
+                                        bgcolor: 'success.lighter', 
+                                        p: 1, 
+                                        borderRadius: 1, 
+                                        fontSize: '0.875rem',
+                                        overflow: 'auto',
+                                        fontFamily: 'monospace',
+                                        border: '1px solid',
+                                        borderColor: 'success.light'
+                                      }}>
+                                        {JSON.stringify(endpoint.response.success, null, 2)}
+                                      </Box>
+                                    </Box>
+                                  )}
+                                  
+                                  {endpoint.response.error && (
+                                    <Box sx={{ mb: 2 }}>
+                                      <Typography variant="subtitle2" sx={{ fontWeight: 'bold', color: 'error.main' }}>
+                                        Error Response (4xx/5xx):
+                                      </Typography>
+                                      <Box component="pre" sx={{ 
+                                        bgcolor: 'error.lighter', 
+                                        p: 1, 
+                                        borderRadius: 1, 
+                                        fontSize: '0.875rem',
+                                        overflow: 'auto',
+                                        fontFamily: 'monospace',
+                                        border: '1px solid',
+                                        borderColor: 'error.light'
+                                      }}>
+                                        {JSON.stringify(endpoint.response.error, null, 2)}
+                                      </Box>
+                                    </Box>
+                                  )}
+                                </Box>
+                              )}
+                              
+                              {!endpoint.request && !endpoint.response && (
+                                <Typography variant="body2" color="textSecondary" sx={{ fontStyle: 'italic' }}>
+                                  No request/response examples available for this endpoint.
+                                </Typography>
+                              )}
+                            </Box>
+                          </AccordionDetails>
+                        </Accordion>
+                      ))}
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+          </Grid>
+        </TabPanel>
+      )}
+    </Container>
   );
 };

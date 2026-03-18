@@ -12,7 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,7 +27,9 @@ import com.bookmyhotel.dto.BookingModificationRequest;
 import com.bookmyhotel.dto.BookingModificationResponse;
 import com.bookmyhotel.dto.BookingRequest;
 import com.bookmyhotel.dto.BookingResponse;
+import com.bookmyhotel.entity.User;
 import com.bookmyhotel.exception.ResourceNotFoundException;
+import com.bookmyhotel.repository.UserRepository;
 import com.bookmyhotel.service.BookingService;
 
 import jakarta.validation.Valid;
@@ -38,13 +39,15 @@ import jakarta.validation.Valid;
  */
 @RestController
 @RequestMapping("/api/bookings")
-@CrossOrigin(origins = "*")
 public class BookingController {
 
     private static final Logger logger = LoggerFactory.getLogger(BookingController.class);
 
     @Autowired
     private BookingService bookingService;
+
+    @Autowired
+    private UserRepository userRepository;
 
     /**
      * Create a new booking by room type (the only booking method)
@@ -105,10 +108,42 @@ public class BookingController {
     }
 
     /**
-     * Get user bookings
+     * Get user bookings (authenticated users can only access their own bookings
+     * unless they're admin)
      */
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<BookingResponse>> getUserBookings(@PathVariable Long userId) {
+    public ResponseEntity<List<BookingResponse>> getUserBookings(
+            @PathVariable Long userId,
+            Authentication authentication) {
+
+        // Security check: users can only access their own bookings unless they're
+        // admin/hotel admin
+        if (authentication != null) {
+            String username = authentication.getName();
+            boolean isAdmin = authentication.getAuthorities().stream()
+                    .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN") ||
+                            auth.getAuthority().equals("ROLE_SUPER_ADMIN") ||
+                            auth.getAuthority().equals("ROLE_HOTEL_ADMIN"));
+
+            // If not admin, verify they're requesting their own bookings
+            if (!isAdmin) {
+                // Get the user from the authentication to compare with the requested userId
+                // The username is the email, so we need to verify this matches the user
+                try {
+                    User authenticatedUser = userRepository.findByEmail(username)
+                            .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + username));
+                    if (!authenticatedUser.getId().equals(userId)) {
+                        logger.warn("User {} attempted to access bookings for user {}", authenticatedUser.getId(),
+                                userId);
+                        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+                    }
+                } catch (Exception e) {
+                    logger.error("Error verifying user authorization: {}", e.getMessage());
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+                }
+            }
+        }
+
         List<BookingResponse> bookings = bookingService.getUserBookings(userId);
         return ResponseEntity.ok(bookings);
     }
@@ -209,11 +244,27 @@ public class BookingController {
     }
 
     /**
-     * Modify an existing booking (for guests)
+     * Modify an existing booking (for guests without authentication)
+     * Requires both confirmation number and guest email for security
      */
     @PutMapping("/modify")
     public ResponseEntity<BookingModificationResponse> modifyBooking(
             @Valid @RequestBody BookingModificationRequest request) {
+
+        // Validate required fields for guest modification
+        if (request.getConfirmationNumber() == null || request.getConfirmationNumber().trim().isEmpty()) {
+            BookingModificationResponse errorResponse = new BookingModificationResponse();
+            errorResponse.setSuccess(false);
+            errorResponse.setMessage("Confirmation number is required for guest booking modifications");
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
+
+        if (request.getGuestEmail() == null || request.getGuestEmail().trim().isEmpty()) {
+            BookingModificationResponse errorResponse = new BookingModificationResponse();
+            errorResponse.setSuccess(false);
+            errorResponse.setMessage("Guest email is required for guest booking modifications");
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
 
         BookingModificationResponse response = bookingService.modifyBooking(request);
 
@@ -264,6 +315,19 @@ public class BookingController {
     }
 
     /**
+     * Find booking by payment reference (useful for payment verification)
+     */
+    @GetMapping("/search/payment-reference/{paymentReference}")
+    public ResponseEntity<BookingResponse> findByPaymentReference(@PathVariable String paymentReference) {
+        try {
+            BookingResponse booking = bookingService.findByPaymentReferencePublic(paymentReference);
+            return ResponseEntity.ok(booking);
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    /**
      * Cancel a booking (for authenticated customers)
      */
     @PutMapping("/{reservationId}/cancel")
@@ -285,6 +349,55 @@ public class BookingController {
             return ResponseEntity.ok(response);
         } else {
             return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    /**
+     * Send authentication email for booking management
+     */
+    @PostMapping("/authenticate")
+    public ResponseEntity<?> authenticateBookingAccess(@RequestBody Map<String, String> request) {
+        try {
+            String confirmationNumber = request.get("confirmationNumber");
+            String email = request.get("email");
+            String action = request.get("action"); // "modify" or "cancel"
+
+            if (confirmationNumber == null || confirmationNumber.trim().isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("success", false, "message", "Confirmation number is required"));
+            }
+
+            if (email == null || email.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Email is required"));
+            }
+
+            // Verify the booking exists and email matches
+            try {
+                BookingResponse booking = bookingService.findByConfirmationNumberPublic(confirmationNumber);
+
+                if (!booking.getGuestEmail().equalsIgnoreCase(email.trim())) {
+                    return ResponseEntity.badRequest()
+                            .body(Map.of("success", false, "message", "Email does not match the booking record"));
+                }
+
+                // Send authentication email with secure token
+                bookingService.sendBookingAuthenticationEmail(confirmationNumber, email.trim(), action);
+
+                return ResponseEntity.ok(Map.of(
+                        "success", true,
+                        "message",
+                        "Authentication email sent successfully. Please check your email and click the link to manage your booking."));
+
+            } catch (ResourceNotFoundException e) {
+                return ResponseEntity.badRequest().body(
+                        Map.of("success", false, "message", "Booking not found with the provided confirmation number"));
+            }
+
+        } catch (Exception e) {
+            logger.error("Error sending booking authentication email", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "message",
+                            "Failed to send authentication email. Please try again."));
         }
     }
 }

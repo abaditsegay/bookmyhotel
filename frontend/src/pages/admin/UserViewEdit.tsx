@@ -7,7 +7,6 @@ import {
   Box,
   Paper,
   Grid,
-  TextField,
   FormControl,
   InputLabel,
   Select,
@@ -30,12 +29,12 @@ import {
   Edit as EditIcon,
   Save as SaveIcon,
   Cancel as CancelIcon,
-  Phone as PhoneIcon,
-  Email as EmailIcon,
   Person as PersonIcon,
   Badge as BadgeIcon,
 } from '@mui/icons-material';
+import { COLORS } from '../../theme/themeColors';
 import { useAuthenticatedApi } from '../../hooks/useAuthenticatedApi';
+import PremiumDisplayField from '../../components/common/PremiumDisplayField';
 
 interface UserData {
   id: number;
@@ -86,7 +85,7 @@ const UserViewEdit: React.FC = () => {
         setError('User not found');
       }
     } catch (error) {
-      console.error('Error fetching user:', error);
+      // console.error('Error fetching user:', error);
       setError('Failed to load user details');
     } finally {
       setLoading(false);
@@ -98,6 +97,13 @@ const UserViewEdit: React.FC = () => {
       fetchUser();
     }
   }, [id, adminApiService, fetchUser]);
+
+  // SUPER_ADMIN users cannot be viewed or edited via the UI
+  useEffect(() => {
+    if (user?.roles?.includes('SUPER_ADMIN')) {
+      navigate(-1);
+    }
+  }, [user, navigate]);
 
   const handleEdit = () => {
     setIsEditing(true);
@@ -141,7 +147,7 @@ const UserViewEdit: React.FC = () => {
       setSuccessMessage('User updated successfully');
       navigate(`/admin/users/${id}`);
     } catch (error) {
-      console.error('Error updating user:', error);
+      // console.error('Error updating user:', error);
       setError('Failed to update user');
     } finally {
       setSaving(false);
@@ -197,9 +203,15 @@ const UserViewEdit: React.FC = () => {
   }
 
   const currentUser = isEditing ? editedUser : user;
+  const isSuperAdmin = currentUser?.roles?.includes('SUPER_ADMIN') ?? false;
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
+      {isSuperAdmin && (
+        <Alert severity="info" sx={{ mb: 2 }}>
+          SUPER_ADMIN accounts cannot be modified.
+        </Alert>
+      )}
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -207,7 +219,12 @@ const UserViewEdit: React.FC = () => {
             <ArrowBackIcon />
           </IconButton>
           <Box>
-            <Typography variant="h4" sx={{ fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
+            <Typography variant="h4" sx={{ 
+              fontWeight: 'bold', 
+              display: 'flex', 
+              alignItems: 'center',
+              color: COLORS.PRIMARY
+            }}>
               <PersonIcon sx={{ mr: 1 }} />
               {isEditing ? 'Edit User' : 'User Details'}
             </Typography>
@@ -238,13 +255,15 @@ const UserViewEdit: React.FC = () => {
               </Button>
             </>
           ) : (
-            <Button
-              variant="contained"
-              startIcon={<EditIcon />}
-              onClick={handleEdit}
-            >
-              Edit User
-            </Button>
+            !isSuperAdmin && (
+              <Button
+                variant="contained"
+                startIcon={<EditIcon />}
+                onClick={handleEdit}
+              >
+                Edit User
+              </Button>
+            )
           )}
         </Box>
       </Box>
@@ -261,52 +280,43 @@ const UserViewEdit: React.FC = () => {
               
               <Grid container spacing={3}>
                 <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
+                  <PremiumDisplayField
                     label="First Name"
-                    value={currentUser.firstName || ''}
-                    onChange={(e) => handleInputChange('firstName', e.target.value)}
-                    disabled={!isEditing}
-                    variant={isEditing ? 'outlined' : 'filled'}
+                    value={currentUser.firstName}
+                    isEditMode={isEditing}
+                    onChange={(value) => handleInputChange('firstName', value)}
+                    required
                   />
                 </Grid>
                 
                 <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
+                  <PremiumDisplayField
                     label="Last Name"
-                    value={currentUser.lastName || ''}
-                    onChange={(e) => handleInputChange('lastName', e.target.value)}
-                    disabled={!isEditing}
-                    variant={isEditing ? 'outlined' : 'filled'}
+                    value={currentUser.lastName}
+                    isEditMode={isEditing}
+                    onChange={(value) => handleInputChange('lastName', value)}
+                    required
                   />
                 </Grid>
 
                 <Grid item xs={12}>
-                  <TextField
-                    fullWidth
+                  <PremiumDisplayField
                     label="Email"
-                    value={currentUser.email || ''}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
-                    disabled={!isEditing}
-                    variant={isEditing ? 'outlined' : 'filled'}
-                    InputProps={{
-                      startAdornment: <EmailIcon sx={{ mr: 1, color: 'text.secondary' }} />,
-                    }}
+                    value={currentUser.email}
+                    isEditMode={isEditing}
+                    onChange={(value) => handleInputChange('email', value)}
+                    type="email"
+                    required
                   />
                 </Grid>
 
                 <Grid item xs={12}>
-                  <TextField
-                    fullWidth
+                  <PremiumDisplayField
                     label="Phone"
-                    value={currentUser.phone || ''}
-                    onChange={(e) => handleInputChange('phone', e.target.value)}
-                    disabled={!isEditing}
-                    variant={isEditing ? 'outlined' : 'filled'}
-                    InputProps={{
-                      startAdornment: <PhoneIcon sx={{ mr: 1, color: 'text.secondary' }} />,
-                    }}
+                    value={currentUser.phone}
+                    isEditMode={isEditing}
+                    onChange={(value) => handleInputChange('phone', value)}
+                    type="tel"
                   />
                 </Grid>
               </Grid>
@@ -337,8 +347,8 @@ const UserViewEdit: React.FC = () => {
                       )}
                     >
                       <MenuItem value="ADMIN">System Admin</MenuItem>
-                      <MenuItem value="HOTEL_MANAGER">Hotel Manager</MenuItem>
-                      <MenuItem value="HOTEL_STAFF">Hotel Staff</MenuItem>
+                      <MenuItem value="HOTEL_ADMIN">Hotel Admin</MenuItem>
+                      <MenuItem value="OPERATIONAL_ADMIN">Operational Admin</MenuItem>
                       <MenuItem value="CUSTOMER">Customer</MenuItem>
                     </Select>
                   </FormControl>
@@ -361,7 +371,7 @@ const UserViewEdit: React.FC = () => {
                     <Switch
                       checked={currentUser.isActive}
                       onChange={(e) => handleInputChange('isActive', e.target.checked)}
-                      disabled={!isEditing}
+                      disabled={!isEditing || isSuperAdmin}
                     />
                   }
                   label="Active Account"

@@ -7,7 +7,7 @@ import java.util.List;
  * Hotel search result DTO
  */
 public class HotelSearchResult {
-    
+
     private Long id;
     private String name;
     private String description;
@@ -16,14 +16,19 @@ public class HotelSearchResult {
     private String country;
     private String phone;
     private String email;
+    private String mobilePaymentPhone;
+    private String mobilePaymentPhone2;
     private List<AvailableRoomDto> availableRooms; // Keep for backward compatibility
     private List<RoomTypeAvailabilityDto> roomTypeAvailability; // New room type approach
     private BigDecimal minPrice;
     private BigDecimal maxPrice;
-    
+    private String heroImageUrl; // Main hotel image
+    private List<String> galleryImageUrls; // Additional hotel images
+
     // Constructors
-    public HotelSearchResult() {}
-    
+    public HotelSearchResult() {
+    }
+
     public HotelSearchResult(Long id, String name, String address, String city, String country) {
         this.id = id;
         this.name = name;
@@ -31,104 +36,136 @@ public class HotelSearchResult {
         this.city = city;
         this.country = country;
     }
-    
+
     // Getters and Setters
     public Long getId() {
         return id;
     }
-    
+
     public void setId(Long id) {
         this.id = id;
     }
-    
+
     public String getName() {
         return name;
     }
-    
+
     public void setName(String name) {
         this.name = name;
     }
-    
+
     public String getDescription() {
         return description;
     }
-    
+
     public void setDescription(String description) {
         this.description = description;
     }
-    
+
     public String getAddress() {
         return address;
     }
-    
+
     public void setAddress(String address) {
         this.address = address;
     }
-    
+
     public String getCity() {
         return city;
     }
-    
+
     public void setCity(String city) {
         this.city = city;
     }
-    
+
     public String getCountry() {
         return country;
     }
-    
+
     public void setCountry(String country) {
         this.country = country;
     }
-    
+
     public String getPhone() {
         return phone;
     }
-    
+
     public void setPhone(String phone) {
         this.phone = phone;
     }
-    
+
     public String getEmail() {
         return email;
     }
-    
+
     public void setEmail(String email) {
         this.email = email;
     }
-    
+
+    public String getMobilePaymentPhone() {
+        return mobilePaymentPhone;
+    }
+
+    public void setMobilePaymentPhone(String mobilePaymentPhone) {
+        this.mobilePaymentPhone = mobilePaymentPhone;
+    }
+
+    public String getMobilePaymentPhone2() {
+        return mobilePaymentPhone2;
+    }
+
+    public void setMobilePaymentPhone2(String mobilePaymentPhone2) {
+        this.mobilePaymentPhone2 = mobilePaymentPhone2;
+    }
+
     public List<AvailableRoomDto> getAvailableRooms() {
         return availableRooms;
     }
-    
+
     public void setAvailableRooms(List<AvailableRoomDto> availableRooms) {
         this.availableRooms = availableRooms;
     }
-    
+
     public List<RoomTypeAvailabilityDto> getRoomTypeAvailability() {
         return roomTypeAvailability;
     }
-    
+
     public void setRoomTypeAvailability(List<RoomTypeAvailabilityDto> roomTypeAvailability) {
         this.roomTypeAvailability = roomTypeAvailability;
     }
-    
+
     public BigDecimal getMinPrice() {
         return minPrice;
     }
-    
+
     public void setMinPrice(BigDecimal minPrice) {
         this.minPrice = minPrice;
     }
-    
+
     public BigDecimal getMaxPrice() {
         return maxPrice;
     }
-    
+
     public void setMaxPrice(BigDecimal maxPrice) {
         this.maxPrice = maxPrice;
     }
-    
+
+    public String getHeroImageUrl() {
+        return heroImageUrl;
+    }
+
+    public void setHeroImageUrl(String heroImageUrl) {
+        this.heroImageUrl = heroImageUrl;
+    }
+
+    public List<String> getGalleryImageUrls() {
+        return galleryImageUrls;
+    }
+
+    public void setGalleryImageUrls(List<String> galleryImageUrls) {
+        this.galleryImageUrls = galleryImageUrls;
+    }
+
     /**
      * Available room DTO for search results
      */
@@ -139,63 +176,65 @@ public class HotelSearchResult {
         private BigDecimal pricePerNight;
         private Integer capacity;
         private String description;
-        
+
         // Constructors
-        public AvailableRoomDto() {}
-        
-        public AvailableRoomDto(Long id, String roomNumber, String roomType, BigDecimal pricePerNight, Integer capacity) {
+        public AvailableRoomDto() {
+        }
+
+        public AvailableRoomDto(Long id, String roomNumber, String roomType, BigDecimal pricePerNight,
+                Integer capacity) {
             this.id = id;
             this.roomNumber = roomNumber;
             this.roomType = roomType;
             this.pricePerNight = pricePerNight;
             this.capacity = capacity;
         }
-        
+
         // Getters and Setters
         public Long getId() {
             return id;
         }
-        
+
         public void setId(Long id) {
             this.id = id;
         }
-        
+
         public String getRoomNumber() {
             return roomNumber;
         }
-        
+
         public void setRoomNumber(String roomNumber) {
             this.roomNumber = roomNumber;
         }
-        
+
         public String getRoomType() {
             return roomType;
         }
-        
+
         public void setRoomType(String roomType) {
             this.roomType = roomType;
         }
-        
+
         public BigDecimal getPricePerNight() {
             return pricePerNight;
         }
-        
+
         public void setPricePerNight(BigDecimal pricePerNight) {
             this.pricePerNight = pricePerNight;
         }
-        
+
         public Integer getCapacity() {
             return capacity;
         }
-        
+
         public void setCapacity(Integer capacity) {
             this.capacity = capacity;
         }
-        
+
         public String getDescription() {
             return description;
         }
-        
+
         public void setDescription(String description) {
             this.description = description;
         }

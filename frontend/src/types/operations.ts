@@ -1,12 +1,14 @@
 // User and Role Types
 export enum UserRole {
-  GUEST = 'GUEST',
-  STAFF = 'STAFF',
-  HOTEL_ADMIN = 'HOTEL_ADMIN',
-  SYSTEM_ADMIN = 'SYSTEM_ADMIN',
-  HOUSEKEEPING = 'HOUSEKEEPING',
-  MAINTENANCE = 'MAINTENANCE',
-  OPERATIONS_SUPERVISOR = 'OPERATIONS_SUPERVISOR'
+  SUPER_ADMIN        = 'SUPER_ADMIN',
+  ADMIN              = 'ADMIN',
+  HOTEL_ADMIN        = 'HOTEL_ADMIN',
+  OPERATIONAL_ADMIN  = 'OPERATIONAL_ADMIN',
+  FRONTDESK          = 'FRONTDESK',
+  HOUSEKEEPING       = 'HOUSEKEEPING',
+  MAINTENANCE        = 'MAINTENANCE',
+  CUSTOMER           = 'CUSTOMER',
+  GUEST              = 'GUEST',
 }
 
 export interface User {
@@ -66,8 +68,8 @@ export interface HousekeepingTask {
   floorNumber?: number;
   estimatedDuration: number; // in minutes
   actualDuration?: number; // in minutes
-  assignedStaffId?: number;
-  assignedStaff?: HousekeepingStaff;
+  assignedUserId?: number;
+  assignedUser?: User;
   supervisorId?: number;
   supervisor?: User;
   dueDate: string;
@@ -133,8 +135,8 @@ export interface MaintenanceTask {
   actualCost?: number;
   estimatedDuration: number; // in minutes
   actualDuration?: number; // in minutes
-  assignedStaffId?: number;
-  assignedStaff?: User;
+  assignedUserId?: number;
+  assignedUser?: User;
   supervisorId?: number;
   supervisor?: User;
   dueDate: string;
@@ -157,7 +159,7 @@ export interface MaintenanceRequest {
   priority: string;
   status: string;
   roomNumber?: string;
-  assignedStaff?: HousekeepingStaff;
+  assignedUser?: User;
   dueDate?: string;
   createdAt: string;
   updatedAt?: string;
@@ -239,7 +241,7 @@ export interface CreateHousekeepingTaskRequest {
   floorNumber?: number;
   estimatedDuration: number;
   dueDate: string;
-  assignedStaffId?: number;
+  assignedUserId?: number;
   notes?: string;
 }
 
@@ -254,7 +256,7 @@ export interface CreateMaintenanceTaskRequest {
   estimatedCost: number;
   estimatedDuration: number;
   dueDate: string;
-  assignedStaffId?: number;
+  assignedUserId?: number;
   notes?: string;
 }
 
@@ -288,7 +290,7 @@ export interface TaskFilters {
   status?: string[];
   priority?: string[];
   taskType?: string[];
-  assignedStaffId?: number;
+  assignedUserId?: number;
   dateFrom?: string;
   dateTo?: string;
   roomNumber?: string;

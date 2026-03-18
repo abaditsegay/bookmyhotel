@@ -11,7 +11,7 @@ import {
 import { 
   Menu as MenuIcon, 
   Close as CloseIcon,
-  CalendarToday as CalendarIcon 
+  ChevronLeft as ChevronLeftIcon
 } from '@mui/icons-material';
 import Navbar from './Navbar';
 import { SystemWideNavbar } from './SystemWideNavbar';
@@ -46,8 +46,7 @@ const EnhancedLayout: React.FC<EnhancedLayoutProps> = ({
   const [sidebarOpen, setSidebarOpen] = useState(false);
   
   // Show sidebar only for authenticated users, when not hidden, and not for CUSTOMER/GUEST roles
-  const showSidebar = isAuthenticated && !hideSidebar && user?.roles && 
-    !user.roles.includes('CUSTOMER') && !user.roles.includes('GUEST');
+  const showSidebar = false; // sidebar permanently hidden (calendar/todos widgets disabled)
   
   // Determine which navbar to render
   const renderNavbar = () => {
@@ -65,7 +64,7 @@ const EnhancedLayout: React.FC<EnhancedLayoutProps> = ({
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
-        bgcolor: 'background.paper',
+        bgcolor: 'grey.50',
         borderLeft: isDesktop ? `1px solid ${theme.palette.divider}` : 'none',
       }}
     >
@@ -79,12 +78,12 @@ const EnhancedLayout: React.FC<EnhancedLayoutProps> = ({
       )}
       
       {/* Calendar Widget */}
-      <Box sx={{ p: 2, borderBottom: `1px solid ${theme.palette.divider}` }}>
+      <Box sx={{ display: 'none', p: 2, borderBottom: `1px solid ${theme.palette.divider}`, bgcolor: 'background.paper' }}>
         <CalendarWidget />
       </Box>
       
       {/* TODOs Widget */}
-      <Box sx={{ p: 2, flex: 1, overflow: 'auto' }}>
+      <Box sx={{ display: 'none', p: 2, flex: 1, overflow: 'auto', bgcolor: 'background.paper' }}>
         <TodosWidget />
       </Box>
     </Box>
@@ -109,6 +108,7 @@ const EnhancedLayout: React.FC<EnhancedLayoutProps> = ({
           flexGrow: 1,
           display: 'flex',
           minHeight: 0, // Important for flex children
+          paddingTop: '64px', // Add padding for fixed navbar
         }}
       >
         {/* Main Content Area */}
@@ -118,10 +118,6 @@ const EnhancedLayout: React.FC<EnhancedLayoutProps> = ({
             display: 'flex',
             flexDirection: 'column',
             minWidth: 0, // Prevent flex item from overflowing
-            // Adjust width based on sidebar presence
-            ...(showSidebar && isDesktop && {
-              marginRight: '350px', // Make room for fixed sidebar
-            }),
           }}
         >
           <Container
@@ -145,16 +141,21 @@ const EnhancedLayout: React.FC<EnhancedLayoutProps> = ({
           </Container>
         </Box>
         
-        {/* Desktop Sidebar - Fixed position */}
-        {showSidebar && isDesktop && (
+        {/* Desktop Sidebar - hidden, widgets disabled */}
+        {false && (
           <Box
             sx={{
               position: 'fixed',
-              top: 64, // Account for navbar height
+              top: 64, // Fixed position below navbar
               right: 0,
               bottom: 0,
               width: 350,
-              zIndex: theme.zIndex.drawer - 1,
+              zIndex: 900, // Set well below AppBar's z-index of 1100
+              overflow: 'auto', // Add scrolling for sidebar content
+              backgroundColor: 'background.paper', // Ensure solid background
+              transform: sidebarVisible ? 'translateX(0)' : 'translateX(100%)',
+              transition: 'transform 0.3s ease-in-out',
+              boxShadow: sidebarVisible ? 2 : 0,
             }}
           >
             {sidebarContent}
@@ -194,7 +195,7 @@ const EnhancedLayout: React.FC<EnhancedLayoutProps> = ({
             zIndex: theme.zIndex.speedDial,
           }}
         >
-          <CalendarIcon />
+          <ChevronLeftIcon />
         </Fab>
       )}
       

@@ -1,0 +1,11 @@
+Room Number,Room Type,Price Per Night,Capacity,Description,Status,Is Available
+101,STANDARD,150.00,2,"Comfortable standard room with modern amenities",AVAILABLE,true
+102,STANDARD,150.00,2,"Comfortable standard room with city view",AVAILABLE,true
+103,DELUXE,220.00,2,"Spacious deluxe room with premium amenities",AVAILABLE,true
+104,DELUXE,220.00,3,"Deluxe room with extra space and city view",AVAILABLE,true
+201,SUITE,300.00,4,"Superior suite with separate living area",AVAILABLE,true
+202,SUITE,350.00,4,"Luxury suite with premium services",AVAILABLE,true
+301,FAMILY,450.00,6,"Family room with multiple beds and extra space",AVAILABLE,true
+401,PRESIDENTIAL,800.00,8,"Presidential suite with luxury amenities",AVAILABLE,true
+105,ACCESSIBLE,180.00,2,"Accessible room with mobility features",AVAILABLE,true
+106,ACCESSIBLE,200.00,2,"Accessible deluxe room with enhanced features",AVAILABLE,true

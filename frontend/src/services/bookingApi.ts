@@ -10,6 +10,7 @@ export interface BookingSearchResponse {
   totalAmount: number;
   paymentStatus: string;
   paymentIntentId?: string;
+  paymentReference?: string;
   createdAt: string;
   hotelName: string;
   hotelAddress: string;
@@ -52,7 +53,7 @@ export const bookingApiService = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Booking search error:', error);
+      // console.error('Booking search error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to search for booking' 
@@ -86,7 +87,7 @@ export const bookingApiService = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Booking search error:', error);
+      // console.error('Booking search error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to search for booking' 
@@ -120,7 +121,7 @@ export const bookingApiService = {
       const data = await response.json();
       return { success: true, data, message: data.message };
     } catch (error) {
-      console.error('Booking cancellation error:', error);
+      // console.error('Booking cancellation error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to cancel booking' 
@@ -180,7 +181,7 @@ export const bookingApiService = {
       const data = await response.json();
       return { success: true, data, message: data.message };
     } catch (error) {
-      console.error('Booking modification error:', error);
+      // console.error('Booking modification error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to modify booking' 
@@ -202,9 +203,9 @@ export const bookingApiService = {
 
       // Mock modification options - in a real app, this would come from the backend
       const options = {
-        canModifyDates: searchResult.data.status === 'CONFIRMED',
-        canModifyRoomType: searchResult.data.status === 'CONFIRMED',
-        canCancel: ['CONFIRMED', 'PENDING'].includes(searchResult.data.status),
+        canModifyDates: searchResult.data.status === 'BOOKED',
+        canModifyRoomType: searchResult.data.status === 'BOOKED',
+        canCancel: ['BOOKED', 'PENDING'].includes(searchResult.data.status),
         modificationDeadline: new Date(searchResult.data.checkInDate),
         availableRoomTypes: ['Standard', 'Deluxe', 'Suite', 'Family'], // Would come from backend
         modificationFee: 25.00
@@ -212,7 +213,7 @@ export const bookingApiService = {
 
       return { success: true, data: options };
     } catch (error) {
-      console.error('Get modification options error:', error);
+      // console.error('Get modification options error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to get modification options' 

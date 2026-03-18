@@ -1,10 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Button, Card, CardContent, Container, TextField, Typography, Alert, Divider, Chip } from '@mui/material';
+import { COLORS, addAlpha, getGradient } from '../theme/themeColors';
+import { 
+  Box, 
+  Button, 
+  Card, 
+  CardContent, 
+  Container, 
+  Typography, 
+  Alert, 
+  useTheme,
+  useMediaQuery,
+  Stack,
+} from '@mui/material';
+import {
+} from '@mui/icons-material';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link as RouterLink } from 'react-router-dom';
 import { API_CONFIG } from '../config/apiConfig';
+import PremiumTextField from '../components/common/PremiumTextField';
 
 const LoginPage: React.FC = () => {
+  const { t } = useTranslation();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -20,7 +40,7 @@ const LoginPage: React.FC = () => {
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
   
-  const { login, error: authError, clearError, isAuthenticated, user, isInitializing } = useAuth();
+  const { login, error: authError, clearError, isAuthenticated, user, isInitializing, getDashboardPath } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -31,16 +51,27 @@ const LoginPage: React.FC = () => {
   // Redirect already authenticated users to their appropriate dashboard
   useEffect(() => {
     if (!isInitializing && isAuthenticated && user) {
+      // Inactive hotel — redirect hotel admins to their registration detail page
+      if (user.accountStatus === 'HOTEL_INACTIVE') {
+        navigate('/hotel-admin/my-registration', { replace: true });
+        return;
+      }
+      if (user.accountStatus === 'USER_SUSPENDED') {
+        navigate('/account-status?reason=suspended', { replace: true });
+        return;
+      }
+
       // If there's a specific redirect with booking data, use that
       if (redirectTo && bookingData) {
         navigate(redirectTo, { state: bookingData, replace: true });
         return;
       }
       
-      // Otherwise, redirect based on user role to their dashboard
-      navigate('/dashboard', { replace: true });
+      // Otherwise, redirect directly to the user's role-specific dashboard
+      const dashboardPath = getDashboardPath();
+      navigate(dashboardPath, { replace: true });
     }
-  }, [isAuthenticated, user, isInitializing, redirectTo, bookingData, navigate]);
+  }, [isAuthenticated, user, isInitializing, redirectTo, bookingData, navigate, getDashboardPath]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,19 +79,11 @@ const LoginPage: React.FC = () => {
     setLoading(true);
 
     try {
-      const success = await login(email, password);
-      if (success) {
-        // Check if there's a redirect with booking data
-        if (redirectTo && bookingData) {
-          navigate(redirectTo, { state: bookingData });
-        } else {
-          // Navigate to dashboard, which will redirect based on user role
-          navigate('/dashboard');
-        }
-      }
-      // Note: If login fails, the error will be set in authError by AuthContext
+      await login(email, password);
+      // Note: Navigation will be handled by the useEffect hook once user state is updated
+      // This prevents calling getDashboardPath() before user state is set
     } catch (err) {
-      console.error('Login error:', err);
+      // console.error('Login error:', err);
     } finally {
       setLoading(false);
     }
@@ -73,18 +96,18 @@ const LoginPage: React.FC = () => {
 
     // Validation
     if (registerPassword !== confirmPassword) {
-      setError('Passwords do not match');
+      setError(t('auth.login.passwordsNoMatch'));
       return;
     }
 
     if (registerPassword.length < 6) {
-      setError('Password must be at least 6 characters long');
+      setError(t('auth.login.passwordTooShort'));
       return;
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(registerEmail)) {
-      setError('Please provide a valid email address');
+      setError(t('auth.login.invalidEmail'));
       return;
     }
 
@@ -132,7 +155,7 @@ const LoginPage: React.FC = () => {
       localStorage.setItem('auth_token', registrationData.token);
       localStorage.setItem('auth_user', JSON.stringify(user));
 
-      setSuccess('Registration successful! Redirecting...');
+      setSuccess(t('auth.login.registrationSuccess'));
 
       // Small delay to show success message
       setTimeout(() => {
@@ -143,18 +166,10 @@ const LoginPage: React.FC = () => {
         }
       }, 1500);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Registration failed');
+      setError(err instanceof Error ? err.message : t('auth.login.registrationFailed'));
     } finally {
       setLoading(false);
     }
-  };
-
-  const fillSampleUser = (sampleEmail: string, samplePassword: string) => {
-    setEmail(sampleEmail);
-    setPassword(samplePassword);
-    clearError(); // Clear any existing errors
-    setError(''); // Clear local errors
-    setSuccess(''); // Clear success messages
   };
 
   // Get the error to display (prefer auth context error, then local error)
@@ -175,43 +190,81 @@ const LoginPage: React.FC = () => {
             gap: 2,
           }}
         >
-          <Typography variant="h6">Loading...</Typography>
+          <Typography variant="h6">{t('errors.loading')}</Typography>
         </Box>
       </Container>
     );
   }
 
   return (
-    <Container maxWidth="lg">
-      <Box
-        sx={{
-          minHeight: '100vh',
-          display: 'flex',
-          flexDirection: { xs: 'column', md: 'row' },
-          alignItems: 'center',
-          justifyContent: 'center',
-          py: 4,
-          gap: 4,
-        }}
-      >
+    <Box
+      sx={{
+        minHeight: '100vh',
+        background: theme.palette.mode === 'dark' 
+          ? `linear-gradient(135deg, ${theme.palette.background.default} 0%, ${theme.palette.grey[900]} 100%)`
+          : getGradient('white'),
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        py: 4,
+      }}
+    >
+      <Container maxWidth="lg">
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: { xs: 'column', md: 'row' },
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: isMobile ? 3 : 6,
+            minHeight: '90vh',
+          }}
+        >
         {/* Main Login Form */}
-        <Card sx={{ maxWidth: 500, width: '100%', height: 'fit-content' }}>
-          <CardContent sx={{ p: 4 }}>
-            <Typography variant="h4" component="h1" gutterBottom align="center">
-              Manage My Hotel
-            </Typography>
+        <Card 
+          elevation={8}
+          sx={{ 
+            maxWidth: 500, 
+            width: '100%', 
+            height: 'fit-content',
+            background: theme.palette.background.paper,
+            border: `1px solid ${theme.palette.divider}`,
+            borderRadius: 4,
+            boxShadow: theme.shadows[8],
+          }}
+        >
+          <CardContent sx={{ p: isMobile ? 3 : 5 }}>
+
             
             {bookingData && (
               <Alert severity="info" sx={{ mb: 3 }}>
                 <Typography variant="body2">
-                  Sign in to complete your booking for <strong>{bookingData.hotelName}</strong>
+                  {t('auth.login.signInToBook', { hotelName: bookingData.hotelName })}
                 </Typography>
               </Alert>
             )}
 
-            <Typography variant="h5" component="h2" gutterBottom align="center">
-              {!showSignUp ? 'Sign In' : 'Create Account'}{bookingData ? ' to Book' : ''}
-            </Typography>
+            {/* Sign In/Up Header */}
+            <Box sx={{ mb: 3, textAlign: 'center' }}>
+              <Typography 
+                variant="h5" 
+                component="h2" 
+                sx={{ 
+                  fontWeight: 'bold',
+                  color: 'primary.main',
+                  mb: 1,
+                }}
+              >
+                {!showSignUp ? t('auth.login.signIn') : t('auth.login.createAccount')}{bookingData ? ' to Book' : ''}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {!showSignUp 
+                  ? t('auth.login.signInSubtitle')
+                  : t('auth.login.createAccountSubtitle')
+                }
+              </Typography>
+            </Box>
 
             {displayError && (
               <Alert severity="error" sx={{ mb: 2 }}>
@@ -228,9 +281,9 @@ const LoginPage: React.FC = () => {
             {!showSignUp ? (
               // Sign In Form
               <Box component="form" onSubmit={handleSubmit} data-testid="login-form">
-                <TextField
+                <PremiumTextField
                   fullWidth
-                  label="Email"
+                  label={t('auth.login.emailLabel')}
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -240,9 +293,9 @@ const LoginPage: React.FC = () => {
                   autoFocus
                   inputProps={{ 'data-testid': 'email-input' }}
                 />
-                <TextField
+                <PremiumTextField
                   fullWidth
-                  label="Password"
+                  label={t('auth.login.passwordLabel')}
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -251,39 +304,76 @@ const LoginPage: React.FC = () => {
                   autoComplete="current-password"
                   inputProps={{ 'data-testid': 'password-input' }}
                 />
+                <Box sx={{ textAlign: 'right', mt: 0.5 }}>
+                  <Button
+                    component={RouterLink}
+                    to="/forgot-password"
+                    variant="text"
+                    size="small"
+                    sx={{ 
+                      color: COLORS.PRIMARY,
+                      textTransform: 'none',
+                      fontWeight: 500,
+                      p: 0,
+                      minWidth: 'auto',
+                      '&:hover': { textDecoration: 'underline', background: 'transparent' },
+                    }}
+                  >
+                    {t('auth.login.forgotPassword')}
+                  </Button>
+                </Box>
                 <Button
                   type="submit"
                   fullWidth
                   variant="contained"
-                  sx={{ mt: 3, mb: 2 }}
                   disabled={loading}
                   data-testid="login-button"
+                  sx={{ 
+                    mt: 4, 
+                    mb: 2,
+                    py: 1.5,
+                    borderRadius: 0,
+                    fontSize: '1.1rem',
+                    fontWeight: 'bold',
+                    background: 'primary.main',
+                    boxShadow: `0 4px 15px ${addAlpha(COLORS.PRIMARY, 0.3)}`,
+                    '&:hover': {
+                      background: 'primary.dark',
+                      boxShadow: `0 6px 20px ${addAlpha(COLORS.PRIMARY, 0.4)}`,
+                      transform: 'translateY(-1px)',
+                    },
+                    '&:active': {
+                      transform: 'translateY(0)',
+                    },
+                  }}
                 >
-                  {loading ? 'Signing In...' : 'Sign In'}
+                  {loading ? t('auth.login.signingIn') : t('auth.login.signInButton')}
                 </Button>
               </Box>
             ) : (
               // Sign Up Form
               <Box component="form" onSubmit={handleRegister}>
-                <TextField
+                <Stack direction="row" spacing={2}>
+                  <PremiumTextField
+                    fullWidth
+                    label={t('auth.login.firstNameLabel')}
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    margin="normal"
+                    required
+                  />
+                  <PremiumTextField
+                    fullWidth
+                    label={t('auth.login.lastNameLabel')}
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    margin="normal"
+                    required
+                  />
+                </Stack>
+                <PremiumTextField
                   fullWidth
-                  label="First Name"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  margin="normal"
-                  required
-                />
-                <TextField
-                  fullWidth
-                  label="Last Name"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  margin="normal"
-                  required
-                />
-                <TextField
-                  fullWidth
-                  label="Email"
+                  label={t('auth.login.emailLabel')}
                   type="email"
                   value={registerEmail}
                   onChange={(e) => setRegisterEmail(e.target.value)}
@@ -291,16 +381,16 @@ const LoginPage: React.FC = () => {
                   required
                   autoComplete="email"
                 />
-                <TextField
+                <PremiumTextField
                   fullWidth
-                  label="Phone (optional)"
+                  label={t('auth.login.phoneLabel')}
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   margin="normal"
                 />
-                <TextField
+                <PremiumTextField
                   fullWidth
-                  label="Password"
+                  label={t('auth.login.passwordLabel')}
                   type="password"
                   value={registerPassword}
                   onChange={(e) => setRegisterPassword(e.target.value)}
@@ -308,9 +398,9 @@ const LoginPage: React.FC = () => {
                   required
                   autoComplete="new-password"
                 />
-                <TextField
+                <PremiumTextField
                   fullWidth
-                  label="Confirm Password"
+                  label={t('auth.login.confirmPasswordLabel')}
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
@@ -322,10 +412,27 @@ const LoginPage: React.FC = () => {
                   type="submit"
                   fullWidth
                   variant="contained"
-                  sx={{ mt: 3, mb: 2 }}
                   disabled={loading}
+                  sx={{ 
+                    mt: 4, 
+                    mb: 2,
+                    py: 1.5,
+                    borderRadius: 0,
+                    fontSize: '1.1rem',
+                    fontWeight: 'bold',
+                    background: 'secondary.main',
+                    boxShadow: `0 4px 15px ${addAlpha(COLORS.SECONDARY, 0.3)}`,
+                    '&:hover': {
+                      background: 'secondary.dark',
+                      boxShadow: `0 6px 20px ${addAlpha(COLORS.SECONDARY, 0.4)}`,
+                      transform: 'translateY(-1px)',
+                    },
+                    '&:active': {
+                      transform: 'translateY(0)',
+                    },
+                  }}
                 >
-                  {loading ? 'Creating Account...' : 'Create Account'}
+                  {loading ? t('auth.login.creating') : t('auth.login.createAccountButton')}
                 </Button>
               </Box>
             )}
@@ -333,7 +440,7 @@ const LoginPage: React.FC = () => {
             <Typography variant="body2" color="textSecondary" align="center" sx={{ mt: 2 }}>
               {!showSignUp ? (
                 <>
-                  Don't have an account?{' '}
+                  {t('auth.login.needAccount')}{' '}
                   <Button 
                     variant="text" 
                     onClick={() => setShowSignUp(true)}
@@ -344,7 +451,7 @@ const LoginPage: React.FC = () => {
                 </>
               ) : (
                 <>
-                  Already have an account?{' '}
+                  {t('auth.login.alreadyHaveAccount')}{' '}
                   <Button 
                     variant="text" 
                     onClick={() => setShowSignUp(false)}
@@ -356,86 +463,12 @@ const LoginPage: React.FC = () => {
               )}
             </Typography>
 
-            {/* Test Credentials Hint - Only show on Sign In */}
-            {!showSignUp && (
-              <Divider sx={{ my: 3 }}>
-                <Chip label="Test Credentials Available on the Right →" size="small" color="primary" />
-              </Divider>
-            )}
           </CardContent>
         </Card>
 
-        {/* Test Credentials Panel - Only show on Sign In */}
-        {!showSignUp && (
-          <Card sx={{ maxWidth: 400, width: '100%', height: 'fit-content' }}>
-            <CardContent sx={{ p: 3 }}>
-              <Typography variant="h6" gutterBottom align="center" color="primary">
-                Quick Login - Test Credentials
-              </Typography>
-              <Typography variant="body2" color="textSecondary" align="center" sx={{ mb: 2 }}>
-                Click any button below to auto-fill credentials for testing:
-              </Typography>
-              
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <Button
-                  variant="outlined"
-                  fullWidth
-                  onClick={() => fillSampleUser('admin@bookmyhotel.com', 'admin123')}
-                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
-                >
-                  <Typography variant="body2" fontWeight="bold">🔧 System Admin</Typography>
-                  <Typography variant="caption" color="textSecondary" sx={{ mt: 0.5 }}>
-                    admin@bookmyhotel.com
-                  </Typography>
-                  <Typography variant="caption" color="textSecondary">
-                    Password: admin123
-                  </Typography>
-                  <Typography variant="caption" color="success.main" sx={{ mt: 0.5 }}>
-                    ✅ Full System Access
-                  </Typography>
-                </Button>
-
-                <Button
-                  variant="outlined"
-                  fullWidth
-                  onClick={() => fillSampleUser('admin.grandplaza@bookmyhotel.com', 'admin123')}
-                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
-                >
-                  <Typography variant="body2" fontWeight="bold">🏨 Hotel Admin - Grand Plaza</Typography>
-                  <Typography variant="caption" color="textSecondary" sx={{ mt: 0.5 }}>
-                    admin.grandplaza@bookmyhotel.com
-                  </Typography>
-                  <Typography variant="caption" color="textSecondary">
-                    Password: admin123
-                  </Typography>
-                  <Typography variant="caption" color="info.main" sx={{ mt: 0.5 }}>
-                    🏨 Grand Plaza Hotel (100 rooms)
-                  </Typography>
-                </Button>
-
-                <Button
-                  variant="outlined"
-                  fullWidth
-                  onClick={() => fillSampleUser('frontdesk.grandplaza@bookmyhotel.com', 'front123')}
-                  sx={{ textTransform: 'none', display: 'flex', flexDirection: 'column', py: 2 }}
-                >
-                  <Typography variant="body2" fontWeight="bold">🎯 Front Desk - Grand Plaza</Typography>
-                  <Typography variant="caption" color="textSecondary" sx={{ mt: 0.5 }}>
-                    frontdesk.grandplaza@bookmyhotel.com
-                  </Typography>
-                  <Typography variant="caption" color="textSecondary">
-                    Password: front123
-                  </Typography>
-                  <Typography variant="caption" color="warning.main" sx={{ mt: 0.5 }}>
-                    🎯 Grand Plaza Hotel Front Desk
-                  </Typography>
-                </Button>
-              </Box>
-            </CardContent>
-          </Card>
-        )}
-      </Box>
-    </Container>
+        </Box>
+      </Container>
+    </Box>
   );
 };
 

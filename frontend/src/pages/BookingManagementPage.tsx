@@ -15,7 +15,9 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Chip
+  Chip,
+  useTheme,
+  useMediaQuery
 } from '@mui/material';
 import {
   CalendarToday,
@@ -35,6 +37,9 @@ const BookingManagementPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const token = searchParams.get('token');
 
@@ -96,7 +101,7 @@ const BookingManagementPage: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status?.toLowerCase()) {
-      case 'confirmed':
+      case 'booked':
         return 'primary';
       case 'cancelled':
         return 'error';
@@ -109,9 +114,22 @@ const BookingManagementPage: React.FC = () => {
 
   if (loading) {
     return (
-      <Container maxWidth="md" sx={{ mt: 4, textAlign: 'center' }}>
+      <Container 
+        maxWidth="md" 
+        sx={{ 
+          mt: { xs: 2, md: 4 }, 
+          px: { xs: 1, md: 3 },
+          textAlign: 'center' 
+        }}
+      >
         <CircularProgress />
-        <Typography variant="h6" sx={{ mt: 2 }}>
+        <Typography 
+          variant="h6" 
+          sx={{ 
+            mt: 2,
+            fontSize: { xs: '1.1rem', md: '1.25rem' },
+          }}
+        >
           Loading your booking...
         </Typography>
       </Container>
@@ -120,11 +138,27 @@ const BookingManagementPage: React.FC = () => {
 
   if (error) {
     return (
-      <Container maxWidth="md" sx={{ mt: 4 }}>
-        <Alert severity="error" sx={{ mb: 2 }}>
+      <Container 
+        maxWidth="md" 
+        sx={{ 
+          mt: { xs: 2, md: 4 },
+          px: { xs: 1, md: 3 },
+        }}
+      >
+        <Alert 
+          severity="error" 
+          sx={{ 
+            mb: 2,
+            fontSize: { xs: '0.875rem', md: '1rem' },
+          }}
+        >
           {error}
         </Alert>
-        <Button variant="outlined" onClick={() => navigate('/')}>
+        <Button 
+          variant="outlined" 
+          onClick={() => navigate('/')}
+          size={isMobile ? 'small' : 'medium'}
+        >
           Return to Home
         </Button>
       </Container>
@@ -133,8 +167,17 @@ const BookingManagementPage: React.FC = () => {
 
   if (!booking) {
     return (
-      <Container maxWidth="md" sx={{ mt: 4 }}>
-        <Alert severity="warning">
+      <Container 
+        maxWidth="md" 
+        sx={{ 
+          mt: { xs: 2, md: 4 },
+          px: { xs: 1, md: 3 },
+        }}
+      >
+        <Alert 
+          severity="warning"
+          sx={{ fontSize: { xs: '0.875rem', md: '1rem' } }}
+        >
           Booking not found. Please check your email for the correct link.
         </Alert>
       </Container>
@@ -142,36 +185,93 @@ const BookingManagementPage: React.FC = () => {
   }
 
   return (
-    <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
-      <Paper elevation={3} sx={{ p: 3 }}>
-        <Box sx={{ mb: 3, textAlign: 'center' }}>
-          <Typography variant="h4" gutterBottom>
+    <Container 
+      maxWidth="md" 
+      sx={{ 
+        mt: { xs: 2, md: 4 }, 
+        mb: { xs: 2, md: 4 },
+        px: { xs: 1, md: 3 },
+      }}
+    >
+      <Paper 
+        elevation={3} 
+        sx={{ 
+          p: { xs: 2, md: 3 },
+          borderRadius: { xs: 1, md: 2 },
+        }}
+      >
+        <Box sx={{ mb: { xs: 2, md: 3 }, textAlign: 'center' }}>
+          <Typography 
+            variant={isMobile ? 'h5' : 'h4'} 
+            gutterBottom
+            sx={{ fontSize: { xs: '1.5rem', md: '2.125rem' } }}
+          >
             Booking Details
           </Typography>
           <Chip
             label={booking.status}
             color={getStatusColor(booking.status) as any}
-            sx={{ mb: 2 }}
+            sx={{ 
+              mb: 2,
+              fontSize: { xs: '0.75rem', md: '0.875rem' },
+              height: { xs: 24, md: 32 },
+            }}
           />
         </Box>
 
-        <Grid container spacing={3}>
+        <Grid container spacing={{ xs: 2, md: 3 }}>
           {/* Booking Information */}
           <Grid item xs={12} md={6}>
-            <Card>
-              <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  <CalendarToday sx={{ mr: 1, verticalAlign: 'middle' }} />
+            <Card sx={{ height: '100%' }}>
+              <CardContent sx={{ p: { xs: 2, md: 3 } }}>
+                <Typography 
+                  variant="h6" 
+                  gutterBottom
+                  sx={{ 
+                    fontSize: { xs: '1.1rem', md: '1.25rem' },
+                    display: 'flex',
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                  }}
+                >
+                  <CalendarToday sx={{ mr: 1, fontSize: { xs: '1rem', md: '1.25rem' } }} />
                   Stay Details
                 </Typography>
-                <Typography variant="body1" sx={{ mb: 1 }}>
+                <Typography 
+                  variant="body1" 
+                  sx={{ 
+                    mb: 1,
+                    fontSize: { xs: '0.875rem', md: '1rem' },
+                  }}
+                >
                   <strong>Check-in:</strong> {formatDateForDisplay(booking.checkInDate)}
                 </Typography>
-                <Typography variant="body1" sx={{ mb: 1 }}>
+                <Typography 
+                  variant="body1" 
+                  sx={{ 
+                    mb: 1,
+                    fontSize: { xs: '0.875rem', md: '1rem' },
+                  }}
+                >
                   <strong>Check-out:</strong> {formatDateForDisplay(booking.checkOutDate)}
                 </Typography>
-                <Typography variant="body1" sx={{ mb: 1 }}>
-                  <strong>Total Amount:</strong> ETB {booking.totalAmount?.toFixed(0)}
+                <Typography 
+                  variant="body1" 
+                  sx={{ 
+                    mb: 1,
+                    fontSize: { xs: '0.875rem', md: '1rem' },
+                  }}
+                >
+                  <strong>Total Amount:</strong> ETB {booking.totalAmount?.toFixed(2)}
+                </Typography>
+                <Typography 
+                  variant="caption" 
+                  sx={{ 
+                    color: 'text.secondary',
+                    fontStyle: 'italic',
+                  }}
+                >
+                  (including all taxes)
                 </Typography>
               </CardContent>
             </Card>
@@ -179,19 +279,43 @@ const BookingManagementPage: React.FC = () => {
 
           {/* Hotel Information */}
           <Grid item xs={12} md={6}>
-            <Card>
-              <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  <Hotel sx={{ mr: 1, verticalAlign: 'middle' }} />
+            <Card sx={{ height: '100%' }}>
+              <CardContent sx={{ p: { xs: 2, md: 3 } }}>
+                <Typography 
+                  variant="h6" 
+                  gutterBottom
+                  sx={{ 
+                    fontSize: { xs: '1.1rem', md: '1.25rem' },
+                    display: 'flex',
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                  }}
+                >
+                  <Hotel sx={{ mr: 1, fontSize: { xs: '1rem', md: '1.25rem' } }} />
                   Hotel Details
                 </Typography>
-                <Typography variant="body1" sx={{ mb: 1 }}>
+                <Typography 
+                  variant="body1" 
+                  sx={{ 
+                    mb: 1,
+                    fontSize: { xs: '0.875rem', md: '1rem' },
+                  }}
+                >
                   <strong>Hotel:</strong> {booking.hotelName}
                 </Typography>
-                <Typography variant="body1" sx={{ mb: 1 }}>
+                <Typography 
+                  variant="body1" 
+                  sx={{ 
+                    mb: 1,
+                    fontSize: { xs: '0.875rem', md: '1rem' },
+                  }}
+                >
                   <strong>Room:</strong> {booking.roomType}
                 </Typography>
-                <Typography variant="body1">
+                <Typography 
+                  variant="body1"
+                  sx={{ fontSize: { xs: '0.875rem', md: '1rem' } }}
+                >
                   <strong>Confirmation:</strong> #{booking.reservationId}
                 </Typography>
               </CardContent>
@@ -201,20 +325,41 @@ const BookingManagementPage: React.FC = () => {
           {/* Guest Information */}
           <Grid item xs={12}>
             <Card>
-              <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  <Person sx={{ mr: 1, verticalAlign: 'middle' }} />
+              <CardContent sx={{ p: { xs: 2, md: 3 } }}>
+                <Typography 
+                  variant="h6" 
+                  gutterBottom
+                  sx={{ 
+                    fontSize: { xs: '1.1rem', md: '1.25rem' },
+                    display: 'flex',
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                  }}
+                >
+                  <Person sx={{ mr: 1, fontSize: { xs: '1rem', md: '1.25rem' } }} />
                   Guest Information
                 </Typography>
-                <Grid container spacing={2}>
+                <Grid container spacing={{ xs: 1, md: 2 }}>
                   <Grid item xs={12} sm={6}>
-                    <Typography variant="body1">
+                    <Typography 
+                      variant="body1"
+                      sx={{ fontSize: { xs: '0.875rem', md: '1rem' } }}
+                    >
                       <strong>Name:</strong> {booking.guestName}
                     </Typography>
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    <Typography variant="body1">
-                      <Email sx={{ mr: 1, verticalAlign: 'middle' }} />
+                    <Typography 
+                      variant="body1"
+                      sx={{ 
+                        fontSize: { xs: '0.875rem', md: '1rem' },
+                        display: 'flex',
+                        alignItems: 'center',
+                        flexWrap: 'wrap',
+                        wordBreak: 'break-word',
+                      }}
+                    >
+                      <Email sx={{ mr: 1, fontSize: { xs: '1rem', md: '1.25rem' } }} />
                       {booking.guestEmail}
                     </Typography>
                   </Grid>
@@ -226,12 +371,24 @@ const BookingManagementPage: React.FC = () => {
 
         {/* Action Buttons */}
         {booking.status?.toLowerCase() !== 'cancelled' && (
-          <Box sx={{ mt: 3, display: 'flex', gap: 2, justifyContent: 'center' }}>
+          <Box sx={{ 
+            mt: { xs: 2, md: 3 }, 
+            display: 'flex', 
+            gap: 2, 
+            justifyContent: 'center',
+            flexDirection: { xs: 'column', sm: 'row' },
+            alignItems: 'center',
+          }}>
             <Button
               variant="outlined"
               color="error"
               startIcon={<Cancel />}
               onClick={() => setCancelDialogOpen(true)}
+              size={isMobile ? 'small' : 'medium'}
+              sx={{ 
+                width: { xs: '100%', sm: 'auto' },
+                minWidth: { xs: 'auto', sm: '140px' },
+              }}
             >
               Cancel Booking
             </Button>
@@ -240,16 +397,40 @@ const BookingManagementPage: React.FC = () => {
       </Paper>
 
       {/* Cancel Booking Dialog */}
-      <Dialog open={cancelDialogOpen} onClose={() => setCancelDialogOpen(false)}>
-        <DialogTitle>Cancel Booking</DialogTitle>
+      <Dialog 
+        open={cancelDialogOpen} 
+        onClose={() => setCancelDialogOpen(false)}
+        fullScreen={isMobile}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ fontSize: { xs: '1.1rem', md: '1.25rem' } }}>
+          Cancel Booking
+        </DialogTitle>
         <DialogContent>
-          <Typography>
+          <Typography sx={{ fontSize: { xs: '0.875rem', md: '1rem' } }}>
             Are you sure you want to cancel this booking? This action cannot be undone.
           </Typography>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setCancelDialogOpen(false)}>Keep Booking</Button>
-          <Button onClick={handleCancelBooking} color="error" variant="contained">
+        <DialogActions sx={{ 
+          p: { xs: 2, md: 3 },
+          flexDirection: { xs: 'column', sm: 'row' },
+          gap: { xs: 1, sm: 0 },
+        }}>
+          <Button 
+            onClick={() => setCancelDialogOpen(false)}
+            size={isMobile ? 'small' : 'medium'}
+            sx={{ width: { xs: '100%', sm: 'auto' } }}
+          >
+            Keep Booking
+          </Button>
+          <Button 
+            onClick={handleCancelBooking} 
+            color="error" 
+            variant="contained"
+            size={isMobile ? 'small' : 'medium'}
+            sx={{ width: { xs: '100%', sm: 'auto' } }}
+          >
             Cancel Booking
           </Button>
         </DialogActions>

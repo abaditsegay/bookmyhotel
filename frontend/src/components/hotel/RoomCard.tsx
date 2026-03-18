@@ -17,6 +17,9 @@ import {
 } from '@mui/icons-material';
 import { AvailableRoom } from '../../types/hotel';
 import { useAuth } from '../../contexts/AuthContext';
+import { COLORS, addAlpha } from '../../theme/themeColors';
+import { formatCurrency } from '../../utils/currencyUtils';
+import { getRoomBedInfo, getRoomTypeLabel } from '../../constants/roomTypes';
 
 interface RoomCardProps {
   room: AvailableRoom;
@@ -29,6 +32,9 @@ const getRoomImage = (roomType: string): string => {
   const images = {
     SINGLE: 'https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=400&h=250&fit=crop&crop=center', // Modern single bedroom with workspace
     DOUBLE: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop&crop=center', // Modern hotel room with two beds and desk area
+    STANDARD: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=400&h=250&fit=crop&crop=center', // Standard room (same as double)
+    FAMILY: 'https://images.unsplash.com/photo-1566195992011-5f6b21e539aa?w=400&h=250&fit=crop&crop=center', // Family room with multiple beds
+    ACCESSIBLE: 'https://images.unsplash.com/photo-1631049035182-249067d7618e?w=400&h=250&fit=crop&crop=center', // Accessible room
     SUITE: 'https://images.unsplash.com/photo-1582719508461-905c673771fd?w=400&h=250&fit=crop&crop=center', // Luxury suite with living area
     DELUXE: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=400&h=250&fit=crop&crop=center', // Deluxe room with premium finishes
     PRESIDENTIAL: 'https://images.unsplash.com/photo-1591088398332-8a7791972843?w=400&h=250&fit=crop&crop=center', // Presidential suite with panoramic views
@@ -42,6 +48,9 @@ const getRoomAmenities = (roomType: string): string[] => {
   const typeAmenities = {
     SINGLE: [...baseAmenities, 'Work Desk'],
     DOUBLE: [...baseAmenities, 'Mini Bar', 'Safe'],
+    STANDARD: [...baseAmenities, 'Mini Bar', 'Safe'],
+    FAMILY: [...baseAmenities, 'Extra Space', 'Multiple Beds', 'Kids Welcome'],
+    ACCESSIBLE: [...baseAmenities, 'Wheelchair Accessible', 'Roll-in Shower', 'Grab Bars'],
     SUITE: [...baseAmenities, 'Living Area', 'Kitchenette', 'Balcony'],
     DELUXE: [...baseAmenities, 'Premium Bedding', 'City View', 'Mini Bar'],
     PRESIDENTIAL: [...baseAmenities, 'Butler Service', 'Private Terrace', 'Jacuzzi', 'Premium Amenities'],
@@ -58,22 +67,32 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
 
   return (
     <Card 
-      elevation={1} 
       sx={{ 
         height: '100%',
-        transition: 'transform 0.2s, box-shadow 0.2s',
+        backgroundColor: COLORS.WHITE,
+        border: `2px solid ${COLORS.SECONDARY}`,
+        borderRadius: 2,
+        boxShadow: `0 4px 12px ${addAlpha(COLORS.SECONDARY, 0.15)}`,
+        transition: 'all 0.3s ease-in-out',
         '&:hover': {
-          transform: 'translateY(-2px)',
-          boxShadow: 3,
+          transform: 'translateY(-8px)',
+          boxShadow: `0 8px 20px ${addAlpha(COLORS.SECONDARY, 0.25)}`,
+          borderColor: COLORS.SECONDARY_HOVER,
         },
       }}
     >
       <CardMedia
         component="img"
-        height={isMobile ? "140" : "160"}
+        height={isMobile ? "220" : "280"}
         image={getRoomImage(room.roomType)}
         alt={`${room.roomType} room`}
-        sx={{ objectFit: 'cover' }}
+        sx={{ 
+          objectFit: 'cover',
+          transition: 'transform 0.4s ease-in-out',
+          '&:hover': {
+            transform: 'scale(1.08)',
+          },
+        }}
       />
       
       <CardContent sx={{ p: isMobile ? 1.2 : 1.5 }}>
@@ -88,42 +107,46 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
                 sx={{ 
                   fontWeight: 'bold',
                   fontSize: isSmallMobile ? '0.95rem' : undefined,
+                  color: COLORS.PRIMARY,
                 }}
               >
                 Room {room.roomNumber}
               </Typography>
               <Chip 
-                label={room.roomType} 
-                color="primary" 
+                label={getRoomTypeLabel(room.roomType)} 
                 variant="outlined" 
                 size="small"
                 sx={{ 
                   mb: 1, 
                   fontSize: isSmallMobile ? '0.65rem' : '0.7rem',
                   height: isSmallMobile ? '20px' : '24px',
+                  borderColor: theme.palette.divider,
+                  color: 'text.primary',
+                  fontWeight: 600,
                 }}
               />
             </Box>
             <Box sx={{ 
               textAlign: 'center',
               p: 1.5,
-              backgroundColor: 'primary.light',
+              backgroundColor: addAlpha(COLORS.SECONDARY, 0.1),
+              border: `2px solid ${COLORS.SECONDARY}`,
               borderRadius: 1,
             }}>
               <Typography 
                 variant="h6" 
-                color="primary.main" 
                 sx={{ 
-                  fontWeight: 'bold',
+                  color: COLORS.PRIMARY,
+                  fontWeight: 700,
                   fontSize: isSmallMobile ? '1rem' : '1.25rem',
                 }}
               >
-                ETB {room.pricePerNight?.toFixed(0)}
+                {formatCurrency(room.pricePerNight || 0)}
               </Typography>
               <Typography 
                 variant="caption" 
                 color="text.secondary"
-                sx={{ fontSize: isSmallMobile ? '0.7rem' : undefined }}
+                sx={{ fontSize: isSmallMobile ? '0.7rem' : undefined, fontWeight: 500 }}
               >
                 per night
               </Typography>
@@ -133,22 +156,30 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
           /* Desktop Layout - Side by Side */
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.5 }}>
             <Box>
-              <Typography variant="subtitle1" component="h3" gutterBottom>
+              <Typography variant="subtitle1" component="h3" gutterBottom sx={{ fontWeight: 'bold', color: COLORS.PRIMARY }}>
                 Room {room.roomNumber}
               </Typography>
               <Chip 
-                label={room.roomType} 
-                color="primary" 
+                label={getRoomTypeLabel(room.roomType)} 
                 variant="outlined" 
                 size="small"
-                sx={{ mb: 1, fontSize: '0.7rem' }}
+                sx={{ 
+                  mb: 1, 
+                  fontSize: '0.7rem',
+                  borderColor: theme.palette.divider,
+                  color: 'text.primary',
+                  fontWeight: 600,
+                }}
               />
             </Box>
             <Box sx={{ textAlign: 'right' }}>
-              <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold' }}>
-                ETB {room.pricePerNight?.toFixed(0)}
+              <Typography variant="h6" sx={{ 
+                color: COLORS.PRIMARY,
+                fontWeight: 700 
+              }}>
+                {formatCurrency(room.pricePerNight || 0)}
               </Typography>
-              <Typography variant="caption" color="text.secondary">
+              <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>
                 per night
               </Typography>
             </Box>
@@ -175,11 +206,7 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
                 color="text.secondary"
                 sx={{ fontSize: isSmallMobile ? '0.7rem' : '0.75rem' }}
               >
-                {room.roomType === 'SINGLE' ? '1 bed' : 
-                 room.roomType === 'DOUBLE' ? '2 beds' :
-                 room.roomType === 'SUITE' ? 'Multiple rooms' :
-                 room.roomType === 'DELUXE' ? 'King bed' :
-                 'Luxury suite'}
+                {getRoomBedInfo(room.roomType)}
               </Typography>
             </Box>
           </Stack>
@@ -191,11 +218,7 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
             </Typography>
             <BedIcon sx={{ fontSize: 16, ml: 2, mr: 1, color: 'text.secondary' }} />
             <Typography variant="caption" color="text.secondary">
-              {room.roomType === 'SINGLE' ? '1 bed' : 
-               room.roomType === 'DOUBLE' ? '2 beds' :
-               room.roomType === 'SUITE' ? 'Multiple rooms' :
-               room.roomType === 'DELUXE' ? 'King bed' :
-               'Luxury suite'}
+              {getRoomBedInfo(room.roomType)}
             </Typography>
           </Box>
         )}
@@ -221,7 +244,7 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
             variant="caption" 
             gutterBottom 
             sx={{ 
-              fontWeight: 'bold', 
+              fontWeight: 700, 
               fontSize: isMobile ? '0.7rem' : '0.75rem',
             }}
           >
@@ -252,7 +275,8 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
                 sx={{ 
                   fontSize: '0.6rem', 
                   height: 18,
-                  color: 'primary.main',
+                  color: 'text.primary',
+                  borderColor: theme.palette.divider,
                 }}
               />
             )}
@@ -266,15 +290,23 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
             <Button
               fullWidth
               variant="contained"
-              color="primary"
               onClick={() => onBookRoom(hotelId, room.id)}
               sx={{ 
                 borderRadius: isMobile ? 1.5 : 2,
                 textTransform: 'none',
-                fontWeight: 'bold',
+                fontWeight: 700,
                 mb: isMobile ? 0.5 : 1,
                 fontSize: isMobile ? '0.8rem' : '0.875rem',
                 py: isMobile ? 0.8 : 1,
+                backgroundColor: COLORS.PRIMARY,
+                color: COLORS.WHITE,
+                border: `2px solid ${COLORS.SECONDARY}`,
+                boxShadow: `0 2px 8px ${addAlpha(COLORS.SECONDARY, 0.2)}`,
+                '&:hover': {
+                  backgroundColor: COLORS.PRIMARY_HOVER,
+                  borderColor: COLORS.SECONDARY_HOVER,
+                  boxShadow: `0 4px 12px ${addAlpha(COLORS.SECONDARY, 0.3)}`,
+                },
               }}
             >
               Book Now
@@ -285,14 +317,22 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
               <Button
                 fullWidth
                 variant="contained"
-                color="primary"
                 onClick={() => onBookRoom(hotelId, room.id)}
                 sx={{ 
                   borderRadius: isMobile ? 1.5 : 2,
                   textTransform: 'none',
-                  fontWeight: 'bold',
+                  fontWeight: 700,
                   fontSize: isMobile ? '0.8rem' : '0.875rem',
                   py: isMobile ? 0.8 : 1,
+                  backgroundColor: COLORS.PRIMARY,
+                  color: COLORS.WHITE,
+                  border: `2px solid ${COLORS.SECONDARY}`,
+                  boxShadow: `0 2px 8px ${addAlpha(COLORS.SECONDARY, 0.2)}`,
+                  '&:hover': {
+                    backgroundColor: COLORS.PRIMARY_HOVER,
+                    borderColor: COLORS.SECONDARY_HOVER,
+                    boxShadow: `0 4px 12px ${addAlpha(COLORS.SECONDARY, 0.3)}`,
+                  },
                 }}
               >
                 Sign in to Book
@@ -300,14 +340,21 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
               <Button
                 fullWidth
                 variant="outlined"
-                color="primary"
                 onClick={() => onBookRoom(hotelId, room.id, true)} // true indicates guest booking
                 sx={{ 
                   borderRadius: isMobile ? 1.5 : 2,
                   textTransform: 'none',
-                  fontWeight: 'bold',
+                  fontWeight: 700,
                   fontSize: isMobile ? '0.75rem' : '0.8rem',
                   py: isMobile ? 0.6 : 0.8,
+                  borderColor: COLORS.SECONDARY,
+                  color: COLORS.PRIMARY,
+                  border: `2px solid ${COLORS.SECONDARY}`,
+                  '&:hover': {
+                    backgroundColor: addAlpha(COLORS.SECONDARY, 0.1),
+                    borderColor: COLORS.SECONDARY_HOVER,
+                    color: COLORS.PRIMARY_HOVER,
+                  },
                 }}
               >
                 Book as Guest

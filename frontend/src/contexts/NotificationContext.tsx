@@ -33,19 +33,10 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
   }, []);
 
   const triggerRefresh = useCallback(() => {
-    console.log('🔄 NotificationContext: Triggering notification refresh');
-    refreshCallbacksRef.current.forEach(callback => {
-      try {
-        callback();
-      } catch (error) {
-        console.error('Error in notification refresh callback:', error);
-      }
-    });
+    refreshCallbacksRef.current.forEach(callback => callback());
   }, []);
 
   const triggerRefreshAfterBookingAction = useCallback((action: 'cancel' | 'modify' | 'create' | 'update') => {
-    console.log(`📋 NotificationContext: Triggering refresh after booking ${action}`);
-    
     // Add a small delay to ensure backend has processed the changes
     setTimeout(() => {
       triggerRefresh();

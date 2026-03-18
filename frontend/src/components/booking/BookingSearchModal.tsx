@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { BookingService } from '../../services/BookingService';
 import {
   Dialog,
   DialogTitle,
@@ -25,7 +26,6 @@ import {
   Hotel as HotelIcon,
   CalendarMonth as CalendarIcon,
   Person as PersonIcon,
-  Payment as PaymentIcon,
 } from '@mui/icons-material';
 import { bookingApiService, BookingSearchResponse } from '../../services/bookingApi';
 
@@ -85,7 +85,7 @@ const BookingSearchModal: React.FC<BookingSearchModalProps> = ({ open, onClose }
       }
     } catch (err) {
       setError('Failed to search for booking. Please try again.');
-      console.error('Booking search error:', err);
+      // console.error('Booking search error:', err);
     } finally {
       setLoading(false);
     }
@@ -93,7 +93,7 @@ const BookingSearchModal: React.FC<BookingSearchModalProps> = ({ open, onClose }
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'confirmed': return 'primary';
+      case 'booked': return 'primary';
       case 'checked in': return 'info';
       case 'checked out': return 'default';
       case 'cancelled': return 'error';
@@ -104,13 +104,24 @@ const BookingSearchModal: React.FC<BookingSearchModalProps> = ({ open, onClose }
 
   const getPaymentStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
+      case 'completed':
       case 'paid': return 'success';
+      case 'processing':
       case 'pending': return 'warning';
       case 'pay_at_frontdesk': return 'info';
-      case 'failed': return 'error';
-      case 'refunded': return 'info';
+      case 'failed':
+      case 'cancelled': return 'error';
+      case 'refunded':
+      case 'partially_refunded': return 'info';
+      case 'forfeited': return 'warning';
       default: return 'default';
     }
+  };
+
+  const getPaymentStatusPaletteColor = (status: string) => {
+    const key = getPaymentStatusColor(status);
+    const palette = (theme.palette as any)[key];
+    return palette?.main || theme.palette.grey[500];
   };
 
   const formatDate = (dateString: string) => {
@@ -261,7 +272,7 @@ const BookingSearchModal: React.FC<BookingSearchModalProps> = ({ open, onClose }
                 </Box>
                 <Box sx={{ display: 'flex', gap: 1, flexDirection: 'column', alignItems: 'flex-end' }}>
                   <Chip
-                    label={booking.status}
+                    label={BookingService.getStatusDisplayLabel(booking.status)}
                     color={getStatusColor(booking.status) as any}
                     variant="filled"
                     size="small"
@@ -284,9 +295,55 @@ const BookingSearchModal: React.FC<BookingSearchModalProps> = ({ open, onClose }
                     <HotelIcon sx={{ mr: 1, color: 'primary.main', fontSize: 20 }} />
                     <Typography variant="body2" color="text.secondary">Hotel & Room Type</Typography>
                   </Box>
-                  <Typography variant="body1" fontWeight="medium">
-                    {booking.hotelName}
-                  </Typography>
+                  
+                  {/* Hotel Name with Payment Info at rightmost */}
+                  <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1, flexWrap: 'wrap', gap: 1 }}>
+                    <Typography variant="body1" fontWeight="medium">
+                      {booking.hotelName}
+                    </Typography>
+                    
+                    {/* Payment Information - Rightmost */}
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, alignItems: 'flex-end' }}>
+                      {/* Payment Status */}
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Typography variant="caption" color="text.secondary">Payment Status:</Typography>
+                        <Box
+                          sx={{
+                            px: 1,
+                            py: 0.25,
+                            borderRadius: 0.5,
+                            backgroundColor: getPaymentStatusPaletteColor(booking.paymentStatus),
+                            color: theme.palette.getContrastText(getPaymentStatusPaletteColor(booking.paymentStatus)),
+                            fontSize: '0.7rem',
+                            fontWeight: '500',
+                            textTransform: 'uppercase',
+                          }}
+                        >
+                          {booking.paymentStatus || 'PENDING'}
+                        </Box>
+                      </Box>
+                      
+                      {/* Payment Reference */}
+                      {booking.paymentReference && (
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Typography variant="caption" color="text.secondary">Payment Ref:</Typography>
+                          <Typography 
+                            variant="caption" 
+                            sx={{ 
+                              fontFamily: 'monospace',
+                              backgroundColor: theme.palette.action.hover,
+                              px: 0.5,
+                              py: 0.25,
+                              borderRadius: 0.5,
+                              fontSize: '0.7rem',
+                            }}
+                          >
+                            {booking.paymentReference}
+                          </Typography>
+                        </Box>
+                      )}
+                    </Box>
+                  </Box>
                   <Typography variant="body2" color="text.secondary">
                     Room Type {booking.roomType}
                   </Typography>
@@ -312,7 +369,7 @@ const BookingSearchModal: React.FC<BookingSearchModalProps> = ({ open, onClose }
                   </Typography>
                 </Grid>
 
-                <Grid item xs={12} sm={6}>
+                <Grid item xs={12}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                     <PersonIcon sx={{ mr: 1, color: 'primary.main', fontSize: 20 }} />
                     <Typography variant="body2" color="text.secondary">Guest</Typography>
@@ -320,18 +377,8 @@ const BookingSearchModal: React.FC<BookingSearchModalProps> = ({ open, onClose }
                   <Typography variant="body1" fontWeight="medium">
                     {booking.guestName}
                   </Typography>
-                </Grid>
-
-                <Grid item xs={12} sm={6}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                    <PaymentIcon sx={{ mr: 1, color: 'primary.main', fontSize: 20 }} />
-                    <Typography variant="body2" color="text.secondary">Total</Typography>
-                  </Box>
-                  <Typography variant="h6" color="primary.main" fontWeight="bold">
-                    ETB {booking.totalAmount?.toFixed(0)}
-                  </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    {calculateNights(booking.checkInDate, booking.checkOutDate)} nights
+                    {calculateNights(booking.checkInDate, booking.checkOutDate)} night{calculateNights(booking.checkInDate, booking.checkOutDate) !== 1 ? 's' : ''}
                   </Typography>
                 </Grid>
               </Grid>

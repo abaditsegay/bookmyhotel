@@ -17,6 +17,8 @@ public class BookingResponse {
     private BigDecimal totalAmount;
     private String paymentStatus;
     private String paymentIntentId;
+    private String paymentReference;
+    private String paymentType;
     private LocalDateTime createdAt;
 
     // Hotel and room details
@@ -26,6 +28,7 @@ public class BookingResponse {
     private String roomNumber;
     private String roomType;
     private BigDecimal pricePerNight;
+    private Long assignedRoomId; // Room ID when room is pre-assigned
 
     // Guest details
     private String guestName;
@@ -111,6 +114,14 @@ public class BookingResponse {
 
     public void setPaymentIntentId(String paymentIntentId) {
         this.paymentIntentId = paymentIntentId;
+    }
+
+    public String getPaymentReference() {
+        return paymentReference;
+    }
+
+    public void setPaymentReference(String paymentReference) {
+        this.paymentReference = paymentReference;
     }
 
     public LocalDateTime getCreatedAt() {
@@ -207,5 +218,21 @@ public class BookingResponse {
 
     public void setManagementUrl(String managementUrl) {
         this.managementUrl = managementUrl;
+    }
+
+    public Long getAssignedRoomId() {
+        return assignedRoomId;
+    }
+
+    public void setAssignedRoomId(Long assignedRoomId) {
+        this.assignedRoomId = assignedRoomId;
+    }
+
+    public String getPaymentType() {
+        return paymentType;
+    }
+
+    public void setPaymentType(String paymentType) {
+        this.paymentType = paymentType;
     }
 }

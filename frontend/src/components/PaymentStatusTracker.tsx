@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import {
   Box,
-  Paper,
   Typography,
-  Button,
   Alert,
   CircularProgress,
   LinearProgress,
   Card,
   CardContent,
   Chip,
-  Grid
+  Grid,
+  useTheme,
+  useMediaQuery
 } from '@mui/material';
 import {
   CheckCircle as SuccessIcon,
@@ -20,6 +20,8 @@ import {
   Phone as PhoneIcon
 } from '@mui/icons-material';
 import TokenManager from '../utils/tokenManager';
+import { StandardCard, StandardButton, StandardLoading, StandardError } from './common';
+import { COLORS, addAlpha } from '../theme/themeColors';
 
 interface PaymentStatusProps {
   transactionId: string;
@@ -52,6 +54,9 @@ const PaymentStatusTracker: React.FC<PaymentStatusProps> = ({
   autoRefresh = true,
   refreshInterval = 10
 }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  
   const [status, setStatus] = useState<PaymentStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -173,9 +178,19 @@ const PaymentStatusTracker: React.FC<PaymentStatusProps> = ({
   };
 
   const getProviderInfo = () => {
-    return provider === 'MBIRR' 
-      ? { name: 'M-birr', color: '#FF6B35', dialCode: '*847#' }
-      : { name: 'Telebirr', color: '#00A651', dialCode: '*127#' };
+    if (provider === 'MBIRR') {
+      return { 
+        name: 'M-birr', 
+        color: COLORS.MBIRR_ORANGE, 
+        dialCode: '*847#' 
+      };
+    } else {
+      return { 
+        name: 'Telebirr', 
+        color: COLORS.TELEBIRR_GREEN, 
+        dialCode: '*127#' 
+      };
+    }
   };
 
   const providerInfo = getProviderInfo();
@@ -183,44 +198,71 @@ const PaymentStatusTracker: React.FC<PaymentStatusProps> = ({
 
   if (loading && !status) {
     return (
-      <Paper sx={{ p: 3, maxWidth: 600, mx: 'auto', textAlign: 'center' }}>
-        <CircularProgress />
-        <Typography variant="body1" sx={{ mt: 2 }}>
-          Checking payment status...
-        </Typography>
-      </Paper>
+      <StandardCard
+        sx={{ 
+          maxWidth: isMobile ? '100%' : 600, 
+          mx: 'auto',
+          p: { xs: 2, md: 3 }
+        }}
+      >
+        <StandardLoading
+          loading={true}
+          message="Checking payment status..."
+          size="large"
+          overlay={false}
+        />
+      </StandardCard>
     );
   }
 
   if (error && !status) {
     return (
-      <Paper sx={{ p: 3, maxWidth: 600, mx: 'auto' }}>
-        <Alert severity="error" sx={{ mb: 2 }}>
-          {error}
-        </Alert>
-        <Button
-          variant="contained"
-          onClick={fetchPaymentStatus}
-          startIcon={<RefreshIcon />}
-        >
-          Retry
-        </Button>
-      </Paper>
+      <StandardCard
+        sx={{ 
+          maxWidth: isMobile ? '100%' : 600, 
+          mx: 'auto',
+          p: { xs: 2, md: 3 }
+        }}
+      >
+        <StandardError
+          error={true}
+          message={error}
+          severity="error"
+          showRetry={true}
+          onRetry={fetchPaymentStatus}
+          retryText="Retry"
+        />
+      </StandardCard>
     );
   }
 
   if (!status || !statusInfo) {
     return (
-      <Paper sx={{ p: 3, maxWidth: 600, mx: 'auto' }}>
-        <Alert severity="error">
-          Unable to load payment status
-        </Alert>
-      </Paper>
+      <StandardCard
+        sx={{ 
+          maxWidth: isMobile ? '100%' : 600, 
+          mx: 'auto',
+          p: { xs: 2, md: 3 }
+        }}
+      >
+        <StandardError
+          error={true}
+          message="Unable to load payment status"
+          severity="error"
+          showRetry={false}
+        />
+      </StandardCard>
     );
   }
 
   return (
-    <Paper sx={{ p: 3, maxWidth: 600, mx: 'auto' }}>
+    <StandardCard 
+      sx={{ 
+        maxWidth: isMobile ? '100%' : 600, 
+        mx: 'auto',
+        p: { xs: 2, md: 3 }
+      }}
+    >
       <Box sx={{ textAlign: 'center', mb: 3 }}>
         {statusInfo.icon}
         <Typography variant="h5" sx={{ mt: 1, color: statusInfo.color }}>
@@ -256,7 +298,17 @@ const PaymentStatusTracker: React.FC<PaymentStatusProps> = ({
 
       <Grid container spacing={2}>
         <Grid item xs={12} sm={6}>
-          <Card variant="outlined">
+          <Card 
+            variant="outlined"
+            sx={{
+              backgroundColor: theme.palette.mode === 'dark' 
+                ? addAlpha(COLORS.WHITE, 0.05) 
+                : 'background.paper',
+              borderColor: theme.palette.mode === 'dark' 
+                ? addAlpha(COLORS.WHITE, 0.1) 
+                : 'divider'
+            }}
+          >
             <CardContent>
               <Typography variant="h6" gutterBottom>
                 Payment Details
@@ -283,14 +335,29 @@ const PaymentStatusTracker: React.FC<PaymentStatusProps> = ({
         </Grid>
 
         <Grid item xs={12} sm={6}>
-          <Card variant="outlined">
+          <Card 
+            variant="outlined"
+            sx={{
+              backgroundColor: theme.palette.mode === 'dark' 
+                ? addAlpha(COLORS.WHITE, 0.05) 
+                : 'background.paper',
+              borderColor: theme.palette.mode === 'dark' 
+                ? addAlpha(COLORS.WHITE, 0.1) 
+                : 'divider'
+            }}
+          >
             <CardContent>
               <Typography variant="h6" gutterBottom>
                 Provider Info
               </Typography>
               <Chip 
                 label={providerInfo.name}
-                sx={{ bgcolor: providerInfo.color, color: 'white', mb: 2 }}
+                sx={{ 
+                  bgcolor: providerInfo.color, 
+                  color: theme.palette.mode === 'dark' ? COLORS.BLACK_ALPHA_87 : COLORS.WHITE,
+                  fontWeight: 'bold',
+                  mb: 2 
+                }}
               />
               <Typography variant="body2" color="text.secondary">
                 <strong>USSD Code:</strong> {providerInfo.dialCode}
@@ -321,37 +388,62 @@ const PaymentStatusTracker: React.FC<PaymentStatusProps> = ({
         )}
 
         <Grid item xs={12}>
-          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
-            <Button
+          <Box sx={{ 
+            display: 'flex', 
+            gap: { xs: 1, md: 2 }, 
+            justifyContent: 'center',
+            flexDirection: isMobile ? 'column' : 'row',
+            alignItems: 'center'
+          }}>
+            <StandardButton
               variant="outlined"
               onClick={fetchPaymentStatus}
               startIcon={loading ? <CircularProgress size={16} /> : <RefreshIcon />}
               disabled={loading}
+              sx={{ 
+                minHeight: '44px',
+                minWidth: isMobile ? '100%' : 'auto',
+                height: isMobile ? '56px' : '44px'
+              }}
             >
               {loading ? 'Refreshing...' : 'Refresh Status'}
-            </Button>
+            </StandardButton>
             
             {status.status === 'FAILED' || status.status === 'EXPIRED' ? (
-              <Button
+              <StandardButton
                 variant="contained"
                 onClick={() => window.location.reload()}
-                sx={{ bgcolor: providerInfo.color }}
+                sx={{ 
+                  bgcolor: providerInfo.color,
+                  minHeight: '44px',
+                  minWidth: isMobile ? '100%' : 'auto',
+                  height: isMobile ? '56px' : '44px',
+                  '&:hover': {
+                    bgcolor: providerInfo.color,
+                    filter: 'brightness(0.9)'
+                  }
+                }}
               >
                 Try Again
-              </Button>
+              </StandardButton>
             ) : status.status === 'COMPLETED' ? (
-              <Button
+              <StandardButton
                 variant="contained"
                 onClick={() => window.location.href = '/bookings'}
                 color="success"
+                sx={{ 
+                  minHeight: '44px',
+                  minWidth: isMobile ? '100%' : 'auto',
+                  height: isMobile ? '56px' : '44px'
+                }}
               >
                 View Booking
-              </Button>
+              </StandardButton>
             ) : null}
           </Box>
         </Grid>
       </Grid>
-    </Paper>
+    </StandardCard>
   );
 };
 

@@ -7,37 +7,34 @@ import {
   TextField,
   Grid,
   Chip,
-  IconButton,
   Divider,
-  Card,
-  CardContent,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Alert,
-  Snackbar,
-  CircularProgress,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
+  CircularProgress,
+  Alert,
+  Snackbar,
   List,
   ListItem,
-  ListItemText,
   ListItemButton,
+  ListItemText,
+  SelectChangeEvent,
+  MenuItem,
+  Card,
+  CardContent
 } from '@mui/material';
-import {
-  ArrowBack as ArrowBackIcon,
-  Edit as EditIcon,
-  Save as SaveIcon,
-  Cancel as CancelIcon,
-  Room as RoomIcon,
-} from '@mui/icons-material';
 import { useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { hotelAdminApi, RoomResponse } from '../../services/hotelAdminApi';
 import { ROOM_TYPE_VALUES } from '../../constants/roomTypes';
+import { COLORS } from '../../theme/themeColors';
+import EditIcon from '@mui/icons-material/Edit';
+import SaveIcon from '@mui/icons-material/Save';
+import CancelIcon from '@mui/icons-material/Cancel';
+import RoomIcon from '@mui/icons-material/MeetingRoom';
+import PremiumTextField from '../../components/common/PremiumTextField';
+import PremiumSelect from '../../components/common/PremiumSelect';
 
 // Map BookingResponse from API to display format
 interface BookingData {
@@ -104,7 +101,7 @@ const BookingViewEdit: React.FC = () => {
           return;
         }
 
-        console.log('Loading booking with reservation ID:', reservationId);
+        // console.log('Loading booking with reservation ID:', reservationId);
         
         const result = await hotelAdminApi.getBookingById(token, reservationId);
         
@@ -129,16 +126,16 @@ const BookingViewEdit: React.FC = () => {
             paymentIntentId: result.data.paymentIntentId
           };
           
-          console.log('Found booking:', mappedBooking);
+          // console.log('Found booking:', mappedBooking);
           setBooking(mappedBooking);
           setEditedBooking({ ...mappedBooking });
         } else {
-          console.log('Booking not found for reservation ID:', reservationId);
+          // console.log('Booking not found for reservation ID:', reservationId);
           setError(result.message || `Booking not found for ID: ${reservationId}`);
         }
       } catch (err) {
         setError('Failed to load booking details');
-        console.error('Error loading booking:', err);
+        // console.error('Error loading booking:', err);
       } finally {
         setLoading(false);
       }
@@ -158,13 +155,18 @@ const BookingViewEdit: React.FC = () => {
     setEditedBooking(booking ? { ...booking } : null);
   };
 
-  const handleSave = async () => {
-    if (!editedBooking || !booking || !token) return;
+  const handleCancelAndClose = () => {
+    handleCancel();
+    handleBack();
+  };
+
+  const handleSave = async (): Promise<boolean> => {
+    if (!editedBooking || !booking || !token) return false;
 
     // Check if booking can be modified based on its status
     if (!canModifyBooking(booking.status)) {
       setError(`Cannot modify booking with status: ${booking.status}. Only confirmed, pending, or checked-in bookings can be modified.`);
-      return;
+      return false;
     }
 
     try {
@@ -276,10 +278,14 @@ const BookingViewEdit: React.FC = () => {
           setSelectedRoomId(null);
           
           let message = 'Booking updated successfully';
-          if (result.data.additionalCharges && result.data.additionalCharges > 0) {
-            message += ` (Additional charges: ETB ${result.data.additionalCharges?.toFixed(0)})`;
-          } else if (result.data.refundAmount && result.data.refundAmount > 0) {
-            message += ` (Refund amount: ETB ${result.data.refundAmount?.toFixed(0)})`;
+          const refund = result.data.refundAmount || 0;
+          const charges = result.data.additionalCharges || 0;
+          const netAmount = charges - refund;
+          
+          if (netAmount > 0) {
+            message += ` (Customer owes: ETB ${netAmount.toFixed(0)})`;
+          } else if (netAmount < 0) {
+            message += ` (Refund due: ETB ${Math.abs(netAmount).toFixed(0)})`;
           }
           setSuccess(message);
         } else {
@@ -288,11 +294,20 @@ const BookingViewEdit: React.FC = () => {
       }
       
       setIsEditing(false);
+      return true;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update booking');
-      console.error('Error updating booking:', err);
+      // console.error('Error updating booking:', err);
+      return false;
     } finally {
       setPriceCalculating(false);
+    }
+  };
+
+  const handleSaveAndClose = async () => {
+    const saved = await handleSave();
+    if (saved) {
+      handleBack();
     }
   };
 
@@ -320,7 +335,7 @@ const BookingViewEdit: React.FC = () => {
       }
     } catch (err) {
       setError('Failed to load available rooms');
-      console.error('Error loading rooms:', err);
+      // console.error('Error loading rooms:', err);
     } finally {
       setLoadingRooms(false);
     }
@@ -338,11 +353,11 @@ const BookingViewEdit: React.FC = () => {
         setRoomTypePricing(result.data);
         return result.data;
       } else {
-        console.warn('No pricing found for room type:', roomType);
+        // console.warn('No pricing found for room type:', roomType);
         return null;
       }
     } catch (err) {
-      console.error('Error loading room type pricing:', err);
+      // console.error('Error loading room type pricing:', err);
       return null;
     } finally {
       setLoadingRoomTypePricing(false);
@@ -480,7 +495,7 @@ const BookingViewEdit: React.FC = () => {
     // Handle both API format (CHECKED_OUT) and display format (Checked Out)
     const normalizedStatus = status.toLowerCase().replace(/_/g, ' ');
     switch (normalizedStatus) {
-      case 'confirmed': return 'primary';
+      case 'booked': return 'primary';
       case 'checked in': return 'success';
       case 'checked out': return 'info';
       case 'cancelled': return 'error';
@@ -504,7 +519,7 @@ const BookingViewEdit: React.FC = () => {
     // Only allow modifications for certain statuses
     // Handle both API format (CHECKED_OUT) and display format (Checked Out)
     const normalizedStatus = status.toLowerCase().replace(/_/g, ' ');
-    const modifiableStatuses = ['confirmed', 'pending', 'checked in'];
+    const modifiableStatuses = ['booked', 'pending', 'checked in'];
     return modifiableStatuses.includes(normalizedStatus);
   };
 
@@ -512,57 +527,59 @@ const BookingViewEdit: React.FC = () => {
 
   if (loading) {
     return (
-      <Container maxWidth="lg">
-        <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-          <CircularProgress size={60} />
-          <Typography variant="h6" sx={{ ml: 2 }}>
-            Loading booking details...
-          </Typography>
-        </Box>
-      </Container>
+      <Dialog open onClose={handleBack} maxWidth="lg" fullWidth scroll="paper">
+        <DialogContent dividers>
+          <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+            <CircularProgress size={60} />
+            <Typography variant="h6" sx={{ ml: 2 }}>
+              Loading booking details...
+            </Typography>
+          </Box>
+        </DialogContent>
+      </Dialog>
     );
   }
 
   if (error) {
     return (
-      <Container maxWidth="lg">
-        <Box sx={{ mt: 4 }}>
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
-          </Alert>
-          <IconButton onClick={handleBack} sx={{ mr: 1 }}>
-            <ArrowBackIcon />
-          </IconButton>
-        </Box>
-      </Container>
+      <Dialog open onClose={handleBack} maxWidth="lg" fullWidth scroll="paper">
+        <DialogContent dividers>
+          <Box sx={{ mt: 2 }}>
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          </Box>
+        </DialogContent>
+      </Dialog>
     );
   }
 
   if (!currentBooking) {
     return (
-      <Container maxWidth="lg">
-        <Box sx={{ mt: 4 }}>
-          <Alert severity="info" sx={{ mb: 2 }}>
-            Booking not found
-          </Alert>
-          <IconButton onClick={handleBack} sx={{ mr: 1 }}>
-            <ArrowBackIcon />
-          </IconButton>
-        </Box>
-      </Container>
+      <Dialog open onClose={handleBack} maxWidth="lg" fullWidth scroll="paper">
+        <DialogContent dividers>
+          <Box sx={{ mt: 2 }}>
+            <Alert severity="info" sx={{ mb: 2 }}>
+              Booking not found
+            </Alert>
+          </Box>
+        </DialogContent>
+      </Dialog>
     );
   }
 
   return (
-    <Container maxWidth="lg">
-      <Box sx={{ mt: 4, mb: 4 }}>
+    <Dialog open onClose={handleBack} maxWidth="lg" fullWidth scroll="paper">
+      <DialogContent dividers sx={{ p: 0 }}>
+        <Container maxWidth="lg" sx={{ py: 4 }}>
+          <Box sx={{ mb: 2 }}>
         {/* Header */}
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <IconButton onClick={handleBack} sx={{ mr: 1 }}>
-              <ArrowBackIcon />
-            </IconButton>
-            <Typography variant="h4" component="h1">
+            <Typography variant="h4" component="h1" sx={{
+              color: COLORS.PRIMARY,
+              fontWeight: 600
+            }}>
               Booking Details
             </Typography>
           </Box>
@@ -583,7 +600,8 @@ const BookingViewEdit: React.FC = () => {
                 <Button
                   variant="outlined"
                   startIcon={<CancelIcon />}
-                  onClick={handleCancel}
+                  onClick={handleCancelAndClose}
+                  color="error"
                 >
                   Cancel
                 </Button>
@@ -591,8 +609,9 @@ const BookingViewEdit: React.FC = () => {
                   variant="contained"
                   startIcon={<SaveIcon />}
                   onClick={handleSave}
+                  disabled={priceCalculating}
                 >
-                  Save
+                  {priceCalculating ? 'Saving...' : 'Save'}
                 </Button>
               </>
             )}
@@ -612,23 +631,21 @@ const BookingViewEdit: React.FC = () => {
                 
                 <Grid container spacing={2}>
                   <Grid item xs={12}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label="Guest Name"
                       value={currentBooking?.guestName || ''}
                       onChange={(e) => handleFieldChange('guestName', e.target.value)}
                       disabled={!isEditing}
-                      variant={isEditing ? 'outlined' : 'filled'}
                     />
                   </Grid>
                   <Grid item xs={12}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label="Email"
                       value={currentBooking?.guestEmail || ''}
                       onChange={(e) => handleFieldChange('guestEmail', e.target.value)}
                       disabled={!isEditing}
-                      variant={isEditing ? 'outlined' : 'filled'}
                     />
                   </Grid>
                 </Grid>
@@ -647,29 +664,27 @@ const BookingViewEdit: React.FC = () => {
                 
                 <Grid container spacing={2}>
                   <Grid item xs={12}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label="Confirmation Number"
                       value={currentBooking?.confirmationNumber || ''}
                       disabled
-                      variant="filled"
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
                     {isEditing ? (
-                      <FormControl fullWidth>
-                        <InputLabel>Status</InputLabel>
-                        <Select
-                          value={currentBooking?.status || ''}
-                          onChange={(e) => handleFieldChange('status', e.target.value)}
-                        >
-                          <MenuItem value="CONFIRMED">Confirmed</MenuItem>
-                          <MenuItem value="CHECKED_IN">Checked In</MenuItem>
-                          <MenuItem value="CHECKED_OUT">Checked Out</MenuItem>
-                          <MenuItem value="CANCELLED">Cancelled</MenuItem>
-                          <MenuItem value="PENDING">Pending</MenuItem>
-                        </Select>
-                      </FormControl>
+                      <PremiumSelect
+                        fullWidth
+                        label="Status"
+                        value={currentBooking?.status || ''}
+                        onChange={(e: SelectChangeEvent<string>) => handleFieldChange('status', e.target.value as string)}
+                      >
+                        <MenuItem value="BOOKED">Booked</MenuItem>
+                        <MenuItem value="CHECKED_IN">Checked In</MenuItem>
+                        <MenuItem value="CHECKED_OUT">Checked Out</MenuItem>
+                        <MenuItem value="CANCELLED">Cancelled</MenuItem>
+                        <MenuItem value="PENDING">Pending</MenuItem>
+                      </PremiumSelect>
                     ) : (
                       <Box>
                         <Typography variant="caption" display="block" color="text.secondary">
@@ -711,62 +726,57 @@ const BookingViewEdit: React.FC = () => {
                 
                 <Grid container spacing={2}>
                   <Grid item xs={12}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label="Hotel Name"
                       value={currentBooking?.hotelName || ''}
                       disabled
-                      variant="filled"
                     />
                   </Grid>
                   <Grid item xs={12}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label="Hotel Address"
                       value={currentBooking?.hotelAddress || ''}
                       disabled
-                      variant="filled"
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
                     {isEditing ? (
-                      <FormControl fullWidth>
-                        <InputLabel>Room Type</InputLabel>
-                        <Select
-                          value={currentBooking?.roomType || ''}
-                          onChange={(e) => {
-                            handleFieldChange('roomType', e.target.value);
-                            // Clear room number when room type changes
-                            handleFieldChange('roomNumber', '');
-                            setSelectedRoomId(null);
-                          }}
-                        >
-                          {availableRoomTypes.map((type) => (
-                            <MenuItem key={type} value={type}>
-                              {type}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
+                      <PremiumSelect
+                        fullWidth
+                        label="Room Type"
+                        value={currentBooking?.roomType || ''}
+                        onChange={(e: SelectChangeEvent<string>) => {
+                          handleFieldChange('roomType', e.target.value as string);
+                          // Clear room number when room type changes
+                          handleFieldChange('roomNumber', '');
+                          setSelectedRoomId(null);
+                        }}
+                      >
+                        {availableRoomTypes.map((type) => (
+                          <MenuItem key={type} value={type}>
+                            {type}
+                          </MenuItem>
+                        ))}
+                      </PremiumSelect>
                     ) : (
-                      <TextField
+                      <PremiumTextField
                         fullWidth
                         label="Room Type"
                         value={currentBooking?.roomType || ''}
                         disabled
-                        variant="filled"
                       />
                     )}
                   </Grid>
                   <Grid item xs={12} sm={6}>
                     {isEditing ? (
                       <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                        <TextField
+                        <PremiumTextField
                           fullWidth
                           label="Room Number"
                           value={currentBooking?.roomNumber || ''}
                           onChange={(e) => handleFieldChange('roomNumber', e.target.value)}
-                          variant="outlined"
                           placeholder="Enter room number or select from available rooms"
                         />
                         <Button
@@ -780,12 +790,11 @@ const BookingViewEdit: React.FC = () => {
                         </Button>
                       </Box>
                     ) : (
-                      <TextField
+                      <PremiumTextField
                         fullWidth
                         label="Room Number"
                         value={currentBooking?.roomNumber || 'TBA (To Be Assigned)'}
                         disabled
-                        variant="filled"
                       />
                     )}
                   </Grid>
@@ -820,48 +829,44 @@ const BookingViewEdit: React.FC = () => {
                 
                 <Grid container spacing={2}>
                   <Grid item xs={12} sm={6}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label="Check-in Date"
                       value={currentBooking?.checkInDate || ''}
                       type="date"
                       onChange={(e) => handleFieldChange('checkInDate', e.target.value)}
                       disabled={!isEditing}
-                      variant={isEditing ? 'outlined' : 'filled'}
                       InputLabelProps={{ shrink: true }}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label="Check-out Date"
                       value={currentBooking?.checkOutDate || ''}
                       type="date"
                       onChange={(e) => handleFieldChange('checkOutDate', e.target.value)}
                       disabled={!isEditing}
-                      variant={isEditing ? 'outlined' : 'filled'}
                       InputLabelProps={{ shrink: true }}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label="Price per Night"
                       value={loadingRoomTypePricing ? 'Calculating...' : formatCurrency(currentBooking?.pricePerNight || 0)}
                       disabled
-                      variant="filled"
                       InputProps={{
                         endAdornment: loadingRoomTypePricing ? <CircularProgress size={20} /> : undefined
                       }}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label="Total Amount"
                       value={loadingRoomTypePricing ? 'Calculating...' : formatCurrency(currentBooking?.totalAmount || 0)}
                       disabled
-                      variant="filled"
                       InputProps={{
                         endAdornment: loadingRoomTypePricing ? <CircularProgress size={20} /> : undefined
                       }}
@@ -883,21 +888,19 @@ const BookingViewEdit: React.FC = () => {
                 
                 <Grid container spacing={2}>
                   <Grid item xs={12} sm={6}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label="Booking Date"
                       value={currentBooking ? formatDate(currentBooking.createdAt) : ''}
                       disabled
-                      variant="filled"
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label="Payment Intent ID"
                       value={currentBooking?.paymentIntentId || 'N/A'}
                       disabled
-                      variant="filled"
                     />
                   </Grid>
                 </Grid>
@@ -930,7 +933,7 @@ const BookingViewEdit: React.FC = () => {
                         secondary={
                           <span>
                             <Typography component="span" variant="body2" color="text.primary">
-                              ETB {room.pricePerNight?.toFixed(0)}/night
+                              {formatCurrency(room.pricePerNight || 0)}/night
                             </Typography>
                             {room.description && (
                               <Typography component="span" variant="body2" sx={{ ml: 1 }}>
@@ -980,8 +983,10 @@ const BookingViewEdit: React.FC = () => {
             {error}
           </Alert>
         </Snackbar>
-      </Box>
-    </Container>
+          </Box>
+        </Container>
+      </DialogContent>
+    </Dialog>
   );
 };
 

@@ -27,7 +27,6 @@ import {
 } from '@mui/material';
 import {
   Visibility as VisibilityIcon,
-  Delete as DeleteIcon,
   Search as SearchIcon,
   Refresh as RefreshIcon,
   PersonAdd as AddGuestIcon,
@@ -39,6 +38,7 @@ import { useTenant } from '../../contexts/TenantContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { hotelAdminApi } from '../../services/hotelAdminApi';
 import { frontDeskApiService } from '../../services/frontDeskApi';
+import { COLORS, addAlpha } from '../../theme/themeColors';
 
 interface Booking {
   reservationId: number;
@@ -82,7 +82,6 @@ const HotelBookings: React.FC<HotelBookingsProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [snackbar, setSnackbar] = useState({ 
     open: false, 
     message: '', 
@@ -132,7 +131,7 @@ const HotelBookings: React.FC<HotelBookingsProps> = ({
         throw new Error(result.message || 'Failed to load bookings');
       }
     } catch (error) {
-      console.error('Error loading bookings:', error);
+      // console.error('Error loading bookings:', error);
       setSnackbar({
         open: true,
         message: 'Failed to load bookings',
@@ -180,29 +179,6 @@ const HotelBookings: React.FC<HotelBookingsProps> = ({
     setDetailsDialogOpen(true);
   };
 
-  // Handle delete booking
-  const handleDeleteBooking = async () => {
-    if (!selectedBooking || !token) return;
-
-    try {
-      await hotelAdminApi.deleteBooking(token, selectedBooking.reservationId);
-      setSnackbar({
-        open: true,
-        message: 'Booking deleted successfully',
-        severity: 'success'
-      });
-      setDeleteDialogOpen(false);
-      await loadBookings();
-    } catch (error) {
-      console.error('Error deleting booking:', error);
-      setSnackbar({
-        open: true,
-        message: 'Failed to delete booking',
-        severity: 'error'
-      });
-    }
-  };
-
   // Handle check-in/out actions
   const handleBookingAction = (booking: Booking, action: string) => {
     if (onBookingAction) {
@@ -238,7 +214,7 @@ const HotelBookings: React.FC<HotelBookingsProps> = ({
   // Get status color
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'confirmed':
+      case 'booked':
       case 'arriving':
         return 'primary';
       case 'checked-in':
@@ -312,7 +288,32 @@ const HotelBookings: React.FC<HotelBookingsProps> = ({
         <TableContainer>
           <Table>
             <TableHead>
-              <TableRow>
+              <TableRow
+                sx={{
+                  background: COLORS.GRADIENT_SLATE,
+                  boxShadow: `0 4px 12px ${addAlpha(COLORS.SLATE_600, 0.15)}`,
+                  '& .MuiTableCell-head': {
+                    color: COLORS.WHITE,
+                    fontWeight: 600,
+                    fontSize: '0.95rem',
+                    letterSpacing: '0.5px',
+                    textTransform: 'uppercase',
+                    border: 'none',
+                    padding: '20px 16px',
+                    position: 'relative',
+                    textShadow: `0 1px 2px ${addAlpha(COLORS.BLACK, 0.1)}`,
+                    '&::after': {
+                      content: '""',
+                      position: 'absolute',
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      height: '3px',
+                      background: `linear-gradient(90deg, ${addAlpha(COLORS.WHITE, 0.6)} 0%, ${addAlpha(COLORS.WHITE, 0.8)} 50%, ${addAlpha(COLORS.WHITE, 0.6)} 100%)`
+                    }
+                  }
+                }}
+              >
                 <TableCell><strong>Confirmation #</strong></TableCell>
                 <TableCell><strong>Guest</strong></TableCell>
                 <TableCell><strong>Room</strong></TableCell>
@@ -377,7 +378,7 @@ const HotelBookings: React.FC<HotelBookingsProps> = ({
                           
                           {showCheckInOut && (
                             <>
-                              {(booking.status === 'confirmed' || booking.status === 'arriving') && (
+                              {(booking.status === 'booked' || booking.status === 'arriving') && (
                                 <Tooltip title="Check In">
                                   <IconButton 
                                     size="small" 
@@ -407,20 +408,6 @@ const HotelBookings: React.FC<HotelBookingsProps> = ({
                             </>
                           )}
                           
-                          {mode === 'hotel-admin' && (
-                            <Tooltip title="Delete Booking">
-                              <IconButton 
-                                size="small"
-                                onClick={() => {
-                                  setSelectedBooking(booking);
-                                  setDeleteDialogOpen(true);
-                                }}
-                                color="error"
-                              >
-                                <DeleteIcon />
-                              </IconButton>
-                            </Tooltip>
-                          )}
                         </Box>
                       </TableCell>
                     )}
@@ -496,7 +483,7 @@ const HotelBookings: React.FC<HotelBookingsProps> = ({
           <Button onClick={() => setDetailsDialogOpen(false)}>Close</Button>
           {showCheckInOut && selectedBooking && (
             <>
-              {(selectedBooking.status === 'confirmed' || selectedBooking.status === 'arriving') && (
+              {(selectedBooking.status === 'booked' || selectedBooking.status === 'arriving') && (
                 <Button 
                   variant="contained" 
                   color="success"
@@ -522,27 +509,6 @@ const HotelBookings: React.FC<HotelBookingsProps> = ({
               )}
             </>
           )}
-        </DialogActions>
-      </Dialog>
-
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
-        <DialogTitle>Confirm Delete</DialogTitle>
-        <DialogContent>
-          <Typography>
-            Are you sure you want to delete the booking for {selectedBooking?.guestName}?
-            This action cannot be undone.
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
-          <Button 
-            onClick={handleDeleteBooking} 
-            color="error" 
-            variant="contained"
-          >
-            Delete
-          </Button>
         </DialogActions>
       </Dialog>
 

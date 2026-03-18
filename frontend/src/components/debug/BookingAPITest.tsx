@@ -13,7 +13,7 @@ const BookingAPITest: React.FC = () => {
     setError(null);
     
     try {
-      console.log('Testing booking API...');
+      // console.log('Testing booking API...');
       
       // Get fresh token
       const loginResponse = await fetch(`${API_CONFIG.BASE_URL}/auth/login`, {
@@ -34,7 +34,7 @@ const BookingAPITest: React.FC = () => {
       const loginData = await loginResponse.json();
       const token = loginData.token;
       
-      console.log('Token received:', token ? 'Yes' : 'No');
+      // console.log('Token received:', token ? 'Yes' : 'No');
       
       // Test booking API
       const bookingsResponse = await fetch(`${API_CONFIG.BASE_URL}/hotel-admin/bookings?page=0&size=10`, {
@@ -45,7 +45,7 @@ const BookingAPITest: React.FC = () => {
         }
       });
       
-      console.log('Bookings response status:', bookingsResponse.status);
+      // console.log('Bookings response status:', bookingsResponse.status);
       
       if (!bookingsResponse.ok) {
         const errorData = await bookingsResponse.json();
@@ -53,12 +53,12 @@ const BookingAPITest: React.FC = () => {
       }
       
       const bookingsData = await bookingsResponse.json();
-      console.log('Bookings data:', bookingsData);
+      // console.log('Bookings data:', bookingsData);
       
       setData(bookingsData);
       
     } catch (err) {
-      console.error('API test error:', err);
+      // console.error('API test error:', err);
       setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setLoading(false);

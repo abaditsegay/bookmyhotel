@@ -102,10 +102,10 @@ const MaintenanceTaskCard: React.FC<MaintenanceTaskCardProps> = ({
   onViewDetails,
   currentUserRole
 }) => {
-  const canAssign = currentUserRole === 'OPERATIONS_SUPERVISOR' && task.status === 'PENDING';
-  const canStart = (currentUserRole === 'MAINTENANCE' || currentUserRole === 'OPERATIONS_SUPERVISOR') && 
+  const canAssign = currentUserRole === 'OPERATIONAL_ADMIN' && task.status === 'PENDING';
+  const canStart = (currentUserRole === 'MAINTENANCE' || currentUserRole === 'OPERATIONAL_ADMIN') && 
                    task.status === 'ASSIGNED';
-  const canComplete = (currentUserRole === 'MAINTENANCE' || currentUserRole === 'OPERATIONS_SUPERVISOR') && 
+  const canComplete = (currentUserRole === 'MAINTENANCE' || currentUserRole === 'OPERATIONAL_ADMIN') && 
                       task.status === 'IN_PROGRESS';
 
   return (

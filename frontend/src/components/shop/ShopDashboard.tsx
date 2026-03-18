@@ -16,10 +16,15 @@ import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { shopApiService } from '../../services/shopApi';
+import { formatCurrencyWithDecimals } from '../../utils/currencyUtils';
 import { ShopDashboardStats } from '../../types/shop';
 import ProductManagement from './ProductManagement';
 import OrderManagement from './OrderManagement';
 import OrderCreation from './OrderCreation';
+import LowStockProducts from './LowStockProducts';
+import { StatCardSkeleton } from '../common/SkeletonLoaders';
+import { premiumTabsPaperSx, premiumTabsSx } from './premiumStyles';
+import { COLORS, addAlpha } from '../../theme/themeColors';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -43,12 +48,12 @@ function TabPanel({ children, value, index, ...other }: TabPanelProps) {
 
 const ShopDashboard: React.FC = () => {
   const { t } = useTranslation();
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const [currentTab, setCurrentTab] = useState(() => {
     const tabParam = searchParams.get('tab');
     if (tabParam) {
-      const tabMap = { 'new-order': 0, 'products': 1, 'orders': 2 };
+      const tabMap = { 'new-order': 0, 'products': 1, 'low-stock': 2, 'orders': 3 };
       return tabMap[tabParam as keyof typeof tabMap] ?? 0;
     }
     return 0;
@@ -62,22 +67,45 @@ const ShopDashboard: React.FC = () => {
 
   const loadDashboardData = useCallback(async () => {
     if (!hotelId) {
-      console.error('Cannot load dashboard data: No hotel ID available');
+      // console.error('Cannot load dashboard data: No hotel ID available');
+      return;
+    }
+
+    // Ensure we have authentication before making API calls
+    if (!token) {
+      // console.warn('Cannot load dashboard data: No authentication token available');
+      setError('Authentication required. Please ensure you are logged in.');
       return;
     }
 
     try {
       setLoading(true);
+      
+      // Configure shop API service with authentication
+      // console.info('Configuring shop API service with authentication...');
+      shopApiService.setToken(token);
+      // console.info('Shop API service configured with token');
+
+      if (user?.tenantId) {
+        shopApiService.setTenantId(user.tenantId);
+        // console.info(`Shop API service configured with tenant ID: ${user.tenantId}`);
+      } else {
+        // console.warn('No tenant ID available for shop API');
+      }
+
+      // console.info(`Loading dashboard stats for hotel ${hotelId}...`);
       const stats = await shopApiService.getDashboardStats(hotelId);
+      // console.info('Dashboard stats loaded successfully:', stats);
 
       setDashboardStats(stats);
       setError(null);
     } catch (err) {
+      // console.error('Dashboard data loading error:', err);
       setError(err instanceof Error ? err.message : 'Failed to load dashboard data');
     } finally {
       setLoading(false);
     }
-  }, [hotelId]);
+  }, [hotelId, token, user?.tenantId]);
 
   useEffect(() => {
     if (hotelId) {
@@ -104,7 +132,7 @@ const ShopDashboard: React.FC = () => {
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setCurrentTab(newValue);
     // Update URL parameter to remember the tab
-    const tabNames = ['new-order', 'products', 'orders'];
+    const tabNames = ['new-order', 'products', 'low-stock', 'orders'];
     setSearchParams({ tab: tabNames[newValue] });
   };
 
@@ -130,19 +158,65 @@ const ShopDashboard: React.FC = () => {
   return (
     <Box sx={{ width: '100%' }}>
       {/* Quick Stats Cards */}
-      {dashboardStats && (
+      {loading ? (
         <Grid container spacing={1.5} sx={{ mb: 1.5 }}>
+          {Array.from({ length: 4 }).map((_, index) => (
+            <Grid item xs={12} sm={6} md={3} key={index}>
+              <StatCardSkeleton />
+            </Grid>
+          ))}
+        </Grid>
+      ) : dashboardStats && (
+        <Grid container spacing={2} sx={{ mb: 3 }}>
           <Grid item xs={12} sm={6} md={3}>
-            <Card>
-              <CardContent sx={{ py: 1, px: 1.5 }}>
+            <Card 
+              sx={{
+                background: `linear-gradient(135deg, ${addAlpha(COLORS.PRIMARY, 0.05)} 0%, ${addAlpha(COLORS.SECONDARY, 0.05)} 100%)`,
+                backdropFilter: 'blur(10px)',
+                border: `1px solid ${addAlpha(COLORS.PRIMARY, 0.1)}`,
+                boxShadow: `0 4px 12px ${addAlpha(COLORS.BLACK, 0.08)}`,
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  boxShadow: `0 8px 24px ${addAlpha(COLORS.PRIMARY, 0.15)}`
+                }
+              }}
+            >
+              <CardContent sx={{ py: 2, px: 2.5 }}>
                 <Box>
-                  <Typography color="textSecondary" gutterBottom variant="caption" sx={{ fontSize: '0.7rem' }}>
+                  <Typography 
+                    color="textSecondary" 
+                    gutterBottom 
+                    variant="caption" 
+                    sx={{ 
+                      fontSize: '0.75rem',
+                      fontWeight: 600,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px',
+                      color: COLORS.PRIMARY
+                    }}
+                  >
                     {t('shop.dashboard.stats.totalProducts')}
                   </Typography>
-                  <Typography variant="h6" sx={{ lineHeight: 1.2 }}>
+                  <Typography 
+                    variant="h5" 
+                    sx={{ 
+                      lineHeight: 1.2,
+                      fontWeight: 700,
+                      color: COLORS.PRIMARY,
+                      mb: 0.5
+                    }}
+                  >
                     {dashboardStats.totalProducts}
                   </Typography>
-                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                  <Typography 
+                    variant="caption" 
+                    sx={{ 
+                      fontSize: '0.75rem',
+                      color: COLORS.SECONDARY,
+                      fontWeight: 600
+                    }}
+                  >
                     {dashboardStats.activeProducts} {t('shop.dashboard.stats.activeProducts').toLowerCase()}
                   </Typography>
                 </Box>
@@ -151,16 +225,54 @@ const ShopDashboard: React.FC = () => {
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <Card>
-              <CardContent sx={{ py: 1, px: 1.5 }}>
+            <Card
+              sx={{
+                background: `linear-gradient(135deg, ${addAlpha(COLORS.PRIMARY, 0.05)} 0%, ${addAlpha(COLORS.SECONDARY, 0.05)} 100%)`,
+                backdropFilter: 'blur(10px)',
+                border: `1px solid ${addAlpha(COLORS.PRIMARY, 0.1)}`,
+                boxShadow: `0 4px 12px ${addAlpha(COLORS.BLACK, 0.08)}`,
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  boxShadow: `0 8px 24px ${addAlpha(COLORS.PRIMARY, 0.15)}`
+                }
+              }}
+            >
+              <CardContent sx={{ py: 2, px: 2.5 }}>
                 <Box>
-                  <Typography color="textSecondary" gutterBottom variant="caption" sx={{ fontSize: '0.7rem' }}>
+                  <Typography 
+                    color="textSecondary" 
+                    gutterBottom 
+                    variant="caption" 
+                    sx={{ 
+                      fontSize: '0.75rem',
+                      fontWeight: 600,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px',
+                      color: COLORS.PRIMARY
+                    }}
+                  >
                     {t('shop.orders.status.pending')} {t('shop.dashboard.tabs.orders')}
                   </Typography>
-                  <Typography variant="h6" sx={{ lineHeight: 1.2 }}>
+                  <Typography 
+                    variant="h5" 
+                    sx={{ 
+                      lineHeight: 1.2,
+                      fontWeight: 700,
+                      color: COLORS.PRIMARY,
+                      mb: 0.5
+                    }}
+                  >
                     {dashboardStats.pendingOrders}
                   </Typography>
-                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                  <Typography 
+                    variant="caption" 
+                    sx={{ 
+                      fontSize: '0.75rem',
+                      color: COLORS.SECONDARY,
+                      fontWeight: 600
+                    }}
+                  >
                     of {dashboardStats.totalOrders} {t('shop.dashboard.stats.totalOrders').toLowerCase()}
                   </Typography>
                 </Box>
@@ -169,17 +281,58 @@ const ShopDashboard: React.FC = () => {
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <Card>
-              <CardContent sx={{ py: 1, px: 1.5 }}>
+            <Card
+              sx={{
+                background: `linear-gradient(135deg, ${addAlpha(COLORS.SECONDARY, 0.1)} 0%, ${addAlpha(COLORS.PRIMARY, 0.05)} 100%)`,
+                backdropFilter: 'blur(10px)',
+                border: `1px solid ${addAlpha(COLORS.SECONDARY, 0.2)}`,
+                boxShadow: `0 4px 12px ${addAlpha(COLORS.SECONDARY, 0.15)}`,
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  boxShadow: `0 8px 24px ${addAlpha(COLORS.SECONDARY, 0.25)}`
+                }
+              }}
+            >
+              <CardContent sx={{ py: 2, px: 2.5 }}>
                 <Box>
-                  <Typography color="textSecondary" gutterBottom variant="caption" sx={{ fontSize: '0.7rem' }}>
+                  <Typography 
+                    color="textSecondary" 
+                    gutterBottom 
+                    variant="caption" 
+                    sx={{ 
+                      fontSize: '0.75rem',
+                      fontWeight: 600,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px',
+                      color: COLORS.PRIMARY
+                    }}
+                  >
                     {t('shop.dashboard.stats.revenue')}
                   </Typography>
-                  <Typography variant="h6" sx={{ lineHeight: 1.2 }}>
-                    ${dashboardStats.todayRevenue.toFixed(2)}
+                  <Typography 
+                    variant="h5" 
+                    sx={{ 
+                      lineHeight: 1.2,
+                      fontWeight: 700,
+                      background: COLORS.GRADIENT_SECONDARY,
+                      backgroundClip: 'text',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      mb: 0.5
+                    }}
+                  >
+                    ${dashboardStats.totalRevenue.toFixed(2)}
                   </Typography>
-                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
-                    ETB {dashboardStats.todayRevenue?.toFixed(0)}
+                  <Typography 
+                    variant="caption" 
+                    sx={{ 
+                      fontSize: '0.75rem',
+                      color: COLORS.PRIMARY,
+                      fontWeight: 600
+                    }}
+                  >
+                    {formatCurrencyWithDecimals(dashboardStats.totalRevenue || 0)}
                   </Typography>
                 </Box>
               </CardContent>
@@ -187,17 +340,55 @@ const ShopDashboard: React.FC = () => {
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <Card>
-              <CardContent sx={{ py: 1, px: 1.5 }}>
+            <Card
+              sx={{
+                background: `linear-gradient(135deg, ${addAlpha(COLORS.PRIMARY, 0.05)} 0%, ${addAlpha(COLORS.SECONDARY, 0.05)} 100%)`,
+                backdropFilter: 'blur(10px)',
+                border: `1px solid ${addAlpha(COLORS.PRIMARY, 0.1)}`,
+                boxShadow: `0 4px 12px ${addAlpha(COLORS.BLACK, 0.08)}`,
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  boxShadow: `0 8px 24px ${addAlpha(COLORS.PRIMARY, 0.15)}`
+                }
+              }}
+            >
+              <CardContent sx={{ py: 2, px: 2.5 }}>
                 <Box>
-                  <Typography color="textSecondary" gutterBottom variant="caption" sx={{ fontSize: '0.7rem' }}>
-                    {t('shop.products.status.outOfStock')} {t('shop.dashboard.tabs.products')}
+                  <Typography 
+                    color="textSecondary" 
+                    gutterBottom 
+                    variant="caption" 
+                    sx={{ 
+                      fontSize: '0.75rem',
+                      fontWeight: 600,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px',
+                      color: COLORS.PRIMARY
+                    }}
+                  >
+                    Low Stock Products
                   </Typography>
-                  <Typography variant="h6" sx={{ lineHeight: 1.2 }}>
+                  <Typography 
+                    variant="h5" 
+                    sx={{ 
+                      lineHeight: 1.2,
+                      fontWeight: 700,
+                      color: COLORS.WARNING,
+                      mb: 0.5
+                    }}
+                  >
                     {dashboardStats.lowStockProducts}
                   </Typography>
-                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
-                    Need restocking
+                  <Typography 
+                    variant="caption" 
+                    sx={{ 
+                      fontSize: '0.75rem',
+                      color: COLORS.ERROR,
+                      fontWeight: 600
+                    }}
+                  >
+                    {dashboardStats.outOfStockProducts} out of stock
                   </Typography>
                 </Box>
               </CardContent>
@@ -206,23 +397,25 @@ const ShopDashboard: React.FC = () => {
         </Grid>
       )}
 
-      {/* Navigation Tabs */}
-      <Paper sx={{ mb: 3 }}>
+      {/* Navigation Tabs with premium styling */}
+      <Paper sx={premiumTabsPaperSx}>
         <Tabs
           value={currentTab}
           onChange={handleTabChange}
           variant="scrollable"
           scrollButtons="auto"
+          sx={premiumTabsSx}
         >
           <Tab label={t('shop.dashboard.tabs.newOrder')} />
           <Tab label={t('shop.dashboard.tabs.products')} />
+          <Tab label={t('shop.dashboard.tabs.lowStock')} />
           <Tab label={t('shop.dashboard.tabs.orders')} />
         </Tabs>
       </Paper>
 
       {/* Tab Panels */}
       <TabPanel value={currentTab} index={0}>
-        <OrderCreation />
+        <OrderCreation onOrderComplete={loadDashboardData} />
       </TabPanel>
 
       <TabPanel value={currentTab} index={1}>
@@ -230,6 +423,10 @@ const ShopDashboard: React.FC = () => {
       </TabPanel>
 
       <TabPanel value={currentTab} index={2}>
+        <LowStockProducts />
+      </TabPanel>
+
+      <TabPanel value={currentTab} index={3}>
         <OrderManagement />
       </TabPanel>
     </Box>

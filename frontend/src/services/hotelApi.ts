@@ -12,7 +12,6 @@ import {
   BookingCancellationResponse
 } from '../types/hotel';
 
-import TokenManager from '../utils/tokenManager';
 import { API_CONFIG } from '../config/apiConfig';
 
 const API_BASE_URL = API_CONFIG.BASE_URL;
@@ -60,7 +59,8 @@ class HotelApiService {
       
       try {
         const errorData = await response.json();
-        errorMessage = errorData.message || errorData.error || errorMessage;
+        // Extract the most detailed error message available (prioritize details field)
+        errorMessage = errorData.details || errorData.message || errorData.userFriendlyMessage || errorData.error || errorMessage;
       } catch (parseError) {
         // If JSON parsing fails, use the default error message
       }
@@ -247,13 +247,16 @@ class HotelApiService {
 
       if (!response.ok) {
         // Try to get the actual error message from the response
+        let errorMessage = `API Error: ${response.status}`;
         try {
           const errorData = await response.json();
-          throw new Error(errorData.error || errorData.message || `API Error: ${response.status} ${response.statusText}`);
+          // Extract the most detailed error message available (prioritize details field)
+          errorMessage = errorData.details || errorData.message || errorData.userFriendlyMessage || errorData.error || errorMessage;
         } catch (jsonError) {
-          // If we can't parse the JSON, fall back to the status text
-          throw new Error(`API Error: ${response.status} ${response.statusText}`);
+          // If we can't parse the JSON, use status text
+          errorMessage = `API Error: ${response.status} ${response.statusText}`;
         }
+        throw new Error(errorMessage);
       }
 
       return response.json();

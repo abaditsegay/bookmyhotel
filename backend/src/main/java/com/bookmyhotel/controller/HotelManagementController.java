@@ -3,6 +3,8 @@ package com.bookmyhotel.controller;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,8 +20,9 @@ import com.bookmyhotel.tenant.TenantContext;
  */
 @RestController
 @RequestMapping("/api/hotels-mgmt")
-@CrossOrigin(origins = "*")
 public class HotelManagementController {
+
+    private static final Logger logger = LoggerFactory.getLogger(HotelManagementController.class);
 
     @Autowired
     private HotelManagementService hotelManagementService;
@@ -33,22 +36,22 @@ public class HotelManagementController {
     public ResponseEntity<List<HotelResponse>> getAllHotels() {
         try {
             String tenantId = TenantContext.getTenantId();
-            
+
             if (tenantId == null) {
                 throw new IllegalStateException("Tenant context is not set");
             }
-            
+
             List<HotelDTO> hotels = hotelManagementService.getHotelsByTenantForDropdown(tenantId);
-            
+
             List<HotelResponse> response = hotels.stream()
                     .map(hotel -> new HotelResponse(hotel.getId(), hotel.getName()))
                     .collect(Collectors.toList());
-            
+
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             // Log the error for debugging
-            System.err.println("Error in getAllHotels: " + e.getMessage());
-            e.printStackTrace();
+            // System.err.println("Error in getAllHotels: " + e.getMessage());
+            logger.error("Operation failed", e);
             throw e;
         }
     }
@@ -60,7 +63,8 @@ public class HotelManagementController {
         private Long id;
         private String name;
 
-        public HotelResponse() {}
+        public HotelResponse() {
+        }
 
         public HotelResponse(Long id, String name) {
             this.id = id;

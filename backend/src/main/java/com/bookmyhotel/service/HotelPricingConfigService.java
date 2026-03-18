@@ -1,0 +1,539 @@
+package com.bookmyhotel.service;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.bookmyhotel.entity.Hotel;
+import com.bookmyhotel.entity.HotelPricingConfig;
+import com.bookmyhotel.entity.HotelPricingConfig.PricingStrategy;
+import com.bookmyhotel.repository.HotelPricingConfigRepository;
+import com.bookmyhotel.repository.HotelRepository;
+
+/**
+ * Service class for managing hotel pricing configurations
+ * Handles CRUD operations and business logic for hotel-specific pricing and tax
+ * settings
+ */
+@Service
+@Transactional
+public class HotelPricingConfigService {
+
+    private static final Logger logger = LoggerFactory.getLogger(HotelPricingConfigService.class);
+
+    @Autowired
+    private HotelPricingConfigRepository pricingConfigRepository;
+
+    @Autowired
+    private HotelRepository hotelRepository;
+
+    /**
+     * Get the active pricing configuration for a hotel
+     * 
+     * @param hotelId the hotel ID
+     * @return the configuration or null if not found
+     */
+    @Transactional(readOnly = true)
+    public HotelPricingConfig getActiveConfiguration(Long hotelId) {
+        logger.debug("Getting pricing configuration for hotel ID: {}", hotelId);
+
+        Optional<HotelPricingConfig> config = pricingConfigRepository.findByHotelId(hotelId);
+
+        if (config.isPresent()) {
+            logger.debug("Found configuration for hotel {}: version {}", hotelId, config.get().getVersion());
+            return config.get();
+        } else {
+            logger.debug("No configuration found for hotel {}", hotelId);
+            return null;
+        }
+    }
+
+    /**
+     * Get or create active configuration for a hotel
+     * 
+     * @param hotelId the hotel ID
+     * @return the configuration (creates default if none exists)
+     */
+    @Transactional
+    public HotelPricingConfig getOrCreateActiveConfiguration(Long hotelId) {
+        HotelPricingConfig config = getActiveConfiguration(hotelId);
+        if (config == null) {
+            config = createDefaultConfiguration(hotelId);
+        }
+        return config;
+    }
+
+    /**
+     * Create a default pricing configuration for a hotel
+     * 
+     * @param hotelId the hotel ID
+     * @return the new configuration
+     */
+    @Transactional
+    public HotelPricingConfig createDefaultConfiguration(Long hotelId) {
+        logger.info("Creating default pricing configuration for hotel ID: {}", hotelId);
+
+        Optional<Hotel> hotel = hotelRepository.findById(hotelId);
+        if (!hotel.isPresent()) {
+            throw new IllegalArgumentException("Hotel not found with ID: " + hotelId);
+        }
+
+        HotelPricingConfig config = new HotelPricingConfig();
+        config.setHotel(hotel.get());
+        config.setVersion(1); // Start with version 1
+        config.setPricingStrategy(PricingStrategy.FIXED);
+        config.setServiceTaxRate(new BigDecimal("0.05"));
+        config.setVatRate(new BigDecimal("0.15"));
+        config.setCancellationFeeRate(new BigDecimal("0.50"));
+        config.setNoShowPenaltyRate(new BigDecimal("1.00"));
+        config.setModificationFeeRate(new BigDecimal("0.00"));
+        // Set neutral default multipliers (no price impact)
+        config.setPeakSeasonMultiplier(new BigDecimal("1.00")); // No change for peak season by default
+        config.setOffSeasonMultiplier(new BigDecimal("1.00")); // No change for off season by default
+        config.setWeekendMultiplier(new BigDecimal("1.00")); // No change for weekends by default
+        config.setHolidayMultiplier(new BigDecimal("1.00")); // No change for holidays by default
+        config.setCreatedAt(LocalDateTime.now());
+        config.setUpdatedAt(LocalDateTime.now());
+
+        // Set the creator
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.getName() != null) {
+            config.setCreatedBy(auth.getName());
+            config.setUpdatedBy(auth.getName());
+        }
+
+        return pricingConfigRepository.save(config);
+    }
+
+    /**
+     * Update pricing configuration for a hotel (versioned approach)
+     * 
+     * @param hotelId the hotel ID
+     * @param config  the updated configuration
+     * @return the saved configuration
+     */
+    @Transactional
+    public HotelPricingConfig updateConfiguration(Long hotelId, HotelPricingConfig updatedConfig) {
+        logger.info("Updating pricing configuration for hotel ID: {}", hotelId);
+
+        // Get the existing configuration
+        HotelPricingConfig existingConfig = getActiveConfiguration(hotelId);
+
+        HotelPricingConfig configToSave;
+
+        if (existingConfig == null) {
+            // No existing configuration, create new one
+            logger.info("No existing configuration found for hotel {}, creating new one", hotelId);
+
+            // Ensure hotel is set
+            if (updatedConfig.getHotel() == null) {
+                Optional<Hotel> hotel = hotelRepository.findById(hotelId);
+                if (!hotel.isPresent()) {
+                    throw new IllegalArgumentException("Hotel not found with ID: " + hotelId);
+                }
+                updatedConfig.setHotel(hotel.get());
+            }
+            updatedConfig.setHotelId(hotelId);
+            updatedConfig.setVersion(1);
+            updatedConfig.setCreatedAt(LocalDateTime.now());
+
+            // Set the creator
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && auth.getName() != null) {
+                updatedConfig.setCreatedBy(auth.getName());
+            }
+
+            configToSave = updatedConfig;
+        } else {
+            // Update existing configuration by copying values to the managed entity
+            logger.info("Updating existing configuration for hotel {}: ID {}, current version {}",
+                    hotelId, existingConfig.getId(), existingConfig.getVersion());
+
+            // Copy all updated values to the existing managed entity
+            existingConfig.setPricingStrategy(updatedConfig.getPricingStrategy());
+            existingConfig.setVatRate(updatedConfig.getVatRate());
+            existingConfig.setServiceTaxRate(updatedConfig.getServiceTaxRate());
+            existingConfig.setCityTaxRate(updatedConfig.getCityTaxRate());
+            existingConfig.setTaxInclusivePricing(updatedConfig.getTaxInclusivePricing());
+            existingConfig.setPeakSeasonMultiplier(updatedConfig.getPeakSeasonMultiplier());
+            existingConfig.setOffSeasonMultiplier(updatedConfig.getOffSeasonMultiplier());
+            existingConfig.setWeekendMultiplier(updatedConfig.getWeekendMultiplier());
+            existingConfig.setHolidayMultiplier(updatedConfig.getHolidayMultiplier());
+            existingConfig.setMinimumStayNights(updatedConfig.getMinimumStayNights());
+            existingConfig.setMinimumAdvanceBookingHours(updatedConfig.getMinimumAdvanceBookingHours());
+            existingConfig.setMaximumAdvanceBookingDays(updatedConfig.getMaximumAdvanceBookingDays());
+            existingConfig.setEarlyBookingDaysThreshold(updatedConfig.getEarlyBookingDaysThreshold());
+            existingConfig.setEarlyBookingDiscountRate(updatedConfig.getEarlyBookingDiscountRate());
+            existingConfig.setLoyaltyDiscountRate(updatedConfig.getLoyaltyDiscountRate());
+            existingConfig.setCancellationFeeRate(updatedConfig.getCancellationFeeRate());
+            existingConfig.setModificationFeeRate(updatedConfig.getModificationFeeRate());
+            existingConfig.setNoShowPenaltyRate(updatedConfig.getNoShowPenaltyRate());
+            existingConfig.setDynamicPricingEnabled(updatedConfig.getDynamicPricingEnabled());
+            existingConfig.setCurrencyCode(updatedConfig.getCurrencyCode());
+            existingConfig.setNotes(updatedConfig.getNotes());
+
+            // Copy refund policy fields
+            existingConfig.setRefundPolicy7PlusDays(updatedConfig.getRefundPolicy7PlusDays());
+            existingConfig.setRefundPolicy3To7Days(updatedConfig.getRefundPolicy3To7Days());
+            existingConfig.setRefundPolicy1To2Days(updatedConfig.getRefundPolicy1To2Days());
+            existingConfig.setRefundPolicySameDay(updatedConfig.getRefundPolicySameDay());
+
+            // Update version and timestamps
+            existingConfig.setVersion(existingConfig.getVersion() + 1);
+
+            configToSave = existingConfig;
+        }
+
+        configToSave.setUpdatedAt(LocalDateTime.now());
+
+        // Set the updater
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.getName() != null) {
+            configToSave.setUpdatedBy(auth.getName());
+        }
+
+        HotelPricingConfig saved = pricingConfigRepository.save(configToSave);
+        logger.info("Successfully updated pricing configuration for hotel {}: ID {}, new version {}",
+                hotelId, saved.getId(), saved.getVersion());
+
+        return saved;
+    }
+
+    /**
+     * Get all pricing configurations for a hotel (for history)
+     * 
+     * @param hotelId the hotel ID
+     * @return list of configurations ordered by version
+     */
+    @Transactional(readOnly = true)
+    public List<HotelPricingConfig> getConfigurationHistory(Long hotelId) {
+        // For now, just return the single configuration as a list
+        // This would be updated when we have versioning properly implemented
+        HotelPricingConfig config = getActiveConfiguration(hotelId);
+        return config != null ? List.of(config) : List.of();
+    }
+
+    /**
+     * Get the total tax rate for a hotel (VAT + Service Tax)
+     * 
+     * @param hotelId the hotel ID
+     * @return the total tax rate as a decimal (e.g., 0.22 for 22%)
+     */
+    @Transactional(readOnly = true)
+    public BigDecimal getTotalTaxRate(Long hotelId) {
+        HotelPricingConfig config = getOrCreateActiveConfiguration(hotelId);
+
+        BigDecimal vatRate = config.getVatRate();
+        BigDecimal serviceRate = config.getServiceTaxRate();
+        BigDecimal cityRate = config.getCityTaxRate();
+
+        BigDecimal totalRate = vatRate.add(serviceRate).add(cityRate).setScale(4, RoundingMode.HALF_UP);
+        logger.debug("Total tax rate for hotel {}: {}% (VAT: {}%, Service: {}%)",
+                hotelId, totalRate.multiply(new BigDecimal("100")),
+                config.getVatRate().multiply(new BigDecimal("100")),
+                config.getServiceTaxRate().multiply(new BigDecimal("100")));
+
+        return totalRate;
+    }
+
+    /**
+     * Get the VAT rate for a hotel
+     * 
+     * @param hotelId the hotel ID
+     * @return the VAT rate as a decimal
+     */
+    @Transactional(readOnly = true)
+    public BigDecimal getVatRate(Long hotelId) {
+        HotelPricingConfig config = getOrCreateActiveConfiguration(hotelId);
+        return config.getVatRate();
+    }
+
+    /**
+     * Get the service tax rate for a hotel
+     * 
+     * @param hotelId the hotel ID
+     * @return the service tax rate as a decimal
+     */
+    @Transactional(readOnly = true)
+    public BigDecimal getServiceTaxRate(Long hotelId) {
+        HotelPricingConfig config = getOrCreateActiveConfiguration(hotelId);
+        return config.getServiceTaxRate();
+    }
+
+    /**
+     * Get the city tax rate for a hotel
+     * 
+     * @param hotelId the hotel ID
+     * @return the city tax rate as a decimal
+     */
+    @Transactional(readOnly = true)
+    public BigDecimal getCityTaxRate(Long hotelId) {
+        HotelPricingConfig config = getOrCreateActiveConfiguration(hotelId);
+        return config.getCityTaxRate();
+    }
+
+    /**
+     * Delete pricing configuration for a hotel
+     * 
+     * @param hotelId the hotel ID
+     * @return true if deleted, false if not found
+     */
+    @Transactional
+    public boolean deleteConfiguration(Long hotelId) {
+        logger.info("Deleting pricing configuration for hotel ID: {}", hotelId);
+
+        Optional<HotelPricingConfig> config = pricingConfigRepository.findByHotelId(hotelId);
+        if (config.isPresent()) {
+            pricingConfigRepository.delete(config.get());
+            logger.info("Deleted pricing configuration for hotel {}", hotelId);
+            return true;
+        } else {
+            logger.warn("No pricing configuration found to delete for hotel {}", hotelId);
+            return false;
+        }
+    }
+
+    /**
+     * Check if a hotel has a pricing configuration
+     * 
+     * @param hotelId the hotel ID
+     * @return true if configuration exists
+     */
+    @Transactional(readOnly = true)
+    public boolean hasConfiguration(Long hotelId) {
+        return pricingConfigRepository.findByHotelId(hotelId).isPresent();
+    }
+
+    /**
+     * Get all pricing configurations for all hotels
+     * 
+     * @return list of all configurations
+     */
+    @Transactional(readOnly = true)
+    public List<HotelPricingConfig> getAllConfigurations() {
+        return pricingConfigRepository.findAll();
+    }
+
+    /**
+     * Get cancellation fee percentage for a hotel
+     * 
+     * @param hotelId the hotel ID
+     * @return the cancellation fee percentage as a decimal
+     */
+    @Transactional(readOnly = true)
+    public BigDecimal getCancellationFeeRate(Long hotelId) {
+        HotelPricingConfig config = getOrCreateActiveConfiguration(hotelId);
+        return config.getCancellationFeeRate();
+    }
+
+    /**
+     * Get no-show fee percentage for a hotel
+     * 
+     * @param hotelId the hotel ID
+     * @return the no-show fee percentage as a decimal
+     */
+    @Transactional(readOnly = true)
+    public BigDecimal getNoShowFeeRate(Long hotelId) {
+        HotelPricingConfig config = getOrCreateActiveConfiguration(hotelId);
+        return config.getNoShowPenaltyRate();
+    }
+
+    /**
+     * Get early checkout fee percentage for a hotel
+     * 
+     * @param hotelId the hotel ID
+     * @return the early checkout fee percentage as a decimal
+     */
+    @Transactional(readOnly = true)
+    public BigDecimal getEarlyCheckoutFeeRate(Long hotelId) {
+        HotelPricingConfig config = getOrCreateActiveConfiguration(hotelId);
+        return BigDecimal.ZERO; // Not implemented in current entity
+    }
+
+    /**
+     * Get room modification fee percentage for a hotel
+     * 
+     * @param hotelId the hotel ID
+     * @return the room modification fee percentage as a decimal
+     */
+    @Transactional(readOnly = true)
+    public BigDecimal getRoomModificationFeeRate(Long hotelId) {
+        HotelPricingConfig config = getOrCreateActiveConfiguration(hotelId);
+        return config.getModificationFeeRate();
+    }
+
+    /**
+     * Get tax exempt booking fee percentage for a hotel
+     * 
+     * @param hotelId the hotel ID
+     * @return the tax exempt booking fee percentage as a decimal
+     */
+    @Transactional(readOnly = true)
+    public BigDecimal getTaxExemptBookingFeeRate(Long hotelId) {
+        HotelPricingConfig config = getOrCreateActiveConfiguration(hotelId);
+        return BigDecimal.ZERO; // Not implemented in current entity
+    }
+
+    /**
+     * Get weekend multiplier for a hotel
+     * 
+     * @param hotelId the hotel ID
+     * @return the weekend multiplier
+     */
+    @Transactional(readOnly = true)
+    public BigDecimal getWeekendMultiplier(Long hotelId) {
+        HotelPricingConfig config = getOrCreateActiveConfiguration(hotelId);
+        return config.getWeekendMultiplier();
+    }
+
+    /**
+     * Get holiday multiplier for a hotel
+     * 
+     * @param hotelId the hotel ID
+     * @return the holiday multiplier
+     */
+    @Transactional(readOnly = true)
+    public BigDecimal getHolidayMultiplier(Long hotelId) {
+        HotelPricingConfig config = getOrCreateActiveConfiguration(hotelId);
+        return config.getHolidayMultiplier();
+    }
+
+    /**
+     * Get peak season multiplier for a hotel
+     * 
+     * @param hotelId the hotel ID
+     * @return the peak season multiplier
+     */
+    @Transactional(readOnly = true)
+    public BigDecimal getPeakSeasonMultiplier(Long hotelId) {
+        HotelPricingConfig config = getOrCreateActiveConfiguration(hotelId);
+        return config.getPeakSeasonMultiplier();
+    }
+
+    /**
+     * Get off season multiplier for a hotel
+     * 
+     * @param hotelId the hotel ID
+     * @return the off season multiplier
+     */
+    @Transactional(readOnly = true)
+    public BigDecimal getOffSeasonMultiplier(Long hotelId) {
+        HotelPricingConfig config = getOrCreateActiveConfiguration(hotelId);
+        return config.getOffSeasonMultiplier();
+    }
+
+    /**
+     * Validate pricing configuration
+     * 
+     * @param config the configuration to validate
+     * @return true if valid
+     */
+    public boolean validateConfiguration(HotelPricingConfig config) {
+        if (config == null || config.getHotel() == null) {
+            return false;
+        }
+
+        // Validate tax rates are within reasonable bounds
+        if (config.getVatRate() != null &&
+                (config.getVatRate().compareTo(BigDecimal.ZERO) < 0 ||
+                        config.getVatRate().compareTo(BigDecimal.ONE) > 0)) {
+            return false;
+        }
+
+        if (config.getServiceTaxRate() != null &&
+                (config.getServiceTaxRate().compareTo(BigDecimal.ZERO) < 0 ||
+                        config.getServiceTaxRate().compareTo(BigDecimal.ONE) > 0)) {
+            return false;
+        }
+
+        if (config.getCityTaxRate() != null &&
+                (config.getCityTaxRate().compareTo(BigDecimal.ZERO) < 0 ||
+                        config.getCityTaxRate().compareTo(BigDecimal.ONE) > 0)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Create new configuration (alias for updateConfiguration for backwards
+     * compatibility)
+     * 
+     * @param hotelId the hotel ID
+     * @param config  the configuration
+     * @return the saved configuration
+     */
+    @Transactional
+    public HotelPricingConfig createConfiguration(Long hotelId, HotelPricingConfig config) {
+        return updateConfiguration(hotelId, config);
+    }
+
+    /**
+     * Update configuration by config ID (used by PUT endpoint)
+     * 
+     * @param configId the configuration ID
+     * @param updates  the updates to apply
+     * @return updated configuration
+     */
+    @Transactional
+    public HotelPricingConfig updateConfigurationById(Long configId, HotelPricingConfig updates) {
+        logger.debug("Updating configuration with ID: {}", configId);
+
+        // Find the existing configuration by ID
+        HotelPricingConfig existingConfig = pricingConfigRepository.findById(configId)
+                .orElseThrow(() -> new IllegalArgumentException("Configuration not found with ID: " + configId));
+
+        // Get the hotel from the existing configuration
+        Hotel hotel = existingConfig.getHotel();
+
+        // Set the hotel in the updates object
+        updates.setHotel(hotel);
+        updates.setHotelId(hotel.getId());
+
+        // Use the existing updateConfiguration method
+        return updateConfiguration(hotel.getId(), updates);
+    }
+
+    /**
+     * Get configurations expiring within days (placeholder implementation)
+     * 
+     * @param days number of days
+     * @return list of configurations
+     */
+    @Transactional(readOnly = true)
+    public List<HotelPricingConfig> getConfigurationsExpiringWithin(int days) {
+        // For now, return empty list since we don't have expiration logic
+        return List.of();
+    }
+
+    /**
+     * Get all active configurations (placeholder implementation)
+     * 
+     * @return list of active configurations
+     */
+    @Transactional(readOnly = true)
+    public List<HotelPricingConfig> getAllActiveConfigurations() {
+        return getAllConfigurations();
+    }
+
+    /**
+     * Deactivate existing configurations (no-op for versioning approach)
+     * 
+     * @param hotelId the hotel ID
+     */
+    @Transactional
+    public void deactivateExistingConfigurations(Long hotelId) {
+        // No-op since we're using versioning instead of multiple active records
+        logger.debug("Deactivation request for hotel {} - using versioning approach", hotelId);
+    }
+}

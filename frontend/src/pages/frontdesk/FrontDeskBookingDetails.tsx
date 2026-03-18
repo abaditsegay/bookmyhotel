@@ -4,31 +4,30 @@ import {
   Typography,
   Box,
   Button,
-  TextField,
   Grid,
   Chip,
-  IconButton,
   Divider,
   Card,
   CardContent,
-  FormControl,
-  InputLabel,
-  Select,
   MenuItem,
   Alert,
   Snackbar,
   CircularProgress,
+  Dialog,
+  DialogContent,
 } from '@mui/material';
 import {
-  ArrowBack as ArrowBackIcon,
   Edit as EditIcon,
   Save as SaveIcon,
   Cancel as CancelIcon,
 } from '@mui/icons-material';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import PremiumTextField from '../../components/common/PremiumTextField';
+import PremiumSelect from '../../components/common/PremiumSelect';
 import { frontDeskApiService } from '../../services/frontDeskApi';
 import { ROOM_TYPES } from '../../constants/roomTypes';
+import { formatCurrency } from '../../utils/currencyUtils';
 
 // Map BookingResponse from API to display format
 interface BookingData {
@@ -81,7 +80,7 @@ const FrontDeskBookingDetails: React.FC = () => {
           return;
         }
 
-        console.log('Loading booking with reservation ID:', reservationId);
+        // console.log('Loading booking with reservation ID:', reservationId);
         
         const result = await frontDeskApiService.getBookingById(token, reservationId);
         
@@ -107,16 +106,16 @@ const FrontDeskBookingDetails: React.FC = () => {
             paymentIntentId: responseData.paymentIntentId
           };
           
-          console.log('Found booking:', mappedBooking);
+          // console.log('Found booking:', mappedBooking);
           setBooking(mappedBooking);
           setEditedBooking({ ...mappedBooking });
         } else {
-          console.log('Booking not found for reservation ID:', reservationId);
+          // console.log('Booking not found for reservation ID:', reservationId);
           setError(result.message || `Booking not found for ID: ${reservationId}`);
         }
       } catch (err) {
         setError('Failed to load booking details');
-        console.error('Error loading booking:', err);
+        // console.error('Error loading booking:', err);
       } finally {
         setLoading(false);
       }
@@ -136,15 +135,20 @@ const FrontDeskBookingDetails: React.FC = () => {
     setEditedBooking(booking ? { ...booking } : null);
   };
 
-  const handleSave = async () => {
-    if (!editedBooking || !token) return;
+  const handleCancelAndClose = () => {
+    handleCancel();
+    handleBack();
+  };
+
+  const handleSave = async (): Promise<boolean> => {
+    if (!editedBooking || !token) return false;
 
     try {
       let hasUpdates = false;
 
       // Check if room assignment changed for confirmed bookings
       if (booking && 
-          editedBooking.status?.toUpperCase() === 'CONFIRMED' &&
+          editedBooking.status?.toUpperCase() === 'BOOKED' &&
           (editedBooking.roomType !== booking.roomType || editedBooking.roomNumber !== booking.roomNumber)) {
         
         // For room assignment changes, we need to find the room ID
@@ -153,11 +157,11 @@ const FrontDeskBookingDetails: React.FC = () => {
           try {
             // Try to find and assign room by room number
             // This would need a proper room lookup API call in production
-            console.log('Room assignment update needed for:', editedBooking.roomNumber, editedBooking.roomType);
+            // console.log('Room assignment update needed for:', editedBooking.roomNumber, editedBooking.roomType);
             setSuccess('Room assignment will be updated during check-in process');
             hasUpdates = true;
           } catch (roomError) {
-            console.error('Room assignment error:', roomError);
+            // console.error('Room assignment error:', roomError);
           }
         }
       }
@@ -211,9 +215,18 @@ const FrontDeskBookingDetails: React.FC = () => {
       if (!hasUpdates) {
         setSuccess('Booking updated successfully');
       }
+      return true;
     } catch (err) {
       setError('Failed to update booking');
-      console.error('Error updating booking:', err);
+      // console.error('Error updating booking:', err);
+      return false;
+    }
+  };
+
+  const handleSaveAndClose = async () => {
+    const saved = await handleSave();
+    if (saved) {
+      handleBack();
     }
   };
 
@@ -241,16 +254,9 @@ const FrontDeskBookingDetails: React.FC = () => {
     return new Date(dateString).toLocaleDateString();
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'ETB'
-    }).format(amount);
-  };
-
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'confirmed': return 'primary';
+      case 'booked': return 'primary';
       case 'checked in': 
       case 'checked_in': return 'success';
       case 'checked out': 
@@ -276,7 +282,7 @@ const FrontDeskBookingDetails: React.FC = () => {
     // Only allow modifications for certain statuses
     // Handle both API format (CHECKED_OUT) and display format (Checked Out)
     const normalizedStatus = status.toLowerCase().replace(/_/g, ' ');
-    const modifiableStatuses = ['confirmed', 'pending', 'checked in'];
+    const modifiableStatuses = ['booked', 'pending', 'checked in'];
     return modifiableStatuses.includes(normalizedStatus);
   };
 
@@ -284,68 +290,68 @@ const FrontDeskBookingDetails: React.FC = () => {
 
   if (loading) {
     return (
-      <Container maxWidth="lg">
-        <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-          <CircularProgress size={60} />
-          <Typography variant="h6" sx={{ ml: 2 }}>
-            Loading booking details...
-          </Typography>
-        </Box>
-      </Container>
+      <Dialog open onClose={handleBack} maxWidth="lg" fullWidth scroll="paper">
+        <DialogContent dividers>
+          <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+            <CircularProgress size={60} />
+            <Typography variant="h6" sx={{ ml: 2 }}>
+              Loading booking details...
+            </Typography>
+          </Box>
+        </DialogContent>
+      </Dialog>
     );
   }
 
   if (error) {
     return (
-      <Container maxWidth="lg">
-        <Box sx={{ mt: 4 }}>
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
-          </Alert>
-          <IconButton
-            onClick={handleBack}
-            aria-label="back to dashboard"
-          >
-            <ArrowBackIcon />
-          </IconButton>
-        </Box>
-      </Container>
+      <Dialog open onClose={handleBack} maxWidth="lg" fullWidth scroll="paper">
+        <DialogContent dividers>
+          <Box sx={{ mt: 2 }}>
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          </Box>
+        </DialogContent>
+      </Dialog>
     );
   }
 
   if (!currentBooking) {
     return (
-      <Container maxWidth="lg">
-        <Box sx={{ mt: 4 }}>
-          <Alert severity="info" sx={{ mb: 2 }}>
-            Booking not found
-          </Alert>
-          <IconButton
-            onClick={handleBack}
-            aria-label="back to dashboard"
-          >
-            <ArrowBackIcon />
-          </IconButton>
-        </Box>
-      </Container>
+      <Dialog open onClose={handleBack} maxWidth="lg" fullWidth scroll="paper">
+        <DialogContent dividers>
+          <Box sx={{ mt: 2 }}>
+            <Alert severity="info" sx={{ mb: 2 }}>
+              Booking not found
+            </Alert>
+          </Box>
+        </DialogContent>
+      </Dialog>
     );
   }
 
   return (
-    <Container maxWidth="lg">
-      <Box sx={{ mt: 4, mb: 4 }}>
+    <Dialog open onClose={handleBack} maxWidth="lg" fullWidth scroll="paper">
+      <DialogContent dividers sx={{ p: 0 }}>
+        <Container maxWidth="lg" sx={{ py: 4 }}>
+          <Box>
         {/* Header */}
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <IconButton onClick={handleBack} sx={{ mr: 1 }}>
-              <ArrowBackIcon />
-            </IconButton>
             <Typography variant="h4" component="h1">
               Booking Details
             </Typography>
           </Box>
           
           <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button
+              variant="outlined"
+              startIcon={<CancelIcon />}
+              onClick={handleCancelAndClose}
+            >
+              Cancel
+            </Button>
             {!isEditing ? (
               <Button
                 variant="outlined"
@@ -356,22 +362,13 @@ const FrontDeskBookingDetails: React.FC = () => {
                 Edit
               </Button>
             ) : (
-              <>
-                <Button
-                  variant="outlined"
-                  startIcon={<CancelIcon />}
-                  onClick={handleCancel}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  variant="contained"
-                  startIcon={<SaveIcon />}
-                  onClick={handleSave}
-                >
-                  Save
-                </Button>
-              </>
+              <Button
+                variant="contained"
+                startIcon={<SaveIcon />}
+                onClick={handleSaveAndClose}
+              >
+                Save
+              </Button>
             )}
           </Box>
         </Box>
@@ -389,23 +386,21 @@ const FrontDeskBookingDetails: React.FC = () => {
                 
                 <Grid container spacing={2}>
                   <Grid item xs={12}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label="Guest Name"
                       value={currentBooking?.guestName || ''}
                       onChange={(e) => handleFieldChange('guestName', e.target.value)}
                       disabled={!isEditing}
-                      variant={isEditing ? 'outlined' : 'filled'}
                     />
                   </Grid>
                   <Grid item xs={12}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label="Email"
                       value={currentBooking?.guestEmail || ''}
                       onChange={(e) => handleFieldChange('guestEmail', e.target.value)}
                       disabled={!isEditing}
-                      variant={isEditing ? 'outlined' : 'filled'}
                     />
                   </Grid>
                 </Grid>
@@ -424,29 +419,27 @@ const FrontDeskBookingDetails: React.FC = () => {
                 
                 <Grid container spacing={2}>
                   <Grid item xs={12}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label="Confirmation Number"
                       value={currentBooking?.confirmationNumber || ''}
                       disabled
-                      variant="filled"
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
                     {isEditing ? (
-                      <FormControl fullWidth>
-                        <InputLabel>Status</InputLabel>
-                        <Select
-                          value={currentBooking?.status || ''}
-                          onChange={(e) => handleFieldChange('status', e.target.value)}
-                        >
-                          <MenuItem value="CONFIRMED">Confirmed</MenuItem>
-                          <MenuItem value="CHECKED_IN">Checked In</MenuItem>
-                          <MenuItem value="CHECKED_OUT">Checked Out</MenuItem>
-                          <MenuItem value="CANCELLED">Cancelled</MenuItem>
-                          <MenuItem value="PENDING">Pending</MenuItem>
-                        </Select>
-                      </FormControl>
+                      <PremiumSelect
+                        fullWidth
+                        label="Status"
+                        value={currentBooking?.status || ''}
+                        onChange={(e) => handleFieldChange('status', e.target.value)}
+                      >
+                        <MenuItem value="BOOKED">Booked</MenuItem>
+                        <MenuItem value="CHECKED_IN">Checked In</MenuItem>
+                        <MenuItem value="CHECKED_OUT">Checked Out</MenuItem>
+                        <MenuItem value="CANCELLED">Cancelled</MenuItem>
+                        <MenuItem value="PENDING">Pending</MenuItem>
+                      </PremiumSelect>
                     ) : (
                       <Box>
                         <Typography variant="caption" display="block" color="text.secondary">
@@ -488,66 +481,59 @@ const FrontDeskBookingDetails: React.FC = () => {
                 
                 <Grid container spacing={2}>
                   <Grid item xs={12}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label="Hotel Name"
                       value={currentBooking?.hotelName || ''}
                       disabled
-                      variant="filled"
                     />
                   </Grid>
                   <Grid item xs={12}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label="Hotel Address"
                       value={currentBooking?.hotelAddress || ''}
                       disabled
-                      variant="filled"
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    {isEditing && currentBooking?.status?.toUpperCase() === 'CONFIRMED' ? (
-                      <FormControl fullWidth>
-                        <InputLabel>Room Type</InputLabel>
-                        <Select
-                          value={currentBooking?.roomType || ''}
-                          onChange={(e) => handleFieldChange('roomType', e.target.value)}
-                          label="Room Type"
-                        >
-                          {ROOM_TYPES.map((roomType) => (
-                            <MenuItem key={roomType.value} value={roomType.value}>
-                              {roomType.value}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
+                    {isEditing && currentBooking?.status?.toUpperCase() === 'BOOKED' ? (
+                      <PremiumSelect
+                        fullWidth
+                        label="Room Type"
+                        value={currentBooking?.roomType || ''}
+                        onChange={(e) => handleFieldChange('roomType', e.target.value)}
+                      >
+                        {ROOM_TYPES.map((roomType) => (
+                          <MenuItem key={roomType.value} value={roomType.value}>
+                            {roomType.value}
+                          </MenuItem>
+                        ))}
+                      </PremiumSelect>
                     ) : (
-                      <TextField
+                      <PremiumTextField
                         fullWidth
                         label="Room Type"
                         value={currentBooking?.roomType || ''}
                         disabled
-                        variant="filled"
                       />
                     )}
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    {isEditing && currentBooking?.status?.toUpperCase() === 'CONFIRMED' ? (
-                      <TextField
+                    {isEditing && currentBooking?.status?.toUpperCase() === 'BOOKED' ? (
+                      <PremiumTextField
                         fullWidth
                         label="Room Number"
                         value={currentBooking?.roomNumber || 'TBA (To Be Assigned)'}
                         onChange={(e) => handleFieldChange('roomNumber', e.target.value)}
-                        variant="outlined"
                         placeholder="Enter room number or assign during check-in"
                       />
                     ) : (
-                      <TextField
+                      <PremiumTextField
                         fullWidth
                         label="Room Number"
                         value={currentBooking?.roomNumber || 'TBA (To Be Assigned)'}
                         disabled
-                        variant="filled"
                       />
                     )}
                   </Grid>
@@ -567,45 +553,41 @@ const FrontDeskBookingDetails: React.FC = () => {
                 
                 <Grid container spacing={2}>
                   <Grid item xs={12} sm={6}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label="Check-in Date"
                       value={currentBooking?.checkInDate || ''}
                       type="date"
                       onChange={(e) => handleFieldChange('checkInDate', e.target.value)}
                       disabled={!isEditing}
-                      variant={isEditing ? 'outlined' : 'filled'}
                       InputLabelProps={{ shrink: true }}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label="Check-out Date"
                       value={currentBooking?.checkOutDate || ''}
                       type="date"
                       onChange={(e) => handleFieldChange('checkOutDate', e.target.value)}
                       disabled={!isEditing}
-                      variant={isEditing ? 'outlined' : 'filled'}
                       InputLabelProps={{ shrink: true }}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label="Price per Night"
                       value={formatCurrency(currentBooking?.pricePerNight || 0)}
                       disabled
-                      variant="filled"
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label="Total Amount"
                       value={formatCurrency(currentBooking?.totalAmount || 0)}
                       disabled
-                      variant="filled"
                     />
                   </Grid>
                 </Grid>
@@ -624,21 +606,19 @@ const FrontDeskBookingDetails: React.FC = () => {
                 
                 <Grid container spacing={2}>
                   <Grid item xs={12} sm={6}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label="Booking Date"
                       value={currentBooking ? formatDate(currentBooking.createdAt) : ''}
                       disabled
-                      variant="filled"
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
                       label="Payment Intent ID"
                       value={currentBooking?.paymentIntentId || 'N/A'}
                       disabled
-                      variant="filled"
                     />
                   </Grid>
                 </Grid>
@@ -667,8 +647,10 @@ const FrontDeskBookingDetails: React.FC = () => {
             {error}
           </Alert>
         </Snackbar>
-      </Box>
-    </Container>
+          </Box>
+        </Container>
+      </DialogContent>
+    </Dialog>
   );
 };
 

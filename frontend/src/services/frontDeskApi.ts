@@ -14,7 +14,7 @@ export interface FrontDeskBooking {
   roomType: string;
   checkInDate: string;
   checkOutDate: string;
-  status: 'PENDING' | 'CONFIRMED' | 'CHECKED_IN' | 'CHECKED_OUT' | 'CANCELLED' | 'NO_SHOW';
+  status: 'PENDING' | 'BOOKED' | 'CHECKED_IN' | 'CHECKED_OUT' | 'CANCELLED' | 'NO_SHOW';
   totalAmount: number;
   paymentStatus: string;
   confirmationNumber: string;
@@ -142,12 +142,20 @@ export interface BookingPage {
   empty: boolean;
 }
 
-const getAuthHeaders = (token: string, tenantId: string | null = 'default') => ({
-  'Content-Type': 'application/json',
-  'Authorization': `Bearer ${token}`,
-  'X-Tenant-ID': tenantId || 'default',
-  'Cache-Control': 'no-cache, no-store, must-revalidate'
-});
+const getAuthHeaders = (token: string, tenantId: string | null = null) => {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`,
+    'Cache-Control': 'no-cache, no-store, must-revalidate'
+  };
+  
+  // Only add X-Tenant-ID header if tenantId is not null
+  if (tenantId) {
+    headers['X-Tenant-ID'] = tenantId;
+  }
+  
+  return headers;
+};
 
 export const frontDeskApiService = {
   /**
@@ -158,7 +166,7 @@ export const frontDeskApiService = {
     page: number = 0, 
     size: number = 10, 
     search?: string,
-    tenantId: string | null = 'default'
+    tenantId: string | null = null
   ): Promise<{ success: boolean; data?: BookingPage; message?: string }> => {
     try {
       const params = new URLSearchParams({
@@ -183,7 +191,7 @@ export const frontDeskApiService = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Bookings fetch error:', error);
+      // console.error('Bookings fetch error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to fetch bookings' 
@@ -194,7 +202,7 @@ export const frontDeskApiService = {
   /**
    * Get a single booking by reservation ID
    */
-  getBookingById: async (token: string, reservationId: number, tenantId: string | null = 'default'): Promise<{ success: boolean; data?: FrontDeskBooking; message?: string }> => {
+  getBookingById: async (token: string, reservationId: number, tenantId: string | null = null): Promise<{ success: boolean; data?: FrontDeskBooking; message?: string }> => {
     try {
       const response = await fetch(`${API_BASE_URL}/front-desk/bookings/${reservationId}?_t=${Date.now()}`, {
         method: 'GET',
@@ -209,7 +217,7 @@ export const frontDeskApiService = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Booking fetch error:', error);
+      // console.error('Booking fetch error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to fetch booking' 
@@ -224,7 +232,7 @@ export const frontDeskApiService = {
     token: string,
     reservationId: number, 
     status: string,
-    tenantId: string | null = 'default'
+    tenantId: string | null = null
   ): Promise<{ success: boolean; data?: FrontDeskBooking; message?: string }> => {
     try {
       const response = await fetch(
@@ -243,7 +251,7 @@ export const frontDeskApiService = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Booking status update error:', error);
+      // console.error('Booking status update error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to update booking status' 
@@ -259,7 +267,7 @@ export const frontDeskApiService = {
     reservationId: number,
     roomId: number,
     roomType?: string,
-    tenantId: string | null = 'default'
+    tenantId: string | null = null
   ): Promise<{ success: boolean; data?: FrontDeskBooking; message?: string }> => {
     try {
       const params = new URLSearchParams({
@@ -286,7 +294,7 @@ export const frontDeskApiService = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Room assignment update error:', error);
+      // console.error('Room assignment update error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to update room assignment' 
@@ -312,7 +320,7 @@ export const frontDeskApiService = {
       guestEmail: string;
       guestPhone?: string;
     },
-    tenantId: string | null = 'default'
+    tenantId: string | null = null
   ): Promise<{ success: boolean; data?: FrontDeskBooking; message?: string }> => {
     try {
       const response = await fetch(
@@ -332,7 +340,7 @@ export const frontDeskApiService = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Booking update error:', error);
+      // console.error('Booking update error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to update booking' 
@@ -346,7 +354,7 @@ export const frontDeskApiService = {
   deleteBooking: async (
     token: string,
     reservationId: number,
-    tenantId: string | null = 'default'
+    tenantId: string | null = null
   ): Promise<{ success: boolean; message?: string }> => {
     try {
       const response = await fetch(`${API_BASE_URL}/bookings/${reservationId}`, {
@@ -361,7 +369,7 @@ export const frontDeskApiService = {
 
       return { success: true };
     } catch (error) {
-      console.error('Booking delete error:', error);
+      // console.error('Booking delete error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to delete booking' 
@@ -372,7 +380,7 @@ export const frontDeskApiService = {
   /**
    * Get today's arrivals
    */
-  getTodaysArrivals: async (token: string, tenantId: string | null = 'default'): Promise<{ success: boolean; data?: FrontDeskBooking[]; message?: string }> => {
+  getTodaysArrivals: async (token: string, tenantId: string | null = null): Promise<{ success: boolean; data?: FrontDeskBooking[]; message?: string }> => {
     try {
       const response = await fetch(`${API_BASE_URL}/front-desk/arrivals`, {
         method: 'GET',
@@ -387,7 +395,7 @@ export const frontDeskApiService = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Arrivals fetch error:', error);
+      // console.error('Arrivals fetch error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to fetch arrivals' 
@@ -398,7 +406,7 @@ export const frontDeskApiService = {
   /**
    * Get today's departures
    */
-  getTodaysDepartures: async (token: string, tenantId: string | null = 'default'): Promise<{ success: boolean; data?: FrontDeskBooking[]; message?: string }> => {
+  getTodaysDepartures: async (token: string, tenantId: string | null = null): Promise<{ success: boolean; data?: FrontDeskBooking[]; message?: string }> => {
     try {
       const response = await fetch(`${API_BASE_URL}/front-desk/departures`, {
         method: 'GET',
@@ -413,7 +421,7 @@ export const frontDeskApiService = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Departures fetch error:', error);
+      // console.error('Departures fetch error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to fetch departures' 
@@ -424,7 +432,7 @@ export const frontDeskApiService = {
   /**
    * Get current guests (checked in)
    */
-  getCurrentGuests: async (token: string, tenantId: string | null = 'default'): Promise<{ success: boolean; data?: FrontDeskBooking[]; message?: string }> => {
+  getCurrentGuests: async (token: string, tenantId: string | null = null): Promise<{ success: boolean; data?: FrontDeskBooking[]; message?: string }> => {
     try {
       const response = await fetch(`${API_BASE_URL}/front-desk/current-guests`, {
         method: 'GET',
@@ -439,7 +447,7 @@ export const frontDeskApiService = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Current guests fetch error:', error);
+      // console.error('Current guests fetch error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to fetch current guests' 
@@ -450,7 +458,7 @@ export const frontDeskApiService = {
   /**
    * Check in a guest
    */
-  checkInGuest: async (token: string, reservationId: number, tenantId: string | null = 'default'): Promise<{ success: boolean; data?: FrontDeskBooking; message?: string }> => {
+  checkInGuest: async (token: string, reservationId: number, tenantId: string | null = null): Promise<{ success: boolean; data?: FrontDeskBooking; message?: string }> => {
     try {
       const response = await fetch(`${API_BASE_URL}/front-desk/checkin/${reservationId}`, {
         method: 'PUT',
@@ -465,7 +473,7 @@ export const frontDeskApiService = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Check in error:', error);
+      // console.error('Check in error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to check in guest' 
@@ -476,7 +484,7 @@ export const frontDeskApiService = {
   /**
    * Check out a guest
    */
-  checkOutGuest: async (token: string, reservationId: number, tenantId: string | null = 'default'): Promise<{ success: boolean; data?: FrontDeskBooking; message?: string }> => {
+  checkOutGuest: async (token: string, reservationId: number, tenantId: string | null = null): Promise<{ success: boolean; data?: FrontDeskBooking; message?: string }> => {
     try {
       const response = await fetch(`${API_BASE_URL}/front-desk/checkout/${reservationId}`, {
         method: 'PUT',
@@ -491,7 +499,7 @@ export const frontDeskApiService = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Check out error:', error);
+      // console.error('Check out error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to check out guest' 
@@ -502,7 +510,7 @@ export const frontDeskApiService = {
   /**
    * Check out a guest with final receipt generation
    */
-  checkOutGuestWithReceipt: async (token: string, reservationId: number, tenantId: string | null = 'default'): Promise<{ success: boolean; data?: CheckoutResponse; message?: string }> => {
+  checkOutGuestWithReceipt: async (token: string, reservationId: number, tenantId: string | null = null): Promise<{ success: boolean; data?: CheckoutResponse; message?: string }> => {
     try {
       const response = await fetch(`${API_BASE_URL}/front-desk/checkout-with-receipt/${reservationId}`, {
         method: 'PUT',
@@ -517,7 +525,7 @@ export const frontDeskApiService = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Check out with receipt error:', error);
+      // console.error('Check out with receipt error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to check out guest with receipt' 
@@ -528,7 +536,7 @@ export const frontDeskApiService = {
   /**
    * Generate receipt preview for any booking (without changing status)
    */
-  generateReceiptPreview: async (token: string, reservationId: number, tenantId: string | null = 'default'): Promise<{ success: boolean; data?: ConsolidatedReceipt; message?: string }> => {
+  generateReceiptPreview: async (token: string, reservationId: number, tenantId: string | null = null): Promise<{ success: boolean; data?: ConsolidatedReceipt; message?: string }> => {
     try {
       const response = await fetch(`${API_BASE_URL}/checkout/receipt/${reservationId}/preview`, {
         method: 'GET',
@@ -543,7 +551,7 @@ export const frontDeskApiService = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Receipt preview error:', error);
+      // console.error('Receipt preview error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to generate receipt preview' 
@@ -552,9 +560,39 @@ export const frontDeskApiService = {
   },
 
   /**
+   * Email receipt to guest
+   */
+  emailReceipt: async (token: string, reservationId: number, tenantId: string | null = null, email?: string): Promise<{ success: boolean; message?: string }> => {
+    try {
+      const headers = {
+        ...getAuthHeaders(token, tenantId),
+        'Content-Type': 'application/json',
+      };
+      const response = await fetch(`${API_BASE_URL}/checkout/receipt/${reservationId}/email`, {
+        method: 'POST',
+        headers,
+        body: email ? JSON.stringify({ email }) : undefined,
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Failed to send receipt email');
+      }
+
+      const message = await response.text();
+      return { success: true, message };
+    } catch (error) {
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Failed to send receipt email' 
+      };
+    }
+  },
+
+  /**
    * Mark guest as no-show
    */
-  markNoShow: async (token: string, reservationId: number, tenantId: string | null = 'default'): Promise<{ success: boolean; data?: FrontDeskBooking; message?: string }> => {
+  markNoShow: async (token: string, reservationId: number, tenantId: string | null = null): Promise<{ success: boolean; data?: FrontDeskBooking; message?: string }> => {
     try {
       const response = await fetch(`${API_BASE_URL}/front-desk/no-show/${reservationId}`, {
         method: 'PUT',
@@ -569,7 +607,7 @@ export const frontDeskApiService = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('No-show error:', error);
+      // console.error('No-show error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to mark as no-show' 
@@ -580,7 +618,7 @@ export const frontDeskApiService = {
   /**
    * Cancel booking
    */
-  cancelBooking: async (token: string, reservationId: number, reason?: string, tenantId: string | null = 'default'): Promise<{ success: boolean; data?: FrontDeskBooking; message?: string }> => {
+  cancelBooking: async (token: string, reservationId: number, reason?: string, tenantId: string | null = null): Promise<{ success: boolean; data?: FrontDeskBooking; message?: string }> => {
     try {
       const url = new URL(`${API_BASE_URL}/front-desk/cancel/${reservationId}`);
       if (reason) {
@@ -600,7 +638,7 @@ export const frontDeskApiService = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Cancel booking error:', error);
+      // console.error('Cancel booking error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to cancel booking' 
@@ -620,7 +658,7 @@ export const frontDeskApiService = {
       checkInDate?: string;
       status?: string;
     },
-    tenantId: string | null = 'default'
+    tenantId: string | null = null
   ): Promise<{ success: boolean; data?: FrontDeskBooking[]; message?: string }> => {
     try {
       const url = new URL(`${API_BASE_URL}/front-desk/search`);
@@ -644,7 +682,7 @@ export const frontDeskApiService = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Search bookings error:', error);
+      // console.error('Search bookings error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to search bookings' 
@@ -655,7 +693,7 @@ export const frontDeskApiService = {
   /**
    * Get front desk statistics
    */
-  getFrontDeskStats: async (token: string, tenantId: string | null = 'default'): Promise<{ success: boolean; data?: FrontDeskStats; message?: string }> => {
+  getFrontDeskStats: async (token: string, tenantId: string | null = null): Promise<{ success: boolean; data?: FrontDeskStats; message?: string }> => {
     try {
       const response = await fetch(`${API_BASE_URL}/front-desk/stats`, {
         method: 'GET',
@@ -670,7 +708,7 @@ export const frontDeskApiService = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Front desk stats error:', error);
+      // console.error('Front desk stats error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to fetch front desk statistics' 
@@ -688,7 +726,7 @@ export const frontDeskApiService = {
     search?: string,
     roomType?: string,
     status?: string,
-    tenantId: string | null = 'default'
+    tenantId: string | null = null
   ): Promise<{ success: boolean; data?: RoomPage; message?: string }> => {
     try {
       const params = new URLSearchParams({
@@ -719,7 +757,7 @@ export const frontDeskApiService = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Rooms fetch error:', error);
+      // console.error('Rooms fetch error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to fetch rooms' 
@@ -735,7 +773,7 @@ export const frontDeskApiService = {
     roomId: number,
     status: string,
     notes?: string,
-    tenantId: string | null = 'default'
+    tenantId: string | null = null
   ): Promise<{ success: boolean; data?: FrontDeskRoom; message?: string }> => {
     try {
       const params = new URLSearchParams({
@@ -758,8 +796,7 @@ export const frontDeskApiService = {
           errorMessage = errorData.message || errorMessage;
         } catch (parseError) {
           // If response isn't JSON, it might be HTML error page
-          const errorText = await response.text();
-          console.error('Non-JSON error response:', errorText);
+          // console.error('Non-JSON error response');
           errorMessage = `Server error (${response.status}): ${response.statusText}`;
         }
         throw new Error(errorMessage);
@@ -768,7 +805,7 @@ export const frontDeskApiService = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Room status update error:', error);
+      // console.error('Room status update error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to update room status' 
@@ -782,7 +819,7 @@ export const frontDeskApiService = {
   getRoomById: async (
     token: string,
     roomId: number,
-    tenantId: string | null = 'default'
+    tenantId: string | null = null
   ): Promise<{ success: boolean; data?: FrontDeskRoom; message?: string }> => {
     try {
       const response = await fetch(`${API_BASE_URL}/front-desk/rooms/${roomId}`, {
@@ -798,10 +835,66 @@ export const frontDeskApiService = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Room details fetch error:', error);
+      // console.error('Room details fetch error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to fetch room details' 
+      };
+    }
+  },
+
+  /**
+   * Get available rooms for a specific date range
+   */
+  getAvailableRoomsForDateRange: async (
+    token: string,
+    hotelId: number,
+    checkInDate: string,
+    checkOutDate: string,
+    guests: number = 2,
+    tenantId: string | null = null
+  ): Promise<{ success: boolean; data?: any[]; message?: string }> => {
+    try {
+      // Ensure dates are in YYYY-MM-DD format
+      const formatDate = (dateStr: string): string => {
+        // If already in YYYY-MM-DD format, return as is
+        if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+          return dateStr;
+        }
+        // Otherwise, parse and format
+        const date = new Date(dateStr);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      };
+
+      const formattedCheckIn = formatDate(checkInDate);
+      const formattedCheckOut = formatDate(checkOutDate);
+      
+      const params = new URLSearchParams({
+        checkInDate: formattedCheckIn,
+        checkOutDate: formattedCheckOut,
+        guests: guests.toString()
+      });
+
+      const response = await fetch(`${API_BASE_URL}/front-desk/hotels/${hotelId}/available-rooms?${params.toString()}`, {
+        method: 'GET',
+        headers: getAuthHeaders(token, tenantId),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to fetch available rooms');
+      }
+
+      const data = await response.json();
+      return { success: true, data };
+    } catch (error) {
+      // console.error('Available rooms fetch error:', error);
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Failed to fetch available rooms' 
       };
     }
   },
@@ -813,8 +906,10 @@ export const frontDeskApiService = {
     token: string,
     page: number = 0, 
     size: number = 10, 
+    search?: string,
+    roomType?: string,
     status?: string,
-    tenantId: string | null = 'default'
+    tenantId: string | null = null
   ): Promise<{ success: boolean; data?: { content: Room[]; page: { size: number; number: number; totalElements: number; totalPages: number; }; first: boolean; last: boolean; numberOfElements: number; empty: boolean; }; message?: string }> => {
     try {
       const params = new URLSearchParams({
@@ -822,6 +917,8 @@ export const frontDeskApiService = {
         size: size.toString(),
       });
       
+      if (search) params.append('search', search);
+      if (roomType) params.append('roomType', roomType);
       if (status && status !== 'ALL') {
         params.append('status', status);
       }
@@ -839,7 +936,7 @@ export const frontDeskApiService = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Rooms fetch error:', error);
+      // console.error('Rooms fetch error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to fetch rooms' 
@@ -853,7 +950,7 @@ export const frontDeskApiService = {
   toggleRoomAvailability: async (
     token: string,
     roomId: number,
-    tenantId: string | null = 'default'
+    tenantId: string | null = null
   ): Promise<{ success: boolean; data?: Room; message?: string }> => {
     try {
       const response = await fetch(`${API_BASE_URL}/front-desk/rooms/${roomId}/toggle-availability`, {
@@ -869,7 +966,7 @@ export const frontDeskApiService = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Room availability toggle error:', error);
+      // console.error('Room availability toggle error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to toggle room availability' 
@@ -883,9 +980,64 @@ export const frontDeskApiService = {
   getAvailableRoomsForCheckin: async (
     token: string,
     hotelId: number,
-    tenantId: string | null = 'default'
+    tenantId: string | null = null,
+    checkInDate?: string,
+    checkOutDate?: string,
+    guests: number = 2
   ): Promise<{ success: boolean; data?: any[]; message?: string }> => {
     try {
+      // If dates are provided, use the date-aware endpoint
+      if (checkInDate && checkOutDate) {
+        // Ensure dates are in YYYY-MM-DD format
+        const formatDate = (dateStr: string): string => {
+          // If already in YYYY-MM-DD format, return as is
+          if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+            return dateStr;
+          }
+          // Otherwise, parse and format
+          const date = new Date(dateStr);
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const day = String(date.getDate()).padStart(2, '0');
+          return `${year}-${month}-${day}`;
+        };
+
+        const formattedCheckIn = formatDate(checkInDate);
+        const formattedCheckOut = formatDate(checkOutDate);
+        
+        // console.log('🏨 getAvailableRoomsForCheckin: Formatted dates:', {
+        //   original: { checkInDate, checkOutDate },
+        //   formatted: { checkIn: formattedCheckIn, checkOut: formattedCheckOut },
+        //   hotelId,
+        //   guests
+        // });
+
+        const params = new URLSearchParams({
+          checkInDate: formattedCheckIn,
+          checkOutDate: formattedCheckOut,
+          guests: guests.toString()
+        });
+
+        const url = `${API_BASE_URL}/front-desk/hotels/${hotelId}/available-rooms?${params}`;
+        // console.log('🏨 getAvailableRoomsForCheckin: Request URL:', url);
+
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: getAuthHeaders(token, tenantId),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          // console.error('🏨 getAvailableRoomsForCheckin: Error response:', errorData);
+          return { success: false, message: errorData.message || 'Failed to get available rooms' };
+        }
+
+        const data = await response.json();
+        // console.log('🏨 getAvailableRoomsForCheckin: Success, rooms found:', data.length);
+        return { success: true, data };
+      }
+      
+      // Fallback to basic availability (no date filtering)
       const response = await fetch(
         `${API_BASE_URL}/front-desk/hotels/${hotelId}/available-rooms`,
         {
@@ -902,7 +1054,7 @@ export const frontDeskApiService = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Get available rooms error:', error);
+      // console.error('Get available rooms error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to get available rooms' 
@@ -918,7 +1070,7 @@ export const frontDeskApiService = {
     reservationId: number,
     roomId: number,
     roomType?: string,
-    tenantId: string | null = 'default'
+    tenantId: string | null = null
   ): Promise<{ success: boolean; data?: FrontDeskBooking; message?: string }> => {
     try {
       const params = new URLSearchParams({
@@ -945,7 +1097,7 @@ export const frontDeskApiService = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Check-in with room assignment error:', error);
+      // console.error('Check-in with room assignment error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to check-in guest' 
@@ -960,7 +1112,7 @@ export const frontDeskApiService = {
   createWalkInBooking: async (
     token: string,
     bookingRequest: any,
-    tenantId: string | null = 'default'
+    tenantId: string | null = null
   ): Promise<{ success: boolean; data?: any; message?: string }> => {
     try {
       const response = await fetch(`${API_BASE_URL}/front-desk/walk-in-booking`, {
@@ -970,17 +1122,95 @@ export const frontDeskApiService = {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to create walk-in booking');
+        let errorMessage = 'Failed to create walk-in booking';
+        
+        try {
+          const errorData = await response.json();
+          // Use the detailed error message from the backend
+          // For BookingException, the specific message is in 'details', not 'message'
+          errorMessage = errorData.details || errorData.message || errorData.error || errorMessage;
+          // console.log('API Error:', errorMessage);
+        } catch (parseError) {
+          // If we can't parse the error response, use the status text
+          errorMessage = response.statusText || errorMessage;
+        }
+        
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Walk-in booking creation error:', error);
+      // console.error('Walk-in booking creation error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to create walk-in booking' 
+      };
+    }
+  },
+
+  /**
+   * Update booking payment status (e.g., PENDING → COMPLETED → REFUNDED/FORFEITED)
+   */
+  updatePaymentStatus: async (
+    token: string,
+    reservationId: number,
+    paymentStatus: string,
+    tenantId: string | null = null
+  ): Promise<{ success: boolean; data?: FrontDeskBooking; message?: string }> => {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/front-desk/bookings/${reservationId}/payment-status?paymentStatus=${encodeURIComponent(paymentStatus)}`,
+        {
+          method: 'PUT',
+          headers: getAuthHeaders(token, tenantId),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to update payment status');
+      }
+
+      const data = await response.json();
+      return { success: true, data };
+    } catch (error) {
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : 'Failed to update payment status'
+      };
+    }
+  },
+
+  /**
+   * Update booking payment type (CASH, BANK, MOBILE)
+   */
+  updatePaymentType: async (
+    token: string,
+    reservationId: number,
+    paymentType: string,
+    tenantId: string | null = null
+  ): Promise<{ success: boolean; data?: FrontDeskBooking; message?: string }> => {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/front-desk/bookings/${reservationId}/payment-type?paymentType=${encodeURIComponent(paymentType)}`,
+        {
+          method: 'PUT',
+          headers: getAuthHeaders(token, tenantId),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to update payment type');
+      }
+
+      const data = await response.json();
+      return { success: true, data };
+    } catch (error) {
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : 'Failed to update payment type'
       };
     }
   },

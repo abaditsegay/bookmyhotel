@@ -36,7 +36,7 @@ import jakarta.validation.Valid;
  */
 @RestController
 @RequestMapping("/api/room-charges")
-@PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('FRONTDESK') or hasRole('SYSTEM_ADMIN')")
+@PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('FRONTDESK') or hasRole('SUPER_ADMIN')")
 public class RoomChargeController {
 
     @Autowired
@@ -52,7 +52,7 @@ public class RoomChargeController {
      * Create a new room charge
      */
     @PostMapping
-    @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('FRONTDESK') or hasRole('SYSTEM_ADMIN')")
+    @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('FRONTDESK') or hasRole('SUPER_ADMIN')")
     public ResponseEntity<RoomChargeResponse> createRoomCharge(
             @Valid @RequestBody RoomChargeCreateRequest request,
             Authentication authentication) {
@@ -77,7 +77,7 @@ public class RoomChargeController {
      * Get room charges for a hotel with pagination
      */
     @GetMapping("/hotel/{hotelId}")
-    @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('FRONTDESK') or hasRole('SYSTEM_ADMIN')")
+    @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('FRONTDESK') or hasRole('SUPER_ADMIN')")
     public ResponseEntity<Page<RoomChargeResponse>> getRoomChargesForHotel(
             @PathVariable Long hotelId,
             @RequestParam(defaultValue = "0") int page,
@@ -92,7 +92,7 @@ public class RoomChargeController {
      * Get room charges for a specific reservation
      */
     @GetMapping("/reservation/{reservationId}")
-    @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('FRONTDESK') or hasRole('SYSTEM_ADMIN')")
+    @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('FRONTDESK') or hasRole('SUPER_ADMIN')")
     public ResponseEntity<List<RoomChargeResponse>> getRoomChargesForReservation(
             @PathVariable Long reservationId,
             Authentication authentication) {
@@ -117,7 +117,7 @@ public class RoomChargeController {
      * Get unpaid room charges for a reservation
      */
     @GetMapping("/reservation/{reservationId}/unpaid")
-    @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('FRONTDESK') or hasRole('SYSTEM_ADMIN')")
+    @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('FRONTDESK') or hasRole('SUPER_ADMIN')")
     public ResponseEntity<List<RoomChargeResponse>> getUnpaidChargesForReservation(
             @PathVariable Long reservationId,
             Authentication authentication) {
@@ -143,7 +143,7 @@ public class RoomChargeController {
      * Get total unpaid amount for a reservation
      */
     @GetMapping("/reservation/{reservationId}/unpaid-total")
-    @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('FRONTDESK') or hasRole('SYSTEM_ADMIN')")
+    @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('FRONTDESK') or hasRole('SUPER_ADMIN')")
     public ResponseEntity<BigDecimal> getTotalUnpaidAmount(
             @PathVariable Long reservationId,
             Authentication authentication) {
@@ -168,7 +168,7 @@ public class RoomChargeController {
      * Mark a room charge as paid
      */
     @PutMapping("/{chargeId}/mark-paid")
-    @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('FRONTDESK') or hasRole('SYSTEM_ADMIN')")
+    @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('FRONTDESK') or hasRole('SUPER_ADMIN')")
     public ResponseEntity<RoomChargeResponse> markChargeAsPaid(
             @PathVariable Long chargeId,
             @RequestParam(required = false) String paymentReference,
@@ -194,7 +194,7 @@ public class RoomChargeController {
      * Mark a room charge as unpaid
      */
     @PutMapping("/{chargeId}/mark-unpaid")
-    @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('FRONTDESK') or hasRole('SYSTEM_ADMIN')")
+    @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('FRONTDESK') or hasRole('SUPER_ADMIN')")
     public ResponseEntity<RoomChargeResponse> markChargeAsUnpaid(
             @PathVariable Long chargeId,
             Authentication authentication) {
@@ -244,7 +244,7 @@ public class RoomChargeController {
      * Search room charges
      */
     @GetMapping("/hotel/{hotelId}/search")
-    @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('FRONTDESK') or hasRole('SYSTEM_ADMIN')")
+    @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('FRONTDESK') or hasRole('SUPER_ADMIN')")
     public ResponseEntity<Page<RoomChargeResponse>> searchRoomCharges(
             @PathVariable Long hotelId,
             @RequestParam String searchTerm,

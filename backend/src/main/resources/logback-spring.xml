@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <springProfile name="production">
+        <!-- Console appender for container logs -->
+        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+                <providers>
+                    <timestamp/>
+                    <version/>
+                    <logLevel/>
+                    <message/>
+                    <mdc/>
+                    <arguments/>
+                    <stackTrace/>
+                    <pattern>
+                        <pattern>
+                            {
+                                "timestamp": "%d{yyyy-MM-dd HH:mm:ss.SSS}",
+                                "level": "%level",
+                                "thread": "%thread",
+                                "tenant": "%X{tenantId:-}",
+                                "hotel": "%X{hotelId:-}",
+                                "user": "%X{userId:-}",
+                                "logger": "%logger{36}",
+                                "message": "%message",
+                                "exception": "%exception{full}"
+                            }
+                        </pattern>
+                    </pattern>
+                </providers>
+            </encoder>
+        </appender>
+
+        <!-- File appender for application logs -->
+        <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <file>logs/bookmyhotel-application.log</file>
+            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                <fileNamePattern>logs/bookmyhotel-application.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+                <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                    <maxFileSize>100MB</maxFileSize>
+                </timeBasedFileNamingAndTriggeringPolicy>
+                <maxHistory>30</maxHistory>
+                <totalSizeCap>5GB</totalSizeCap>
+            </rollingPolicy>
+            <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+                <providers>
+                    <timestamp/>
+                    <version/>
+                    <logLevel/>
+                    <message/>
+                    <mdc/>
+                    <arguments/>
+                    <stackTrace/>
+                    <pattern>
+                        <pattern>
+                            {
+                                "timestamp": "%d{yyyy-MM-dd HH:mm:ss.SSS}",
+                                "level": "%level",
+                                "thread": "%thread",
+                                "tenant": "%X{tenantId:-}",
+                                "hotel": "%X{hotelId:-}",
+                                "user": "%X{userId:-}",
+                                "logger": "%logger{36}",
+                                "message": "%message",
+                                "exception": "%exception{full}"
+                            }
+                        </pattern>
+                    </pattern>
+                </providers>
+            </encoder>
+        </appender>
+
+        <!-- Security audit log appender -->
+        <appender name="SECURITY_AUDIT" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <file>logs/bookmyhotel-security-audit.log</file>
+            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                <fileNamePattern>logs/bookmyhotel-security-audit.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+                <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                    <maxFileSize>50MB</maxFileSize>
+                </timeBasedFileNamingAndTriggeringPolicy>
+                <maxHistory>90</maxHistory>
+                <totalSizeCap>2GB</totalSizeCap>
+            </rollingPolicy>
+            <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+                <providers>
+                    <timestamp/>
+                    <version/>
+                    <logLevel/>
+                    <message/>
+                    <mdc/>
+                    <arguments/>
+                    <stackTrace/>
+                    <pattern>
+                        <pattern>
+                            {
+                                "timestamp": "%d{yyyy-MM-dd HH:mm:ss.SSS}",
+                                "level": "%level",
+                                "audit_type": "SECURITY",
+                                "tenant": "%X{tenantId:-}",
+                                "hotel": "%X{hotelId:-}",
+                                "user": "%X{userId:-}",
+                                "ip": "%X{clientIp:-}",
+                                "user_agent": "%X{userAgent:-}",
+                                "logger": "%logger{36}",
+                                "message": "%message",
+                                "exception": "%exception{full}"
+                            }
+                        </pattern>
+                    </pattern>
+                </providers>
+            </encoder>
+        </appender>
+
+        <!-- Performance monitoring log appender -->
+        <appender name="PERFORMANCE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <file>logs/bookmyhotel-performance.log</file>
+            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                <fileNamePattern>logs/bookmyhotel-performance.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+                <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                    <maxFileSize>50MB</maxFileSize>
+                </timeBasedFileNamingAndTriggeringPolicy>
+                <maxHistory>14</maxHistory>
+                <totalSizeCap>1GB</totalSizeCap>
+            </rollingPolicy>
+            <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+                <providers>
+                    <timestamp/>
+                    <version/>
+                    <logLevel/>
+                    <message/>
+                    <mdc/>
+                    <arguments/>
+                    <pattern>
+                        <pattern>
+                            {
+                                "timestamp": "%d{yyyy-MM-dd HH:mm:ss.SSS}",
+                                "level": "%level",
+                                "metric_type": "PERFORMANCE",
+                                "tenant": "%X{tenantId:-}",
+                                "hotel": "%X{hotelId:-}",
+                                "user": "%X{userId:-}",
+                                "logger": "%logger{36}",
+                                "message": "%message",
+                                "duration_ms": "%X{duration:-}",
+                                "endpoint": "%X{endpoint:-}",
+                                "method": "%X{httpMethod:-}"
+                            }
+                        </pattern>
+                    </pattern>
+                </providers>
+            </encoder>
+        </appender>
+
+        <!-- Root logger -->
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="FILE"/>
+        </root>
+
+        <!-- Application specific loggers -->
+        <logger name="com.bookmyhotel" level="INFO" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="FILE"/>
+        </logger>
+
+        <!-- Security audit logger -->
+        <logger name="SECURITY_AUDIT" level="INFO" additivity="false">
+            <appender-ref ref="SECURITY_AUDIT"/>
+        </logger>
+
+        <!-- Performance monitoring logger -->
+        <logger name="PERFORMANCE_MONITOR" level="INFO" additivity="false">
+            <appender-ref ref="PERFORMANCE"/>
+        </logger>
+
+        <!-- Spring Security -->
+        <logger name="org.springframework.security" level="WARN"/>
+
+        <!-- Hibernate SQL -->
+        <logger name="org.hibernate.SQL" level="WARN"/>
+        <logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="WARN"/>
+
+        <!-- HikariCP -->
+        <logger name="com.zaxxer.hikari" level="WARN"/>
+
+        <!-- Spring Web -->
+        <logger name="org.springframework.web" level="WARN"/>
+
+        <!-- Actuator -->
+        <logger name="org.springframework.boot.actuate" level="WARN"/>
+
+        <!-- Redis -->
+        <logger name="org.springframework.data.redis" level="WARN"/>
+
+        <!-- External payment providers -->
+        <logger name="com.stripe" level="INFO"/>
+
+        <!-- Reduce noise from common libraries -->
+        <logger name="org.apache.http" level="WARN"/>
+        <logger name="org.springframework.boot.autoconfigure" level="WARN"/>
+        <logger name="org.springframework.context" level="WARN"/>
+    </springProfile>
+
+    <!-- Development profile logging -->
+    <springProfile name="!production">
+        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level [%X{tenantId}] %logger{36} - %msg%n</pattern>
+            </encoder>
+        </appender>
+
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+
+        <logger name="com.bookmyhotel" level="INFO"/>
+        <logger name="org.springframework.security" level="WARN"/>
+        <logger name="org.hibernate.SQL" level="WARN"/>
+        <logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="WARN"/>
+        <logger name="org.springframework.web" level="WARN"/>
+        <logger name="com.zaxxer.hikari" level="WARN"/>
+    </springProfile>
+</configuration>

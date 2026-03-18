@@ -3,13 +3,17 @@ package com.bookmyhotel.service;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.bookmyhotel.config.CacheConfig;
 import com.bookmyhotel.dto.HotelSearchRequest;
 import com.bookmyhotel.dto.HotelSearchResult;
 import com.bookmyhotel.dto.RoomTypeAvailabilityDto;
@@ -19,7 +23,6 @@ import com.bookmyhotel.entity.RoomType;
 import com.bookmyhotel.entity.RoomTypePricing;
 import com.bookmyhotel.repository.HotelRepository;
 import com.bookmyhotel.repository.RoomRepository;
-import com.bookmyhotel.config.CacheConfig;
 
 /**
  * Hotel search service
@@ -27,6 +30,8 @@ import com.bookmyhotel.config.CacheConfig;
 @Service
 @Transactional(readOnly = true)
 public class HotelSearchService {
+
+    private static final Logger logger = LoggerFactory.getLogger(HotelSearchService.class);
 
     @Autowired
     private HotelRepository hotelRepository;
@@ -39,6 +44,9 @@ public class HotelSearchService {
 
     @Autowired
     private RoomTypePricingService roomTypePricingService;
+
+    @Autowired
+    private HotelImageService hotelImageService;
 
     /**
      * Search hotels based on criteria
@@ -75,8 +83,8 @@ public class HotelSearchService {
      * Get hotel details by ID
      */
     public HotelSearchResult getHotelDetails(Long hotelId, HotelSearchRequest request) {
-        Hotel hotel = hotelRepository.findByIdAndIsActiveTrue(hotelId)
-                .orElseThrow(() -> new RuntimeException("Hotel not found or not available"));
+        Hotel hotel = hotelRepository.findByIdAndIsPubliclyListedTrue(hotelId)
+                .orElseThrow(() -> new RuntimeException("Hotel not found or not publicly listed"));
 
         return convertToSearchResult(hotel, request);
     }
@@ -179,6 +187,28 @@ public class HotelSearchService {
             dto.setDescription(sampleRoom.getDescription());
         }
 
+        // Get room type image URL from S3
+        try {
+            // Convert RoomType enum to roomTypeId (ordinal + 1)
+            Long roomTypeId = (long) (roomType.ordinal() + 1);
+            // Get tenant from TenantContext (assuming it's available)
+            String tenantId = "development"; // TODO: Get from TenantContext
+
+            Optional<com.bookmyhotel.entity.HotelImage> heroImage = hotelImageService.getRoomTypeHeroImage(tenantId,
+                    hotelId, roomTypeId);
+
+            if (heroImage.isPresent()) {
+                dto.setImageUrl(heroImage.get().getFilePath());
+            } else {
+                dto.setImageUrl(null); // Will allow frontend to use fallback
+            }
+        } catch (Exception e) {
+            // Log the error but don't fail the room type availability
+            logger.error("Failed to load room type image for hotel {} and room type {}: {}",
+                    hotelId, roomType, e.getMessage(), e);
+            dto.setImageUrl(null); // Will allow frontend to use fallback
+        }
+
         return dto;
     }
 
@@ -195,6 +225,29 @@ public class HotelSearchService {
         result.setCountry(hotel.getCountry());
         result.setPhone(hotel.getPhone());
         result.setEmail(hotel.getEmail());
+        result.setMobilePaymentPhone(hotel.getMobilePaymentPhone());
+        result.setMobilePaymentPhone2(hotel.getMobilePaymentPhone2());
+
+        // Get hotel images
+        try {
+            // Get hero image
+            var heroImage = hotelImageService.getHotelHeroImagePublic(hotel.getId());
+            if (heroImage.isPresent()) {
+                result.setHeroImageUrl(heroImage.get().getFilePath());
+            }
+
+            // Get all gallery images
+            var allImages = hotelImageService.getHotelImagesPublic(hotel.getId());
+            var galleryImages = allImages.stream()
+                    .filter(img -> !img.isHeroImage()) // Exclude hero image from gallery
+                    .map(img -> img.getFilePath())
+                    .collect(Collectors.toList());
+            result.setGalleryImageUrls(galleryImages);
+
+        } catch (Exception e) {
+            // Log the error but don't fail the hotel search
+            logger.error("Failed to load hotel images for hotel {}: {}", hotel.getId(), e.getMessage(), e);
+        }
 
         // Get room type availability instead of individual rooms
         List<RoomTypeAvailabilityDto> roomTypeAvailability = getRoomTypeAvailability(hotel.getId(), request);

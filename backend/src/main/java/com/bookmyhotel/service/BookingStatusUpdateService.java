@@ -2,6 +2,8 @@ package com.bookmyhotel.service;
 
 import java.time.LocalDateTime;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +27,8 @@ import com.bookmyhotel.repository.UserRepository;
 @Transactional
 public class BookingStatusUpdateService {
 
+    private static final Logger logger = LoggerFactory.getLogger(BookingStatusUpdateService.class);
+
     @Autowired
     private ReservationRepository reservationRepository;
 
@@ -37,6 +41,9 @@ public class BookingStatusUpdateService {
     @Autowired
     private BookingChangeNotificationService bookingChangeNotificationService;
 
+    @Autowired
+    private AutomatedRoomStatusService automatedRoomStatusService;
+
     /**
      * Update booking status with notification creation
      * 
@@ -47,14 +54,15 @@ public class BookingStatusUpdateService {
      * @return BookingResponse with updated booking information
      */
     public BookingResponse updateBookingStatus(Long reservationId, ReservationStatus newStatus, String initiatedBy) {
-        System.out.println("🔄 BookingStatusUpdateService.updateBookingStatus called - reservationId: " + reservationId
-                + ", newStatus: " + newStatus + ", initiatedBy: " + initiatedBy);
+        logger.debug(
+                "BookingStatusUpdateService.updateBookingStatus called - reservationId: {}, newStatus: {}, initiatedBy: {}",
+                reservationId, newStatus, initiatedBy);
 
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
 
-        System.out.println("📋 Found reservation: " + generateConfirmationNumber(reservation.getId())
-                + " - Current status: " + reservation.getStatus());
+        logger.debug("Found reservation: {} - Current status: {}",
+                generateConfirmationNumber(reservation.getId()), reservation.getStatus());
 
         // Store old status for comparison
         ReservationStatus oldStatus = reservation.getStatus();
@@ -91,8 +99,8 @@ public class BookingStatusUpdateService {
 
         // Create booking notification if status changed to CANCELLED
         if (newStatus == ReservationStatus.CANCELLED) {
-            System.out.println("📢 Creating cancellation notification for reservation: "
-                    + generateConfirmationNumber(reservation.getId()));
+            // System.out.println("📢 Creating cancellation notification for reservation: "
+            // + generateConfirmationNumber(reservation.getId()));
             try {
                 String reason = "Booking cancelled by " + initiatedBy;
                 bookingChangeNotificationService.createCancellationNotification(
@@ -100,15 +108,23 @@ public class BookingStatusUpdateService {
                         reason,
                         java.math.BigDecimal.ZERO, // No refund calculation for admin/front desk cancellations
                         initiatedBy);
-                System.out.println("✅ Successfully created cancellation notification");
+                // System.out.println("✅ Successfully created cancellation notification");
             } catch (Exception e) {
                 // Log error but don't fail the status update
-                System.err.println("❌ Failed to create cancellation notification: " + e.getMessage());
-                e.printStackTrace();
+                // System.err.println("❌ Failed to create cancellation notification: " +
+                // e.getMessage());
+                logger.error("Operation failed", e);
             }
         }
 
-        System.out.println("✅ Status updated successfully: " + oldStatus + " → " + newStatus);
+        // System.out.println("✅ Status updated successfully: " + oldStatus + " → " +
+        // newStatus);
+
+        // Trigger automated room status consistency check for the affected room
+        if (room != null) {
+            automatedRoomStatusService.checkRoomStatusConsistency(room.getId());
+        }
+
         return convertToBookingResponse(reservation);
     }
 
@@ -136,6 +152,7 @@ public class BookingStatusUpdateService {
         response.setCheckOutDate(reservation.getCheckOutDate());
         response.setTotalAmount(reservation.getTotalAmount());
         response.setPaymentIntentId(reservation.getPaymentIntentId());
+        response.setPaymentReference(reservation.getPaymentReference());
         response.setCreatedAt(reservation.getCreatedAt());
         response.setNumberOfGuests(reservation.getNumberOfGuests());
         response.setSpecialRequests(reservation.getSpecialRequests());
@@ -146,6 +163,7 @@ public class BookingStatusUpdateService {
             response.setRoomNumber(room.getRoomNumber());
             response.setRoomType(room.getRoomType().name());
             response.setPricePerNight(room.getPricePerNight());
+            response.setAssignedRoomId(room.getId()); // Set the room ID for pre-assigned rooms
             response.setHotelName(room.getHotel().getName());
             response.setHotelAddress(room.getHotel().getAddress());
         } else {
@@ -196,12 +214,8 @@ public class BookingStatusUpdateService {
             response.setGuestEmail("N/A");
         }
 
-        // Payment status
-        if (reservation.getPaymentIntentId() != null) {
-            response.setPaymentStatus("PAID");
-        } else {
-            response.setPaymentStatus("PENDING");
-        }
+        // Payment status - use the actual payment status from the entity
+        response.setPaymentStatus(reservation.getPaymentStatusString());
 
         return response;
     }
@@ -220,7 +234,7 @@ public class BookingStatusUpdateService {
         try {
             return userRepository.findById(guestId).orElse(null);
         } catch (Exception e) {
-            System.err.println("Error fetching guest user: " + e.getMessage());
+            // System.err.println("Error fetching guest user: " + e.getMessage());
             return null;
         }
     }

@@ -76,7 +76,7 @@ public class PdfService {
             Document document = new Document(pdfDocument);
 
             // Header
-            document.add(new Paragraph(appName)
+            document.add(new Paragraph(booking.getHotelName())
                     .setTextAlignment(TextAlignment.CENTER)
                     .setFontSize(20)
                     .setBold());
@@ -143,7 +143,7 @@ public class PdfService {
 
             // Footer
             document.add(new Paragraph(" ")); // Space
-            document.add(new Paragraph("Thank you for choosing " + appName + "!")
+            document.add(new Paragraph("Thank you for choosing " + booking.getHotelName() + "!")
                     .setTextAlignment(TextAlignment.CENTER)
                     .setFontSize(12));
 

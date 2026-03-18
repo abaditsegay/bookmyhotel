@@ -20,6 +20,7 @@ import {
 } from '@mui/material';
 import { operationsSupervisorApi } from '../../services/operationsSupervisorApi';
 import { HousekeepingTask, HousekeepingStaff, StaffPerformance } from '../../types/operations';
+import { COLORS, addAlpha } from '../../theme/themeColors';
 
 interface StaffTasksDialogProps {
   open: boolean;
@@ -54,7 +55,7 @@ const StaffTasksDialog: React.FC<StaffTasksDialogProps> = ({
         setPerformance(performanceData);
       } catch (err) {
         setError('Failed to load staff data');
-        console.error('Load staff data error:', err);
+        // console.error('Load staff data error:', err);
       } finally {
         setLoading(false);
       }
@@ -77,7 +78,12 @@ const StaffTasksDialog: React.FC<StaffTasksDialogProps> = ({
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
-      <DialogTitle>
+      <DialogTitle sx={{ 
+        textAlign: 'center', 
+        color: COLORS.PRIMARY,
+        borderBottom: '1px solid',
+        borderColor: 'divider'
+      }}>
         Staff Tasks - {staff?.user.firstName} {staff?.user.lastName}
       </DialogTitle>
       <DialogContent>
@@ -96,10 +102,19 @@ const StaffTasksDialog: React.FC<StaffTasksDialogProps> = ({
             {/* Performance Summary */}
             {performance && (
               <Box sx={{ mb: 3 }}>
-                <Typography variant="h6" gutterBottom>
+                <Typography variant="h6" gutterBottom sx={{ color: COLORS.PRIMARY }}>
                   Performance Summary
                 </Typography>
-                <Box sx={{ display: 'flex', gap: 3, mb: 2 }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  gap: 3, 
+                  mb: 2,
+                  p: 2,
+                  backgroundColor: addAlpha(COLORS.PRIMARY, 0.05),
+                  borderRadius: 1,
+                  border: '1px solid',
+                  borderColor: addAlpha(COLORS.PRIMARY, 0.2)
+                }}>
                   <Typography variant="body2">
                     <strong>Tasks Completed:</strong> {performance.tasksCompleted}
                   </Typography>
@@ -117,13 +132,38 @@ const StaffTasksDialog: React.FC<StaffTasksDialogProps> = ({
             )}
 
             {/* Tasks Table */}
-            <Typography variant="h6" gutterBottom>
+            <Typography variant="h6" gutterBottom sx={{ color: COLORS.PRIMARY }}>
               Recent Tasks
             </Typography>
             <TableContainer component={Paper}>
               <Table>
                 <TableHead>
-                  <TableRow>
+                  <TableRow
+                    sx={{
+                      background: COLORS.GRADIENT_SLATE,
+                      boxShadow: `0 4px 12px ${addAlpha(COLORS.SLATE_500, 0.15)}`,
+                      '& .MuiTableCell-head': {
+                        color: COLORS.WHITE,
+                        fontWeight: 600,
+                        fontSize: '0.95rem',
+                        letterSpacing: '0.5px',
+                        textTransform: 'uppercase',
+                        border: 'none',
+                        padding: '20px 16px',
+                        position: 'relative',
+                        textShadow: `0 1px 2px ${addAlpha(COLORS.BLACK, 0.1)}`,
+                        '&::after': {
+                          content: '""',
+                          position: 'absolute',
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          height: '3px',
+                          background: `linear-gradient(90deg, ${addAlpha(COLORS.WHITE, 0.6)} 0%, ${addAlpha(COLORS.WHITE, 0.8)} 50%, ${addAlpha(COLORS.WHITE, 0.6)} 100%)`
+                        }
+                      }
+                    }}
+                  >
                     <TableCell>Title</TableCell>
                     <TableCell>Type</TableCell>
                     <TableCell>Room</TableCell>
@@ -174,8 +214,21 @@ const StaffTasksDialog: React.FC<StaffTasksDialogProps> = ({
           </>
         )}
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Close</Button>
+      <DialogActions sx={{ p: 2 }}>
+        <Button 
+          onClick={onClose}
+          variant="outlined"
+          sx={{
+            borderColor: COLORS.PRIMARY,
+            color: COLORS.PRIMARY,
+            '&:hover': {
+              backgroundColor: addAlpha(COLORS.PRIMARY, 0.1),
+              borderColor: COLORS.PRIMARY
+            }
+          }}
+        >
+          Close
+        </Button>
       </DialogActions>
     </Dialog>
   );

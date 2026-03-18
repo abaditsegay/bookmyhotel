@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { COLORS, addAlpha, getGradient } from '../theme/themeColors';
+import PremiumTextField from '../components/common/PremiumTextField';
 import {
   Box,
   Typography,
@@ -23,17 +25,23 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Paper
+  Paper,
+  InputAdornment,
+  IconButton,
+  TablePagination
 } from '@mui/material';
 import {
   NotificationsActive as NotificationsActiveIcon,
   Cancel as CancelIcon,
   Edit as EditIcon,
   Refresh as RefreshIcon,
-  Info as InfoIcon
+  Info as InfoIcon,
+  Search as SearchIcon,
+  Clear as ClearIcon
 } from '@mui/icons-material';
 // import { useAuth } from '../contexts/AuthContext';
 import { useNotificationsWithEvents, BookingNotification } from '../hooks/useNotifications';
+import { useBookingNotifications } from '../hooks/useBookingNotifications';
 
 const NotificationsPage: React.FC = () => {
   // const { user } = useAuth(); // Keep for future role-based features
@@ -52,6 +60,18 @@ const NotificationsPage: React.FC = () => {
   const [selectedNotification, setSelectedNotification] = useState<BookingNotification | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [typeFilter, setTypeFilter] = useState<string>('ALL');
+  const [confirmationFilter, setConfirmationFilter] = useState<string>('');
+  
+  // Pagination state
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  // Get booking notifications (history) for the selected notification
+  const { 
+    history: bookingHistory, 
+    loading: historyLoading, 
+    error: historyError 
+  } = useBookingNotifications(selectedNotification?.confirmationNumber || null);
 
   const openDetails = (notification: BookingNotification) => {
     setSelectedNotification(notification);
@@ -94,21 +114,30 @@ const NotificationsPage: React.FC = () => {
     return new Date(dateString).toLocaleString();
   };
 
+  const handlePageChange = (event: unknown, newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handleRowsPerPageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0); // Reset to first page when changing rows per page
+  };
+
   const getFilteredNotifications = () => {
     // Ensure notifications is always an array
     let filtered = Array.isArray(notifications) ? notifications : [];
     
-    // Debug logging
-    console.log('🔍 Debug getFilteredNotifications:');
-    console.log('  - Raw notifications count:', notifications.length);
-    console.log('  - Raw notifications:', notifications);
-    console.log('  - Type filter:', typeFilter);
-    console.log('  - Notification types:', notifications.map(n => n.type));
-    
     // Apply type filter
     if (typeFilter !== 'ALL') {
       filtered = filtered.filter(n => n.type === typeFilter);
-      console.log('  - After type filter:', filtered.length, 'notifications');
+    }
+    
+    // Apply confirmation number filter
+    if (confirmationFilter.trim()) {
+      const searchTerm = confirmationFilter.toLowerCase().trim();
+      filtered = filtered.filter(n => 
+        n.confirmationNumber.toLowerCase().includes(searchTerm)
+      );
     }
     
     // Sort by status first (UNREAD on top), then by creation date (newest first)
@@ -120,17 +149,47 @@ const NotificationsPage: React.FC = () => {
       // If both have same status, sort by creation date (newest first)
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
-    console.log('  - Final result:', sorted.length, 'notifications');
-    console.log('  - Final notifications:', sorted);
     
     return sorted;
   };
 
+  const getPaginatedNotifications = () => {
+    const filtered = getFilteredNotifications();
+    const startIndex = page * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
+    return filtered.slice(startIndex, endIndex);
+  };
+
   const renderNotificationsTable = (notifications: BookingNotification[]) => (
-    <TableContainer component={Paper}>
+    <TableContainer>
       <Table sx={{ minWidth: 650 }} aria-label="notifications table">
         <TableHead>
-          <TableRow>
+          <TableRow
+            sx={{
+              background: getGradient('slate'),
+              boxShadow: `0 4px 12px ${addAlpha(COLORS.SLATE_500, 0.15)}`,
+              '& .MuiTableCell-head': {
+                color: COLORS.WHITE,
+                fontWeight: 600,
+                fontSize: '0.95rem',
+                letterSpacing: '0.5px',
+                textTransform: 'uppercase',
+                border: 'none',
+                padding: '20px 16px',
+                position: 'relative',
+                textShadow: `0 1px 2px ${addAlpha(COLORS.BLACK, 0.1)}`,
+                '&::after': {
+                  content: '""',
+                  position: 'absolute',
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  height: '3px',
+                  background: getGradient('white')
+                }
+              }
+            }}
+          >
             <TableCell>Type</TableCell>
             <TableCell>Confirmation</TableCell>
             <TableCell>Guest</TableCell>
@@ -149,10 +208,11 @@ const NotificationsPage: React.FC = () => {
               key={notification.id}
               sx={{ 
                 '&:last-child td, &:last-child th': { border: 0 },
-                backgroundColor: notification.status === 'UNREAD' ? 'rgba(33, 150, 243, 0.1)' : 'inherit', // Light blue for unread
+                backgroundColor: notification.status === 'UNREAD' ? addAlpha(COLORS.BOOKED, 0.1) : 'inherit',
                 opacity: notification.status === 'ARCHIVED' ? 0.6 : 1,
                 cursor: 'pointer',
-                '&:hover': { backgroundColor: notification.status === 'UNREAD' ? 'rgba(33, 150, 243, 0.15)' : 'action.hover' }
+                transition: 'background-color 0.2s',
+                '&:hover': { backgroundColor: notification.status === 'UNREAD' ? addAlpha(COLORS.BOOKED, 0.15) : 'action.hover' }
               }}
               onClick={() => openDetails(notification)}
             >
@@ -206,16 +266,64 @@ const NotificationsPage: React.FC = () => {
               </TableCell>
               <TableCell>
                 <Box>
-                  {notification.refundAmount && notification.refundAmount > 0 && (
-                    <Typography variant="body2" color="success.main" fontWeight={notification.status === 'UNREAD' ? 'bold' : 'normal'}>
-                      Refund: {formatCurrency(notification.refundAmount)}
-                    </Typography>
-                  )}
-                  {notification.additionalCharges && notification.additionalCharges > 0 && (
-                    <Typography variant="body2" color="warning.main" fontWeight={notification.status === 'UNREAD' ? 'bold' : 'normal'}>
-                      +{formatCurrency(notification.additionalCharges)}
-                    </Typography>
-                  )}
+                  {(() => {
+                    const refund = notification.refundAmount || 0;
+                    const charges = notification.additionalCharges || 0;
+                    const netAmount = charges - refund;
+                    
+                    if (notification.type === 'CANCELLED') {
+                      // For cancellations, only show refund status
+                      if (refund > 0) {
+                        return (
+                          <Typography 
+                            variant="body2" 
+                            color="success.main" 
+                            fontWeight={notification.status === 'UNREAD' ? 'bold' : 'normal'}
+                            sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+                          >
+                            ↩️ Refund due: {formatCurrency(refund)}
+                          </Typography>
+                        );
+                      } else {
+                        return (
+                          <Typography variant="body2" color="text.secondary">
+                            No change
+                          </Typography>
+                        );
+                      }
+                    } else {
+                      // For modifications, show net amount
+                      if (netAmount > 0) {
+                        return (
+                          <Typography 
+                            variant="body2" 
+                            color="warning.main" 
+                            fontWeight={notification.status === 'UNREAD' ? 'bold' : 'normal'}
+                            sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+                          >
+                            💳 Customer owes: {formatCurrency(netAmount)}
+                          </Typography>
+                        );
+                      } else if (netAmount < 0) {
+                        return (
+                          <Typography 
+                            variant="body2" 
+                            color="success.main" 
+                            fontWeight={notification.status === 'UNREAD' ? 'bold' : 'normal'}
+                            sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+                          >
+                            ↩️ Refund due: {formatCurrency(Math.abs(netAmount))}
+                          </Typography>
+                        );
+                      } else {
+                        return (
+                          <Typography variant="body2" color="text.secondary">
+                            No payment changes
+                          </Typography>
+                        );
+                      }
+                    }
+                  })()}
                 </Box>
               </TableCell>
               <TableCell>
@@ -247,71 +355,131 @@ const NotificationsPage: React.FC = () => {
   }
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Box sx={{ width: '100%', height: '100%' }}>
       {/* Header */}
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          <NotificationsActiveIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
-          Booking Notifications
-        </Typography>
-        <Box display="flex" gap={2}>
-          <Button
-            variant="outlined"
-            startIcon={<RefreshIcon />}
-            onClick={triggerRefresh || loadNotifications}
-            disabled={loading}
-          >
-            Refresh
-          </Button>
-          {stats.totalUnread > 0 && (
+      <Box 
+        sx={{ 
+          px: 3, 
+          pt: 3, 
+          pb: 2,
+          borderBottom: 1,
+          borderColor: 'divider',
+          backgroundColor: 'background.paper'
+        }}
+      >
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+          <Typography variant="h4" component="h1">
+            <NotificationsActiveIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+            Booking Notifications
+          </Typography>
+          <Box display="flex" gap={2}>
             <Button
-              variant="contained"
-              startIcon={<InfoIcon />}
-              onClick={markAllAsRead}
+              variant="outlined"
+              startIcon={<RefreshIcon />}
+              onClick={triggerRefresh || loadNotifications}
+              disabled={loading}
             >
-              Mark All Read ({stats.totalUnread})
+              Refresh
             </Button>
-          )}
+            {stats.totalUnread > 0 && (
+              <Button
+                variant="contained"
+                startIcon={<InfoIcon />}
+                onClick={markAllAsRead}
+              >
+                Mark All Read ({stats.totalUnread})
+              </Button>
+            )}
+          </Box>
         </Box>
-      </Box>
 
-      {/* Error Alert */}
-      {error && (
-        <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
-          {error}
-        </Alert>
-      )}
+        {/* Error Alert */}
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+            {error}
+          </Alert>
+        )}
 
-      {/* Filters */}
-      <Box display="flex" gap={2} mb={3}>
-        <FormControl size="small" sx={{ minWidth: 150 }}>
-          <InputLabel>Filter by Type</InputLabel>
-          <Select
-            value={typeFilter}
-            label="Filter by Type"
-            onChange={(e) => setTypeFilter(e.target.value)}
-          >
-            <MenuItem value="ALL">All Notifications</MenuItem>
-            <MenuItem value="CANCELLED">Cancelled Only</MenuItem>
-            <MenuItem value="MODIFIED">Modified Only</MenuItem>
-          </Select>
-        </FormControl>
+        {/* Filters */}
+        <Box display="flex" gap={2}>
+          <FormControl size="small" sx={{ minWidth: 150 }}>
+            <InputLabel>Filter by Type</InputLabel>
+            <Select
+              value={typeFilter}
+              label="Filter by Type"
+              onChange={(e) => {
+                setTypeFilter(e.target.value);
+                setPage(0);
+              }}
+            >
+              <MenuItem value="ALL">All Notifications</MenuItem>
+              <MenuItem value="CANCELLED">Cancelled Only</MenuItem>
+              <MenuItem value="MODIFIED">Modified Only</MenuItem>
+            </Select>
+          </FormControl>
+          
+          <PremiumTextField
+            size="small"
+            placeholder="Search by confirmation number..."
+            value={confirmationFilter}
+            onChange={(e) => {
+              setConfirmationFilter(e.target.value);
+              setPage(0);
+            }}
+            sx={{ minWidth: 250 }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon />
+                </InputAdornment>
+              ),
+              endAdornment: confirmationFilter && (
+                <InputAdornment position="end">
+                  <IconButton
+                    size="small"
+                    onClick={() => setConfirmationFilter('')}
+                    edge="end"
+                  >
+                    <ClearIcon />
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+          />
+        </Box>
       </Box>
 
       {/* Notifications Table */}
-      {getFilteredNotifications().length > 0 ? (
-        renderNotificationsTable(getFilteredNotifications())
-      ) : (
-        <Box textAlign="center" py={4}>
-          <InfoIcon color="action" sx={{ fontSize: 64, mb: 2 }} />
-          <Typography variant="h6" color="textSecondary">
-            No notifications found
-          </Typography>
-          <Typography variant="body2" color="textSecondary">
-            Try adjusting your filter or check back later
-          </Typography>
-        </Box>
-      )}
+      <Box sx={{ width: '100%' }}>
+        {getFilteredNotifications().length > 0 ? (
+          <>
+            {renderNotificationsTable(getPaginatedNotifications())}
+            <TablePagination
+              component="div"
+              count={getFilteredNotifications().length}
+              page={page}
+              onPageChange={handlePageChange}
+              rowsPerPage={rowsPerPage}
+              onRowsPerPageChange={handleRowsPerPageChange}
+              rowsPerPageOptions={[5, 10, 25, 50, 100]}
+              sx={{ borderTop: 1, borderColor: 'divider' }}
+            />
+          </>
+        ) : (
+          <Box textAlign="center" py={8}>
+            <InfoIcon color="action" sx={{ fontSize: 64, mb: 2 }} />
+            <Typography variant="h6" color="textSecondary">
+              No notifications found
+            </Typography>
+            <Typography variant="body2" color="textSecondary">
+              {typeFilter !== 'ALL' || confirmationFilter.trim() 
+                ? 'Try adjusting your filters or search terms' 
+                : 'No notifications available at this time'
+              }
+            </Typography>
+          </Box>
+        )}
+      </Box>
 
       {/* Notification Details Dialog */}
       <Dialog 
@@ -373,12 +541,23 @@ const NotificationsPage: React.FC = () => {
                   </Typography>
                   <Divider sx={{ mb: 2 }} />
                   {selectedNotification.cancellationReason && (
-                    <Typography><strong>Reason:</strong> {selectedNotification.cancellationReason}</Typography>
+                    <Typography sx={{ mb: 1 }}>
+                      <strong>Reason:</strong> {selectedNotification.cancellationReason}
+                    </Typography>
                   )}
                   {selectedNotification.refundAmount && selectedNotification.refundAmount > 0 && (
-                    <Typography color="success.main">
-                      <strong>Refund Amount:</strong> {formatCurrency(selectedNotification.refundAmount)}
-                    </Typography>
+                    <Alert severity="success" sx={{ mt: 2 }}>
+                      <Typography>
+                        <strong>💰 Refund Required:</strong> The hotel must refund {formatCurrency(selectedNotification.refundAmount)} to the guest.
+                      </Typography>
+                    </Alert>
+                  )}
+                  {(!selectedNotification.refundAmount || selectedNotification.refundAmount === 0) && (
+                    <Alert severity="info" sx={{ mt: 2 }}>
+                      <Typography>
+                        <strong>ℹ️ No Change:</strong> No refund is required for this cancellation.
+                      </Typography>
+                    </Alert>
                   )}
                 </Box>
               )}
@@ -390,18 +569,223 @@ const NotificationsPage: React.FC = () => {
                   </Typography>
                   <Divider sx={{ mb: 2 }} />
                   {selectedNotification.changeDetails && (
-                    <Typography><strong>Changes:</strong> {selectedNotification.changeDetails}</Typography>
-                  )}
-                  {selectedNotification.additionalCharges && selectedNotification.additionalCharges > 0 && (
-                    <Typography color="warning.main">
-                      <strong>Additional Charges:</strong> {formatCurrency(selectedNotification.additionalCharges)}
+                    <Typography sx={{ mb: 1 }}>
+                      <strong>Latest Changes:</strong> {selectedNotification.changeDetails}
                     </Typography>
                   )}
-                  {selectedNotification.refundAmount && selectedNotification.refundAmount > 0 && (
-                    <Typography color="success.main">
-                      <strong>Refund Amount:</strong> {formatCurrency(selectedNotification.refundAmount)}
+                  
+                  {/* Payment Information Section */}
+                  <Box sx={{ mt: 2 }}>
+                    {(() => {
+                      const refund = selectedNotification.refundAmount || 0;
+                      const charges = selectedNotification.additionalCharges || 0;
+                      const netAmount = charges - refund;
+                      
+                      if (netAmount > 0) {
+                        return (
+                          <Alert severity="warning" sx={{ mb: 1 }}>
+                            <Typography>
+                              <strong>💳 Additional Payment Required:</strong> The customer needs to pay an additional {formatCurrency(netAmount)}.
+                            </Typography>
+                          </Alert>
+                        );
+                      } else if (netAmount < 0) {
+                        return (
+                          <Alert severity="success" sx={{ mb: 1 }}>
+                            <Typography>
+                              <strong>💰 Refund Due:</strong> The hotel must refund {formatCurrency(Math.abs(netAmount))} to the customer.
+                            </Typography>
+                          </Alert>
+                        );
+                      } else {
+                        return (
+                          <Alert severity="info">
+                            <Typography>
+                              <strong>ℹ️ No Payment Changes:</strong> This modification does not require any additional payment or refund.
+                            </Typography>
+                          </Alert>
+                        );
+                      }
+                    })()}
+                  </Box>
+
+                  {/* Complete Notification History Section */}
+                  <Box sx={{ mt: 3 }}>
+                    <Typography variant="h6" gutterBottom>
+                      Complete Notification History
                     </Typography>
-                  )}
+                    <Typography variant="body2" color="textSecondary" sx={{ mb: 1 }}>
+                      Complete chronological history of all notifications for this booking (including current)
+                    </Typography>
+                    <Divider sx={{ mb: 2 }} />
+                    
+                    {historyLoading && (
+                      <Box display="flex" justifyContent="center" p={2}>
+                        <CircularProgress size={24} />
+                        <Typography sx={{ ml: 1 }}>Loading notification history...</Typography>
+                      </Box>
+                    )}
+
+                    {historyError && (
+                      <Alert severity="warning" sx={{ mb: 2 }}>
+                        <Typography>
+                          Unable to load notification history: {historyError}
+                        </Typography>
+                      </Alert>
+                    )}
+
+                    {!historyLoading && !historyError && bookingHistory.length === 0 && (
+                      <Typography color="textSecondary" sx={{ fontStyle: 'italic' }}>
+                        No notifications found for this booking.
+                      </Typography>
+                    )}
+
+                    {!historyLoading && !historyError && bookingHistory.length > 0 && (
+                      <TableContainer component={Paper} variant="outlined">
+                        <Table size="small" aria-label="modification history">
+                          <TableHead>
+                            <TableRow
+                              sx={{
+                                background: getGradient('slate'),
+                                boxShadow: `0 4px 12px ${addAlpha(COLORS.SLATE_500, 0.15)}`,
+                                '& .MuiTableCell-head': {
+                                  color: COLORS.WHITE,
+                                  fontWeight: 600,
+                                  fontSize: '0.95rem',
+                                  letterSpacing: '0.5px',
+                                  textTransform: 'uppercase',
+                                  border: 'none',
+                                  padding: '20px 16px',
+                                  position: 'relative',
+                                  textShadow: `0 1px 2px ${addAlpha(COLORS.BLACK, 0.1)}`,
+                                  '&::after': {
+                                    content: '""',
+                                    position: 'absolute',
+                                    bottom: 0,
+                                    left: 0,
+                                    right: 0,
+                                    height: '3px',
+                                    background: getGradient('white')
+                                  }
+                                }
+                              }}
+                            >
+                              <TableCell><strong>Date</strong></TableCell>
+                              <TableCell><strong>Type</strong></TableCell>
+                              <TableCell><strong>Status</strong></TableCell>
+                              <TableCell><strong>Details</strong></TableCell>
+                              <TableCell><strong>Amount</strong></TableCell>
+                              <TableCell><strong>Updated By</strong></TableCell>
+                            </TableRow>
+                          </TableHead>
+                          <TableBody>
+                            {bookingHistory.map((notification, index) => (
+                              <TableRow 
+                                key={notification.id}
+                                sx={{
+                                  backgroundColor: index === 0 ? 'action.hover' : 'inherit',
+                                  '&:hover': {
+                                    backgroundColor: index === 0 ? 'action.selected' : 'action.hover',
+                                  }
+                                }}
+                              >
+                                <TableCell>
+                                  <Box display="flex" alignItems="center" gap={1}>
+                                    <Box>
+                                      <Typography variant="body2">
+                                        {new Date(notification.createdAt).toLocaleDateString()}
+                                      </Typography>
+                                      <Typography variant="caption" color="textSecondary">
+                                        {new Date(notification.createdAt).toLocaleTimeString()}
+                                      </Typography>
+                                    </Box>
+                                    {index === 0 && (
+                                      <Chip 
+                                        label="Latest" 
+                                        size="small"
+                                        color="success"
+                                        variant="filled"
+                                        sx={{ ml: 1, fontSize: '0.75rem' }}
+                                      />
+                                    )}
+                                  </Box>
+                                </TableCell>
+                                <TableCell>
+                                  <Chip 
+                                    label={notification.type} 
+                                    size="small"
+                                    color={notification.type === 'CANCELLED' ? 'error' : 'primary'}
+                                    variant="outlined"
+                                  />
+                                </TableCell>
+                                <TableCell>
+                                  <Chip 
+                                    label={notification.status} 
+                                    size="small"
+                                    color={notification.status === 'UNREAD' ? 'warning' : 'default'}
+                                    variant="filled"
+                                  />
+                                </TableCell>
+                                <TableCell>
+                                  <Typography variant="body2" sx={{ fontSize: '0.875rem' }}>
+                                    {notification.changeDetails || notification.cancellationReason || 'No additional details'}
+                                  </Typography>
+                                </TableCell>
+                                <TableCell>
+                                  {(() => {
+                                    const refund = notification.refundAmount || 0;
+                                    const charges = notification.additionalCharges || 0;
+                                    const netAmount = charges - refund;
+                                    
+                                    if (notification.type === 'CANCELLED') {
+                                      if (refund > 0) {
+                                        return (
+                                          <Typography variant="body2" color="success.main">
+                                            -ETB {refund.toFixed(2)}
+                                          </Typography>
+                                        );
+                                      } else {
+                                        return (
+                                          <Typography variant="body2" color="textSecondary">
+                                            ETB 0.00
+                                          </Typography>
+                                        );
+                                      }
+                                    } else {
+                                      if (netAmount > 0) {
+                                        return (
+                                          <Typography variant="body2" color="warning.main">
+                                            +ETB {netAmount.toFixed(2)}
+                                          </Typography>
+                                        );
+                                      } else if (netAmount < 0) {
+                                        return (
+                                          <Typography variant="body2" color="success.main">
+                                            -ETB {Math.abs(netAmount).toFixed(2)}
+                                          </Typography>
+                                        );
+                                      } else {
+                                        return (
+                                          <Typography variant="body2" color="textSecondary">
+                                            ETB 0.00
+                                          </Typography>
+                                        );
+                                      }
+                                    }
+                                  })()}
+                                </TableCell>
+                                <TableCell>
+                                  <Typography variant="body2">
+                                    {notification.updatedBy || 'System'}
+                                  </Typography>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </TableContainer>
+                    )}
+                  </Box>
                 </Box>
               )}
 

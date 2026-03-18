@@ -103,7 +103,7 @@ const OperationsSupervisorDashboard: React.FC = () => {
         try {
           housekeepingTasks = await housekeepingResponse.json();
         } catch (jsonError) {
-          console.error('Failed to parse housekeeping response JSON:', jsonError);
+          // console.error('Failed to parse housekeeping response JSON:', jsonError);
           housekeepingTasks = [];
         }
       }
@@ -112,7 +112,7 @@ const OperationsSupervisorDashboard: React.FC = () => {
         try {
           allMaintenanceTasks = await maintenanceResponse.json();
         } catch (jsonError) {
-          console.error('Failed to parse maintenance response JSON:', jsonError);
+          // console.error('Failed to parse maintenance response JSON:', jsonError);
           allMaintenanceTasks = [];
         }
       }
@@ -145,7 +145,7 @@ const OperationsSupervisorDashboard: React.FC = () => {
         maintenance: maintenanceStats
       });
     } catch (err) {
-      console.error('Failed to load operations stats:', err);
+      // console.error('Failed to load operations stats:', err);
     }
   }, [tenant?.id]);
 
@@ -172,7 +172,7 @@ const OperationsSupervisorDashboard: React.FC = () => {
         setStaffPerformance(performanceData);
       }
     } catch (err) {
-      console.error('Failed to load staff performance:', err);
+      // console.error('Failed to load staff performance:', err);
     }
   }, [tenant?.id]);
 
@@ -201,7 +201,7 @@ const OperationsSupervisorDashboard: React.FC = () => {
         try {
           housekeepingTasks = await housekeepingResponse.json();
         } catch (jsonError) {
-          console.error('Failed to parse housekeeping response JSON:', jsonError);
+          // console.error('Failed to parse housekeeping response JSON:', jsonError);
           housekeepingTasks = [];
         }
       }
@@ -210,7 +210,7 @@ const OperationsSupervisorDashboard: React.FC = () => {
         try {
           allMaintenanceTasks = await maintenanceResponse.json();
         } catch (jsonError) {
-          console.error('Failed to parse maintenance response JSON:', jsonError);
+          // console.error('Failed to parse maintenance response JSON:', jsonError);
           allMaintenanceTasks = [];
         }
       }
@@ -254,7 +254,7 @@ const OperationsSupervisorDashboard: React.FC = () => {
       
       setRecentActivity(activities.slice(0, 6));
     } catch (err) {
-      console.error('Failed to load recent activity:', err);
+      // console.error('Failed to load recent activity:', err);
     }
   }, [tenant?.id]);
 
@@ -276,7 +276,7 @@ const OperationsSupervisorDashboard: React.FC = () => {
       ]);
       
     } catch (err) {
-      console.error('Failed to load dashboard data:', err);
+      // console.error('Failed to load dashboard data:', err);
       setError('Failed to load dashboard data');
     } finally {
       setLoading(false);

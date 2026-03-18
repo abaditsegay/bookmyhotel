@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { normalizeEthiopianPhone } from '../../utils/phoneUtils';
 import {
   Container,
   Typography,
   Paper,
   Box,
-  TextField,
   Button,
   Grid,
   FormControl,
@@ -27,6 +27,9 @@ import {
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { adminApiService, CreateUserRequest, TenantDTO, HotelDTO } from '../../services/adminApi';
 import { useAuth } from '../../contexts/AuthContext';
+import { HOTEL_SCOPED_ROLES } from '../../constants/roles';
+import { COLORS } from '../../theme/themeColors';
+import PremiumTextField from '../../components/common/PremiumTextField';
 
 interface UserFormData {
   // Basic Information
@@ -86,7 +89,28 @@ const UserRegistrationForm: React.FC = () => {
   const [hotels, setHotels] = useState<HotelDTO[]>([]);
   const [loadingTenants, setLoadingTenants] = useState(true);
   const [loadingHotels, setLoadingHotels] = useState(false);
-  const { token } = useAuth();
+  const { token, user: currentUser } = useAuth();
+
+  // Roles this user is permitted to assign
+  const creatableRoles = (() => {
+    const callerRole = currentUser?.role || (currentUser?.roles?.[0] ?? '');
+    if (callerRole === 'SUPER_ADMIN') return [
+      { value: 'ADMIN', label: 'Administrator' },
+      { value: 'HOTEL_ADMIN', label: 'Hotel Administrator' },
+    ];
+    if (callerRole === 'ADMIN') return [
+      { value: 'HOTEL_ADMIN', label: 'Hotel Administrator' },
+    ];
+    return [
+      { value: 'ADMIN', label: 'Administrator' },
+      { value: 'HOTEL_ADMIN', label: 'Hotel Administrator' },
+      { value: 'OPERATIONAL_ADMIN', label: 'Operational Administrator' },
+      { value: 'FRONTDESK', label: 'Front Desk Agent' },
+      { value: 'HOUSEKEEPING', label: 'Housekeeping' },
+      { value: 'MAINTENANCE', label: 'Maintenance' },
+      { value: 'CUSTOMER', label: 'Customer' },
+    ];
+  })();
   
   // Load tenants on component mount
   useEffect(() => {
@@ -99,7 +123,7 @@ const UserRegistrationForm: React.FC = () => {
           setTenants(activeTenants);
         }
       } catch (error) {
-        console.error('Failed to load tenants:', error);
+        // console.error('Failed to load tenants:', error);
         setError('Failed to load tenants');
       } finally {
         setLoadingTenants(false);
@@ -109,10 +133,10 @@ const UserRegistrationForm: React.FC = () => {
     loadTenants();
   }, [token]);
   
-  // Load hotels when tenant changes and role is HOTEL_ADMIN
+  // Load hotels when tenant changes and role is hotel-scoped
   useEffect(() => {
     const loadHotels = async () => {
-      if (formData.tenantId && formData.role === 'HOTEL_ADMIN') {
+      if (formData.tenantId && HOTEL_SCOPED_ROLES.includes(formData.role as any)) {
         try {
           setLoadingHotels(true);
           if (token) {
@@ -121,7 +145,7 @@ const UserRegistrationForm: React.FC = () => {
             setHotels(tenantHotels);
           }
         } catch (error) {
-          console.error('Failed to load hotels:', error);
+          // console.error('Failed to load hotels:', error);
           setError('Failed to load hotels for selected tenant');
         } finally {
           setLoadingHotels(false);
@@ -226,7 +250,7 @@ const UserRegistrationForm: React.FC = () => {
         password: formData.password,
         roles: [formData.role],
         tenantId: formData.tenantId || undefined,
-        hotelId: formData.role === 'HOTEL_ADMIN' && formData.hotelId ? Number(formData.hotelId) : undefined,
+        hotelId: HOTEL_SCOPED_ROLES.includes(formData.role as any) && formData.hotelId ? Number(formData.hotelId) : undefined,
       };
       
       await adminApiService.createUser(createUserRequest);
@@ -238,7 +262,7 @@ const UserRegistrationForm: React.FC = () => {
       }, 2000);
       
     } catch (err: any) {
-      console.error('User creation failed:', err);
+      // console.error('User creation failed:', err);
       setError(err.message || 'Failed to create user. Please try again.');
     } finally {
       setLoading(false);
@@ -251,7 +275,7 @@ const UserRegistrationForm: React.FC = () => {
         return (
           <Grid container spacing={3}>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="First Name"
                 value={formData.firstName}
@@ -261,7 +285,7 @@ const UserRegistrationForm: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Last Name"
                 value={formData.lastName}
@@ -271,7 +295,7 @@ const UserRegistrationForm: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Email Address"
                 type="email"
@@ -282,7 +306,7 @@ const UserRegistrationForm: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Username"
                 value={formData.username}
@@ -298,7 +322,7 @@ const UserRegistrationForm: React.FC = () => {
         return (
           <Grid container spacing={3}>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Password"
                 type="password"
@@ -310,7 +334,7 @@ const UserRegistrationForm: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Confirm Password"
                 type="password"
@@ -330,11 +354,9 @@ const UserRegistrationForm: React.FC = () => {
                   onChange={handleSelectChange('role')}
                   label="User Role"
                 >
-                  <MenuItem value="CUSTOMER">Customer</MenuItem>
-                  <MenuItem value="HOTEL_ADMIN">Hotel Admin</MenuItem>
-                  <MenuItem value="FRONTDESK">Front Desk</MenuItem>
-                  <MenuItem value="HOUSEKEEPING">Housekeeping</MenuItem>
-                  <MenuItem value="ADMIN">System Admin</MenuItem>
+                  {creatableRoles.map((r) => (
+                    <MenuItem key={r.value} value={r.value}>{r.label}</MenuItem>
+                  ))}
                 </Select>
               </FormControl>
             </Grid>
@@ -355,7 +377,7 @@ const UserRegistrationForm: React.FC = () => {
                 </Select>
               </FormControl>
             </Grid>
-            {formData.role === 'HOTEL_ADMIN' && (
+            {HOTEL_SCOPED_ROLES.includes(formData.role as any) && (
               <Grid item xs={12}>
                 <FormControl fullWidth required>
                   <InputLabel>Hotel Assignment</InputLabel>
@@ -386,7 +408,7 @@ const UserRegistrationForm: React.FC = () => {
         return (
           <Grid container spacing={3}>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Phone Number"
                 value={formData.phone}
@@ -395,7 +417,7 @@ const UserRegistrationForm: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Address"
                 value={formData.address}
@@ -404,7 +426,7 @@ const UserRegistrationForm: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="City"
                 value={formData.city}
@@ -413,7 +435,7 @@ const UserRegistrationForm: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="State/Province"
                 value={formData.state}
@@ -422,7 +444,7 @@ const UserRegistrationForm: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Country"
                 value={formData.country}
@@ -431,7 +453,7 @@ const UserRegistrationForm: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="ZIP/Postal Code"
                 value={formData.zipCode}
@@ -481,8 +503,8 @@ const UserRegistrationForm: React.FC = () => {
     return (
       <Container maxWidth="md" sx={{ py: 4 }}>
         <Paper sx={{ p: 4, textAlign: 'center' }}>
-          <PersonAdd sx={{ fontSize: 80, color: 'success.main', mb: 2 }} />
-          <Typography variant="h4" gutterBottom color="success.main">
+          <PersonAdd sx={{ fontSize: 80, color: COLORS.PRIMARY, mb: 2 }} />
+          <Typography variant="h4" gutterBottom sx={{ color: COLORS.PRIMARY }}>
             User Created Successfully!
           </Typography>
           <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
@@ -599,7 +621,7 @@ const UserRegistrationForm: React.FC = () => {
                 {formData.tenantId ? tenants.find(t => t.tenantId === formData.tenantId)?.name : 'Not specified'}
               </Typography>
             </Grid>
-            {formData.role === 'HOTEL_ADMIN' && formData.hotelId && (
+            {HOTEL_SCOPED_ROLES.includes(formData.role as any) && formData.hotelId && (
               <Grid item xs={12} md={6}>
                 <Typography variant="body2" color="text.secondary">Hotel Assignment:</Typography>
                 <Typography variant="body1">

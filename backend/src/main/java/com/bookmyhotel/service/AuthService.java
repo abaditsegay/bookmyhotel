@@ -11,9 +11,12 @@ import org.springframework.stereotype.Service;
 import com.bookmyhotel.dto.auth.LoginRequest;
 import com.bookmyhotel.dto.auth.LoginResponse;
 import com.bookmyhotel.dto.auth.RegisterRequest;
+import com.bookmyhotel.entity.HotelRegistration;
+import com.bookmyhotel.entity.RegistrationStatus;
 import com.bookmyhotel.entity.User;
 import com.bookmyhotel.entity.UserRole;
 import com.bookmyhotel.exception.ResourceAlreadyExistsException;
+import com.bookmyhotel.repository.HotelRegistrationRepository;
 import com.bookmyhotel.repository.UserRepository;
 import com.bookmyhotel.util.JwtUtil;
 
@@ -43,6 +46,9 @@ public class AuthService {
 
     @Autowired
     private PasswordSecurityService passwordSecurityService;
+
+    @Autowired
+    private HotelRegistrationRepository hotelRegistrationRepository;
 
     /**
      * Register a new customer user (system-wide registered users)
@@ -87,7 +93,8 @@ public class AuthService {
         } catch (Exception e) {
             // Log the error but don't fail registration
             // Email is nice-to-have, registration success is critical
-            System.err.println("Failed to send welcome email to " + user.getEmail() + ": " + e.getMessage());
+            // System.err.println("Failed to send welcome email to " + user.getEmail() + ":
+            // " + e.getMessage());
         }
 
         // Generate token for immediate login
@@ -120,7 +127,16 @@ public class AuthService {
     }
 
     /**
-     * Authenticate user and generate JWT token with session management
+     * Authenticate user and generate JWT token with session management.
+     *
+     * Inactive users (suspended account or deactivated hotel) are still allowed
+     * to authenticate so the frontend can show them an informational page. The
+     * response carries an {@code accountStatus} field:
+     * <ul>
+     *   <li>{@code ACTIVE} – normal access</li>
+     *   <li>{@code HOTEL_INACTIVE} – user's hotel has been deactivated</li>
+     *   <li>{@code USER_SUSPENDED} – user account was manually suspended</li>
+     * </ul>
      */
     public LoginResponse login(LoginRequest loginRequest, String userAgent, String ipAddress) {
         Optional<User> userOpt = userRepository.findByEmail(loginRequest.getEmail());
@@ -131,12 +147,18 @@ public class AuthService {
 
         User user = userOpt.get();
 
-        if (!user.getIsActive()) {
-            throw new BadCredentialsException("Account is disabled");
-        }
-
+        // Validate password before any status checks
         if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
             throw new BadCredentialsException("Invalid email or password");
+        }
+
+        // Determine account status (login is still allowed so the frontend can show
+        // the correct informational page instead of a generic error)
+        String accountStatus = "ACTIVE";
+        if (user.getHotel() != null && !Boolean.TRUE.equals(user.getHotel().getIsActive())) {
+            accountStatus = "HOTEL_INACTIVE";
+        } else if (!Boolean.TRUE.equals(user.getIsActive())) {
+            accountStatus = "USER_SUSPENDED";
         }
 
         String token = jwtUtil.generateToken(user);
@@ -155,7 +177,18 @@ public class AuthService {
             hotelName = user.getHotel().getName();
         }
 
-        return new LoginResponse(
+        // Check if HOTEL_ADMIN user needs onboarding (no hotel assigned, has pending registration)
+        boolean needsOnboarding = false;
+        if (user.getHotel() == null && user.getRoles().contains(UserRole.HOTEL_ADMIN)) {
+            java.util.Optional<HotelRegistration> pendingRegistration = hotelRegistrationRepository
+                    .findByContactEmail(user.getEmail());
+            if (pendingRegistration.isPresent()) {
+                RegistrationStatus status = pendingRegistration.get().getStatus();
+                needsOnboarding = (status == RegistrationStatus.PENDING || status == RegistrationStatus.UNDER_REVIEW);
+            }
+        }
+
+        LoginResponse loginResponse = new LoginResponse(
                 token,
                 refreshToken,
                 user.getId(),
@@ -166,6 +199,10 @@ public class AuthService {
                 hotelId,
                 hotelName,
                 user.getTenantId());
+        loginResponse.setNeedsOnboarding(needsOnboarding);
+        loginResponse.setAccountStatus(accountStatus);
+
+        return loginResponse;
     }
 
     /**

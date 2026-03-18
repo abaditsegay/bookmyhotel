@@ -28,6 +28,7 @@ export interface RoomTypeAvailability {
   capacity: number;
   description?: string;
   displayMessage: string;
+  imageUrl?: string; // S3 URL for room type image
 }
 
 export interface HotelSearchResult {
@@ -43,6 +44,8 @@ export interface HotelSearchResult {
   roomTypeAvailability?: RoomTypeAvailability[]; // New room type approach
   minPrice: number;
   maxPrice: number;
+  heroImageUrl?: string; // URL of the main hotel image
+  galleryImageUrls?: string[]; // Array of gallery image URLs
 }
 
 export interface BookingRequest {
@@ -63,6 +66,11 @@ export interface BookingRequest {
   
   // Payment information (optional for backward compatibility)
   paymentMethod?: 'credit_card' | 'mobile_money' | 'mbirr' | 'telebirr';
+  paymentMethodId?: string;
+  
+  // Payment gateway fields
+  paymentReference?: string;
+  transactionId?: string;
   
   // Credit card fields
   creditCardNumber?: string;
@@ -84,6 +92,7 @@ export interface BookingResponse {
   totalAmount: number;
   paymentStatus: string;
   paymentIntentId?: string;
+  paymentReference?: string;
   createdAt: string;
   hotelName: string;
   hotelAddress: string;
@@ -109,7 +118,17 @@ export interface Hotel {
   city?: string;
   country?: string;
   phone?: string;
+  mobilePaymentPhone?: string;
+  mobilePaymentPhone2?: string;
   email?: string;
+  contactPerson?: string;
+  licenseNumber?: string;
+  taxId?: string;
+  websiteUrl?: string;
+  facilityAmenities?: string;
+  numberOfRooms?: number;
+  checkInTime?: string;
+  checkOutTime?: string;
   tenantId?: string;
   isActive?: boolean;
   roomCount?: number;

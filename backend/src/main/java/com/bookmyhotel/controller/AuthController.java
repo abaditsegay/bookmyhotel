@@ -4,25 +4,24 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import jakarta.servlet.http.HttpServletRequest;
-
 import com.bookmyhotel.dto.auth.LoginRequest;
 import com.bookmyhotel.dto.auth.LoginResponse;
 import com.bookmyhotel.dto.auth.RegisterRequest;
 import com.bookmyhotel.exception.ResourceAlreadyExistsException;
 import com.bookmyhotel.service.AuthService;
+import com.bookmyhotel.service.PasswordResetService;
 import com.bookmyhotel.service.PasswordSecurityService;
 import com.bookmyhotel.service.RefreshTokenService;
 import com.bookmyhotel.service.SessionManagementService;
 import com.bookmyhotel.util.JwtUtil;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 /**
@@ -46,6 +45,9 @@ public class AuthController {
 
     @Autowired
     private PasswordSecurityService passwordSecurityService;
+
+    @Autowired
+    private PasswordResetService passwordResetService;
 
     /**
      * User registration endpoint for guest users
@@ -78,11 +80,6 @@ public class AuthController {
             LoginResponse response = authService.login(loginRequest, userAgent, ipAddress);
             return ResponseEntity.ok(response);
         } catch (BadCredentialsException e) {
-            // Check if it's an account deactivation error
-            if (e.getMessage().contains("Account is deactivated")) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body("This account is not active");
-            }
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("Invalid email or password");
         } catch (Exception e) {
@@ -246,6 +243,71 @@ public class AuthController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Password validation failed: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Request a password reset email
+     */
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody java.util.Map<String, String> request) {
+        try {
+            String email = request.get("email");
+            if (email == null || email.isBlank()) {
+                return ResponseEntity.badRequest().body("Email is required");
+            }
+
+            passwordResetService.requestPasswordReset(email.trim().toLowerCase());
+
+            // Always return success to prevent email enumeration
+            return ResponseEntity.ok(java.util.Map.of(
+                    "message", "If an account with that email exists, a password reset link has been sent."));
+        } catch (IllegalStateException e) {
+            // Email service not configured
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(java.util.Map.of("message",
+                            "Email service is currently unavailable. Please contact support."));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(java.util.Map.of("message", "An error occurred. Please try again later."));
+        }
+    }
+
+    /**
+     * Validate a password reset token
+     */
+    @PostMapping("/validate-reset-token")
+    public ResponseEntity<?> validateResetToken(@RequestBody java.util.Map<String, String> request) {
+        String token = request.get("token");
+        if (token == null || token.isBlank()) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("valid", false));
+        }
+
+        boolean valid = passwordResetService.validateToken(token);
+        return ResponseEntity.ok(java.util.Map.of("valid", valid));
+    }
+
+    /**
+     * Reset password using a valid token
+     */
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody java.util.Map<String, String> request) {
+        String token = request.get("token");
+        String newPassword = request.get("newPassword");
+
+        if (token == null || token.isBlank() || newPassword == null || newPassword.isBlank()) {
+            return ResponseEntity.badRequest()
+                    .body(java.util.Map.of("message", "Token and new password are required"));
+        }
+
+        PasswordResetService.ResetResult result = passwordResetService.resetPassword(token, newPassword);
+
+        if (result.isSuccessful()) {
+            return ResponseEntity.ok(java.util.Map.of(
+                    "message", "Password has been reset successfully. You can now sign in with your new password."));
+        } else {
+            return ResponseEntity.badRequest()
+                    .body(java.util.Map.of("message", result.getMessage()));
         }
     }
 

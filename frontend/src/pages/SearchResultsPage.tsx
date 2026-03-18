@@ -1,42 +1,40 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { COLORS, addAlpha } from '../theme/themeColors';
 import {
   Container,
   Typography,
   Box,
   Alert,
-  CircularProgress,
   Snackbar,
-  Paper,
-  Breadcrumbs,
-  Link,
-  Fab,
-  IconButton,
+
+
   useMediaQuery,
   useTheme,
   Stack,
   Button,
+  Card,
+  CardContent,
 } from '@mui/material';
-import {
-  ArrowBack as ArrowBackIcon,
-  FilterList as FilterIcon,
-  Sort as SortIcon,
-} from '@mui/icons-material';
+import { SearchOff as SearchOffIcon } from '@mui/icons-material';
+
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { hotelApiService } from '../services/hotelApi';
 import HotelDetailsCard from '../components/hotel/HotelDetailsCard';
+import { HotelCardSkeleton } from '../components/common/SkeletonLoaders';
+import EmptyState from '../components/common/EmptyState';
 import { 
   HotelSearchRequest, 
   HotelSearchResult,
 } from '../types/hotel';
 
 const SearchResultsPage: React.FC = () => {
+  // Updated to neutral design matching LoginPage
   const navigate = useNavigate();
   const location = useLocation();
   const { isAuthenticated } = useAuth();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
   
   // State from search parameters
   const [searchRequest, setSearchRequest] = useState<HotelSearchRequest | null>(null);
@@ -52,12 +50,11 @@ const SearchResultsPage: React.FC = () => {
     try {
       setLoading(true);
       setError('');
-      console.log('🔍 Re-performing hotel search:', searchReq);
+      // console.log('🔍 Re-performing hotel search:', searchReq);
       const results = await hotelApiService.searchHotelsPublic(searchReq);
-      console.log('✅ Hotel search results:', results);
       setHotels(results);
     } catch (err) {
-      console.error('❌ Hotel search failed:', err);
+      // console.error('❌ Hotel search failed:', err);
       setError(err instanceof Error ? err.message : 'An error occurred while searching for hotels');
       // If search fails, redirect back to search page
       navigate('/hotels/search');
@@ -193,7 +190,7 @@ const SearchResultsPage: React.FC = () => {
   };
 
   const handleBackToSearch = () => {
-    navigate('/', { 
+    navigate('/hotels/search', { 
       state: { 
         searchRequest: searchRequest 
       } 
@@ -215,140 +212,145 @@ const SearchResultsPage: React.FC = () => {
 
   if (loading) {
     return (
-      <Container maxWidth="xl" sx={{ py: 4 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
-          <CircularProgress size={48} />
-        </Box>
-      </Container>
+      <Box
+        sx={{
+          minHeight: '100vh',
+          backgroundColor: theme.palette.background.default,
+        }}
+      >
+        <Container maxWidth="lg" sx={{ py: isMobile ? 2 : 4, px: isMobile ? 1 : 3 }}>
+          <Box sx={{ mb: 3 }}>
+            <Button 
+              onClick={handleBackToSearch}
+              variant="outlined"
+              disabled
+              sx={{ 
+                borderRadius: 1,
+                textTransform: 'none',
+                fontWeight: 500,
+                borderColor: COLORS.SECONDARY,
+                borderWidth: '2px',
+              }}
+            >
+              ← Back to Search
+            </Button>
+          </Box>
+          
+          <Typography variant="h5" sx={{ mb: 3, fontWeight: 600 }}>
+            Searching for hotels...
+          </Typography>
+          
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <HotelCardSkeleton />
+            <HotelCardSkeleton />
+            <HotelCardSkeleton />
+          </Box>
+        </Container>
+      </Box>
     );
   }
 
   return (
-    <Container 
-      maxWidth={isMobile ? "lg" : "xl"} 
-      sx={{ 
-        py: isMobile ? 2 : 4,
-        px: isMobile ? 1 : 3,
+    <Box
+      sx={{
+        minHeight: '100vh',
+        backgroundColor: theme.palette.background.default,
       }}
     >
-      {/* Header Section */}
-      <Box sx={{ mb: isMobile ? 2 : 4 }}>
-        {/* Back Navigation - Mobile Optimized */}
-        <Box sx={{ mb: 2 }}>
-          <IconButton 
-            onClick={handleBackToSearch}
-            sx={{ 
-              mr: 1,
-              p: isMobile ? 1.5 : 1,
-            }}
-            aria-label="back to search"
-          >
-            <ArrowBackIcon />
-          </IconButton>
-          {!isSmallMobile && (
-            <Breadcrumbs aria-label="breadcrumb">
-              <Link 
-                component="button" 
-                variant="body2" 
-                onClick={handleBackToSearch}
-                sx={{ textDecoration: 'none' }}
-              >
-                Hotel Search
-              </Link>
-              <Typography variant="body2" color="text.primary">
-                Search Results
-              </Typography>
-            </Breadcrumbs>
-          )}
-        </Box>
-
-        {/* Search Summary - Mobile Responsive */}
-        <Paper 
-          elevation={1} 
+      <Container 
+        maxWidth="lg" 
+        sx={{ 
+          py: isMobile ? 2 : 4,
+          px: isMobile ? 1 : 3,
+        }}
+      >
+      {/* Simple Header with Back Navigation */}
+      <Box sx={{ mb: 3 }}>
+        <Button 
+          onClick={handleBackToSearch}
+          variant="outlined"
           sx={{ 
-            p: isMobile ? 2 : 3, 
-            mb: isMobile ? 2 : 3, 
-            backgroundColor: 'primary.50' 
+            borderRadius: 1,
+            textTransform: 'none',
+            fontWeight: 500,
+            borderColor: COLORS.SECONDARY,
+            borderWidth: '2px',
+            color: COLORS.PRIMARY,
+            backgroundColor: COLORS.WHITE,
+            '&:hover': {
+              borderColor: COLORS.SECONDARY_HOVER,
+              backgroundColor: COLORS.BG_LIGHT,
+              borderWidth: '2px',
+              transform: 'translateY(-1px)',
+            },
           }}
         >
-          <Typography 
-            variant={isMobile ? "h5" : "h4"} 
-            component="h1" 
-            gutterBottom 
-            sx={{ fontWeight: 'bold' }}
-          >
-            Search Results
-          </Typography>
-          <Typography 
-            variant={isMobile ? "body1" : "h6"} 
-            color="text.secondary" 
-            gutterBottom
-            sx={{ 
-              fontSize: isMobile ? '0.9rem' : undefined,
-              lineHeight: isMobile ? 1.4 : undefined,
-            }}
-          >
-            Hotels {formatSearchSummary()}
-          </Typography>
-          <Typography 
-            variant="body1" 
-            color="success.main" 
-            sx={{ fontWeight: 'medium' }}
-          >
-            {hotels.length} hotel{hotels.length === 1 ? '' : 's'} found
-          </Typography>
-        </Paper>
-
-        {/* Action Buttons - Mobile Responsive */}
-        <Stack 
-          direction={isMobile ? "column" : "row"} 
-          spacing={isMobile ? 1 : 2} 
-          sx={{ mb: isMobile ? 2 : 3 }}
-        >
-          {isMobile ? (
-            <>
-              <Button 
-                variant="outlined" 
-                startIcon={<FilterIcon />}
-                onClick={() => console.log('Open filters')}
-                fullWidth
-                sx={{ py: 1.5 }}
-              >
-                Filter Results
-              </Button>
-              <Button 
-                variant="outlined"
-                startIcon={<SortIcon />}
-                onClick={() => console.log('Open sort options')}
-                fullWidth
-                sx={{ py: 1.5 }}
-              >
-                Sort By Price
-              </Button>
-            </>
-          ) : (
-            <>
-              <Fab 
-                variant="extended" 
-                size="medium" 
-                color="primary"
-                onClick={() => console.log('Open filters')}
-              >
-                <FilterIcon sx={{ mr: 1 }} />
-                Filter Results
-              </Fab>
-              <Fab 
-                variant="extended" 
-                size="medium" 
-                onClick={() => console.log('Open sort options')}
-              >
-                <SortIcon sx={{ mr: 1 }} />
-                Sort By Price
-              </Fab>
-            </>
-          )}
-        </Stack>
+          ← Back to Search
+        </Button>
       </Box>
+
+      {/* Search Summary and Actions */}
+      <Card 
+        sx={{ 
+          mb: 3,
+          backgroundColor: COLORS.WHITE,
+          border: `2px solid ${COLORS.SECONDARY}`,
+          borderRadius: 1,
+          boxShadow: `0 2px 8px ${addAlpha(COLORS.SECONDARY, 0.1)}`,
+        }}
+      >
+        <CardContent sx={{ p: 3 }}>
+          <Box sx={{ mb: 3 }}>
+            <Typography 
+              variant="h5" 
+              sx={{ 
+                fontWeight: 600,
+                color: COLORS.PRIMARY,
+                mb: 1,
+              }}
+            >
+              Search Results
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              {searchRequest ? `Hotels ${formatSearchSummary()}` : 'Loading search results...'}
+            </Typography>
+            <Typography variant="body2" sx={{ 
+              color: 'text.primary',
+              fontWeight: 600,
+            }}>
+              {hotels.length} hotel{hotels.length === 1 ? '' : 's'} found
+            </Typography>
+          </Box>
+
+          <Stack 
+            direction={isMobile ? "column" : "row"} 
+            spacing={2}
+            justifyContent="flex-start"
+          >
+            <Button 
+              variant="outlined"
+              onClick={handleBackToSearch}
+              sx={{ 
+                borderRadius: 2,
+                textTransform: 'none',
+                fontWeight: 600,
+                borderColor: COLORS.SECONDARY,
+                borderWidth: '2px',
+                color: COLORS.PRIMARY,
+                backgroundColor: COLORS.BG_LIGHT,
+                '&:hover': {
+                  borderColor: COLORS.SECONDARY_HOVER,
+                  backgroundColor: COLORS.BG_DEFAULT,
+                  borderWidth: '2px',
+                  transform: 'translateY(-1px)',
+                },
+              }}
+            >
+              Modify Search
+            </Button>
+          </Stack>
+        </CardContent>
+      </Card>
 
       {/* Error State */}
       {error && (
@@ -361,28 +363,39 @@ const SearchResultsPage: React.FC = () => {
       {hotels.length > 0 ? (
         <Box>
           {hotels.map((hotel, index) => (
-            <HotelDetailsCard
-              key={hotel.id}
-              hotel={hotel}
-              onBookRoom={handleBookRoom}
-              onBookRoomType={handleBookRoomType}
-              defaultExpanded={index === 0} // Expand first hotel by default
-              horizontalLayout={true}
-            />
+            <Box key={hotel.id} sx={{ mb: isMobile ? 2 : 3 }}>
+              <HotelDetailsCard
+                hotel={hotel}
+                onBookRoom={handleBookRoom}
+                onBookRoomType={handleBookRoomType}
+                defaultExpanded={index === 0} // Expand first hotel by default
+                horizontalLayout={true}
+              />
+            </Box>
           ))}
         </Box>
       ) : (
-        <Paper elevation={1} sx={{ p: 6, textAlign: 'center' }}>
-          <Typography variant="h5" color="text.secondary" gutterBottom>
-            No hotels found
-          </Typography>
-          <Typography variant="body1" color="text.secondary" paragraph>
-            We couldn't find any hotels matching your search criteria.
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Try adjusting your search dates, location, or filters.
-          </Typography>
-        </Paper>
+        <Card 
+          sx={{ 
+            backgroundColor: COLORS.WHITE,
+            border: `2px solid ${COLORS.SECONDARY}`,
+            borderRadius: 1,
+            boxShadow: `0 2px 8px ${addAlpha(COLORS.SECONDARY, 0.1)}`,
+          }}
+        >
+          <CardContent sx={{ p: 0 }}>
+            <EmptyState
+              icon={<SearchOffIcon />}
+              title="No Hotels Found"
+              message="We couldn't find any hotels matching your search criteria. Try adjusting your search dates, location, or filters to find more options."
+              action={{
+                label: "Modify Search",
+                onClick: handleBackToSearch,
+                variant: "contained"
+              }}
+            />
+          </CardContent>
+        </Card>
       )}
 
       {/* Success Snackbar */}
@@ -396,7 +409,8 @@ const SearchResultsPage: React.FC = () => {
           {successMessage}
         </Alert>
       </Snackbar>
-    </Container>
+      </Container>
+    </Box>
   );
 };
 

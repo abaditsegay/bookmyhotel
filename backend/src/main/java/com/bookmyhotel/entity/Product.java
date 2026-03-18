@@ -55,6 +55,10 @@ public class Product extends HotelScopedEntity {
     @Column(name = "stock_quantity", nullable = false)
     private Integer stockQuantity = 0;
 
+    @PositiveOrZero(message = "Minimum stock level must be zero or positive")
+    @Column(name = "minimum_stock_level", nullable = false)
+    private Integer minimumStockLevel = 0;
+
     @Column(name = "sku", length = 50, unique = true)
     private String sku; // Stock Keeping Unit
 
@@ -134,6 +138,14 @@ public class Product extends HotelScopedEntity {
         this.stockQuantity = stockQuantity;
     }
 
+    public Integer getMinimumStockLevel() {
+        return minimumStockLevel;
+    }
+
+    public void setMinimumStockLevel(Integer minimumStockLevel) {
+        this.minimumStockLevel = minimumStockLevel;
+    }
+
     public String getSku() {
         return sku;
     }
@@ -183,17 +195,32 @@ public class Product extends HotelScopedEntity {
     }
 
     /**
-     * Check if product is available (active, explicitly available, and in stock)
+     * Check if product is available (active, explicitly available, and has stock)
      */
     public boolean isAvailable() {
         return isActive && isAvailable && stockQuantity > 0;
     }
 
     /**
-     * Reduce stock quantity
+     * Check if a specific quantity can be ordered (as long as stock doesn't go to
+     * 0)
+     */
+    public boolean canOrderQuantity(int quantity) {
+        return stockQuantity - quantity >= 0;
+    }
+
+    /**
+     * Get available quantity that can be ordered (all current stock)
+     */
+    public int getAvailableQuantityForOrder() {
+        return Math.max(0, stockQuantity);
+    }
+
+    /**
+     * Reduce stock quantity (allows going to 0 but not negative)
      */
     public boolean reduceStock(int quantity) {
-        if (stockQuantity >= quantity) {
+        if (canOrderQuantity(quantity)) {
             stockQuantity -= quantity;
             return true;
         }

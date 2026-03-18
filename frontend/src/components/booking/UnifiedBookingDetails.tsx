@@ -4,16 +4,11 @@ import {
   Typography,
   Box,
   Button,
-  TextField,
   Grid,
   Chip,
-  IconButton,
   Divider,
   Card,
   CardContent,
-  FormControl,
-  InputLabel,
-  Select,
   MenuItem,
   Alert,
   Snackbar,
@@ -28,19 +23,26 @@ import {
   ListItemButton,
 } from '@mui/material';
 import {
-  ArrowBack as ArrowBackIcon,
   Edit as EditIcon,
   Save as SaveIcon,
   Cancel as CancelIcon,
   Room as RoomIcon,
+  CheckCircle as CheckCircleIcon,
+  MoneyOff as MoneyOffIcon,
+  Block as BlockIcon,
 } from '@mui/icons-material';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTenant } from '../../contexts/TenantContext';
 import { hotelAdminApi, RoomResponse } from '../../services/hotelAdminApi';
 import { frontDeskApiService } from '../../services/frontDeskApi';
 import { ROOM_TYPE_VALUES } from '../../constants/roomTypes';
 import { formatDateForDisplay, formatDateForInput } from '../../utils/dateUtils';
+import { formatCurrency } from '../../utils/currencyUtils';
+import PremiumTextField from '../common/PremiumTextField';
+import PremiumSelect from '../common/PremiumSelect';
+import { COLORS, addAlpha } from '../../theme/themeColors';
 
 // Unified BookingData interface
 export interface BookingData {
@@ -60,6 +62,7 @@ export interface BookingData {
   createdAt: string;
   paymentStatus: string;
   paymentIntentId?: string;
+  paymentType?: string;
 }
 
 interface UnifiedBookingDetailsProps {
@@ -69,14 +72,20 @@ interface UnifiedBookingDetailsProps {
 
 const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({ 
   mode = 'front-desk',
-  title = 'Booking Details'
+  title
 }) => {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const { tenant } = useTenant();
+  
+  // Get the appropriate title based on mode if not provided
+  const pageTitle = title || (mode === 'hotel-admin' 
+    ? t('booking.details.hotelAdminTitle') 
+    : t('booking.details.frontDeskTitle'));
   
   const [booking, setBooking] = useState<BookingData | null>(null);
   const [editedBooking, setEditedBooking] = useState<BookingData | null>(null);
@@ -99,6 +108,13 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
   // New state for room type price calculation
   const [, setRoomTypePricing] = useState<any>(null);
   const [loadingRoomTypePricing, setLoadingRoomTypePricing] = useState(false);
+  
+  // New state to track if prices have been modified during editing session
+  const [pricesModified, setPricesModified] = useState(false);
+  const [originalPricing, setOriginalPricing] = useState<{pricePerNight: number, totalAmount: number} | null>(null);
+  
+  // Payment action loading state
+  const [paymentActionLoading, setPaymentActionLoading] = useState(false);
 
   // Helper function to show error in dialog
   const showErrorDialog = (errorMessage: string) => {
@@ -108,7 +124,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
 
   const loadBooking = useCallback(async () => {
       if (!token) {
-        setError('Authentication required');
+        setError(t('booking.details.authenticationRequired'));
         setLoading(false);
         return;
       }
@@ -123,12 +139,12 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
           return;
         }
 
-        console.log('Loading booking with reservation ID:', reservationId);
+        // console.log('Loading booking with reservation ID:', reservationId);
         
         // Use the appropriate API based on mode
         const result = mode === 'hotel-admin' 
           ? await hotelAdminApi.getBookingById(token, reservationId)
-          : await frontDeskApiService.getBookingById(token, reservationId, tenant?.id || 'default');
+          : await frontDeskApiService.getBookingById(token, reservationId, tenant?.id || null);
         
         if (result.success && result.data) {
           // Map API response to unified format - handle different response structures
@@ -149,25 +165,26 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
             status: responseData.status,
             createdAt: responseData.createdAt,
             paymentStatus: responseData.paymentStatus,
-            paymentIntentId: responseData.paymentIntentId
+            paymentIntentId: responseData.paymentIntentId,
+            paymentType: responseData.paymentType,
           };
           
-          console.log('🔍 UnifiedBookingDetails - Raw API response:', responseData);
-          console.log('🔍 UnifiedBookingDetails - Mapped booking:', mappedBooking);
+          // console.log('🔍 UnifiedBookingDetails - Raw API response:', responseData);
+          // console.log('🔍 UnifiedBookingDetails - Mapped booking:', mappedBooking);
           setBooking(mappedBooking);
           
           setEditedBooking({ ...mappedBooking });
         } else {
-          console.log('Booking not found for reservation ID:', reservationId);
-          setError(result.message || `Booking not found for ID: ${reservationId}`);
+          // console.log('Booking not found for reservation ID:', reservationId);
+          setError(result.message || t('booking.details.bookingNotFoundForId', { id: reservationId }));
         }
       } catch (err) {
-        setError('Failed to load booking details');
-        console.error('Error loading booking:', err);
+        setError(t('booking.details.errors.failedToLoad'));
+        // console.error('Error loading booking:', err);
       } finally {
         setLoading(false);
       }
-    }, [id, token, mode, tenant?.id]);
+    }, [id, token, mode, tenant?.id, t]);
 
   // Refresh function to reload booking data
   const refreshBooking = async () => {
@@ -182,12 +199,27 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
 
   const handleEdit = () => {
     setIsEditing(true);
+    // Store original pricing when editing starts
+    if (booking) {
+      setOriginalPricing({
+        pricePerNight: booking.pricePerNight,
+        totalAmount: booking.totalAmount
+      });
+    }
   };
 
   const handleCancel = () => {
     setIsEditing(false);
     setEditedBooking(booking ? { ...booking } : null);
     setSelectedRoomId(null);
+    // Reset price modification tracking
+    setPricesModified(false);
+    setOriginalPricing(null);
+  };
+
+  const handleCancelAndClose = () => {
+    handleCancel();
+    handleBack();
   };
 
   // Helper function to check if a booking can be modified
@@ -195,17 +227,17 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
     // Only allow modifications for certain statuses
     // Handle both API format (CHECKED_OUT) and display format (Checked Out)
     const normalizedStatus = status.toLowerCase().replace(/_/g, ' ');
-    const modifiableStatuses = ['confirmed', 'pending', 'checked in'];
+    const modifiableStatuses = ['booked', 'pending', 'checked in'];
     return modifiableStatuses.includes(normalizedStatus);
   };
 
-  const handleSave = async () => {
-    if (!editedBooking || !booking || !token) return;
+  const handleSave = async (): Promise<boolean> => {
+    if (!editedBooking || !booking || !token) return false;
 
     // Check if booking can be modified based on its status
     if (!canModifyBooking(booking.status)) {
-      showErrorDialog(`Cannot modify booking with status: ${booking.status}. Only confirmed, pending, or checked-in bookings can be modified.`);
-      return;
+      showErrorDialog(t('booking.details.errors.cannotModifyStatus', { status: booking.status }));
+      return false;
     }
 
     try {
@@ -217,12 +249,25 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
       // Refresh booking data to ensure cache-busting works
       await refreshBooking();
       
+      // Reset price modification tracking after successful save
+      setPricesModified(false);
+      setOriginalPricing(null);
+      
       setIsEditing(false);
+      return true;
     } catch (err) {
-      showErrorDialog(err instanceof Error ? err.message : 'Failed to update booking');
-      console.error('Error updating booking:', err);
+      showErrorDialog(err instanceof Error ? err.message : t('booking.details.errors.failedToUpdate'));
+      // console.error('Error updating booking:', err);
+      return false;
     } finally {
       setPriceCalculating(false);
+    }
+  };
+
+  const handleSaveAndClose = async () => {
+    const saved = await handleSave();
+    if (saved) {
+      handleBack();
     }
   };
 
@@ -241,29 +286,29 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
       const datesChanged = editedBooking.checkInDate !== booking.checkInDate || 
                           editedBooking.checkOutDate !== booking.checkOutDate;
       
-      console.log('🔍 Change Detection:', {
-        statusChanged,
-        roomAssignmentChanged,
-        roomTypeChanged,
-        guestInfoChanged,
-        datesChanged,
-        originalBooking: booking,
-        editedBooking: editedBooking,
-        selectedRoomId
-      });
+      // console.log('🔍 Change Detection:', {
+      //   statusChanged,
+      //   roomAssignmentChanged,
+      //   roomTypeChanged,
+      //   guestInfoChanged,
+      //   datesChanged,
+      //   originalBooking: booking,
+      //   editedBooking: editedBooking,
+      //   selectedRoomId
+      // });
 
       let hasUpdates = false;
       let finalBookingData = { ...editedBooking };
 
       // STEP 1: Handle status changes first using Front Desk API (works for both roles)
       if (statusChanged) {
-        console.log('🔄 Status change detected:', booking.status, '→', editedBooking.status);
+        // console.log('🔄 Status change detected:', booking.status, '→', editedBooking.status);
         try {
           const result = await frontDeskApiService.updateBookingStatus(
             token,
             editedBooking.reservationId,
             editedBooking.status,
-            tenant?.id || 'default'
+            tenant?.id || null
           );
           
           if (result.success && result.data) {
@@ -284,29 +329,30 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
               status: apiBooking.status,
               createdAt: apiBooking.createdAt,
               paymentStatus: apiBooking.paymentStatus,
-              paymentIntentId: apiBooking.paymentIntentId
+              paymentIntentId: apiBooking.paymentIntentId,
+              paymentType: apiBooking.paymentType,
             };
             hasUpdates = true;
-            console.log('✅ Status updated successfully');
+            // console.log('✅ Status updated successfully');
           } else {
             throw new Error(result.message || 'Failed to update booking status');
           }
         } catch (err) {
-          console.error('❌ Error updating booking status:', err);
+          // console.error('❌ Error updating booking status:', err);
           throw new Error('Failed to update booking status');
         }
       }
 
       // STEP 2: Handle room assignment changes using Front Desk API (works for both roles)
       if (roomAssignmentChanged && selectedRoomId) {
-        console.log('🏠 Room assignment change detected, using room ID:', selectedRoomId);
+        // console.log('🏠 Room assignment change detected, using room ID:', selectedRoomId);
         try {
           const result = await frontDeskApiService.updateBookingRoomAssignment(
             token,
             editedBooking.reservationId,
             selectedRoomId,
             editedBooking.roomType,
-            tenant?.id || 'default'
+            tenant?.id || null
           );
           
           if (result.success && result.data) {
@@ -326,26 +372,30 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
               status: result.data.status,
               createdAt: result.data.createdAt,
               paymentStatus: result.data.paymentStatus,
-              paymentIntentId: result.data.paymentIntentId
+              paymentIntentId: result.data.paymentIntentId,
+              paymentType: result.data.paymentType,
             };
             
-            console.log('✅ Room assignment successful:', updatedBooking);
+            // console.log('✅ Room assignment successful:', updatedBooking);
             
             // Update final booking data and current state
             finalBookingData = { ...updatedBooking };
-            setSuccess('Room assignment updated successfully');
+            setSuccess(t('booking.details.success.roomAssignmentUpdated'));
             hasUpdates = true;
           } else {
-            console.log('❌ Room assignment API failed:', result);
+            // console.log('❌ Room assignment API failed:', result);
             throw new Error(result.message || 'Failed to update room assignment');
           }
         } catch (err) {
-          console.error('❌ Error updating room assignment:', err);
+          // console.error('❌ Error updating room assignment:', err);
           
           // Check if the error is about room availability
-          const errorMessage = err instanceof Error ? err.message : 'Failed to update room assignment';
+          const errorMessage = err instanceof Error ? err.message : t('booking.details.errors.failedToLoadRooms');
           if (errorMessage.includes('not available') || errorMessage.includes('Selected room is not available')) {
-            throw new Error(`The selected room is not available for the booking dates (${editedBooking.checkInDate} to ${editedBooking.checkOutDate}). Please select a different room.`);
+            throw new Error(t('booking.details.errors.roomNotAvailable', { 
+              checkIn: editedBooking.checkInDate, 
+              checkOut: editedBooking.checkOutDate 
+            }));
           } else {
             throw new Error(errorMessage);
           }
@@ -354,10 +404,15 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
 
             // STEP 3: Handle comprehensive booking updates (dates, guest info, etc.) using unified API
       if ((datesChanged || guestInfoChanged || roomTypeChanged) && !statusChanged && !roomAssignmentChanged) {
-        console.log('🗓️ Comprehensive booking update detected for room type/dates/guest info');
+        // console.log('🗓️ Comprehensive booking update detected for room type/dates/guest info');
         try {
           // Get hotel ID from current booking data (we need it for the comprehensive update)
-          const hotelId = 1; // This should be derived from the booking, but for now use default
+          // Get hotel ID from user context
+          const hotelId = user?.hotelId ? parseInt(user.hotelId) : null;
+          if (!hotelId) {
+            setError(t('booking.details.errors.hotelIdNotAvailable'));
+            return;
+          }
           
           const comprehensiveUpdateData = {
             hotelId: hotelId,
@@ -376,7 +431,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
             token,
             editedBooking.reservationId,
             comprehensiveUpdateData,
-            tenant?.id || 'default'
+            tenant?.id || null
           );
           
           if (result.success && result.data) {
@@ -396,36 +451,37 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
               status: result.data.status,
               createdAt: result.data.createdAt,
               paymentStatus: result.data.paymentStatus,
-              paymentIntentId: result.data.paymentIntentId
+              paymentIntentId: result.data.paymentIntentId,
+              paymentType: result.data.paymentType,
             };
             
-            console.log('✅ Comprehensive booking update successful:', updatedBooking);
+            // console.log('✅ Comprehensive booking update successful:', updatedBooking);
             
             // Update final booking data and current state
             finalBookingData = { ...updatedBooking };
             hasUpdates = true;
             
             if (roomTypeChanged && datesChanged && guestInfoChanged) {
-              setSuccess('Room type, booking dates, and guest information updated successfully');
+              setSuccess(t('booking.details.success.roomTypeAndDatesAndGuestUpdated'));
             } else if (roomTypeChanged && datesChanged) {
-              setSuccess('Room type and booking dates updated successfully');
+              setSuccess(t('booking.details.success.roomTypeAndDatesUpdated'));
             } else if (roomTypeChanged && guestInfoChanged) {
-              setSuccess('Room type and guest information updated successfully');
+              setSuccess(t('booking.details.success.roomTypeAndGuestUpdated'));
             } else if (datesChanged && guestInfoChanged) {
-              setSuccess('Booking dates and guest information updated successfully');
+              setSuccess(t('booking.details.success.datesAndGuestUpdated'));
             } else if (roomTypeChanged) {
-              setSuccess('Room type updated successfully');
+              setSuccess(t('booking.details.success.roomTypeUpdated'));
             } else if (datesChanged) {
-              setSuccess('Booking dates updated successfully');
+              setSuccess(t('booking.details.success.datesUpdated'));
             } else if (guestInfoChanged) {
-              setSuccess('Guest information updated successfully');
+              setSuccess(t('booking.details.success.guestInfoUpdated'));
             }
           } else {
-            console.log('❌ Comprehensive booking update API failed:', result);
+            // console.log('❌ Comprehensive booking update API failed:', result);
             throw new Error(result.message || 'Failed to update booking details');
           }
         } catch (err) {
-          console.error('❌ Error in comprehensive booking update:', err);
+          // console.error('❌ Error in comprehensive booking update:', err);
           throw new Error(err instanceof Error ? err.message : 'Failed to update booking details');
         }
       }
@@ -437,21 +493,21 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
         setSelectedRoomId(null);
         
         if (statusChanged && !roomAssignmentChanged && !roomTypeChanged && !datesChanged && !guestInfoChanged) {
-          setSuccess('Booking status updated successfully');
+          setSuccess(t('booking.details.success.statusUpdated'));
         } else if (!statusChanged && (roomAssignmentChanged || roomTypeChanged) && !datesChanged && !guestInfoChanged) {
-          setSuccess('Room details updated successfully');
+          setSuccess(t('booking.details.success.roomDetailsUpdated'));
         } else if (statusChanged && (roomAssignmentChanged || roomTypeChanged) && !datesChanged && !guestInfoChanged) {
-          setSuccess('Booking status and room details updated successfully');
+          setSuccess(t('booking.details.success.statusAndRoomUpdated'));
         } else if (!statusChanged && !roomAssignmentChanged && !roomTypeChanged && (datesChanged || guestInfoChanged)) {
           // Success message already set in comprehensive update section
         } else {
-          setSuccess('Booking updated successfully');
+          setSuccess(t('booking.details.success.bookingUpdated'));
         }
       } else {
-        setSuccess('No changes detected');
+        setSuccess(t('booking.details.success.noChanges'));
       }
     } catch (error) {
-      console.error('🚨 Unified Save Error:', error);
+      // console.error('🚨 Unified Save Error:', error);
       throw error;
     }
   };
@@ -460,64 +516,36 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
 
   // Load available rooms for room selection
   const loadAvailableRooms = async (roomType?: string) => {
-    if (!token || !editedBooking) return;
+    if (!token || !editedBooking || !user?.hotelId) return;
 
     try {
       setLoadingRooms(true);
       const selectedRoomType = roomType || editedBooking.roomType;
+      const hotelId = parseInt(user.hotelId);
       
-      if (mode === 'hotel-admin') {
-        const result = await hotelAdminApi.getHotelRooms(
-          token,
-          0, // page
-          100, // size - get more rooms for selection
-          '', // search
-          '', // room number
-          selectedRoomType, // filter by current or selected room type
-          'AVAILABLE' // only available rooms
-        );
+      // Use the date-based availability endpoint to filter rooms available for the booking dates
+      const result = await frontDeskApiService.getAvailableRoomsForDateRange(
+        token,
+        hotelId,
+        editedBooking.checkInDate,
+        editedBooking.checkOutDate,
+        2, // default guests - could be made configurable
+        tenant?.id || null
+      );
+      
+      if (result.success && result.data) {
+        // Filter by room type if specified
+        const filteredRooms = selectedRoomType 
+          ? result.data.filter(room => room.roomType === selectedRoomType)
+          : result.data;
         
-        if (result.success && result.data) {
-          setAvailableRooms(result.data.content);
-        } else {
-          setError('Failed to load available rooms');
-        }
+        setAvailableRooms(filteredRooms);
       } else {
-        // For front desk, use getRooms API
-        const result = await frontDeskApiService.getRooms(
-          token, 
-          0, 
-          100, 
-          '', 
-          selectedRoomType, 
-          'AVAILABLE',
-          tenant?.id || 'default'
-        );
-        
-        if (result.success && result.data) {
-          // Convert FrontDeskRoom to RoomResponse format for compatibility
-          const convertedRooms: RoomResponse[] = result.data.content.map(room => ({
-            id: room.id,
-            roomNumber: room.roomNumber,
-            roomType: room.roomType,
-            pricePerNight: room.pricePerNight,
-            capacity: room.capacity,
-            description: room.description || '',
-            isAvailable: room.status === 'AVAILABLE',
-            status: room.status,
-            hotelId: 0, // Use default value since FrontDeskRoom doesn't have this
-            hotelName: 'Current Hotel', // FrontDeskRoom doesn't include hotel name
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-          }));
-          setAvailableRooms(convertedRooms);
-        } else {
-          setError('Failed to load available rooms');
-        }
+        setError(t('booking.details.errors.failedToLoadRooms'));
       }
     } catch (err) {
-      setError('Failed to load available rooms');
-      console.error('Error loading rooms:', err);
+      setError(t('booking.details.errors.failedToLoadRooms'));
+      // console.error('Error loading rooms:', err);
     } finally {
       setLoadingRooms(false);
     }
@@ -535,11 +563,11 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
         setRoomTypePricing(result.data);
         return result.data;
       } else {
-        console.warn('No pricing found for room type:', roomType);
+        // console.warn('No pricing found for room type:', roomType);
         return null;
       }
     } catch (err) {
-      console.error('Error loading room type pricing:', err);
+      // console.error('Error loading room type pricing:', err);
       return null;
     } finally {
       setLoadingRoomTypePricing(false);
@@ -573,6 +601,11 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
     const nights = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24));
     const newTotalAmount = room.pricePerNight * nights;
     
+    // Check if pricing has changed from original
+    if (originalPricing && (room.pricePerNight !== originalPricing.pricePerNight || newTotalAmount !== originalPricing.totalAmount)) {
+      setPricesModified(true);
+    }
+    
     setEditedBooking({
       ...editedBooking,
       roomNumber: room.roomNumber,
@@ -586,7 +619,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
   // Open room selection dialog
   const handleSelectRoom = () => {
     if (!editedBooking?.roomType) {
-      showErrorDialog('Please select a room type first');
+      showErrorDialog(t('booking.details.errors.selectRoomTypeFirst'));
       return;
     }
     loadAvailableRooms(editedBooking.roomType);
@@ -618,6 +651,11 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
               pricing
             );
             
+            // Check if pricing has changed from original
+            if (originalPricing && (newPricePerNight !== originalPricing.pricePerNight || newTotal !== originalPricing.totalAmount)) {
+              setPricesModified(true);
+            }
+            
             setEditedBooking((prev) => {
               if (!prev) return null;
               return {
@@ -628,13 +666,35 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
             });
           }
         }).catch((error) => {
-          console.error('Pricing API error, but room type change should persist:', error);
+          // console.error('Pricing API error, but room type change should persist:', error);
         });
         
         return; // Exit after setting state and initiating async pricing update
       }
       
       // For all other cases (including front-desk mode room type changes)
+      // Check if dates are changing which might affect total pricing
+      if ((name === 'checkInDate' || name === 'checkOutDate') && editedBooking && originalPricing) {
+        // Calculate new total based on updated dates and current price per night
+        const checkInDate = name === 'checkInDate' ? value : editedBooking.checkInDate;
+        const checkOutDate = name === 'checkOutDate' ? value : editedBooking.checkOutDate;
+        
+        if (checkInDate && checkOutDate) {
+          const checkIn = new Date(checkInDate);
+          const checkOut = new Date(checkOutDate);
+          const nights = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24));
+          const newTotal = editedBooking.pricePerNight * nights;
+          
+          // Check if total amount will change from original
+          if (newTotal !== originalPricing.totalAmount) {
+            setPricesModified(true);
+          }
+          
+          // Update the total amount in the booking data
+          updatedBooking.totalAmount = newTotal;
+        }
+      }
+      
       setEditedBooking(updatedBooking);
     }
   };
@@ -662,16 +722,9 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
     return formatDateForDisplay(dateString);
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-ET', {
-      style: 'currency',
-      currency: 'ETB'
-    }).format(amount);
-  };
-
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'confirmed': return 'primary';
+      case 'booked': return 'primary';
       case 'checked in': 
       case 'checked_in': return 'success';
       case 'checked out': 
@@ -682,13 +735,95 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
     }
   };
 
+  // Payment status action handler
+  const handlePaymentStatusAction = async (newStatus: string) => {
+    if (!booking || !token) return;
+    setPaymentActionLoading(true);
+    try {
+      const result = mode === 'front-desk'
+        ? await frontDeskApiService.updatePaymentStatus(token, booking.reservationId, newStatus, tenant?.id || null)
+        : await hotelAdminApi.updateBookingPaymentStatus(token, booking.reservationId, newStatus, tenant?.id || null);
+
+      if (result.success && result.data) {
+        const responseData = result.data as any;
+        const updatedBooking: BookingData = {
+          ...booking,
+          paymentStatus: responseData.paymentStatus || newStatus,
+          paymentType: responseData.paymentType || booking.paymentType,
+        };
+        setBooking(updatedBooking);
+        setEditedBooking({ ...updatedBooking });
+        setSuccess(t('booking.details.success.paymentStatusUpdated'));
+      } else {
+        setError(result.message || t('booking.details.errors.failedToUpdatePaymentStatus'));
+        setErrorDialogOpen(true);
+      }
+    } catch (err) {
+      setError(t('booking.details.errors.failedToUpdatePaymentStatus'));
+      setErrorDialogOpen(true);
+    } finally {
+      setPaymentActionLoading(false);
+    }
+  };
+
+  // Payment type action handler
+  const handlePaymentTypeChange = async (newType: string) => {
+    if (!booking || !token) return;
+    setPaymentActionLoading(true);
+    try {
+      const result = mode === 'front-desk'
+        ? await frontDeskApiService.updatePaymentType(token, booking.reservationId, newType, tenant?.id || null)
+        : await hotelAdminApi.updateBookingPaymentType(token, booking.reservationId, newType, tenant?.id || null);
+
+      if (result.success && result.data) {
+        const responseData = result.data as any;
+        const updatedBooking: BookingData = {
+          ...booking,
+          paymentType: responseData.paymentType || newType,
+        };
+        setBooking(updatedBooking);
+        setEditedBooking({ ...updatedBooking });
+        setSuccess(t('booking.details.success.paymentTypeUpdated'));
+      } else {
+        setError(result.message || t('booking.details.errors.failedToUpdatePaymentType'));
+        setErrorDialogOpen(true);
+      }
+    } catch (err) {
+      setError(t('booking.details.errors.failedToUpdatePaymentType'));
+      setErrorDialogOpen(true);
+    } finally {
+      setPaymentActionLoading(false);
+    }
+  };
+
+  // Get available payment status actions based on current status
+  const getPaymentStatusActions = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case 'pending':
+      case 'pay_at_frontdesk':
+        return [{ label: t('booking.details.payment.markCompleted'), value: 'COMPLETED', icon: <CheckCircleIcon fontSize="small" />, color: 'success' as const }];
+      case 'completed':
+        return [
+          { label: t('booking.details.payment.refund'), value: 'REFUNDED', icon: <MoneyOffIcon fontSize="small" />, color: 'info' as const },
+          { label: t('booking.details.payment.forfeit'), value: 'FORFEITED', icon: <BlockIcon fontSize="small" />, color: 'warning' as const },
+        ];
+      default:
+        return []; // REFUNDED, FORFEITED, FAILED, CANCELLED are terminal states
+    }
+  };
+
   const getPaymentStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'paid': return 'success';
+      case 'paid':
+      case 'completed': return 'success';
+      case 'processing':
       case 'pending': return 'warning';
       case 'pay_at_frontdesk': return 'info';
-      case 'failed': return 'error';
-      case 'refunded': return 'info';
+      case 'failed':
+      case 'cancelled': return 'error';
+      case 'refunded':
+      case 'partially_refunded': return 'info';
+      case 'forfeited': return 'warning';
       default: return 'default';
     }
   };
@@ -699,90 +834,89 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
 
   if (loading) {
     return (
-      <Container maxWidth="lg">
-        <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-          <CircularProgress size={60} />
-          <Typography variant="h6" sx={{ ml: 2 }}>
-            Loading booking details...
-          </Typography>
-        </Box>
-      </Container>
+      <Dialog open onClose={handleBack} maxWidth="lg" fullWidth scroll="paper">
+        <DialogContent dividers>
+          <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+            <CircularProgress size={60} />
+            <Typography variant="h6" sx={{ ml: 2 }}>
+              {t('booking.details.loading')}
+            </Typography>
+          </Box>
+        </DialogContent>
+      </Dialog>
     );
   }
 
   if (error) {
     return (
-      <Container maxWidth="lg">
-        <Box sx={{ mt: 4 }}>
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
-          </Alert>
-          <IconButton onClick={handleBack} sx={{ mr: 1 }}>
-            <ArrowBackIcon />
-          </IconButton>
-        </Box>
-      </Container>
+      <Dialog open onClose={handleBack} maxWidth="lg" fullWidth scroll="paper">
+        <DialogContent dividers>
+          <Box sx={{ mt: 2 }}>
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          </Box>
+        </DialogContent>
+      </Dialog>
     );
   }
 
   if (!currentBooking) {
     return (
-      <Container maxWidth="lg">
-        <Box sx={{ mt: 4 }}>
-          <Alert severity="info" sx={{ mb: 2 }}>
-            Booking not found
-          </Alert>
-          <IconButton onClick={handleBack} sx={{ mr: 1 }}>
-            <ArrowBackIcon />
-          </IconButton>
-        </Box>
-      </Container>
+      <Dialog open onClose={handleBack} maxWidth="lg" fullWidth scroll="paper">
+        <DialogContent dividers>
+          <Box sx={{ mt: 2 }}>
+            <Alert severity="info" sx={{ mb: 2 }}>
+              {t('booking.details.bookingNotFound')}
+            </Alert>
+          </Box>
+        </DialogContent>
+      </Dialog>
     );
   }
 
   return (
-    <Container maxWidth="lg">
-      <Box sx={{ mt: 4, mb: 4 }}>
+    <Dialog open onClose={handleBack} maxWidth="lg" fullWidth scroll="paper">
+      <DialogContent dividers sx={{ p: 0 }}>
+        <Container maxWidth="lg" sx={{ py: 4 }}>
+          <Box sx={{ mb: 2 }}>
         {/* Header */}
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <IconButton onClick={handleBack} sx={{ mr: 1 }}>
-              <ArrowBackIcon />
-            </IconButton>
-            <Typography variant="h4" component="h1">
-              {title}
+            <Typography variant="h4" component="h1" sx={{ color: COLORS.TEXT_PRIMARY, fontWeight: 600 }}>
+              {pageTitle}
             </Typography>
           </Box>
           
           <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button
+              variant="outlined"
+              startIcon={<CancelIcon />}
+              onClick={handleCancelAndClose}
+              color="error"
+            >
+              {t('booking.details.cancel')}
+            </Button>
             {!isEditing ? (
               <Button
-                variant="outlined"
+                variant="contained"
                 startIcon={<EditIcon />}
                 onClick={handleEdit}
                 disabled={!booking || !canModifyBooking(booking.status)}
                 title={booking && !canModifyBooking(booking.status) ? `Cannot edit booking with status: ${booking.status}` : undefined}
               >
-                Edit
+                {t('booking.details.edit')}
               </Button>
             ) : (
-              <>
-                <Button
-                  variant="outlined"
-                  startIcon={<CancelIcon />}
-                  onClick={handleCancel}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  variant="contained"
-                  startIcon={<SaveIcon />}
-                  onClick={handleSave}
-                  disabled={priceCalculating}
-                >
-                  {priceCalculating ? 'Saving...' : 'Save'}
-                </Button>
-              </>
+              <Button
+                variant="contained"
+                startIcon={<SaveIcon />}
+                onClick={handleSaveAndClose}
+                disabled={priceCalculating}
+                color="primary"
+              >
+                {priceCalculating ? t('booking.details.saving') : t('booking.details.save')}
+              </Button>
             )}
           </Box>
         </Box>
@@ -791,32 +925,36 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
         <Grid container spacing={3}>
           {/* Guest Information */}
           <Grid item xs={12} md={6}>
-            <Card>
+            <Card sx={{ 
+              border: `1px solid ${addAlpha(COLORS.SUCCESS, 0.15)}`,
+              boxShadow: `0 2px 8px ${addAlpha(COLORS.PRIMARY, 0.1)}`,
+              '&:hover': {
+                boxShadow: `0 4px 16px ${addAlpha(COLORS.PRIMARY, 0.15)}`
+              }
+            }}>
               <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  Guest Information
+                <Typography variant="h6" gutterBottom sx={{ color: COLORS.TEXT_PRIMARY, fontWeight: 600 }}>
+                  {t('booking.details.guestInformation')}
                 </Typography>
-                <Divider sx={{ mb: 2 }} />
+                <Divider sx={{ mb: 2, borderColor: addAlpha(COLORS.SUCCESS, 0.15) }} />
                 
                 <Grid container spacing={2}>
                   <Grid item xs={12}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
-                      label="Guest Name"
+                      label={t('booking.details.guestName')}
                       value={currentBooking?.guestName || ''}
                       onChange={(e) => handleFieldChange('guestName', e.target.value)}
                       disabled={!isEditing}
-                      variant={isEditing ? 'outlined' : 'filled'}
                     />
                   </Grid>
                   <Grid item xs={12}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
-                      label="Email"
+                      label={t('booking.details.email')}
                       value={currentBooking?.guestEmail || ''}
                       onChange={(e) => handleFieldChange('guestEmail', e.target.value)}
                       disabled={!isEditing}
-                      variant={isEditing ? 'outlined' : 'filled'}
                     />
                   </Grid>
                 </Grid>
@@ -826,42 +964,46 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
 
           {/* Booking Details */}
           <Grid item xs={12} md={6}>
-            <Card>
+            <Card sx={{ 
+              border: `1px solid ${addAlpha(COLORS.SUCCESS, 0.15)}`,
+              boxShadow: `0 2px 8px ${addAlpha(COLORS.PRIMARY, 0.1)}`,
+              '&:hover': {
+                boxShadow: `0 4px 16px ${addAlpha(COLORS.PRIMARY, 0.15)}`
+              }
+            }}>
               <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  Booking Details
+                <Typography variant="h6" gutterBottom sx={{ color: COLORS.TEXT_PRIMARY, fontWeight: 600 }}>
+                  {t('booking.details.bookingDetails')}
                 </Typography>
-                <Divider sx={{ mb: 2 }} />
+                <Divider sx={{ mb: 2, borderColor: addAlpha(COLORS.SUCCESS, 0.15) }} />
                 
                 <Grid container spacing={2}>
                   <Grid item xs={12}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
-                      label="Confirmation Number"
+                      label={t('booking.details.confirmationNumber')}
                       value={currentBooking?.confirmationNumber || ''}
                       disabled
-                      variant="filled"
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
                     {isEditing ? (
-                      <FormControl fullWidth>
-                        <InputLabel>Status</InputLabel>
-                        <Select
-                          value={currentBooking?.status || ''}
-                          onChange={(e) => handleFieldChange('status', e.target.value)}
-                        >
-                          <MenuItem value="CONFIRMED">Confirmed</MenuItem>
-                          <MenuItem value="CHECKED_IN">Checked In</MenuItem>
-                          <MenuItem value="CHECKED_OUT">Checked Out</MenuItem>
-                          <MenuItem value="CANCELLED">Cancelled</MenuItem>
-                          <MenuItem value="PENDING">Pending</MenuItem>
-                        </Select>
-                      </FormControl>
+                      <PremiumSelect
+                        fullWidth
+                        label={t('booking.details.status')}
+                        value={currentBooking?.status || ''}
+                        onChange={(e) => handleFieldChange('status', e.target.value)}
+                      >
+                        <MenuItem value="BOOKED">Booked</MenuItem>
+                        <MenuItem value="CHECKED_IN">Checked In</MenuItem>
+                        <MenuItem value="CHECKED_OUT">Checked Out</MenuItem>
+                        <MenuItem value="CANCELLED">Cancelled</MenuItem>
+                        <MenuItem value="PENDING">Pending</MenuItem>
+                      </PremiumSelect>
                     ) : (
                       <Box>
                         <Typography variant="caption" display="block" color="text.secondary">
-                          Status
+                          {t('booking.details.status')}
                         </Typography>
                         <Chip
                           label={currentBooking?.status?.replace('_', ' ')}
@@ -874,13 +1016,47 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                   <Grid item xs={12} sm={6}>
                     <Box>
                       <Typography variant="caption" display="block" color="text.secondary">
-                        Payment Status
+                        {t('booking.details.paymentStatus')}
                       </Typography>
-                      <Chip
-                        label={currentBooking?.paymentStatus}
-                        color={getPaymentStatusColor(currentBooking?.paymentStatus || '') as any}
-                        variant="outlined"
-                      />
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap', mt: 0.5 }}>
+                        <Chip
+                          label={currentBooking?.paymentStatus?.replace('_', ' ')}
+                          color={getPaymentStatusColor(currentBooking?.paymentStatus || '') as any}
+                          variant="outlined"
+                        />
+                        {getPaymentStatusActions(currentBooking?.paymentStatus || '').map((action) => (
+                          <Button
+                            key={action.value}
+                            size="small"
+                            variant="outlined"
+                            color={action.color}
+                            startIcon={action.icon}
+                            disabled={paymentActionLoading}
+                            onClick={() => handlePaymentStatusAction(action.value)}
+                            sx={{ textTransform: 'none', fontSize: '0.75rem' }}
+                          >
+                            {action.label}
+                          </Button>
+                        ))}
+                      </Box>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <Box>
+                      <Typography variant="caption" display="block" color="text.secondary">
+                        {t('booking.details.paymentType')}
+                      </Typography>
+                      <PremiumSelect
+                        fullWidth
+                        value={currentBooking?.paymentType || ''}
+                        onChange={(e) => handlePaymentTypeChange(e.target.value as string)}
+                        disabled={paymentActionLoading}
+                        size="small"
+                      >
+                        <MenuItem value="cash">{t('booking.details.payment.cash')}</MenuItem>
+                        <MenuItem value="bank">{t('booking.details.payment.bank')}</MenuItem>
+                        <MenuItem value="mobile">{t('booking.details.payment.mobile')}</MenuItem>
+                      </PremiumSelect>
                     </Box>
                   </Grid>
                 </Grid>
@@ -890,58 +1066,60 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
 
           {/* Hotel & Room Information */}
           <Grid item xs={12} md={6}>
-            <Card>
+            <Card sx={{ 
+              border: `1px solid ${addAlpha(COLORS.SUCCESS, 0.15)}`,
+              boxShadow: `0 2px 8px ${addAlpha(COLORS.PRIMARY, 0.1)}`,
+              '&:hover': {
+                boxShadow: `0 4px 16px ${addAlpha(COLORS.PRIMARY, 0.15)}`
+              }
+            }}>
               <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  Hotel & Room Information
+                <Typography variant="h6" gutterBottom sx={{ color: COLORS.TEXT_PRIMARY, fontWeight: 600 }}>
+                  {t('booking.details.hotelRoomInformation')}
                 </Typography>
-                <Divider sx={{ mb: 2 }} />
+                <Divider sx={{ mb: 2, borderColor: addAlpha(COLORS.SUCCESS, 0.15) }} />
                 
                 <Grid container spacing={2}>
                   <Grid item xs={12}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
-                      label="Hotel Name"
+                      label={t('booking.details.hotelName')}
                       value={currentBooking?.hotelName || ''}
                       disabled
-                      variant="filled"
                     />
                   </Grid>
                   <Grid item xs={12}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
-                      label="Hotel Address"
+                      label={t('booking.details.hotelAddress')}
                       value={currentBooking?.hotelAddress || ''}
                       disabled
-                      variant="filled"
                     />
                   </Grid>
                   <Grid item xs={12} sm={8}>
                     {isEditing ? (
-                      <FormControl fullWidth>
-                        <InputLabel>Room Type</InputLabel>
-                        <Select
-                          value={currentBooking?.roomType || ''}
-                          onChange={(e) => {
-                            handleFieldChange('roomType', e.target.value);
-                            // Room number clearing is handled inside handleFieldChange for room type changes
-                            setSelectedRoomId(null);
-                          }}
-                        >
-                          {availableRoomTypes.map((type) => (
-                            <MenuItem key={type} value={type}>
-                              {type}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
-                    ) : (
-                      <TextField
+                      <PremiumSelect
                         fullWidth
-                        label="Room Type"
+                        label={t('booking.details.roomType')}
+                        value={currentBooking?.roomType || ''}
+                        onChange={(e) => {
+                          handleFieldChange('roomType', e.target.value);
+                          // Room number clearing is handled inside handleFieldChange for room type changes
+                          setSelectedRoomId(null);
+                        }}
+                      >
+                        {availableRoomTypes.map((type) => (
+                          <MenuItem key={type} value={type}>
+                            {type}
+                          </MenuItem>
+                        ))}
+                      </PremiumSelect>
+                    ) : (
+                      <PremiumTextField
+                        fullWidth
+                        label={t('booking.details.roomType')}
                         value={currentBooking?.roomType || ''}
                         disabled
-                        variant="filled"
                       />
                     )}
                   </Grid>
@@ -952,45 +1130,69 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                         fullWidth
                         startIcon={<RoomIcon />}
                         onClick={handleSelectRoom}
-                        sx={{ height: '56px' }} // Match the height of the dropdown
+                        sx={{ 
+                          height: '56px', // Match the height of the dropdown
+                          borderColor: COLORS.SECONDARY,
+                          color: COLORS.SECONDARY,
+                          '&:hover': {
+                            borderColor: COLORS.SECONDARY,
+                            backgroundColor: addAlpha(COLORS.SUCCESS, 0.12),
+                            color: COLORS.SECONDARY
+                          }
+                        }}
                       >
-                        Select Room
+                        {t('booking.details.selectRoom')}
                       </Button>
                     )}
                   </Grid>
                   <Grid item xs={12}>
                     {isEditing ? (
-                      <TextField
+                      <PremiumTextField
                         fullWidth
-                        label="Room Number"
+                        label={t('booking.details.roomNumber')}
                         value={currentBooking?.roomNumber || ''}
                         onChange={(e) => handleFieldChange('roomNumber', e.target.value)}
-                        variant="outlined"
-                        placeholder="Enter room number or use 'Select Room' button above"
-                        helperText="You can either type a room number or use the 'Select Room' button to choose from available rooms"
+                        placeholder={t('booking.details.roomNumberPlaceholder')}
+                        helperText={t('booking.details.roomNumberHelperText')}
                       />
                     ) : (
-                      <TextField
+                      <PremiumTextField
                         fullWidth
-                        label="Room Number"
-                        value={currentBooking?.roomNumber || 'TBA (To Be Assigned)'}
+                        label={t('booking.details.roomNumber')}
+                        value={currentBooking?.roomNumber || t('booking.details.roomNumberTBA')}
                         disabled
-                        variant="filled"
                       />
                     )}
                   </Grid>
                   {isEditing && selectedRoomId && (
                     <Grid item xs={12}>
                       <Alert severity="info">
-                        Room selection will be applied when you save the booking. 
-                        {priceCalculating && ' Calculating price changes...'}
+                        {t('booking.details.alerts.roomSelectionPending')}
+                        {priceCalculating && ` ${t('booking.details.alerts.calculatingPrice')}`}
                       </Alert>
                     </Grid>
                   )}
                   {isEditing && loadingRoomTypePricing && (
                     <Grid item xs={12}>
                       <Alert severity="info">
-                        Calculating new pricing for room type...
+                        {t('booking.details.alerts.calculatingPricing')}
+                      </Alert>
+                    </Grid>
+                  )}
+                  {isEditing && pricesModified && !loadingRoomTypePricing && !priceCalculating && (
+                    <Grid item xs={12}>
+                      <Alert 
+                        severity="warning" 
+                        sx={{ 
+                          backgroundColor: addAlpha(COLORS.WARNING, 0.15), 
+                          color: COLORS.WARNING,
+                          border: `1px solid ${addAlpha(COLORS.WARNING, 0.35)}`,
+                          '& .MuiAlert-icon': {
+                            color: COLORS.WARNING
+                          }
+                        }}
+                      >
+                        {t('booking.details.alerts.pricesModified')}
                       </Alert>
                     </Grid>
                   )}
@@ -1001,56 +1203,75 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
 
           {/* Stay Information */}
           <Grid item xs={12} md={6}>
-            <Card>
+            <Card sx={{ 
+              border: `1px solid ${addAlpha(COLORS.SUCCESS, 0.15)}`,
+              boxShadow: `0 2px 8px ${addAlpha(COLORS.PRIMARY, 0.1)}`,
+              '&:hover': {
+                boxShadow: `0 4px 16px ${addAlpha(COLORS.PRIMARY, 0.15)}`
+              }
+            }}>
               <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  Stay Information
+                <Typography variant="h6" gutterBottom sx={{ color: COLORS.TEXT_PRIMARY, fontWeight: 600 }}>
+                  {t('booking.details.stayInformation')}
                 </Typography>
-                <Divider sx={{ mb: 2 }} />
+                <Divider sx={{ mb: 2, borderColor: addAlpha(COLORS.SUCCESS, 0.15) }} />
                 
                 <Grid container spacing={2}>
                   <Grid item xs={12} sm={6}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
-                      label="Check-in Date"
+                      label={t('booking.details.checkInDate')}
                       value={formatDateForInput(currentBooking?.checkInDate || '')}
                       type="date"
                       onChange={(e) => handleFieldChange('checkInDate', e.target.value)}
                       disabled={!isEditing}
-                      variant={isEditing ? 'outlined' : 'filled'}
                       InputLabelProps={{ shrink: true }}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
-                      label="Check-out Date"
+                      label={t('booking.details.checkOutDate')}
                       value={formatDateForInput(currentBooking?.checkOutDate || '')}
                       type="date"
                       onChange={(e) => handleFieldChange('checkOutDate', e.target.value)}
                       disabled={!isEditing}
-                      variant={isEditing ? 'outlined' : 'filled'}
                       InputLabelProps={{ shrink: true }}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
-                      label="Price per Night"
+                      label={t('booking.details.pricePerNight')}
                       value={formatCurrency(currentBooking?.pricePerNight || 0)}
                       disabled
-                      variant="filled"
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
-                      label="Total Amount"
+                      label={t('booking.details.totalAmount')}
                       value={formatCurrency(currentBooking?.totalAmount || 0)}
                       disabled
-                      variant="filled"
                     />
                   </Grid>
+                  {isEditing && pricesModified && !loadingRoomTypePricing && !priceCalculating && (
+                    <Grid item xs={12}>
+                      <Alert 
+                        severity="warning" 
+                        sx={{ 
+                          backgroundColor: addAlpha(COLORS.WARNING, 0.15), 
+                          color: COLORS.WARNING,
+                          border: `1px solid ${addAlpha(COLORS.WARNING, 0.35)}`,
+                          '& .MuiAlert-icon': {
+                            color: COLORS.WARNING
+                          }
+                        }}
+                      >
+                        {t('booking.details.alerts.pricesModified')}
+                      </Alert>
+                    </Grid>
+                  )}
                 </Grid>
               </CardContent>
             </Card>
@@ -1058,30 +1279,34 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
 
           {/* Additional Information */}
           <Grid item xs={12}>
-            <Card>
+            <Card sx={{ 
+              border: `1px solid ${addAlpha(COLORS.SUCCESS, 0.15)}`,
+              boxShadow: `0 2px 8px ${addAlpha(COLORS.PRIMARY, 0.1)}`,
+              '&:hover': {
+                boxShadow: `0 4px 16px ${addAlpha(COLORS.PRIMARY, 0.15)}`
+              }
+            }}>
               <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  Additional Information
+                <Typography variant="h6" gutterBottom sx={{ color: COLORS.TEXT_PRIMARY, fontWeight: 600 }}>
+                  {t('booking.details.additionalInformation')}
                 </Typography>
-                <Divider sx={{ mb: 2 }} />
+                <Divider sx={{ mb: 2, borderColor: addAlpha(COLORS.SUCCESS, 0.15) }} />
                 
                 <Grid container spacing={2}>
                   <Grid item xs={12} sm={6}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
-                      label="Booking Date"
+                      label={t('booking.details.bookingDate')}
                       value={currentBooking ? formatDate(currentBooking.createdAt) : ''}
                       disabled
-                      variant="filled"
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
-                      label="Payment Intent ID"
+                      label={t('booking.details.paymentIntentId')}
                       value={currentBooking?.paymentIntentId || 'N/A'}
                       disabled
-                      variant="filled"
                     />
                   </Grid>
                 </Grid>
@@ -1096,32 +1321,55 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
           onClose={() => setRoomDialogOpen(false)}
           maxWidth="md"
           fullWidth
+          sx={{
+            '& .MuiDialog-paper': {
+              border: `1px solid ${addAlpha(COLORS.SUCCESS, 0.15)}`,
+              boxShadow: `0 8px 32px ${addAlpha(COLORS.PRIMARY, 0.15)}`
+            }
+          }}
         >
-          <DialogTitle>
-            Select Room
+          <DialogTitle sx={{ color: COLORS.TEXT_PRIMARY, fontWeight: 600 }}>
+            {t('booking.details.selectRoomDialog.title')}
             {loadingRooms && (
-              <CircularProgress size={20} sx={{ ml: 2 }} />
+              <CircularProgress size={20} sx={{ ml: 2, color: COLORS.SECONDARY }} />
             )}
           </DialogTitle>
           <DialogContent>
             <Alert severity="warning" sx={{ mb: 2 }}>
               <Typography variant="body2">
-                <strong>Important:</strong> Rooms shown are generally available but may not be available for the specific dates 
-                ({editedBooking?.checkInDate} to {editedBooking?.checkOutDate}). 
-                The system will verify availability when you save the assignment.
+                <strong>{t('booking.details.selectRoomDialog.warningTitle')}</strong> {t('booking.details.selectRoomDialog.warningMessage', {
+                  checkIn: editedBooking?.checkInDate,
+                  checkOut: editedBooking?.checkOutDate
+                })}
               </Typography>
             </Alert>
             {availableRooms.length > 0 ? (
               <List>
                 {availableRooms.map((room) => (
                   <ListItem key={room.id} disablePadding>
-                    <ListItemButton onClick={() => handleRoomSelect(room)}>
+                    <ListItemButton 
+                      onClick={() => handleRoomSelect(room)}
+                      sx={{
+                        '&:hover': {
+                          backgroundColor: addAlpha(COLORS.SUCCESS, 0.12),
+                        },
+                        borderRadius: 1,
+                        mb: 0.5,
+                      }}
+                    >
                       <ListItemText
-                        primary={`Room ${room.roomNumber} - ${room.roomType}`}
+                        primary={
+                          <Typography variant="body1" sx={{ color: COLORS.SECONDARY, fontWeight: 500 }}>
+                            {t('booking.details.selectRoomDialog.roomInfo', {
+                              roomNumber: room.roomNumber,
+                              roomType: room.roomType
+                            })}
+                          </Typography>
+                        }
                         secondary={
                           <span>
                             <Typography component="span" variant="body2" color="text.primary">
-                              ETB {room.pricePerNight?.toFixed(0)}/night
+                              {formatCurrency(room.pricePerNight || 0)}{t('booking.details.selectRoomDialog.perNight')}
                             </Typography>
                             {room.description && (
                               <Typography component="span" variant="body2" sx={{ ml: 1 }}>
@@ -1129,7 +1377,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                               </Typography>
                             )}
                             <Typography component="span" variant="body2" sx={{ ml: 1 }}>
-                              • Capacity: {room.capacity} guests
+                              • {t('booking.details.selectRoomDialog.capacity', { capacity: room.capacity })}
                             </Typography>
                           </span>
                         }
@@ -1140,13 +1388,21 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
               </List>
             ) : (
               <Alert severity="info">
-                {loadingRooms ? 'Loading available rooms...' : 'No available rooms found for the selected dates and room type.'}
+                {loadingRooms ? t('booking.details.selectRoomDialog.loadingRooms') : t('booking.details.selectRoomDialog.noRoomsFound')}
               </Alert>
             )}
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setRoomDialogOpen(false)}>
-              Cancel
+            <Button 
+              onClick={() => setRoomDialogOpen(false)}
+              sx={{
+                color: COLORS.SECONDARY,
+                '&:hover': {
+                  backgroundColor: addAlpha(COLORS.SUCCESS, 0.12)
+                }
+              }}
+            >
+              {t('booking.details.selectRoomDialog.cancel')}
             </Button>
           </DialogActions>
         </Dialog>
@@ -1160,9 +1416,15 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
           }}
           maxWidth="sm"
           fullWidth
+          sx={{
+            '& .MuiDialog-paper': {
+              border: `1px solid ${addAlpha(COLORS.ERROR, 0.25)}`,
+              boxShadow: `0 8px 32px ${addAlpha(COLORS.ERROR, 0.15)}`
+            }
+          }}
         >
-          <DialogTitle>
-            Error
+          <DialogTitle sx={{ color: COLORS.ERROR, fontWeight: 600 }}>
+            {t('booking.details.error')}
           </DialogTitle>
           <DialogContent>
             <Typography variant="body1" sx={{ mt: 1 }}>
@@ -1176,7 +1438,12 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                 setError(null);
               }}
               variant="contained"
-              color="primary"
+              sx={{
+                backgroundColor: COLORS.SECONDARY,
+                '&:hover': {
+                  backgroundColor: COLORS.SECONDARY_HOVER
+                }
+              }}
             >
               OK
             </Button>
@@ -1195,6 +1462,8 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
         </Snackbar>
       </Box>
     </Container>
+    </DialogContent>
+  </Dialog>
   );
 };
 

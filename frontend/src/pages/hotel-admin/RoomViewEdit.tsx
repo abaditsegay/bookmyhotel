@@ -3,36 +3,37 @@ import {
   Container,
   Typography,
   Box,
-  Button,
-  TextField,
   Grid,
-  Chip,
-  IconButton,
   Divider,
   Card,
   CardContent,
-  FormControl,
-  InputLabel,
-  Select,
   MenuItem,
   Alert,
   Snackbar,
   CircularProgress,
   FormControlLabel,
   Switch,
+  Dialog,
+  DialogContent,
 } from '@mui/material';
 import {
-  ArrowBack as ArrowBackIcon,
   Edit as EditIcon,
   Save as SaveIcon,
   Cancel as CancelIcon,
 } from '@mui/icons-material';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { hotelAdminApi, RoomResponse } from '../../services/hotelAdminApi';
 import { ROOM_TYPES } from '../../constants/roomTypes';
+import PremiumDisplayField from '../../components/common/PremiumDisplayField';
+import PremiumTextField from '../../components/common/PremiumTextField';
+import PremiumSelect from '../../components/common/PremiumSelect';
+import StandardButton from '../../components/common/StandardButton';
+import { COLORS, addAlpha } from '../../theme/themeColors';
 
 const RoomViewEdit: React.FC = () => {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -47,11 +48,7 @@ const RoomViewEdit: React.FC = () => {
 
   useEffect(() => {
     const loadRoom = async () => {
-      if (!token) {
-        setError('Authentication required');
-        setLoading(false);
-        return;
-      }
+      if (!token) return;
 
       try {
         setLoading(true);
@@ -59,25 +56,25 @@ const RoomViewEdit: React.FC = () => {
         
         const roomId = parseInt(id || '0');
         if (!roomId) {
-          setError('Invalid room ID');
+          setError(t('rooms.details.errors.invalidRoomId'));
           return;
         }
 
-        console.log('Loading room with ID:', roomId);
+        // console.log('Loading room with ID:', roomId);
         
         const result = await hotelAdminApi.getRoomById(token, roomId);
         
         if (result.success && result.data) {
-          console.log('Found room:', result.data);
+          // console.log('Found room:', result.data);
           setRoom(result.data);
           setEditedRoom({ ...result.data });
         } else {
-          console.log('Room not found for ID:', roomId);
+          // console.log('Room not found for ID:', roomId);
           setError(result.message || `Room not found for ID: ${roomId}`);
         }
       } catch (err) {
-        setError('Failed to load room details');
-        console.error('Error loading room:', err);
+        setError(t('rooms.details.errors.failedToLoad'));
+        // console.error('Error loading room:', err);
       } finally {
         setLoading(false);
       }
@@ -86,7 +83,7 @@ const RoomViewEdit: React.FC = () => {
     if (id) {
       loadRoom();
     }
-  }, [id, token]);
+  }, [id, token, t]);
 
   const handleEdit = () => {
     setIsEditing(true);
@@ -97,8 +94,13 @@ const RoomViewEdit: React.FC = () => {
     setEditedRoom(room ? { ...room } : null);
   };
 
-  const handleSave = async () => {
-    if (!editedRoom || !token) return;
+  const handleCancelAndClose = () => {
+    handleCancel();
+    handleBack();
+  };
+
+  const handleSave = async (): Promise<boolean> => {
+    if (!editedRoom || !token) return false;
 
     try {
       const result = await hotelAdminApi.updateRoom(token, editedRoom.id, {
@@ -113,13 +115,23 @@ const RoomViewEdit: React.FC = () => {
         setRoom(result.data);
         setEditedRoom({ ...result.data });
         setIsEditing(false);
-        setSuccess('Room updated successfully');
+        setSuccess(t('rooms.details.success.roomUpdated'));
+        return true;
       } else {
-        setError(result.message || 'Failed to update room');
+        setError(result.message || t('rooms.details.errors.failedToUpdate'));
+        return false;
       }
     } catch (err) {
-      setError('Failed to update room');
-      console.error('Error updating room:', err);
+      setError(t('rooms.details.errors.failedToUpdate'));
+      // console.error('Error updating room:', err);
+      return false;
+    }
+  };
+
+  const handleSaveAndClose = async () => {
+    const saved = await handleSave();
+    if (saved) {
+      handleBack();
     }
   };
 
@@ -138,10 +150,10 @@ const RoomViewEdit: React.FC = () => {
     try {
       // Note: Room availability toggle would need a separate API endpoint
       // For now, just show a message that this feature is not implemented
-      setError('Room availability toggle is not supported by the current API');
+      setError(t('rooms.details.errors.apiNotSupported'));
     } catch (err) {
-      setError('Failed to update room status');
-      console.error('Error updating room status:', err);
+      setError(t('rooms.details.errors.failedToUpdateStatus'));
+      // console.error('Error updating room status:', err);
     }
   };
 
@@ -165,87 +177,107 @@ const RoomViewEdit: React.FC = () => {
 
   if (loading) {
     return (
-      <Container maxWidth="lg">
-        <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-          <CircularProgress size={60} />
-          <Typography variant="h6" sx={{ ml: 2 }}>
-            Loading room details...
-          </Typography>
-        </Box>
-      </Container>
+      <Dialog open onClose={handleBack} maxWidth="lg" fullWidth scroll="paper">
+        <DialogContent dividers>
+          <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+            <CircularProgress size={60} />
+            <Typography variant="h6" sx={{ ml: 2 }}>
+              Loading room details...
+            </Typography>
+          </Box>
+        </DialogContent>
+      </Dialog>
     );
   }
 
   if (error) {
     return (
-      <Container maxWidth="lg">
-        <Box sx={{ mt: 4 }}>
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
-          </Alert>
-          <IconButton onClick={handleBack} sx={{ mr: 1 }}>
-            <ArrowBackIcon />
-          </IconButton>
-        </Box>
-      </Container>
+      <Dialog open onClose={handleBack} maxWidth="lg" fullWidth scroll="paper">
+        <DialogContent dividers>
+          <Box sx={{ mt: 2 }}>
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          </Box>
+        </DialogContent>
+      </Dialog>
     );
   }
 
   if (!currentRoom) {
     return (
-      <Container maxWidth="lg">
-        <Box sx={{ mt: 4 }}>
-          <Alert severity="info" sx={{ mb: 2 }}>
-            Room not found
-          </Alert>
-          <IconButton onClick={handleBack} sx={{ mr: 1 }}>
-            <ArrowBackIcon />
-          </IconButton>
-        </Box>
-      </Container>
+      <Dialog open onClose={handleBack} maxWidth="lg" fullWidth scroll="paper">
+        <DialogContent dividers>
+          <Box sx={{ mt: 2 }}>
+            <Alert severity="info" sx={{ mb: 2 }}>
+              Room not found
+            </Alert>
+          </Box>
+        </DialogContent>
+      </Dialog>
     );
   }
 
   return (
-    <Container maxWidth="lg">
-      <Box sx={{ mt: 4, mb: 4 }}>
+    <Dialog open onClose={handleBack} maxWidth="lg" fullWidth scroll="paper">
+      <DialogContent dividers sx={{ p: 0 }}>
+        <Container maxWidth="lg" sx={{ py: 4 }}>
+          <Box sx={{ mb: 2 }}>
         {/* Header */}
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <IconButton onClick={handleBack} sx={{ mr: 1 }}>
-              <ArrowBackIcon />
-            </IconButton>
             <Typography variant="h4" component="h1">
-              Room Details
+              {t('rooms.details.title')}
             </Typography>
           </Box>
           
           <Box sx={{ display: 'flex', gap: 1 }}>
+            <StandardButton
+              variant="outlined"
+              startIcon={<CancelIcon />}
+              onClick={handleCancelAndClose}
+              sx={{
+                borderColor: addAlpha(COLORS.SECONDARY, 0.6),
+                color: COLORS.PRIMARY,
+                '&:hover': {
+                  borderColor: COLORS.SECONDARY,
+                  bgcolor: addAlpha(COLORS.SECONDARY, 0.08),
+                },
+              }}
+            >
+              {t('rooms.details.cancel')}
+            </StandardButton>
             {!isEditing ? (
-              <Button
+              <StandardButton
                 variant="outlined"
                 startIcon={<EditIcon />}
                 onClick={handleEdit}
+                sx={{
+                  borderColor: addAlpha(COLORS.SECONDARY, 0.6),
+                  color: COLORS.PRIMARY,
+                  '&:hover': {
+                    borderColor: COLORS.SECONDARY,
+                    bgcolor: addAlpha(COLORS.SECONDARY, 0.08),
+                  },
+                }}
               >
-                Edit
-              </Button>
+                {t('rooms.details.edit')}
+              </StandardButton>
             ) : (
-              <>
-                <Button
-                  variant="outlined"
-                  startIcon={<CancelIcon />}
-                  onClick={handleCancel}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  variant="contained"
-                  startIcon={<SaveIcon />}
-                  onClick={handleSave}
-                >
-                  Save
-                </Button>
-              </>
+              <StandardButton
+                variant="contained"
+                startIcon={<SaveIcon />}
+                onClick={handleSaveAndClose}
+                gradient
+                sx={{
+                  background: COLORS.GRADIENT_SECONDARY,
+                  '&:hover': {
+                    background: COLORS.GRADIENT_WARM,
+                  },
+                }}
+              >
+                {t('rooms.details.save')}
+              </StandardButton>
             )}
           </Box>
         </Box>
@@ -257,64 +289,57 @@ const RoomViewEdit: React.FC = () => {
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
-                  Basic Information
+                  {t('rooms.details.basicInformation')}
                 </Typography>
                 <Divider sx={{ mb: 2 }} />
                 
                 <Grid container spacing={2}>
                   <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      label="Room Number"
-                      value={currentRoom?.roomNumber || ''}
-                      onChange={(e) => handleFieldChange('roomNumber', e.target.value)}
-                      disabled={!isEditing}
-                      variant={isEditing ? 'outlined' : 'filled'}
+                    <PremiumDisplayField
+                      label={t('rooms.details.roomNumber')}
+                      value={currentRoom?.roomNumber}
+                      isEditMode={isEditing}
+                      onChange={(value) => handleFieldChange('roomNumber', value)}
+                      required
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
                     {isEditing ? (
-                      <FormControl fullWidth>
-                        <InputLabel>Room Type</InputLabel>
-                        <Select
-                          value={currentRoom?.roomType || ''}
-                          onChange={(e) => handleFieldChange('roomType', e.target.value)}
-                        >
-                          {ROOM_TYPES.map((roomType) => (
-                            <MenuItem key={roomType.value} value={roomType.value}>
-                              {roomType.value}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
-                    ) : (
-                      <TextField
+                      <PremiumSelect
                         fullWidth
-                        label="Room Type"
+                        label={t('rooms.details.roomType')}
+                        value={currentRoom?.roomType || ''}
+                        onChange={(e) => handleFieldChange('roomType', e.target.value)}
+                      >
+                        {ROOM_TYPES.map((roomType) => (
+                          <MenuItem key={roomType.value} value={roomType.value}>
+                            {roomType.value}
+                          </MenuItem>
+                        ))}
+                      </PremiumSelect>
+                    ) : (
+                      <PremiumTextField
+                        fullWidth
+                        label={t('rooms.details.roomType')}
                         value={currentRoom?.roomType || ''}
                         disabled
-                        variant="filled"
                       />
                     )}
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      label="Room ID"
-                      value={currentRoom?.id || ''}
-                      disabled
-                      variant="filled"
+                    <PremiumDisplayField
+                      label={t('rooms.details.roomId')}
+                      value={currentRoom?.id?.toString()}
+                      isEditMode={false}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      label="Capacity"
+                    <PremiumDisplayField
+                      label={t('rooms.details.capacity')}
+                      value={currentRoom?.capacity?.toString()}
+                      isEditMode={isEditing}
+                      onChange={(value) => handleFieldChange('capacity', parseInt(value) || 0)}
                       type="number"
-                      value={currentRoom?.capacity || ''}
-                      onChange={(e) => handleFieldChange('capacity', parseInt(e.target.value))}
-                      disabled={!isEditing}
-                      variant={isEditing ? 'outlined' : 'filled'}
                     />
                   </Grid>
                 </Grid>
@@ -327,56 +352,68 @@ const RoomViewEdit: React.FC = () => {
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
-                  Pricing & Availability
+                  {t('rooms.details.pricingAndAvailability')}
                 </Typography>
                 <Divider sx={{ mb: 2 }} />
                 
                 <Grid container spacing={2}>
                   <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      label="Price per Night"
+                    <PremiumDisplayField
+                      label={t('rooms.details.pricePerNight')}
+                      value={currentRoom?.pricePerNight ? `ETB ${currentRoom.pricePerNight}` : undefined}
+                      isEditMode={isEditing}
+                      onChange={(value) => handleFieldChange('pricePerNight', parseFloat(value.replace('ETB ', '')) || 0)}
                       type="number"
-                      value={currentRoom?.pricePerNight || ''}
-                      onChange={(e) => handleFieldChange('pricePerNight', parseFloat(e.target.value))}
-                      disabled={!isEditing}
-                      variant={isEditing ? 'outlined' : 'filled'}
-                      InputProps={{
-                        startAdornment: 'ETB ',
-                      }}
                     />
                   </Grid>
                   <Grid item xs={12}>
                     <Box>
                       <Typography variant="caption" display="block" color="text.secondary">
-                        Availability Status
+                        {t('rooms.details.availabilityStatus')}
                       </Typography>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Chip
-                          label={currentRoom?.isAvailable ? 'Available' : 'Unavailable'}
-                          color={currentRoom?.isAvailable ? 'success' : 'error'}
-                          variant="filled"
-                        />
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            fontWeight: 600,
+                            color: currentRoom?.isAvailable ? COLORS.SUCCESS : COLORS.ERROR,
+                            bgcolor: currentRoom?.isAvailable
+                              ? addAlpha(COLORS.SUCCESS, 0.12)
+                              : addAlpha(COLORS.ERROR, 0.12),
+                            px: 1.5,
+                            py: 0.5,
+                            borderRadius: 2,
+                          }}
+                        >
+                          {currentRoom?.isAvailable ? t('rooms.details.available') : t('rooms.details.unavailable')}
+                        </Typography>
                         <FormControlLabel
                           control={
                             <Switch
                               checked={currentRoom?.isAvailable || false}
                               onChange={handleStatusToggle}
                               disabled={isEditing}
+                              sx={{
+                                '& .MuiSwitch-switchBase.Mui-checked': {
+                                  color: COLORS.SECONDARY,
+                                },
+                                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                  backgroundColor: COLORS.SECONDARY,
+                                },
+                              }}
                             />
                           }
-                          label={currentRoom?.isAvailable ? 'Available' : 'Unavailable'}
+                          label={currentRoom?.isAvailable ? t('rooms.details.available') : t('rooms.details.unavailable')}
                         />
                       </Box>
                     </Box>
                   </Grid>
                   <Grid item xs={12}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
-                      label="Current Rate"
+                      label={t('rooms.details.currentRate')}
                       value={currentRoom ? formatCurrency(currentRoom.pricePerNight) : ''}
                       disabled
-                      variant="filled"
                     />
                   </Grid>
                 </Grid>
@@ -389,21 +426,20 @@ const RoomViewEdit: React.FC = () => {
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
-                  Description
+                  {t('rooms.details.description')}
                 </Typography>
                 <Divider sx={{ mb: 2 }} />
                 
                 <Grid container spacing={2}>
                   <Grid item xs={12}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
-                      label="Room Description"
+                      label={t('rooms.details.roomDescription')}
                       multiline
                       rows={4}
                       value={currentRoom?.description || ''}
                       onChange={(e) => handleFieldChange('description', e.target.value)}
                       disabled={!isEditing}
-                      variant={isEditing ? 'outlined' : 'filled'}
                     />
                   </Grid>
                 </Grid>
@@ -416,27 +452,25 @@ const RoomViewEdit: React.FC = () => {
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
-                  Hotel Information
+                  {t('rooms.details.hotelInformation')}
                 </Typography>
                 <Divider sx={{ mb: 2 }} />
                 
                 <Grid container spacing={2}>
                   <Grid item xs={12} sm={6}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
-                      label="Hotel Name"
+                      label={t('rooms.details.hotelName')}
                       value={currentRoom?.hotelName || ''}
                       disabled
-                      variant="filled"
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    <TextField
+                    <PremiumTextField
                       fullWidth
-                      label="Hotel ID"
+                      label={t('rooms.details.hotelId')}
                       value={currentRoom?.hotelId || ''}
                       disabled
-                      variant="filled"
                     />
                   </Grid>
                 </Grid>
@@ -465,8 +499,10 @@ const RoomViewEdit: React.FC = () => {
             {error}
           </Alert>
         </Snackbar>
-      </Box>
-    </Container>
+          </Box>
+        </Container>
+      </DialogContent>
+    </Dialog>
   );
 };
 

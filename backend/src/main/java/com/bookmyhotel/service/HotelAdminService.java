@@ -12,6 +12,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -23,15 +25,22 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.bookmyhotel.config.CacheConfig;
+import com.bookmyhotel.dto.BatchRoomCreateRequest;
+import com.bookmyhotel.dto.BatchRoomCreateResponse;
 import com.bookmyhotel.dto.BookingModificationRequest;
 import com.bookmyhotel.dto.BookingModificationResponse;
 import com.bookmyhotel.dto.BookingResponse;
 import com.bookmyhotel.dto.HotelDTO;
+import com.bookmyhotel.dto.HotelImageDTO;
+import com.bookmyhotel.dto.RoomCreationRequest;
+import com.bookmyhotel.dto.RoomCreationResponse;
 import com.bookmyhotel.dto.RoomDTO;
 import com.bookmyhotel.dto.UserDTO;
 import com.bookmyhotel.entity.Hotel;
+import com.bookmyhotel.entity.HotelImage;
 import com.bookmyhotel.entity.Reservation;
 import com.bookmyhotel.entity.ReservationStatus;
 import com.bookmyhotel.entity.Room;
@@ -39,10 +48,12 @@ import com.bookmyhotel.entity.RoomStatus;
 import com.bookmyhotel.entity.RoomType;
 import com.bookmyhotel.entity.User;
 import com.bookmyhotel.entity.UserRole;
+import com.bookmyhotel.enums.ImageCategory;
 import com.bookmyhotel.repository.HotelRepository;
 import com.bookmyhotel.repository.ReservationRepository;
 import com.bookmyhotel.repository.RoomRepository;
 import com.bookmyhotel.repository.UserRepository;
+import com.bookmyhotel.tenant.TenantContext;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -54,6 +65,8 @@ import jakarta.persistence.Query;
 @Service
 @Transactional
 public class HotelAdminService {
+
+    private static final Logger logger = LoggerFactory.getLogger(HotelAdminService.class);
 
     @Autowired
     private UserRepository userRepository;
@@ -84,6 +97,12 @@ public class HotelAdminService {
 
     @Autowired
     private BookingStatusUpdateService bookingStatusUpdateService;
+
+    @Autowired
+    private HotelImageService hotelImageService;
+
+    @Autowired
+    private AutomatedRoomStatusService automatedRoomStatusService;
 
     /**
      * Get the hotel for the logged-in hotel admin
@@ -117,7 +136,17 @@ public class HotelAdminService {
         hotel.setCity(hotelDTO.getCity());
         hotel.setCountry(hotelDTO.getCountry());
         hotel.setPhone(hotelDTO.getPhone());
+        hotel.setMobilePaymentPhone(hotelDTO.getMobilePaymentPhone());
+        hotel.setMobilePaymentPhone2(hotelDTO.getMobilePaymentPhone2());
         hotel.setEmail(hotelDTO.getEmail());
+        if (hotelDTO.getContactPerson() != null) hotel.setContactPerson(hotelDTO.getContactPerson());
+        if (hotelDTO.getLicenseNumber() != null) hotel.setLicenseNumber(hotelDTO.getLicenseNumber());
+        if (hotelDTO.getTaxId() != null) hotel.setTaxId(hotelDTO.getTaxId());
+        if (hotelDTO.getWebsiteUrl() != null) hotel.setWebsiteUrl(hotelDTO.getWebsiteUrl());
+        if (hotelDTO.getFacilityAmenities() != null) hotel.setFacilityAmenities(hotelDTO.getFacilityAmenities());
+        if (hotelDTO.getCheckInTime() != null) hotel.setCheckInTime(hotelDTO.getCheckInTime());
+        if (hotelDTO.getCheckOutTime() != null) hotel.setCheckOutTime(hotelDTO.getCheckOutTime());
+        if (hotelDTO.getNumberOfRooms() != null) hotel.setNumberOfRooms(hotelDTO.getNumberOfRooms());
         hotel.setUpdatedAt(LocalDateTime.now());
 
         Hotel saved = hotelRepository.save(hotel);
@@ -141,7 +170,7 @@ public class HotelAdminService {
         // Get all staff for this hotel
         List<User> allStaff = userRepository.findByHotelAndRolesContaining(hotel,
                 Arrays.asList(UserRole.FRONTDESK, UserRole.HOUSEKEEPING, UserRole.HOTEL_ADMIN,
-                        UserRole.OPERATIONS_SUPERVISOR, UserRole.MAINTENANCE));
+                        UserRole.OPERATIONAL_ADMIN, UserRole.MAINTENANCE));
 
         // Apply filters
         List<User> filteredStaff = allStaff.stream()
@@ -229,10 +258,15 @@ public class HotelAdminService {
             throw new RuntimeException("User with this email already exists");
         }
 
-        // Validate allowed roles for hotel admin
-        Set<UserRole> allowedRoles = Set.of(UserRole.FRONTDESK, UserRole.HOUSEKEEPING, UserRole.HOTEL_ADMIN);
+        // Validate allowed roles for hotel admin creation
+        // HOTEL_ADMIN can create: OPERATIONAL_ADMIN, FRONTDESK, HOUSEKEEPING,
+        // MAINTENANCE
+        Set<UserRole> allowedRoles = Set.of(
+                UserRole.FRONTDESK, UserRole.HOUSEKEEPING,
+                UserRole.OPERATIONAL_ADMIN, UserRole.MAINTENANCE);
         if (userDTO.getRoles() == null || !allowedRoles.containsAll(userDTO.getRoles())) {
-            throw new RuntimeException("Hotel admin can only create FRONTDESK, HOUSEKEEPING, or HOTEL_ADMIN users");
+            throw new RuntimeException(
+                    "Hotel admin can only create FRONTDESK, HOUSEKEEPING, OPERATIONAL_ADMIN, or MAINTENANCE users");
         }
 
         // Create new user
@@ -280,7 +314,9 @@ public class HotelAdminService {
 
         // Update roles if provided and valid
         if (userDTO.getRoles() != null) {
-            Set<UserRole> allowedRoles = Set.of(UserRole.FRONTDESK, UserRole.HOUSEKEEPING, UserRole.HOTEL_ADMIN);
+            Set<UserRole> allowedRoles = Set.of(
+                    UserRole.FRONTDESK, UserRole.HOUSEKEEPING,
+                    UserRole.OPERATIONAL_ADMIN, UserRole.MAINTENANCE);
             if (allowedRoles.containsAll(userDTO.getRoles())) {
                 staff.setRoles(userDTO.getRoles());
             }
@@ -336,21 +372,35 @@ public class HotelAdminService {
     @Cacheable(value = CacheConfig.ROOMS_BY_HOTEL_CACHE, key = "'admin:' + #adminEmail + ':page:' + #page + ':size:' + #size + ':search:' + (#search != null ? #search : 'null') + ':type:' + (#roomType != null ? #roomType : 'null') + ':available:' + (#available != null ? #available : 'null')")
     public Page<RoomDTO> getHotelRooms(String adminEmail, int page, int size, String search, String roomType,
             Boolean available) {
-        System.err.println("🔍 HotelAdminService.getHotelRooms called with adminEmail: " + adminEmail);
+        // System.err.println("🔍 HotelAdminService.getHotelRooms called with
+        // adminEmail: " + adminEmail);
         User admin = getUserByEmail(adminEmail);
-        System.err.println("🔍 Retrieved admin user: " + admin.getId() + ", email: " + admin.getEmail());
+        // System.err.println("🔍 Retrieved admin user: " + admin.getId() + ", email: "
+        // + admin.getEmail());
         Hotel hotel = admin.getHotel();
 
         if (hotel == null) {
             throw new RuntimeException("Hotel admin is not associated with any hotel");
         }
 
-        System.err.println("🔍 Admin associated with hotel: " + hotel.getId() + ", name: " + hotel.getName());
+        // System.err.println("🔍 Admin associated with hotel: " + hotel.getId() + ",
+        // name: " + hotel.getName());
 
         Pageable pageable = PageRequest.of(page, size);
 
-        // Get all rooms for this hotel using hotel ID instead of hotel entity
-        List<Room> allRooms = roomRepository.findByHotelId(hotel.getId());
+        // Get all rooms for this hotel with reservations for current guest display
+        List<Room> allRooms = roomRepository.findByHotelIdWithReservationsOrderByRoomNumber(hotel.getId());
+        // System.err.println("🔍 Found " + allRooms.size() + " total rooms for hotel
+        // ID: " + hotel.getId());
+
+        if (allRooms.isEmpty()) {
+            // System.err.println("🔍 No rooms found in database for hotel ID: " +
+            // hotel.getId());
+        } else {
+            // System.err.println("🔍 Room IDs: "
+            // + allRooms.stream().map(r ->
+            // r.getId()).collect(java.util.stream.Collectors.toList()));
+        }
 
         // Apply filters
         List<Room> filteredRooms = allRooms.stream()
@@ -363,6 +413,9 @@ public class HotelAdminService {
                         matches = room.getRoomNumber().toLowerCase().contains(searchLower) ||
                                 (room.getDescription() != null
                                         && room.getDescription().toLowerCase().contains(searchLower));
+                        // System.err.println(
+                        // "🔍 Search filter '" + search + "' on room " + room.getRoomNumber() + ": " +
+                        // matches);
                     }
 
                     // Room type filter
@@ -380,9 +433,18 @@ public class HotelAdminService {
                 })
                 .collect(Collectors.toList());
 
+        // System.err.println("🔍 After filtering: " + filteredRooms.size() + " rooms
+        // remain");
+        // System.err.println(
+        // "🔍 Filters applied - search: '" + search + "', roomType: '" + roomType + "',
+        // available: " + available);
+
         // Manual pagination with bounds checking
         int start = page * size;
         int end = Math.min(start + size, filteredRooms.size());
+
+        // System.err.println("🔍 Pagination - page: " + page + ", size: " + size + ",
+        // start: " + start + ", end: " + end);
 
         List<Room> pageContent;
         if (start >= filteredRooms.size()) {
@@ -415,6 +477,9 @@ public class HotelAdminService {
             throw new RuntimeException("Hotel admin is not associated with any hotel");
         }
 
+        // Enforce room limit based on hotel registration
+        validateRoomLimit(hotel, 1);
+
         // Check if room number already exists for this hotel
         if (roomRepository.existsByHotelAndRoomNumber(hotel, roomDTO.getRoomNumber())) {
             throw new RuntimeException("Room number already exists in this hotel");
@@ -441,6 +506,150 @@ public class HotelAdminService {
 
         Room saved = roomRepository.save(newRoom);
         return convertToRoomDTO(saved);
+    }
+
+    /**
+     * Add multiple rooms in a single batch operation
+     */
+    @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = CacheConfig.ROOMS_BY_HOTEL_CACHE, allEntries = true),
+            @CacheEvict(value = CacheConfig.ROOM_TYPES_CACHE, allEntries = true),
+            @CacheEvict(value = CacheConfig.AVAILABLE_ROOMS_CACHE, allEntries = true)
+    })
+    public BatchRoomCreateResponse addRoomsBatch(BatchRoomCreateRequest request, String adminEmail) {
+        User admin = getUserByEmail(adminEmail);
+        Hotel hotel = admin.getHotel();
+
+        if (hotel == null) {
+            throw new RuntimeException("Hotel admin is not associated with any hotel");
+        }
+
+        // Enforce room limit based on hotel registration
+        int validRoomCount = (int) request.getRoomNumbers().stream()
+                .map(String::trim)
+                .filter(r -> !r.isEmpty())
+                .count();
+        validateRoomLimit(hotel, validRoomCount);
+
+        List<RoomDTO> createdRooms = new ArrayList<>();
+        List<BatchRoomCreateResponse.FailedRoom> failedRooms = new ArrayList<>();
+
+        BigDecimal pricePerNight = request.getPricePerNight();
+        if (pricePerNight == null || pricePerNight.compareTo(BigDecimal.ZERO) <= 0) {
+            pricePerNight = roomTypePricingService.getBasePriceForRoomType(hotel.getId(), request.getRoomType());
+        }
+
+        for (String roomNumber : request.getRoomNumbers()) {
+            String trimmed = roomNumber.trim();
+            if (trimmed.isEmpty())
+                continue;
+
+            if (roomRepository.existsByHotelAndRoomNumber(hotel, trimmed)) {
+                failedRooms.add(new BatchRoomCreateResponse.FailedRoom(trimmed, "Room number already exists"));
+                continue;
+            }
+
+            Room newRoom = new Room();
+            newRoom.setRoomNumber(trimmed);
+            newRoom.setRoomType(request.getRoomType());
+            newRoom.setPricePerNight(pricePerNight);
+            newRoom.setCapacity(request.getCapacity());
+            newRoom.setDescription(request.getDescription());
+            newRoom.setIsAvailable(true);
+            newRoom.setHotel(hotel);
+            newRoom.setCreatedAt(LocalDateTime.now());
+            newRoom.setUpdatedAt(LocalDateTime.now());
+
+            Room saved = roomRepository.save(newRoom);
+            createdRooms.add(convertToRoomDTO(saved));
+        }
+
+        BatchRoomCreateResponse response = new BatchRoomCreateResponse();
+        response.setTotalRequested(request.getRoomNumbers().size());
+        response.setCreated(createdRooms.size());
+        response.setFailed(failedRooms.size());
+        response.setCreatedRooms(createdRooms);
+        response.setFailedRooms(failedRooms);
+        return response;
+    }
+
+    /**
+     * Add a new room with image uploads
+     */
+    @Caching(evict = {
+            @CacheEvict(value = CacheConfig.ROOMS_BY_HOTEL_CACHE, allEntries = true),
+            @CacheEvict(value = CacheConfig.ROOM_TYPES_CACHE, allEntries = true),
+            @CacheEvict(value = CacheConfig.AVAILABLE_ROOMS_CACHE, allEntries = true)
+    })
+    public RoomCreationResponse addRoomWithImages(RoomCreationRequest request, String adminEmail) {
+        try {
+            // First create the room
+            RoomDTO roomDTO = addRoom(request.toRoomDTO(), adminEmail);
+
+            List<HotelImageDTO> uploadedImages = new ArrayList<>();
+
+            // Upload hero image if provided
+            if (request.hasHeroImage()) {
+                try {
+                    HotelImage heroImageEntity = hotelImageService.uploadRoomTypeImage(
+                            TenantContext.getTenantId(),
+                            roomDTO.getHotelId(),
+                            getRoomTypeId(request.getRoomType()),
+                            ImageCategory.ROOM_TYPE_HERO,
+                            request.getHeroImage(),
+                            request.getHeroImageAltText(),
+                            0 // Hero image always has display order 0
+                    );
+                    uploadedImages.add(convertToImageDTO(heroImageEntity));
+                } catch (Exception e) {
+                    // Log error but continue with room creation
+                    // System.err.println("Failed to upload hero image: " + e.getMessage());
+                }
+            }
+
+            // Upload gallery images if provided
+            if (request.hasGalleryImages()) {
+                List<MultipartFile> galleryImages = request.getGalleryImages();
+                List<String> altTexts = request.getGalleryImageAltTexts();
+
+                for (int i = 0; i < galleryImages.size(); i++) {
+                    MultipartFile galleryImage = galleryImages.get(i);
+                    if (galleryImage != null && !galleryImage.isEmpty()) {
+                        try {
+                            String altText = (altTexts != null && i < altTexts.size())
+                                    ? altTexts.get(i)
+                                    : null;
+
+                            HotelImage galleryImageEntity = hotelImageService.uploadRoomTypeImage(
+                                    TenantContext.getTenantId(),
+                                    roomDTO.getHotelId(),
+                                    getRoomTypeId(request.getRoomType()),
+                                    ImageCategory.ROOM_TYPE_GALLERY,
+                                    galleryImage,
+                                    altText,
+                                    i + 1 // Gallery images start from display order 1
+                            );
+                            uploadedImages.add(convertToImageDTO(galleryImageEntity));
+                        } catch (Exception e) {
+                            // Log error but continue with other images
+                            // System.err.println("Failed to upload gallery image " + (i + 1) + ": " +
+                            // e.getMessage());
+                        }
+                    }
+                }
+            }
+
+            // Return success response
+            String message = uploadedImages.isEmpty()
+                    ? "Room created successfully (no images uploaded)"
+                    : String.format("Room created successfully with %d image(s) uploaded", uploadedImages.size());
+
+            return RoomCreationResponse.success(roomDTO, uploadedImages, message);
+
+        } catch (Exception e) {
+            return RoomCreationResponse.error("Failed to create room: " + e.getMessage());
+        }
     }
 
     /**
@@ -498,19 +707,81 @@ public class HotelAdminService {
     /**
      * Delete room
      */
+    @Caching(evict = {
+            @CacheEvict(value = CacheConfig.ROOMS_BY_HOTEL_CACHE, allEntries = true),
+            @CacheEvict(value = CacheConfig.ROOM_TYPES_CACHE, allEntries = true),
+            @CacheEvict(value = CacheConfig.AVAILABLE_ROOMS_CACHE, allEntries = true)
+    })
     public void deleteRoom(Long roomId, String adminEmail) {
+        // System.out.println("🔥 DELETE ROOM REQUEST");
+        // System.out.println("🔥 Room ID (database primary key): " + roomId);
+        // System.out.println("🔥 Admin email: " + adminEmail);
+
         User admin = getUserByEmail(adminEmail);
         Hotel hotel = admin.getHotel();
 
-        Room room = roomRepository.findById(roomId)
-                .orElseThrow(() -> new RuntimeException("Room not found"));
+        // System.out.println("🔥 Admin found: " + admin.getEmail());
+        // System.out.println(
+        // "🔥 Hotel: " + (hotel != null ? hotel.getName() + " (Hotel ID: " +
+        // hotel.getId() + ")" : "null"));
+
+        Room room = roomRepository.findById(roomId).orElse(null);
+        // System.out.println("🔥 Room found: "
+        // + (room != null ? "Yes - Room Number: " + room.getRoomNumber() + " (ID: " +
+        // room.getId() + ")" : "No"));
+
+        if (room == null) {
+            // System.out.println("🔥 ERROR: Room with database ID " + roomId + " not found
+            // in database");
+            throw new RuntimeException("Room not found");
+        }
 
         // Verify the room belongs to the same hotel
+        // System.out.println("🔥 Room's hotel ID: " + room.getHotel().getId());
+        // System.out.println("🔥 Admin's hotel ID: " + hotel.getId());
+
         if (!room.getHotel().getId().equals(hotel.getId())) {
+            // System.out.println("🔥 ERROR: Room does not belong to admin's hotel");
             throw new RuntimeException("Room does not belong to your hotel");
         }
 
+        // System.out.println("🔥 Checking for active reservations for Room " +
+        // room.getRoomNumber() + " (ID: "
+        // + room.getId() + ")...");
+        // Check if room has active reservations
+        List<Reservation> activeReservations = reservationRepository.findByAssignedRoomAndStatusIn(
+                room,
+                Arrays.asList(ReservationStatus.BOOKED, ReservationStatus.CHECKED_IN));
+
+        // System.out.println("🔥 Active reservations found: " +
+        // activeReservations.size());
+        if (!activeReservations.isEmpty()) {
+            // System.out.println("🔥 ERROR: Cannot delete room with active reservations");
+            throw new RuntimeException(
+                    "Cannot delete room with active reservations. Please complete or cancel existing reservations first.");
+        }
+
+        // System.out.println("🔥 Checking for all reservations for Room " +
+        // room.getRoomNumber() + "...");
+        // Check if room has any reservations (past or future) and nullify the
+        // assignedRoom reference
+        List<Reservation> allReservations = reservationRepository.findByAssignedRoom(room);
+        // System.out.println("🔥 Total reservations found: " + allReservations.size());
+
+        for (Reservation reservation : allReservations) {
+            // System.out.println("🔥 Nullifying reservation " + reservation.getId() + "
+            // (Confirmation: "
+            // + reservation.getConfirmationNumber() + ")");
+            reservation.setAssignedRoom(null);
+            reservationRepository.save(reservation);
+        }
+
+        // System.out.println("🔥 Deleting Room " + room.getRoomNumber() + " (ID: " +
+        // room.getId() + ")...");
+        // Now safe to delete the room
         roomRepository.delete(room);
+        // System.out.println("🔥 SUCCESS: Room " + room.getRoomNumber() + " deleted
+        // successfully");
     }
 
     /**
@@ -544,7 +815,7 @@ public class HotelAdminService {
         if (!available) {
             LocalDate today = LocalDate.now();
             boolean hasActiveBookings = room.getReservations().stream()
-                    .anyMatch(reservation -> (reservation.getStatus() == ReservationStatus.CONFIRMED ||
+                    .anyMatch(reservation -> (reservation.getStatus() == ReservationStatus.BOOKED ||
                             reservation.getStatus() == ReservationStatus.CHECKED_IN) &&
                             !reservation.getCheckInDate().isAfter(today) &&
                             !reservation.getCheckOutDate().isBefore(today));
@@ -594,7 +865,7 @@ public class HotelAdminService {
         // status would conflict
         LocalDate today = LocalDate.now();
         boolean hasActiveBookings = room.getReservations().stream()
-                .anyMatch(reservation -> (reservation.getStatus() == ReservationStatus.CONFIRMED ||
+                .anyMatch(reservation -> (reservation.getStatus() == ReservationStatus.BOOKED ||
                         reservation.getStatus() == ReservationStatus.CHECKED_IN) &&
                         !reservation.getCheckInDate().isAfter(today) &&
                         !reservation.getCheckOutDate().isBefore(today));
@@ -639,18 +910,75 @@ public class HotelAdminService {
         List<Reservation> allReservations = reservationRepository.findByHotelId(hotel.getId());
         LocalDate today = LocalDate.now();
 
-        // Booked rooms: rooms with active reservations (confirmed, checked-in, or
-        // future bookings)
+        // Debug logging
+        // System.out.println("🔍 Hotel Statistics Debug - Hotel ID: " + hotel.getId());
+        // System.out.println("🔍 Total reservations found: " + allReservations.size());
+        // System.out.println("🔍 Today's date: " + today);
+
+        for (Reservation r : allReservations) {
+            // System.out.println("🔍 Reservation " + r.getId() + " - Status: " +
+            // r.getStatus() +
+            // ", Check-in: " + r.getCheckInDate() + ", Check-out: " + r.getCheckOutDate());
+        }
+
+        // Count booked bookings (BOOKED status or CHECKED_IN status)
+        // We want to count all BOOKED bookings that haven't checked out yet,
+        // and all CHECKED_IN bookings regardless of dates
+        long bookedBookings = allReservations.stream()
+                .filter(r -> {
+                    // System.out.println("🔍 Processing reservation " + r.getId() + " - Status: " +
+                    // r.getStatus() +
+                    // ", Check-in: " + r.getCheckInDate() + ", Check-out: " + r.getCheckOutDate());
+
+                    // Count CHECKED_IN bookings regardless of dates (current guests)
+                    if (r.getStatus() == ReservationStatus.CHECKED_IN) {
+                        // System.out.println("🔍 Reservation " + r.getId() + " included - CHECKED_IN
+                        // guest");
+                        return true;
+                    }
+
+                    // Count BOOKED bookings that haven't passed their checkout date
+                    if (r.getStatus() == ReservationStatus.BOOKED) {
+                        // Use isAfter instead of !isBefore to be more explicit
+                        // A booking is still valid if checkout date is today or in the future
+                        boolean isValidBooking = r.getCheckOutDate().isAfter(today)
+                                || r.getCheckOutDate().isEqual(today);
+                        System.out
+                                .println("🔍 Reservation " + r.getId() + " - BOOKED booking, checkout date check: " +
+                                        r.getCheckOutDate() + " >= " + today + " = " + isValidBooking);
+                        return isValidBooking;
+                    }
+
+                    // System.out.println("🔍 Reservation " + r.getId() + " excluded - status: " +
+                    // r.getStatus());
+                    return false;
+                })
+                .count();
+
+        // System.out.println("🔍 Booked bookings calculated: " + bookedBookings);
+        stats.put("bookedBookings", bookedBookings);
+
+        // Booked rooms: rooms with active reservations that have assigned rooms
         Set<Long> bookedRoomIds = allReservations.stream()
-                .filter(r -> r.getStatus() == ReservationStatus.CONFIRMED ||
-                        r.getStatus() == ReservationStatus.CHECKED_IN ||
-                        (r.getStatus() == ReservationStatus.PENDING && r.getCheckInDate().isAfter(today)))
-                .filter(r -> !r.getCheckOutDate().isBefore(today)) // Not already checked out
+                .filter(r -> {
+                    // Count CHECKED_IN bookings regardless of dates (current guests)
+                    if (r.getStatus() == ReservationStatus.CHECKED_IN) {
+                        return true;
+                    }
+
+                    // Count BOOKED bookings that haven't passed their checkout date
+                    if (r.getStatus() == ReservationStatus.BOOKED) {
+                        return r.getCheckOutDate().isAfter(today) || r.getCheckOutDate().isEqual(today);
+                    }
+
+                    return false;
+                })
                 .filter(r -> r.getRoom() != null) // Filter out reservations without assigned rooms
                 .map(r -> r.getRoom().getId())
                 .collect(Collectors.toSet());
 
         long bookedRooms = bookedRoomIds.size();
+        // System.out.println("🔍 Booked rooms calculated: " + bookedRooms);
         stats.put("bookedRooms", bookedRooms);
 
         // Available rooms: total rooms minus booked rooms, and must be available for
@@ -665,7 +993,7 @@ public class HotelAdminService {
         // Staff statistics - include all staff roles (excluding customers and guests)
         List<User> staff = userRepository.findByHotelAndRolesContaining(hotel,
                 Arrays.asList(UserRole.FRONTDESK, UserRole.HOUSEKEEPING, UserRole.HOTEL_ADMIN,
-                        UserRole.HOTEL_MANAGER, UserRole.ADMIN, UserRole.OPERATIONS_SUPERVISOR,
+                        UserRole.HOTEL_ADMIN, UserRole.ADMIN, UserRole.OPERATIONAL_ADMIN,
                         UserRole.MAINTENANCE));
         stats.put("totalStaff", staff.size());
         stats.put("activeStaff", staff.stream().mapToInt(s -> s.getIsActive() ? 1 : 0).sum());
@@ -690,18 +1018,64 @@ public class HotelAdminService {
 
     // Helper methods
     private User getUserByEmail(String email) {
-        System.err.println("🔍 HotelAdminService.getUserByEmail called with email: " + email);
+        // System.err.println("🔍 HotelAdminService.getUserByEmail called with email: "
+        // + email);
         Optional<User> userOpt = userRepository.findByEmailWithHotel(email);
-        System.err.println("🔍 userRepository.findByEmailWithHotel returned: " + userOpt.isPresent());
+        // System.err.println("🔍 userRepository.findByEmailWithHotel returned: " +
+        // userOpt.isPresent());
         if (userOpt.isPresent()) {
             User user = userOpt.get();
-            System.err.println("🔍 Found user with ID: " + user.getId() + ", email: " + user.getEmail());
-            System.err.println("🔍 User hotel: " + (user.getHotel() != null ? user.getHotel().getId() : "null"));
+            // System.err.println("🔍 Found user with ID: " + user.getId() + ", email: " +
+            // user.getEmail());
+            // System.err.println("🔍 User hotel: " + (user.getHotel() != null ?
+            // user.getHotel().getId() : "null"));
             return user;
         } else {
-            System.err.println("🔍 User not found, throwing exception");
+            // System.err.println("🔍 User not found, throwing exception");
             throw new RuntimeException("User not found");
         }
+    }
+
+    /**
+     * Validates that adding the specified number of rooms would not exceed
+     * the hotel's registered room limit (numberOfRooms from onboarding).
+     */
+    private void validateRoomLimit(Hotel hotel, int roomsToAdd) {
+        Integer registeredLimit = hotel.getNumberOfRooms();
+        if (registeredLimit != null && registeredLimit > 0) {
+            long currentRoomCount = roomRepository.countByHotel(hotel);
+            if (currentRoomCount + roomsToAdd > registeredLimit) {
+                throw new RuntimeException(
+                        String.format(
+                                "Room limit exceeded. Your hotel is registered for %d rooms and currently has %d. " +
+                                        "Cannot add %d more room(s). Please update your hotel information to increase the room limit.",
+                                registeredLimit, currentRoomCount, roomsToAdd));
+            }
+        }
+    }
+
+    /**
+     * Get room limit info for the hotel admin's hotel.
+     */
+    public Map<String, Object> getRoomLimitInfo(String adminEmail) {
+        User admin = getUserByEmail(adminEmail);
+        Hotel hotel = admin.getHotel();
+
+        if (hotel == null) {
+            throw new RuntimeException("Hotel admin is not associated with any hotel");
+        }
+
+        long currentRoomCount = roomRepository.countByHotel(hotel);
+        Integer registeredLimit = hotel.getNumberOfRooms();
+
+        Map<String, Object> info = new java.util.HashMap<>();
+        info.put("currentRoomCount", currentRoomCount);
+        info.put("registeredLimit", registeredLimit);
+        info.put("canAddRooms", registeredLimit == null || registeredLimit <= 0 || currentRoomCount < registeredLimit);
+        info.put("remainingSlots", registeredLimit != null && registeredLimit > 0
+                ? Math.max(0, registeredLimit - currentRoomCount)
+                : null);
+        return info;
     }
 
     private HotelDTO convertToHotelDTO(Hotel hotel) {
@@ -713,8 +1087,18 @@ public class HotelAdminService {
         dto.setCity(hotel.getCity());
         dto.setCountry(hotel.getCountry());
         dto.setPhone(hotel.getPhone());
+        dto.setMobilePaymentPhone(hotel.getMobilePaymentPhone());
+        dto.setMobilePaymentPhone2(hotel.getMobilePaymentPhone2());
         dto.setEmail(hotel.getEmail());
+        dto.setContactPerson(hotel.getContactPerson());
+        dto.setLicenseNumber(hotel.getLicenseNumber());
+        dto.setTaxId(hotel.getTaxId());
+        dto.setWebsiteUrl(hotel.getWebsiteUrl());
+        dto.setFacilityAmenities(hotel.getFacilityAmenities());
+        dto.setCheckInTime(hotel.getCheckInTime());
+        dto.setCheckOutTime(hotel.getCheckOutTime());
         dto.setIsActive(hotel.getIsActive());
+        dto.setNumberOfRooms(hotel.getNumberOfRooms());
         dto.setCreatedAt(hotel.getCreatedAt());
         dto.setUpdatedAt(hotel.getUpdatedAt());
 
@@ -729,7 +1113,7 @@ public class HotelAdminService {
         // Calculate staff statistics
         List<User> staff = userRepository.findByHotelAndRolesContaining(hotel,
                 Arrays.asList(UserRole.FRONTDESK, UserRole.HOUSEKEEPING, UserRole.HOTEL_ADMIN,
-                        UserRole.HOTEL_MANAGER, UserRole.ADMIN));
+                        UserRole.HOTEL_ADMIN, UserRole.ADMIN));
         dto.setTotalStaff(staff.size());
         dto.setActiveStaff((int) staff.stream().mapToInt(s -> s.getIsActive() ? 1 : 0).sum());
 
@@ -829,9 +1213,14 @@ public class HotelAdminService {
         Pageable pageable = PageRequest.of(page, size);
         List<Reservation> allReservations = reservationRepository.findByHotelId(hotelId);
 
+        // logger.debug("🔍 HotelAdminService: Found {} total reservations for hotel
+        // {}", allReservations.size(), hotelId);
+
         // Apply search filter if provided
         List<Reservation> filteredReservations = allReservations;
         if (search != null && !search.trim().isEmpty()) {
+            // logger.debug("🔍 HotelAdminService: Applying search filter with term: '{}'",
+            // search.trim());
             String searchLower = search.toLowerCase();
             filteredReservations = allReservations.stream()
                     .filter(reservation -> {
@@ -860,13 +1249,32 @@ public class HotelAdminService {
                                 ? reservation.getRoom().getRoomNumber()
                                 : "To be assigned";
 
+                        // Get payment reference for search
+                        String paymentReference = reservation.getPaymentReference() != null
+                                ? reservation.getPaymentReference()
+                                : "";
+
+                        // Get confirmation number for search
+                        String confirmationNumber = reservation.getConfirmationNumber() != null
+                                ? reservation.getConfirmationNumber()
+                                : "";
+
+                        // Get payment status for search
+                        String paymentStatus = reservation.getPaymentStatusString();
+
                         return firstName.toLowerCase().contains(searchLower) ||
                                 lastName.toLowerCase().contains(searchLower) ||
                                 email.toLowerCase().contains(searchLower) ||
                                 roomNumber.toLowerCase().contains(searchLower) ||
+                                paymentReference.toLowerCase().contains(searchLower) ||
+                                confirmationNumber.toLowerCase().contains(searchLower) ||
+                                paymentStatus.toLowerCase().contains(searchLower) ||
                                 reservation.getStatus().name().toLowerCase().contains(searchLower);
                     })
                     .collect(Collectors.toList());
+
+            // logger.debug("🔍 HotelAdminService: Search filter applied, {} results found",
+            // filteredReservations.size());
         }
 
         // Sort by check-in date descending
@@ -940,7 +1348,7 @@ public class HotelAdminService {
         LocalDate startOfYear = LocalDate.now().withDayOfYear(1);
         BigDecimal currentYearRevenue = allReservations.stream()
                 .filter(r -> r.getCheckInDate().isAfter(startOfYear.minusDays(1)))
-                .filter(r -> r.getStatus() == ReservationStatus.CONFIRMED
+                .filter(r -> r.getStatus() == ReservationStatus.BOOKED
                         || r.getStatus() == ReservationStatus.CHECKED_IN
                         || r.getStatus() == ReservationStatus.CHECKED_OUT)
                 .map(Reservation::getTotalAmount)
@@ -960,7 +1368,7 @@ public class HotelAdminService {
         long upcomingCheckIns = allReservations.stream()
                 .filter(r -> r.getCheckInDate().isAfter(today.minusDays(1))
                         && r.getCheckInDate().isBefore(nextWeek.plusDays(1)))
-                .filter(r -> r.getStatus() == ReservationStatus.CONFIRMED)
+                .filter(r -> r.getStatus() == ReservationStatus.BOOKED)
                 .count();
         stats.put("upcomingCheckIns", upcomingCheckIns);
 
@@ -981,6 +1389,37 @@ public class HotelAdminService {
     @Transactional
     public BookingResponse updateBookingStatus(Long reservationId, ReservationStatus newStatus) {
         return bookingStatusUpdateService.updateBookingStatus(reservationId, newStatus, "hotel admin");
+    }
+
+    /**
+     * Update booking payment status
+     */
+    @Transactional
+    public BookingResponse updateBookingPaymentStatus(Long reservationId, String paymentStatus) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new RuntimeException("Reservation not found with id: " + reservationId));
+
+        // Update payment status using the setter method that handles validation
+        reservation.setPaymentStatusFromString(paymentStatus);
+
+        // Save the updated reservation
+        reservation = reservationRepository.save(reservation);
+
+        return convertToBookingResponse(reservation);
+    }
+
+    /**
+     * Update booking payment type (e.g., CASH, BANK, MOBILE)
+     */
+    @Transactional
+    public BookingResponse updateBookingPaymentType(Long reservationId, String paymentType) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new RuntimeException("Reservation not found with id: " + reservationId));
+
+        reservation.setPaymentMethod(paymentType);
+        reservation = reservationRepository.save(reservation);
+
+        return convertToBookingResponse(reservation);
     }
 
     /**
@@ -1079,6 +1518,7 @@ public class HotelAdminService {
         response.setCheckOutDate(reservation.getCheckOutDate());
         response.setTotalAmount(reservation.getTotalAmount());
         response.setPaymentIntentId(reservation.getPaymentIntentId());
+        response.setPaymentReference(reservation.getPaymentReference());
         response.setCreatedAt(reservation.getCreatedAt());
 
         // Room details
@@ -1087,6 +1527,7 @@ public class HotelAdminService {
             response.setRoomNumber(room.getRoomNumber());
             response.setRoomType(room.getRoomType().name());
             response.setPricePerNight(room.getPricePerNight());
+            response.setAssignedRoomId(room.getId()); // Set the room ID for pre-assigned rooms
             response.setHotelName(room.getHotel().getName());
             response.setHotelAddress(room.getHotel().getAddress());
         } else {
@@ -1137,12 +1578,11 @@ public class HotelAdminService {
             response.setGuestEmail("N/A");
         }
 
-        // Payment status
-        if (reservation.getPaymentIntentId() != null) {
-            response.setPaymentStatus("PAID");
-        } else {
-            response.setPaymentStatus("PENDING");
-        }
+        // Payment status - use the actual payment status from the entity
+        response.setPaymentStatus(reservation.getPaymentStatusString());
+
+        // Payment type (method) - CASH, BANK, MOBILE, etc.
+        response.setPaymentType(reservation.getPaymentMethod());
 
         return response;
     }
@@ -1179,8 +1619,8 @@ public class HotelAdminService {
                     // Check if room has any conflicting reservations for the date range
                     boolean hasConflicts = room.getReservations().stream()
                             .anyMatch(reservation -> {
-                                // Only consider active reservations (confirmed or checked-in)
-                                if (reservation.getStatus() != ReservationStatus.CONFIRMED &&
+                                // Only consider active reservations (booked or checked-in)
+                                if (reservation.getStatus() != ReservationStatus.BOOKED &&
                                         reservation.getStatus() != ReservationStatus.CHECKED_IN) {
                                     return false;
                                 }
@@ -1199,5 +1639,66 @@ public class HotelAdminService {
                 .collect(Collectors.toList());
 
         return availableRooms;
+    }
+
+    /**
+     * Convert RoomType enum to a consistent Long ID for image storage
+     * Uses enum ordinal + 1 to avoid 0 and ensure consistency
+     */
+    private Long getRoomTypeId(RoomType roomType) {
+        if (roomType == null) {
+            return null;
+        }
+        return (long) (roomType.ordinal() + 1);
+    }
+
+    /**
+     * Convert HotelImage entity to HotelImageDTO
+     */
+    private HotelImageDTO convertToImageDTO(HotelImage image) {
+        if (image == null) {
+            return null;
+        }
+
+        HotelImageDTO dto = new HotelImageDTO();
+        dto.setId(image.getId());
+        dto.setTenantId(image.getTenantId());
+        dto.setHotelId(image.getHotelId());
+        dto.setRoomTypeId(image.getRoomTypeId());
+        dto.setImageCategory(image.getImageCategory());
+        dto.setFileName(image.getFileName());
+        dto.setFilePath(image.getFilePath());
+        dto.setDisplayOrder(image.getDisplayOrder());
+        dto.setAltText(image.getAltText());
+        dto.setFileSize(image.getFileSize());
+        dto.setMimeType(image.getMimeType());
+        dto.setWidth(image.getWidth());
+        dto.setHeight(image.getHeight());
+        dto.setIsActive(image.getIsActive());
+        dto.setCreatedAt(image.getCreatedAt());
+        dto.setUpdatedAt(image.getUpdatedAt());
+
+        return dto;
+    }
+
+    /**
+     * Fix room status consistency - ensure occupied rooms have checked-in guests
+     * and available rooms don't have checked-in guests
+     * 
+     * Now delegates to the AutomatedRoomStatusService for consistency
+     */
+    public void fixRoomStatusConsistency(String adminEmail) {
+        // Validate that the admin exists and has access to a hotel
+        User admin = getUserByEmail(adminEmail);
+        Hotel hotel = admin.getHotel();
+
+        if (hotel == null) {
+            throw new RuntimeException("Hotel admin is not associated with any hotel");
+        }
+
+        logger.info("🔧 Manual fix requested by admin: {} for hotel: {}", adminEmail, hotel.getName());
+
+        // Delegate to the automated service which handles the actual logic
+        automatedRoomStatusService.triggerImmediateConsistencyCheck();
     }
 }

@@ -15,10 +15,13 @@ export interface Booking {
   children?: number;
   nights?: number;
   paymentStatus?: string;
+  paymentReference?: string;
+  paymentType?: string;
   // Additional fields for check-in functionality
   pricePerNight?: number;
   hotelName?: string;
   hotelId?: number;
+  assignedRoomId?: number; // Room ID when room is pre-assigned (e.g., walk-in bookings)
 }
 
 export interface Room {

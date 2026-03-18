@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { COLORS, addAlpha } from '../../theme/themeColors';
 import {
   Paper,
   Table,
@@ -10,7 +11,6 @@ import {
   TablePagination,
   IconButton,
   Button,
-  TextField,
   InputAdornment,
   Box,
   Typography,
@@ -37,7 +37,6 @@ import {
 } from '@mui/material';
 import {
   Search as SearchIcon,
-  Delete as DeleteIcon,
   Add as AddIcon,
   Visibility as ViewIcon,
   Refresh as RefreshIcon,
@@ -45,8 +44,12 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { hotelAdminApi, RoomResponse, RoomCreateRequest, RoomUpdateRequest } from '../../services/hotelAdminApi';
+import PremiumTextField from '../../components/common/PremiumTextField';
+import PremiumSelect from '../../components/common/PremiumSelect';
 import { useAuth } from '../../contexts/AuthContext';
+import { formatCurrency } from '../../utils/currencyUtils';
 import RoomTypePricing from '../../components/RoomTypePricing';
+import RoomBulkUpload from '../../components/hotel-admin/RoomBulkUpload';
 import { ROOM_TYPE_VALUES } from '../../constants/roomTypes';
 
 interface RoomFilters {
@@ -66,7 +69,7 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [rowsPerPage, setRowsPerPage] = useState(25);
   const [totalElements, setTotalElements] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
   const [tabValue, setTabValue] = useState(0);
@@ -80,29 +83,33 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
+  const [bulkUploadDialogOpen, setBulkUploadDialogOpen] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState<RoomResponse | null>(null);
 
   // Status update states
   const [newStatus, setNewStatus] = useState('');
   const [statusUpdating, setStatusUpdating] = useState(false);
   const [availabilityUpdating, setAvailabilityUpdating] = useState<Record<number, boolean>>({});
+  const [fixingConsistency, setFixingConsistency] = useState(false);
+  const [showAutomationInfo, setShowAutomationInfo] = useState(false);
+  const [automationStatus, setAutomationStatus] = useState<any>(null);
 
   // Form states
-  const [roomForm, setRoomForm] = useState<RoomCreateRequest>({
+  const [roomForm, setRoomForm] = useState({
     roomNumber: '',
     roomType: 'STANDARD',
-    pricePerNight: 0,
-    capacity: 1,
+    pricePerNight: '',
+    capacity: '',
     description: '',
   });
+  const [bulkCreateProgress, setBulkCreateProgress] = useState<{ created: string[]; failed: { room: string; error: string }[] } | null>(null);
 
-  const [editForm, setEditForm] = useState<RoomUpdateRequest>({
+  const [editForm, setEditForm] = useState({
     roomNumber: '',
     roomType: 'STANDARD',
-    pricePerNight: 0,
-    capacity: 1,
+    pricePerNight: '',
+    capacity: '',
     description: '',
   });
 
@@ -121,6 +128,8 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
   const loadRooms = useCallback(async () => {
     if (!token) return;
     
+    // console.log('🔄 Loading rooms... page:', page, 'size:', rowsPerPage, 'filters:', filters);
+    
     try {
       setLoading(true);
       setError(null);
@@ -136,22 +145,35 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
       );
       
       if (response.success && response.data) {
-        console.log('Room API Response:', response.data);
-        console.log('Total Elements:', response.data.totalElements);
+        // console.log('🔄 Room API Response:', response.data);
+        // console.log('🔄 Total Elements:', response.data.totalElements);
+        // console.log('🔄 Total Pages:', response.data.totalPages);
+        // console.log('🔄 Current Page:', response.data.number);
+        // console.log('🔄 Page Size:', response.data.size);
+        // console.log('🔄 Room count in response:', response.data.content?.length);
         
-        setRooms(response.data.content);
+        setRooms(response.data.content || []);
         
         // Extract pagination info directly from response data
         const totalElements = response.data.totalElements || 0;
+        const totalPages = response.data.totalPages || 0;
+        // console.log('🔄 Setting Total Elements to:', totalElements);
+        // console.log('🔄 Total Pages:', totalPages);
+        // console.log('🔄 Current page from response:', currentPage, 'Local page state:', page);
         
-        console.log('Total Elements from response:', totalElements);
         setTotalElements(totalElements);
+        
+        // If current page is beyond available pages, reset to last page
+        if (page >= totalPages && totalPages > 0) {
+          // console.log('🔄 Current page exceeds total pages, resetting to:', totalPages - 1);
+          setPage(totalPages - 1);
+        }
       } else {
         setError(response.message || 'Failed to load rooms');
         setTotalElements(0);
       }
     } catch (err) {
-      console.error('Error loading rooms:', err);
+      // console.error('Error loading rooms:', err);
       setError('Failed to load rooms. Please try again.');
       setTotalElements(0);
     } finally {
@@ -162,6 +184,11 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
   useEffect(() => {
     loadRooms();
   }, [loadRooms]);
+
+  // Debug pagination state
+  useEffect(() => {
+    // console.log('🔄 PAGINATION STATE - Total Elements:', totalElements, 'Page:', page, 'RowsPerPage:', rowsPerPage, 'Total Pages:', Math.ceil((totalElements || 0) / rowsPerPage));
+  }, [totalElements, page, rowsPerPage]);
 
   // Memoized search handler to prevent input focus loss
   const handleSearchChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
@@ -253,7 +280,7 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
         setError(response.message || 'Failed to update room status');
       }
     } catch (err) {
-      console.error('Error updating room status:', err);
+      // console.error('Error updating room status:', err);
       setError('Failed to update room status. Please try again.');
     } finally {
       setStatusUpdating(false);
@@ -281,7 +308,7 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
         setError(response.message || 'Failed to update room availability');
       }
     } catch (err) {
-      console.error('Error toggling room availability:', err);
+      // console.error('Error toggling room availability:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to update room availability';
       setError(errorMessage);
     } finally {
@@ -289,51 +316,109 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
     }
   };
 
-  const handleDeleteRoom = async () => {
-    if (!selectedRoom || !token) return;
+  const handleFixRoomStatusConsistency = async () => {
+    if (!token) return;
     
     try {
-      setLoading(true);
-      const response = await hotelAdminApi.deleteRoom(token, selectedRoom.id);
+      setFixingConsistency(true);
+      // console.log('🔧 Fixing room status consistency...');
+      
+      const response = await hotelAdminApi.fixRoomStatusConsistency(token);
+      // console.log('🔧 Fix consistency response:', response);
+      
       if (response.success) {
-        setDeleteDialogOpen(false);
-        setSelectedRoom(null);
+        // console.log('🔧 Room status consistency fixed, refreshing room list...');
         await loadRooms();
         setError(null);
+        
+        // Show automation info if available
+        if (response.automatedSystem) {
+          setAutomationStatus(response.automatedSystem);
+          setShowAutomationInfo(true);
+          // console.log('🤖 Automated system info:', response.automatedSystem);
+          
+          // Auto-hide automation info after 5 seconds
+          setTimeout(() => {
+            setShowAutomationInfo(false);
+          }, 5000);
+        }
+        
+        // console.log('🔧 Room list refreshed');
       } else {
-        setError(response.message || 'Failed to delete room. Room may have active bookings.');
+        setError(response.message || 'Failed to fix room status consistency');
       }
-    } catch (err) {
-      console.error('Error deleting room:', err);
-      setError('Failed to delete room. Room may have active bookings.');
+    } catch (error) {
+      // console.error('Fix room status consistency error:', error);
+      setError('Failed to fix room status consistency');
     } finally {
-      setLoading(false);
+      setFixingConsistency(false);
     }
   };
 
   const handleCreateRoom = async () => {
     if (!token) return;
-    
+
+    // Parse comma-separated room numbers
+    const roomNumbers = roomForm.roomNumber
+      .split(',')
+      .map((r) => r.trim())
+      .filter((r) => r.length > 0);
+
+    if (roomNumbers.length === 0) return;
+
     try {
       setLoading(true);
-      const response = await hotelAdminApi.createRoom(token, roomForm);
-      if (response.success) {
-        setCreateDialogOpen(false);
-        setRoomForm({
-          roomNumber: '',
-          roomType: 'STANDARD',
-          pricePerNight: 0,
-          capacity: 1,
-          description: '',
+      setBulkCreateProgress(null);
+
+      if (roomNumbers.length === 1) {
+        // Single room — use existing endpoint
+        const response = await hotelAdminApi.createRoom(token, {
+          roomNumber: roomNumbers[0],
+          roomType: roomForm.roomType as any,
+          pricePerNight: parseFloat(roomForm.pricePerNight) || 0,
+          capacity: parseInt(roomForm.capacity) || 1,
+          description: roomForm.description,
         });
-        await loadRooms();
-        setError(null);
+        if (response.success) {
+          setCreateDialogOpen(false);
+          setRoomForm({ roomNumber: '', roomType: 'STANDARD', pricePerNight: '', capacity: '', description: '' });
+          setBulkCreateProgress(null);
+          setError(null);
+        } else {
+          setError(response.message || 'Failed to create room. Please check the room number is unique.');
+        }
       } else {
-        setError(response.message || 'Failed to create room. Please check the room number is unique.');
+        // Multiple rooms — use batch endpoint
+        const response = await hotelAdminApi.createRoomsBatch(token, {
+          roomNumbers,
+          roomType: roomForm.roomType as any,
+          pricePerNight: parseFloat(roomForm.pricePerNight) || 0,
+          capacity: parseInt(roomForm.capacity) || 1,
+          description: roomForm.description,
+        });
+
+        if (response.success && response.data) {
+          const { data } = response;
+          if (data.failed === 0) {
+            setCreateDialogOpen(false);
+            setRoomForm({ roomNumber: '', roomType: 'STANDARD', pricePerNight: '', capacity: '', description: '' });
+            setBulkCreateProgress(null);
+            setError(null);
+          } else {
+            setBulkCreateProgress({
+              created: data.createdRooms.map(r => r.roomNumber),
+              failed: data.failedRooms.map(f => ({ room: f.roomNumber, error: f.error })),
+            });
+            setError(`${data.failed} room(s) failed to create. ${data.created} created successfully.`);
+          }
+        } else {
+          setError(response.message || 'Failed to create rooms.');
+        }
       }
+
+      await loadRooms();
     } catch (err) {
-      console.error('Error creating room:', err);
-      setError('Failed to create room. Please check the room number is unique.');
+      setError('Failed to create rooms. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -344,7 +429,13 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
     
     try {
       setLoading(true);
-      const response = await hotelAdminApi.updateRoom(token, selectedRoom.id, editForm);
+      const response = await hotelAdminApi.updateRoom(token, selectedRoom.id, {
+        roomNumber: editForm.roomNumber,
+        roomType: editForm.roomType as any,
+        pricePerNight: parseFloat(editForm.pricePerNight) || 0,
+        capacity: parseInt(editForm.capacity) || 1,
+        description: editForm.description,
+      });
       if (response.success) {
         setEditDialogOpen(false);
         setSelectedRoom(null);
@@ -354,7 +445,7 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
         setError(response.message || 'Failed to update room');
       }
     } catch (err) {
-      console.error('Error updating room:', err);
+      // console.error('Error updating room:', err);
       setError('Failed to update room. Please try again.');
     } finally {
       setLoading(false);
@@ -387,30 +478,82 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mb: 3 }}>
-          {tabValue === 0 && (
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={() => setCreateDialogOpen(true)}
-            >
-              Add New Room
-            </Button>
-          )}
-        </Box>
+      {/* Error Alert */}
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+          {error}
+        </Alert>
+      )}
 
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
-            {error}
-          </Alert>
-        )}
-
-        {/* Tabs */}
-        <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
+      {/* Automation Info Alert */}
+      {showAutomationInfo && automationStatus && (
+        <Alert 
+          severity="info" 
+          sx={{ mb: 2 }} 
+          onClose={() => setShowAutomationInfo(false)}
+        >
+          <Box>
+            <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1 }}>
+              🤖 Automated Room Status Management Active
+            </Typography>
+            <Typography variant="body2" sx={{ mb: 1 }}>
+              Status synchronization runs automatically every {automationStatus.scheduleInterval || '5 minutes'}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Real-time checks are enabled when bookings change
+            </Typography>
+          </Box>
+        </Alert>
+      )}        {/* Tabs with Add Buttons */}
+        <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Tabs value={tabValue} onChange={(e, newValue) => setTabValue(newValue)}>
             <Tab label="Rooms" />
             <Tab label="Pricing" />
           </Tabs>
+          {tabValue === 0 && (
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={() => setCreateDialogOpen(true)}
+                sx={{ minHeight: 36 }}
+              >
+                Add New Room
+              </Button>
+              <Button
+                variant="outlined"
+                onClick={() => setBulkUploadDialogOpen(true)}
+                sx={{ minHeight: 36 }}
+              >
+                📤 Bulk Upload
+              </Button>
+              <Button
+                variant="outlined"
+                color="warning"
+                onClick={handleFixRoomStatusConsistency}
+                disabled={fixingConsistency}
+                sx={{ minHeight: 36 }}
+                title="Manual status sync - Automated sync runs every 5 minutes"
+              >
+                {fixingConsistency ? '🔧 Syncing...' : '🤖 Sync Status'}
+              </Button>
+            </Box>
+          )}
+          {tabValue === 1 && (
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => {
+                // This will trigger the add pricing functionality in RoomTypePricing
+                // We need to pass a ref or callback to handle this
+                const event = new CustomEvent('addPricing');
+                window.dispatchEvent(event);
+              }}
+              sx={{ minHeight: 36 }}
+            >
+              Add Pricing
+            </Button>
+          )}
         </Box>
 
         {/* Tab Panel 0 - Rooms */}
@@ -419,7 +562,7 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
 
         {/* Search and Filters - Front Desk Style */}
         <Box sx={{ mb: 3, display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
-          <TextField
+          <PremiumTextField
             label="Search rooms"
             value={searchTerm}
             onChange={handleSearchChange}
@@ -482,7 +625,32 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
         <TableContainer component={Paper}>
           <Table>
             <TableHead>
-              <TableRow>
+              <TableRow
+                sx={{
+                  background: COLORS.GRADIENT_SLATE,
+                  boxShadow: `0 4px 12px ${addAlpha(COLORS.SLATE_500, 0.15)}`,
+                  '& .MuiTableCell-head': {
+                    color: COLORS.WHITE,
+                    fontWeight: 600,
+                    fontSize: '0.95rem',
+                    letterSpacing: '0.5px',
+                    textTransform: 'uppercase',
+                    border: 'none',
+                    padding: '20px 16px',
+                    position: 'relative',
+                    textShadow: `0 1px 2px ${addAlpha(COLORS.BLACK, 0.1)}`,
+                    '&::after': {
+                      content: '""',
+                      position: 'absolute',
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      height: '3px',
+                      background: `linear-gradient(90deg, ${addAlpha(COLORS.WHITE, 0.6)} 0%, ${addAlpha(COLORS.WHITE, 0.8)} 50%, ${addAlpha(COLORS.WHITE, 0.6)} 100%)`
+                    }
+                  }
+                }}
+              >
                 <TableCell>Room Number</TableCell>
                 <TableCell>Type</TableCell>
                 <TableCell>Status</TableCell>
@@ -527,13 +695,18 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
                         />
                       </TableCell>
                       <TableCell>
-                        {/* For now, show placeholder until currentGuest field is added to backend */}
-                        <Typography variant="body2" color="text.secondary">
-                          No guest
-                        </Typography>
+                        {room.currentGuest ? (
+                          <Typography variant="body2" fontWeight="medium">
+                            {room.currentGuest}
+                          </Typography>
+                        ) : (
+                          <Typography variant="body2" color="text.secondary">
+                            No guest
+                          </Typography>
+                        )}
                       </TableCell>
                       <TableCell>{room.capacity} guests</TableCell>
-                      <TableCell>ETB {room.pricePerNight?.toFixed(0)}</TableCell>
+                      <TableCell>{formatCurrency(room.pricePerNight || 0)}</TableCell>
                       <TableCell>
                         <FormControlLabel
                           control={
@@ -564,17 +737,6 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
                           >
                             <ViewIcon />
                           </IconButton>
-                          <IconButton
-                            size="small"
-                            onClick={() => {
-                              setSelectedRoom(room);
-                              setDeleteDialogOpen(true);
-                            }}
-                            title="Delete Room"
-                            color="error"
-                          >
-                            <DeleteIcon />
-                          </IconButton>
                         </Box>
                       </TableCell>
                     </TableRow>
@@ -586,7 +748,7 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
         </TableContainer>
 
         <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
+          rowsPerPageOptions={[10, 25, 50, 100]}
           component="div"
           count={totalElements || 0}
           rowsPerPage={rowsPerPage}
@@ -663,7 +825,7 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
                         Type: {selectedRoom.roomType}
                       </Typography>
                       <Typography variant="body2" color="text.secondary" gutterBottom>
-                        Price per Night: ETB {selectedRoom.pricePerNight?.toFixed(0)}
+                        Price per Night: {formatCurrency(selectedRoom.pricePerNight || 0)}
                       </Typography>
                       <Typography variant="body2" color="text.secondary" gutterBottom>
                         Capacity: {selectedRoom.capacity} guests
@@ -704,56 +866,53 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
           maxWidth="md"
           fullWidth
         >
-          <DialogTitle>Add New Room</DialogTitle>
+          <DialogTitle>Add New Room(s)</DialogTitle>
           <DialogContent>
             <Grid container spacing={2} sx={{ mt: 1 }}>
-              <Grid item xs={12} md={6}>
-                <TextField
+              <Grid item xs={12}>
+                <PremiumTextField
                   fullWidth
-                  label="Room Number"
+                  label="Room Number(s)"
                   value={roomForm.roomNumber}
-                  onChange={(e) => setRoomForm({ ...roomForm, roomNumber: e.target.value })}
+                  onChange={(e) => { setRoomForm({ ...roomForm, roomNumber: e.target.value }); setBulkCreateProgress(null); }}
                   required
+                  placeholder="e.g. 101, 102, 103, 104"
+                  helperText="Enter one or more room numbers separated by commas"
                 />
               </Grid>
               <Grid item xs={12} md={6}>
-                <FormControl fullWidth required>
-                  <InputLabel>Room Type</InputLabel>
-                  <Select
-                    value={roomForm.roomType}
-                    label="Room Type"
-                    onChange={(e) => setRoomForm({ ...roomForm, roomType: e.target.value as any })}
-                  >
-                    {roomTypes.map(type => (
-                      <MenuItem key={type} value={type}>{type}</MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                <PremiumSelect
+                  fullWidth
+                  label="Room Type"
+                  value={roomForm.roomType}
+                  onChange={(e) => setRoomForm({ ...roomForm, roomType: e.target.value as any })}
+                  required
+                >
+                  {roomTypes.map(type => (
+                    <MenuItem key={type} value={type}>{type}</MenuItem>
+                  ))}
+                </PremiumSelect>
               </Grid>
               <Grid item xs={12} md={6}>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="Price per Night"
-                  type="number"
                   value={roomForm.pricePerNight}
-                  onChange={(e) => setRoomForm({ ...roomForm, pricePerNight: parseFloat(e.target.value) })}
+                  onChange={(e) => setRoomForm({ ...roomForm, pricePerNight: e.target.value })}
                   required
-                  inputProps={{ min: 0, step: 0.01 }}
                 />
               </Grid>
               <Grid item xs={12} md={6}>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="Capacity"
-                  type="number"
                   value={roomForm.capacity}
-                  onChange={(e) => setRoomForm({ ...roomForm, capacity: parseInt(e.target.value) })}
+                  onChange={(e) => setRoomForm({ ...roomForm, capacity: e.target.value })}
                   required
-                  inputProps={{ min: 1, max: 10 }}
                 />
               </Grid>
               <Grid item xs={12}>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="Description"
                   multiline
@@ -763,15 +922,29 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
                 />
               </Grid>
             </Grid>
+            {bulkCreateProgress && (
+              <Box sx={{ mt: 2 }}>
+                {bulkCreateProgress.created.length > 0 && (
+                  <Alert severity="success" sx={{ mb: 1 }}>
+                    Created: {bulkCreateProgress.created.join(', ')}
+                  </Alert>
+                )}
+                {bulkCreateProgress.failed.length > 0 && (
+                  <Alert severity="error">
+                    Failed: {bulkCreateProgress.failed.map(f => `${f.room} (${f.error})`).join(', ')}
+                  </Alert>
+                )}
+              </Box>
+            )}
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setCreateDialogOpen(false)}>Cancel</Button>
+            <Button onClick={() => { setCreateDialogOpen(false); setBulkCreateProgress(null); }}>Cancel</Button>
             <Button 
               onClick={handleCreateRoom}
               variant="contained"
-              disabled={loading || !roomForm.roomNumber || !roomForm.pricePerNight}
+              disabled={loading || !roomForm.roomNumber.trim() || !roomForm.pricePerNight}
             >
-              Create Room
+              {roomForm.roomNumber.includes(',') ? `Create ${roomForm.roomNumber.split(',').filter(r => r.trim()).length} Rooms` : 'Create Room'}
             </Button>
           </DialogActions>
         </Dialog>
@@ -788,7 +961,7 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
             {selectedRoom && (
               <Grid container spacing={2} sx={{ mt: 1 }}>
                 <Grid item xs={12} md={6}>
-                  <TextField
+                  <PremiumTextField
                     fullWidth
                     label="Room Number"
                     value={selectedRoom.roomNumber}
@@ -797,43 +970,38 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
                   />
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <FormControl fullWidth required>
-                    <InputLabel>Room Type</InputLabel>
-                    <Select
-                      value={editForm.roomType}
-                      label="Room Type"
-                      onChange={(e) => setEditForm({ ...editForm, roomType: e.target.value as any })}
-                    >
-                      {roomTypes.map(type => (
-                        <MenuItem key={type} value={type}>{type}</MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
+                  <PremiumSelect
+                    fullWidth
+                    label="Room Type"
+                    value={editForm.roomType}
+                    onChange={(e) => setEditForm({ ...editForm, roomType: e.target.value as any })}
+                    required
+                  >
+                    {roomTypes.map(type => (
+                      <MenuItem key={type} value={type}>{type}</MenuItem>
+                    ))}
+                  </PremiumSelect>
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <TextField
+                  <PremiumTextField
                     fullWidth
                     label="Price per Night"
-                    type="number"
                     value={editForm.pricePerNight}
-                    onChange={(e) => setEditForm({ ...editForm, pricePerNight: parseFloat(e.target.value) })}
+                    onChange={(e) => setEditForm({ ...editForm, pricePerNight: e.target.value })}
                     required
-                    inputProps={{ min: 0, step: 0.01 }}
                   />
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <TextField
+                  <PremiumTextField
                     fullWidth
                     label="Capacity"
-                    type="number"
                     value={editForm.capacity}
-                    onChange={(e) => setEditForm({ ...editForm, capacity: parseInt(e.target.value) })}
+                    onChange={(e) => setEditForm({ ...editForm, capacity: e.target.value })}
                     required
-                    inputProps={{ min: 1, max: 10 }}
                   />
                 </Grid>
                 <Grid item xs={12}>
-                  <TextField
+                  <PremiumTextField
                     fullWidth
                     label="Description"
                     multiline
@@ -857,27 +1025,43 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
           </DialogActions>
         </Dialog>
 
-        {/* Delete Confirmation Dialog */}
+        {/* Bulk Upload Dialog */}
         <Dialog
-          open={deleteDialogOpen}
-          onClose={() => setDeleteDialogOpen(false)}
+          open={bulkUploadDialogOpen}
+          onClose={() => setBulkUploadDialogOpen(false)}
+          maxWidth="lg"
+          fullWidth
         >
-          <DialogTitle>Confirm Delete</DialogTitle>
-          <DialogContent>
-            <Typography>
-              Are you sure you want to delete room {selectedRoom?.roomNumber}? 
-              This action cannot be undone and will fail if the room has active bookings.
-            </Typography>
+          <DialogTitle>
+            🏨 Bulk Room Upload
+          </DialogTitle>
+          <DialogContent sx={{ p: 0 }}>
+            <RoomBulkUpload
+              onUploadComplete={(rooms) => {
+                // console.log('🔄 Bulk upload completed, received rooms:', rooms?.length || 0);
+                // Reset pagination to first page to see newly added rooms
+                setPage(0);
+                // Clear any filters to ensure all rooms are visible
+                setFilters({
+                  roomNumber: '',
+                  roomType: '',
+                  status: ''
+                });
+                setSearchTerm('');
+                
+                // Keep dialog open to show success overlay
+                // Force reload with a delay to ensure backend cache is cleared
+                setTimeout(() => {
+                  // console.log('🔄 Reloading rooms after bulk upload...');
+                  loadRooms();
+                }, 500);
+              }}
+              onClose={() => setBulkUploadDialogOpen(false)}
+            />
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
-            <Button 
-              onClick={handleDeleteRoom}
-              variant="contained"
-              color="error"
-              disabled={loading}
-            >
-              Delete
+            <Button onClick={() => setBulkUploadDialogOpen(false)}>
+              Close
             </Button>
           </DialogActions>
         </Dialog>

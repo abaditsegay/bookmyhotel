@@ -17,6 +17,7 @@ import { useNavigate } from 'react-router-dom';
 import { hotelApiService } from '../services/hotelApi';
 import { HotelSearchResult } from '../types/hotel';
 import { useAuth } from '../contexts/AuthContext';
+import { COLORS, addAlpha } from '../theme/themeColors';
 
 interface VerticalHotelAdvertisementBannerProps {
   maxHotels?: number;
@@ -83,7 +84,7 @@ export default function VerticalHotelAdvertisementBanner({ maxHotels = 3 }: Vert
         setHotels(fallbackHotels.slice(0, maxHotels));
       }
     } catch (err) {
-      console.warn('Failed to fetch random hotels from API, using fallback:', err);
+      // console.warn('Failed to fetch random hotels from API, using fallback:', err);
       setError('Using sample hotels');
       setHotels(fallbackHotels.slice(0, maxHotels));
     } finally {
@@ -127,7 +128,7 @@ export default function VerticalHotelAdvertisementBanner({ maxHotels = 3 }: Vert
   }, [fetchHotels]);
 
   // Hide hotel banner for operations users
-  const isOperationsUser = user?.role === 'OPERATIONS_SUPERVISOR' || 
+  const isOperationsUser = user?.role === 'OPERATIONAL_ADMIN' || 
                            user?.role === 'HOUSEKEEPING' || 
                            user?.role === 'MAINTENANCE';
 
@@ -190,14 +191,14 @@ export default function VerticalHotelAdvertisementBanner({ maxHotels = 3 }: Vert
             width: 6,
           },
           '&::-webkit-scrollbar-track': {
-            backgroundColor: '#f1f1f1',
+            backgroundColor: COLORS.CARD_BORDER,
             borderRadius: 3,
           },
           '&::-webkit-scrollbar-thumb': {
-            backgroundColor: '#c1c1c1',
+            backgroundColor: COLORS.SECONDARY,
             borderRadius: 3,
             '&:hover': {
-              backgroundColor: '#a8a8a8',
+              backgroundColor: COLORS.PRIMARY,
             },
           },
         }}
@@ -213,7 +214,7 @@ export default function VerticalHotelAdvertisementBanner({ maxHotels = 3 }: Vert
               flexDirection: 'column',
               '&:hover': {
                 transform: 'translateY(-2px)',
-                boxShadow: '0 4px 15px rgba(0,0,0,0.15)',
+                boxShadow: `0 4px 15px ${addAlpha(COLORS.BLACK, 0.15)}`,
               },
             }}
             onClick={() => handleHotelClick(hotel)}

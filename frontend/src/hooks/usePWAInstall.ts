@@ -19,20 +19,20 @@ export const usePWAInstall = () => {
 
   // No event listeners or background functionality
   useEffect(() => {
-    console.log('PWA Install: Functionality disabled');
+    // console.log('PWA Install: Functionality disabled');
   }, []);
 
   const installApp = async () => {
-    console.log('PWA Install: Installation disabled');
+    // console.log('PWA Install: Installation disabled');
     return false;
   };
 
   const dismissIOSPrompt = (permanently = false) => {
-    console.log('PWA Install: iOS prompt dismissal disabled');
+    // console.log('PWA Install: iOS prompt dismissal disabled');
   };
 
   const dismissAndroidPrompt = (permanently = false) => {
-    console.log('PWA Install: Android prompt dismissal disabled');
+    // console.log('PWA Install: Android prompt dismissal disabled');
   };
 
   return {

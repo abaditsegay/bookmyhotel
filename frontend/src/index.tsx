@@ -2,19 +2,32 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ThemeProvider, CssBaseline } from '@mui/material';
+import { CssBaseline } from '@mui/material';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 
 import App from './App';
-import theme from './theme/theme';
+import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider } from './contexts/AuthContext';
 import { TenantProvider, useTenant } from './contexts/TenantContext';
 import './index.css';
 
-// Initialize Stripe only if we have a publishable key
+// Initialize Stripe with better offline handling
 const stripePublishableKey = process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY;
-const stripePromise = stripePublishableKey ? loadStripe(stripePublishableKey) : null;
+let stripePromise: Promise<any> | null = null;
+
+// Only initialize Stripe if we have a key and can connect
+if (stripePublishableKey) {
+  try {
+    // Create a promise that resolves to null if offline
+    stripePromise = navigator.onLine 
+      ? loadStripe(stripePublishableKey)
+      : Promise.resolve(null);
+  } catch (error) {
+    // console.warn('Stripe initialization failed, continuing without payment processing:', error);
+    stripePromise = null;
+  }
+}
 
 // Initialize React Query
 const queryClient = new QueryClient({
@@ -46,9 +59,9 @@ const root = ReactDOM.createRoot(
 
 root.render(
   <React.StrictMode>
-    <BrowserRouter future={{ v7_relativeSplatPath: true }}>
+    <BrowserRouter future={{ v7_relativeSplatPath: true, v7_startTransition: true }}>
       <QueryClientProvider client={queryClient}>
-        <ThemeProvider theme={theme}>
+        <ThemeProvider>
           <CssBaseline />
           {stripePromise ? (
             <Elements stripe={stripePromise}>
@@ -82,11 +95,11 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js')
       .then((registration) => {
-        console.log('SW registered successfully: ', registration);
+        // console.log('SW registered successfully: ', registration);
         
         // Listen for updates
         registration.addEventListener('updatefound', () => {
-          console.log('New service worker is being installed...');
+          // console.log('New service worker is being installed...');
         });
         
         // Force refresh if there's a waiting service worker
@@ -100,21 +113,21 @@ if ('serviceWorker' in navigator) {
         }, 60000);
       })
       .catch((registrationError) => {
-        console.error('SW registration failed: ', registrationError);
+        // console.error('SW registration failed: ', registrationError);
       });
       
     // Listen for service worker messages
     navigator.serviceWorker.addEventListener('message', (event) => {
-      console.log('Message from service worker:', event.data);
+      // console.log('Message from service worker:', event.data);
     });
     
     // Listen for controller changes (new SW activated)
     navigator.serviceWorker.addEventListener('controllerchange', () => {
-      console.log('Service worker controller changed, reloading...');
+      // console.log('Service worker controller changed, reloading...');
       window.location.reload();
     });
   });
 } else {
-  console.log('Service workers are not supported in this browser');
+  // console.log('Service workers are not supported in this browser');
 }
 */

@@ -47,6 +47,7 @@ import {
 } from '@mui/icons-material';
 import TokenManager from '../../utils/tokenManager';
 import { API_CONFIG } from '../../config/apiConfig';
+import { COLORS, addAlpha } from '../../theme/themeColors';
 
 const API_BASE_URL = API_CONFIG.SERVER_URL;
 
@@ -69,7 +70,7 @@ interface StaffDashboardProps {
   currentUserRole?: string;
 }
 
-const StaffDashboard: React.FC<StaffDashboardProps> = ({ currentUserRole = 'OPERATIONS_SUPERVISOR' }) => {
+const StaffDashboard: React.FC<StaffDashboardProps> = ({ currentUserRole = 'OPERATIONAL_ADMIN' }) => {
   const [staffMembers, setStaffMembers] = useState<StaffMember[]>([]);
   const [filteredStaff, setFilteredStaff] = useState<StaffMember[]>([]);
   const [loading, setLoading] = useState(true);
@@ -154,7 +155,7 @@ const StaffDashboard: React.FC<StaffDashboardProps> = ({ currentUserRole = 'OPER
         throw new Error(`Failed to load staff data: ${response.status}`);
       }
     } catch (err) {
-      console.error('Failed to load staff data:', err);
+      // console.error('Failed to load staff data:', err);
       setError('Failed to load staff data - please check your connection');
       setStaffMembers([]); // Set empty array instead of mock data
     } finally {
@@ -164,7 +165,7 @@ const StaffDashboard: React.FC<StaffDashboardProps> = ({ currentUserRole = 'OPER
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'success';
+      case 'active': return 'primary';
       case 'inactive': return 'error';
       case 'onLeave': return 'warning';
       default: return 'default';
@@ -242,7 +243,7 @@ const StaffDashboard: React.FC<StaffDashboardProps> = ({ currentUserRole = 'OPER
         <Grid item xs={12} sm={6} md={2.4}>
           <Card>
             <CardContent sx={{ textAlign: 'center' }}>
-              <SupervisorAccount sx={{ fontSize: 40, color: 'success.main', mb: 1 }} />
+              <SupervisorAccount sx={{ fontSize: 40, color: 'primary.main', mb: 1 }} />
               <Typography variant="h4">{counts.active}</Typography>
               <Typography variant="body2" color="text.secondary">Active</Typography>
             </CardContent>
@@ -349,7 +350,31 @@ const StaffDashboard: React.FC<StaffDashboardProps> = ({ currentUserRole = 'OPER
           <TableContainer>
             <Table>
               <TableHead>
-                <TableRow>
+                <TableRow
+                  sx={{
+                    background: COLORS.GRADIENT_SLATE,
+                    '& .MuiTableCell-head': {
+                      color: COLORS.WHITE,
+                      fontWeight: 600,
+                      fontSize: '0.95rem',
+                      letterSpacing: '0.5px',
+                      textTransform: 'uppercase',
+                      border: 'none',
+                      padding: '20px 16px',
+                      position: 'relative',
+                      textShadow: `0 1px 2px ${addAlpha(COLORS.BLACK, 0.1)}`,
+                      '&::after': {
+                        content: '""',
+                        position: 'absolute',
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        height: '3px',
+                        background: `linear-gradient(90deg, ${addAlpha(COLORS.WHITE, 0.6)} 0%, ${addAlpha(COLORS.WHITE, 0.8)} 50%, ${addAlpha(COLORS.WHITE, 0.6)} 100%)`
+                      }
+                    }
+                  }}
+                >
                   <TableCell>Staff Member</TableCell>
                   <TableCell>Role</TableCell>
                   <TableCell>Status</TableCell>
@@ -451,7 +476,7 @@ const StaffDashboard: React.FC<StaffDashboardProps> = ({ currentUserRole = 'OPER
                             <VisibilityIcon />
                           </IconButton>
                         </Tooltip>
-                        {currentUserRole === 'OPERATIONS_SUPERVISOR' && (
+                        {currentUserRole === 'OPERATIONAL_ADMIN' && (
                           <Tooltip title="Edit Staff">
                             <IconButton size="small">
                               <EditIcon />
@@ -602,7 +627,7 @@ const StaffDashboard: React.FC<StaffDashboardProps> = ({ currentUserRole = 'OPER
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setStaffDetailOpen(false)}>Close</Button>
-          {currentUserRole === 'OPERATIONS_SUPERVISOR' && (
+          {currentUserRole === 'OPERATIONAL_ADMIN' && (
             <Button variant="contained" startIcon={<EditIcon />}>
               Edit Staff
             </Button>

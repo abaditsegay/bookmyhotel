@@ -5,16 +5,19 @@ import {
   Card,
   CardContent,
   Container,
-  TextField,
   Typography,
   Alert,
   Tabs,
   Tab,
   Link,
 } from '@mui/material';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
+import PremiumTextField from '../components/common/PremiumTextField';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { API_CONFIG } from '../config/apiConfig';
+import { useTheme, alpha } from '@mui/material/styles';
+import { COLORS, addAlpha, getGradient } from '../theme/themeColors';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -39,6 +42,7 @@ function TabPanel(props: TabPanelProps) {
 }
 
 const GuestAuthPage: React.FC = () => {
+  const theme = useTheme();
   const [tabValue, setTabValue] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -50,11 +54,14 @@ const GuestAuthPage: React.FC = () => {
   // Login form state
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
 
   // Registration form state
   const [registerEmail, setRegisterEmail] = useState('');
   const [registerPassword, setRegisterPassword] = useState('');
+  const [showRegisterPassword, setShowRegisterPassword] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
@@ -100,12 +107,12 @@ const GuestAuthPage: React.FC = () => {
     await new Promise(resolve => setTimeout(resolve, 100));
 
     try {
-      console.log('Starting mobile-friendly login...');
+      // console.log('Starting mobile-friendly login...');
       const success = await login(loginEmail, loginPassword);
-      console.log('Login result:', success);
+      // console.log('Login result:', success);
       
       if (success) {
-        console.log('Login successful, navigating...');
+        // console.log('Login successful, navigating...');
         // Add small delay before navigation
         await new Promise(resolve => setTimeout(resolve, 200));
         
@@ -118,7 +125,7 @@ const GuestAuthPage: React.FC = () => {
       }
       // Note: If login fails, the error will be set in authError by AuthContext
     } catch (err) {
-      console.error('Login error:', err);
+      // console.error('Login error:', err);
       setError('Login failed. Please try again.');
     } finally {
       setLoading(false);
@@ -241,19 +248,97 @@ const GuestAuthPage: React.FC = () => {
           alignItems: 'center',
           justifyContent: 'center',
           py: 4,
+          background: theme.palette.mode === 'light' 
+            ? getGradient('white')
+            : `linear-gradient(135deg, ${alpha(theme.palette.primary.dark, 0.1)} 0%, transparent 100%)`,
         }}
       >
-        <Card sx={{ width: '100%', maxWidth: 500 }}>
+        <Card 
+          elevation={theme.palette.mode === 'light' ? 8 : 4}
+          sx={{ 
+            width: '100%', 
+            maxWidth: 500,
+            boxShadow: theme.palette.mode === 'light' 
+              ? `0 2px 8px ${addAlpha(COLORS.SECONDARY, 0.1)}`
+              : `0 8px 32px -4px ${alpha(theme.palette.primary.main, 0.25)}`,
+            border: theme.palette.mode === 'dark' 
+              ? `1px solid ${alpha(theme.palette.primary.main, 0.3)}`
+              : `1px solid ${COLORS.SECONDARY}`,
+            borderRadius: 3,
+            overflow: 'hidden',
+            position: 'relative',
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: 4,
+              background: `linear-gradient(90deg, ${COLORS.SECONDARY} 0%, ${COLORS.SECONDARY_HOVER} 100%)`,
+              zIndex: 1,
+            },
+          }}
+        >
           <CardContent sx={{ p: 4 }}>
-            <Typography variant="h4" component="h1" gutterBottom align="center">
+            <Typography 
+              variant="h4" 
+              component="h1" 
+              gutterBottom 
+              align="center"
+              sx={{
+                fontWeight: 'bold',
+                color: COLORS.PRIMARY,
+                mb: 1,
+              }}
+            >
               BookMyHotel
             </Typography>
-            <Typography variant="h6" component="h2" gutterBottom align="center" color="textSecondary">
+            <Typography 
+              variant="h6" 
+              component="h2" 
+              gutterBottom 
+              align="center" 
+              color="textSecondary"
+              sx={{ 
+                mb: 3,
+                color: theme.palette.text.secondary,
+              }}
+            >
               Sign in to complete your booking
             </Typography>
 
-            <Box sx={{ borderBottom: 1, borderColor: 'divider', mt: 3 }}>
-              <Tabs value={tabValue} onChange={handleTabChange} aria-label="auth tabs">
+            <Box 
+              sx={{ 
+                borderBottom: `2px solid ${COLORS.SECONDARY}`, 
+                mt: 3,
+                '& .MuiTabs-indicator': {
+                  backgroundColor: COLORS.SECONDARY,
+                  height: 3,
+                },
+              }}
+            >
+              <Tabs 
+                value={tabValue} 
+                onChange={handleTabChange} 
+                aria-label="auth tabs"
+                variant="fullWidth"
+                sx={{
+                  '& .MuiTab-root': {
+                    fontWeight: 600,
+                    textTransform: 'none',
+                    fontSize: '1rem',
+                    color: theme.palette.text.secondary,
+                    '&:hover': {
+                      color: COLORS.PRIMARY,
+                      backgroundColor: COLORS.BG_LIGHT,
+                    },
+                  },
+                  '& .Mui-selected': {
+                    color: COLORS.PRIMARY,
+                    fontWeight: 700,
+                  },
+                }}
+              >
                 <Tab label="Sign In" />
                 <Tab label="Create Account" />
               </Tabs>
@@ -274,7 +359,7 @@ const GuestAuthPage: React.FC = () => {
             {/* Login Tab */}
             <TabPanel value={tabValue} index={0}>
               <Box component="form" onSubmit={handleLogin}>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="Email"
                   type="email"
@@ -284,21 +369,63 @@ const GuestAuthPage: React.FC = () => {
                   required
                   autoComplete="email"
                 />
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="Password"
-                  type="password"
+                  type={showLoginPassword ? 'text' : 'password'}
                   value={loginPassword}
                   onChange={(e) => setLoginPassword(e.target.value)}
                   margin="normal"
                   required
                   autoComplete="current-password"
+                  InputProps={{
+                    endAdornment: (
+                      <Box
+                        onClick={() => setShowLoginPassword(!showLoginPassword)}
+                        sx={{
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          color: 'text.secondary',
+                          '&:hover': { color: 'primary.main' },
+                        }}
+                      >
+                        {showLoginPassword ? <VisibilityOff /> : <Visibility />}
+                      </Box>
+                    ),
+                  }}
                 />
                 <Button
                   type="submit"
                   fullWidth
                   variant="contained"
-                  sx={{ mt: 3, mb: 1 }}
+                  sx={{ 
+                    mt: 3, 
+                    mb: 1,
+                    py: 1.5,
+                    fontSize: '1.1rem',
+                    fontWeight: 600,
+                    textTransform: 'none',
+                    borderRadius: 2,
+                    backgroundColor: COLORS.PRIMARY,
+                    border: `2px solid ${COLORS.SECONDARY}`,
+                    color: COLORS.WHITE,
+                    '&:hover': {
+                      backgroundColor: COLORS.PRIMARY_HOVER,
+                      borderColor: COLORS.SECONDARY_HOVER,
+                      transform: 'translateY(-1px)',
+                    },
+                    '&:active': {
+                      transform: 'translateY(0)',
+                      transition: 'transform 0.1s ease',
+                    },
+                    '&:disabled': {
+                      background: theme.palette.action.disabledBackground,
+                      color: theme.palette.action.disabled,
+                      border: `2px solid ${addAlpha(COLORS.BLACK, 0.12)}`,
+                    },
+                    transition: 'all 0.2s ease',
+                  }}
                   disabled={loading}
                 >
                   {loading ? 'Signing In...' : 'Sign In'}
@@ -308,7 +435,32 @@ const GuestAuthPage: React.FC = () => {
                 <Button
                   fullWidth
                   variant="outlined"
-                  sx={{ mb: 2 }}
+                  sx={{ 
+                    mb: 2,
+                    py: 1.5,
+                    fontSize: '1rem',
+                    fontWeight: 500,
+                    textTransform: 'none',
+                    borderRadius: 2,
+                    borderWidth: 2,
+                    borderColor: COLORS.SECONDARY,
+                    color: COLORS.PRIMARY,
+                    '&:hover': {
+                      borderColor: COLORS.SECONDARY_HOVER,
+                      backgroundColor: COLORS.BG_LIGHT,
+                      borderWidth: 2,
+                      transform: 'translateY(-1px)',
+                    },
+                    '&:active': {
+                      transform: 'translateY(0)',
+                      transition: 'transform 0.1s ease',
+                    },
+                    '&:disabled': {
+                      borderColor: theme.palette.action.disabled,
+                      color: theme.palette.action.disabled,
+                    },
+                    transition: 'all 0.2s ease',
+                  }}
                   disabled={loading}
                   onClick={handleMobileLogin}
                 >
@@ -320,7 +472,7 @@ const GuestAuthPage: React.FC = () => {
             {/* Registration Tab */}
             <TabPanel value={tabValue} index={1}>
               <Box component="form" onSubmit={handleRegister}>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="First Name"
                   value={firstName}
@@ -328,7 +480,7 @@ const GuestAuthPage: React.FC = () => {
                   margin="normal"
                   required
                 />
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="Last Name"
                   value={lastName}
@@ -336,7 +488,7 @@ const GuestAuthPage: React.FC = () => {
                   margin="normal"
                   required
                 />
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="Email"
                   type="email"
@@ -346,38 +498,96 @@ const GuestAuthPage: React.FC = () => {
                   required
                   autoComplete="email"
                 />
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="Phone (optional)"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   margin="normal"
                 />
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="Password"
-                  type="password"
+                  type={showRegisterPassword ? 'text' : 'password'}
                   value={registerPassword}
                   onChange={(e) => setRegisterPassword(e.target.value)}
                   margin="normal"
                   required
                   autoComplete="new-password"
+                  InputProps={{
+                    endAdornment: (
+                      <Box
+                        onClick={() => setShowRegisterPassword(!showRegisterPassword)}
+                        sx={{
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          color: 'text.secondary',
+                          '&:hover': { color: 'primary.main' },
+                        }}
+                      >
+                        {showRegisterPassword ? <VisibilityOff /> : <Visibility />}
+                      </Box>
+                    ),
+                  }}
                 />
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="Confirm Password"
-                  type="password"
+                  type={showConfirmPassword ? 'text' : 'password'}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   margin="normal"
                   required
                   autoComplete="new-password"
+                  InputProps={{
+                    endAdornment: (
+                      <Box
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        sx={{
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          color: 'text.secondary',
+                          '&:hover': { color: 'primary.main' },
+                        }}
+                      >
+                        {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                      </Box>
+                    ),
+                  }}
                 />
                 <Button
                   type="submit"
                   fullWidth
                   variant="contained"
-                  sx={{ mt: 3, mb: 2 }}
+                  sx={{ 
+                    mt: 3, 
+                    mb: 2,
+                    py: 1.5,
+                    fontSize: '1.1rem',
+                    fontWeight: 600,
+                    textTransform: 'none',
+                    borderRadius: 2,
+                    backgroundColor: COLORS.PRIMARY,
+                    color: COLORS.WHITE,
+                    border: `2px solid ${COLORS.SECONDARY}`,
+                    '&:hover': {
+                      backgroundColor: COLORS.PRIMARY_HOVER,
+                      borderColor: COLORS.SECONDARY_HOVER,
+                      transform: 'translateY(-1px)',
+                    },
+                    '&:active': {
+                      transform: 'translateY(0)',
+                      transition: 'transform 0.1s ease',
+                    },
+                    '&:disabled': {
+                      background: theme.palette.action.disabledBackground,
+                      color: theme.palette.action.disabled,
+                      border: `2px solid ${addAlpha(COLORS.BLACK, 0.12)}`,
+                    },
+                    transition: 'all 0.2s ease',
+                  }}
                   disabled={loading}
                 >
                   {loading ? 'Creating Account...' : 'Create Account'}
@@ -388,11 +598,39 @@ const GuestAuthPage: React.FC = () => {
             <Typography variant="body2" color="textSecondary" align="center" sx={{ mt: 2 }}>
               Need to make a booking? You'll need to{' '}
               {tabValue === 0 ? (
-                <Link component="button" onClick={() => setTabValue(1)}>
+                <Link 
+                  component="button" 
+                  onClick={() => setTabValue(1)}
+                  sx={{
+                    color: COLORS.PRIMARY,
+                    fontWeight: 600,
+                    textDecoration: 'underline',
+                    textDecorationColor: COLORS.SECONDARY,
+                    transition: 'all 0.2s ease',
+                    '&:hover': {
+                      textDecorationColor: COLORS.SECONDARY_HOVER,
+                      color: COLORS.PRIMARY_HOVER,
+                    },
+                  }}
+                >
                   create an account
                 </Link>
               ) : (
-                <Link component="button" onClick={() => setTabValue(0)}>
+                <Link 
+                  component="button" 
+                  onClick={() => setTabValue(0)}
+                  sx={{
+                    color: COLORS.PRIMARY,
+                    fontWeight: 600,
+                    textDecoration: 'underline',
+                    textDecorationColor: COLORS.SECONDARY,
+                    transition: 'all 0.2s ease',
+                    '&:hover': {
+                      textDecorationColor: COLORS.SECONDARY_HOVER,
+                      color: COLORS.PRIMARY_HOVER,
+                    },
+                  }}
+                >
                   sign in
                 </Link>
               )}{' '}

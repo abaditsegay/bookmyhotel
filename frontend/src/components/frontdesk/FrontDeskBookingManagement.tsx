@@ -29,7 +29,6 @@ import {
 import { formatDateForDisplay } from '../../utils/dateUtils';
 import {
   Visibility as VisibilityIcon,
-  Delete as DeleteIcon,
   Check as CheckInIcon,
   ExitToApp as CheckOutIcon,
   PersonOff as NoShowIcon,
@@ -57,7 +56,6 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
   const [search, setSearch] = useState('');
   const [selectedBooking, setSelectedBooking] = useState<FrontDeskBooking | null>(null);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
 
   // Memoize search handler to prevent input focus loss
@@ -69,7 +67,7 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
   const loadBookings = useCallback(async () => {
     if (!token) return;
     
-    console.log('Loading bookings with params:', { page, size, search, tenantId });
+    // console.log('Loading bookings with params:', { page, size, search, tenantId });
     setLoading(true);
     setError(null);
     
@@ -77,7 +75,7 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
       const result = await frontDeskApiService.getAllBookings(token, page, size, search, tenantId);
       
       if (result.success && result.data) {
-        console.log('🏨 FrontDeskBookingManagement - Raw API data:', result.data.content);
+        // console.log('🏨 FrontDeskBookingManagement - Raw API data:', result.data.content);
         setBookings(result.data.content);
         setTotalElements(result.data.totalElements || 0);
       } else {
@@ -86,7 +84,7 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
         setTotalElements(0);
       }
     } catch (error) {
-      console.error('Load bookings error:', error);
+      // console.error('Load bookings error:', error);
       setError('Failed to load bookings');
       setBookings([]);
       setTotalElements(0);
@@ -103,7 +101,7 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
   // Add window focus listener to refresh bookings when returning from other pages
   useEffect(() => {
     const handleWindowFocus = () => {
-      console.log('Window gained focus, refreshing bookings...');
+      // console.log('Window gained focus, refreshing bookings...');
       loadBookings();
     };
 
@@ -113,7 +111,7 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
     // Also listen for visibility change (more reliable than focus on some browsers)
     const handleVisibilityChange = () => {
       if (!document.hidden) {
-        console.log('Page became visible, refreshing bookings...');
+        // console.log('Page became visible, refreshing bookings...');
         loadBookings();
       }
     };
@@ -146,14 +144,14 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
 
   // Handle page change
   const handlePageChange = (event: React.ChangeEvent<unknown> | null, newPage: number) => {
-    console.log('Page change requested:', newPage);
+    // console.log('Page change requested:', newPage);
     setPage(newPage);
   };
 
   // Handle rows per page change
   const handleRowsPerPageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newSize = parseInt(event.target.value, 10);
-    console.log('Rows per page change:', newSize);
+    // console.log('Rows per page change:', newSize);
     setSize(newSize);
     setPage(0);
   };
@@ -191,41 +189,6 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
     }
   };
 
-  // Handle booking deletion
-  const handleDeleteBooking = async () => {
-    if (!token || !selectedBooking) return;
-    
-    try {
-      const result = await frontDeskApiService.deleteBooking(token, selectedBooking.reservationId, tenantId);
-      
-      if (result.success) {
-        setSnackbar({ 
-          open: true, 
-          message: 'Booking deleted successfully', 
-          severity: 'success' 
-        });
-        setDeleteDialogOpen(false);
-        setSelectedBooking(null);
-        loadBookings();
-        onRefresh?.();
-        // Trigger notification refresh after booking deletion
-        BookingNotificationEvents.afterCancellation();
-      } else {
-        setSnackbar({ 
-          open: true, 
-          message: result.message || 'Failed to delete booking', 
-          severity: 'error' 
-        });
-      }
-    } catch (error) {
-      setSnackbar({ 
-        open: true, 
-        message: 'Failed to delete booking', 
-        severity: 'error' 
-      });
-    }
-  };
-
   const handleViewBookingDetails = (booking: FrontDeskBooking) => {
     setSelectedBooking(booking);
     setViewDialogOpen(true);
@@ -234,7 +197,7 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
   const getStatusColor = (status: string) => {
     switch (status.toUpperCase()) {
       case 'PENDING': return 'warning';
-      case 'CONFIRMED': return 'primary';
+      case 'BOOKED': return 'primary';
       case 'CHECKED_IN': return 'success';
       case 'CHECKED_OUT': return 'info';
       case 'CANCELLED': return 'error';
@@ -306,10 +269,46 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
       {/* Bookings Table */}
       {!loading && (
         <>
-          <TableContainer component={Paper}>
+          <TableContainer 
+            component={Paper}
+            sx={{
+              borderRadius: 3,
+              boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+              border: '1px solid #e0e7ff',
+              overflow: 'hidden',
+              '& .MuiTable-root': {
+                backgroundColor: '#ffffff'
+              }
+            }}
+          >
             <Table>
               <TableHead>
-                <TableRow>
+                <TableRow 
+                  sx={{
+                    background: 'linear-gradient(135deg, #64748b 0%, #475569 50%, #334155 100%)',
+                    boxShadow: '0 4px 12px rgba(100, 116, 139, 0.15)',
+                    '& .MuiTableCell-head': {
+                      color: '#ffffff',
+                      fontWeight: 600,
+                      fontSize: '0.95rem',
+                      letterSpacing: '0.5px',
+                      textTransform: 'uppercase',
+                      border: 'none',
+                      padding: '20px 16px',
+                      position: 'relative',
+                      textShadow: '0 1px 2px rgba(0,0,0,0.1)',
+                      '&::after': {
+                        content: '""',
+                        position: 'absolute',
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        height: '3px',
+                        background: 'linear-gradient(90deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0.6) 100%)'
+                      }
+                    }
+                  }}
+                >
                   <TableCell>Confirmation #</TableCell>
                   <TableCell>Guest</TableCell>
                   <TableCell>Room</TableCell>
@@ -322,77 +321,193 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
               <TableBody>
                 {bookings.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} align="center">
-                      <Typography variant="body2" color="text.secondary" sx={{ py: 4 }}>
+                    <TableCell 
+                      colSpan={7} 
+                      align="center"
+                      sx={{ 
+                        backgroundColor: '#f8fafc',
+                        border: 'none',
+                        py: 4
+                      }}
+                    >
+                      <Typography variant="body2" color="text.secondary">
                         {search ? 'No bookings found matching your search.' : 'No bookings found.'}
                       </Typography>
                     </TableCell>
                   </TableRow>
                 ) : (
-                  bookings.map((booking) => (
-                    <TableRow key={booking.reservationId}>
-                      <TableCell>{booking.confirmationNumber}</TableCell>
+                  bookings.map((booking, index) => (
+                    <TableRow 
+                      key={booking.reservationId}
+                      sx={{
+                        backgroundColor: index % 2 === 0 ? '#ffffff' : '#f8fafc',
+                        transition: 'all 0.2s ease-in-out',
+                        '&:hover': {
+                          backgroundColor: '#e0e7ff',
+                          transform: 'translateY(-1px)',
+                          boxShadow: '0 2px 8px rgba(102, 126, 234, 0.15)'
+                        },
+                        '& .MuiTableCell-body': {
+                          border: 'none',
+                          padding: '16px',
+                          fontSize: '0.9rem',
+                          borderBottom: '1px solid #e5e7eb'
+                        }
+                      }}
+                    >
+                      <TableCell>
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            fontWeight: 600,
+                            color: '#1f2937'
+                          }}
+                        >
+                          {booking.confirmationNumber}
+                        </Typography>
+                      </TableCell>
                       <TableCell>
                         <Box>
-                          <Typography variant="body2" fontWeight="bold">
+                          <Typography 
+                            variant="body2" 
+                            fontWeight="600"
+                            sx={{ color: '#1f2937', mb: 0.5 }}
+                          >
                             {booking.guestName}
                           </Typography>
-                          <Typography variant="caption" color="text.secondary">
+                          <Typography 
+                            variant="caption" 
+                            sx={{ 
+                              color: '#6b7280',
+                              fontSize: '0.75rem'
+                            }}
+                          >
                             {booking.guestEmail}
                           </Typography>
                         </Box>
                       </TableCell>
                       <TableCell>
-                        {booking.roomNumber} - {booking.roomType}
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Box 
+                            sx={{
+                              width: 8,
+                              height: 8,
+                              borderRadius: '50%',
+                              backgroundColor: '#10b981',
+                              flexShrink: 0
+                            }}
+                          />
+                          <Typography 
+                            variant="body2" 
+                            sx={{ 
+                              fontWeight: 500,
+                              color: '#374151'
+                            }}
+                          >
+                            {booking.roomNumber} - {booking.roomType}
+                          </Typography>
+                        </Box>
                       </TableCell>
-                      <TableCell>{formatDate(booking.checkInDate)}</TableCell>
-                      <TableCell>{formatDate(booking.checkOutDate)}</TableCell>
+                      <TableCell>
+                        <Typography 
+                          variant="body2" 
+                          sx={{ 
+                            color: '#374151',
+                            fontWeight: 500
+                          }}
+                        >
+                          {formatDate(booking.checkInDate)}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography 
+                          variant="body2" 
+                          sx={{ 
+                            color: '#374151',
+                            fontWeight: 500
+                          }}
+                        >
+                          {formatDate(booking.checkOutDate)}
+                        </Typography>
+                      </TableCell>
                       <TableCell>
                         <Chip 
                           label={booking.status.replace('_', ' ')} 
                           color={getStatusColor(booking.status)} 
                           size="small"
                           variant="filled"
+                          sx={{
+                            fontWeight: 600,
+                            fontSize: '0.75rem',
+                            height: '28px',
+                            borderRadius: '14px',
+                            textTransform: 'capitalize'
+                          }}
                         />
                       </TableCell>
                       <TableCell>
-                        <Box sx={{ display: 'flex', gap: 0.5 }}>
-                          <Tooltip title="View Details">
+                        <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
+                          <Tooltip title="View Details" arrow>
                             <IconButton 
                               size="small"
                               onClick={() => handleViewBookingDetails(booking)}
+                              sx={{
+                                backgroundColor: '#f0f4ff',
+                                color: '#667eea',
+                                '&:hover': {
+                                  backgroundColor: '#e0e7ff',
+                                  transform: 'scale(1.1)'
+                                },
+                                transition: 'all 0.2s ease'
+                              }}
                             >
-                              <VisibilityIcon />
+                              <VisibilityIcon fontSize="small" />
                             </IconButton>
                           </Tooltip>
                           
-                          {booking.status === 'CONFIRMED' && (
+                          {booking.status === 'BOOKED' && (
                             <>
-                              <Tooltip title="Check In">
+                              <Tooltip title="Check In" arrow>
                                 <IconButton 
                                   size="small"
-                                  color="success"
                                   onClick={() => handleStatusUpdate(booking, 'CHECKED_IN')}
+                                  sx={{
+                                    backgroundColor: '#ecfdf5',
+                                    color: '#10b981',
+                                    '&:hover': {
+                                      backgroundColor: '#d1fae5',
+                                      transform: 'scale(1.1)'
+                                    },
+                                    transition: 'all 0.2s ease'
+                                  }}
                                 >
-                                  <CheckInIcon />
+                                  <CheckInIcon fontSize="small" />
                                 </IconButton>
                               </Tooltip>
                             </>
                           )}
                           
                           {booking.status === 'CHECKED_IN' && (
-                            <Tooltip title="Check Out">
+                            <Tooltip title="Check Out" arrow>
                               <IconButton 
                                 size="small"
-                                color="warning"
                                 onClick={() => handleStatusUpdate(booking, 'CHECKED_OUT')}
+                                sx={{
+                                  backgroundColor: '#fef3c7',
+                                  color: '#f59e0b',
+                                  '&:hover': {
+                                    backgroundColor: '#fde68a',
+                                    transform: 'scale(1.1)'
+                                  },
+                                  transition: 'all 0.2s ease'
+                                }}
                               >
-                                <CheckOutIcon />
+                                <CheckOutIcon fontSize="small" />
                               </IconButton>
                             </Tooltip>
                           )}
                           
-                          {(booking.status === 'CONFIRMED' || booking.status === 'PENDING') && (
+                          {(booking.status === 'BOOKED' || booking.status === 'PENDING') && (
                             <>
                               <Tooltip title="Mark No Show">
                                 <IconButton 
@@ -415,18 +530,6 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
                             </>
                           )}
                           
-                          <Tooltip title="Delete Booking">
-                            <IconButton 
-                              size="small"
-                              onClick={() => {
-                                setSelectedBooking(booking);
-                                setDeleteDialogOpen(true);
-                              }}
-                              color="error"
-                            >
-                              <DeleteIcon />
-                            </IconButton>
-                          </Tooltip>
                         </Box>
                       </TableCell>
                     </TableRow>
@@ -500,23 +603,6 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
           <Button onClick={() => setViewDialogOpen(false)}>Close</Button>
         </DialogActions>
       </Dialog>
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
-        <DialogTitle>Confirm Deletion</DialogTitle>
-        <DialogContent>
-          <Typography>
-            Are you sure you want to delete the booking for {selectedBooking?.guestName}? 
-            This action cannot be undone.
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
-          <Button onClick={handleDeleteBooking} color="error" variant="contained">
-            Delete
-          </Button>
-        </DialogActions>
-      </Dialog>
-
       {/* Snackbar for notifications */}
       <Snackbar
         open={snackbar.open}

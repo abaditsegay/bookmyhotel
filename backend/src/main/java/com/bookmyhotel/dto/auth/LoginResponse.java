@@ -20,6 +20,15 @@ public class LoginResponse {
     private Long hotelId;
     private String hotelName;
     private String tenantId;
+    private boolean needsOnboarding;
+
+    /**
+     * Account status after login:
+     * - ACTIVE: normal access
+     * - HOTEL_INACTIVE: user's hotel has been deactivated
+     * - USER_SUSPENDED: user account has been manually suspended
+     */
+    private String accountStatus = "ACTIVE";
 
     // Constructors
     public LoginResponse() {
@@ -160,5 +169,21 @@ public class LoginResponse {
 
     public void setTenantId(String tenantId) {
         this.tenantId = tenantId;
+    }
+
+    public boolean isNeedsOnboarding() {
+        return needsOnboarding;
+    }
+
+    public void setNeedsOnboarding(boolean needsOnboarding) {
+        this.needsOnboarding = needsOnboarding;
+    }
+
+    public String getAccountStatus() {
+        return accountStatus;
+    }
+
+    public void setAccountStatus(String accountStatus) {
+        this.accountStatus = accountStatus;
     }
 }

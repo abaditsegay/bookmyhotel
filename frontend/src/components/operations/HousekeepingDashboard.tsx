@@ -40,16 +40,14 @@ import {
   PlayArrow as StartIcon,
   CheckCircle as CompleteIcon
 } from '@mui/icons-material';
+import { COLORS, addAlpha } from '../../theme/themeColors';
 
 
 const API_BASE_URL = API_CONFIG.BASE_URL;
 
 interface HousekeepingTask {
   id: number;
-  room: {
-    roomNumber: string;
-    floor: number;
-  };
+  roomNumber?: string;
   taskType: string;
   status: string;
   priority: string;
@@ -79,7 +77,7 @@ interface HousekeepingStaff {
 }
 
 interface CreateTaskForm {
-  roomId: string;
+  roomNumber: string;
   taskType: string;
   description: string;
   priority: string;
@@ -96,7 +94,7 @@ const HousekeepingDashboard: React.FC = () => {
   // Create task dialog states
   const [createTaskOpen, setCreateTaskOpen] = useState(false);
   const [createTaskForm, setCreateTaskForm] = useState<CreateTaskForm>({
-    roomId: '',
+    roomNumber: '',
     taskType: '',
     description: '',
     priority: 'NORMAL',
@@ -125,7 +123,7 @@ const HousekeepingDashboard: React.FC = () => {
   const [selectedTask, setSelectedTask] = useState<HousekeepingTask | null>(null);
 
   // Get current user role (from auth context)
-  const currentUserRole = 'OPERATIONS_SUPERVISOR'; // This would come from auth context
+  const currentUserRole = 'OPERATIONAL_ADMIN'; // This would come from auth context
 
   useEffect(() => {
     loadTasks();
@@ -154,8 +152,8 @@ const HousekeepingDashboard: React.FC = () => {
         const transformedTasks = backendTasks.map((task: any) => ({
           id: task.id,
           room: {
-            roomNumber: task.room?.roomNumber || 'Unknown',
-            floor: task.room?.floor || Math.floor(parseInt(task.room?.roomNumber || '0') / 100)
+            roomNumber: task.roomNumber || 'Unknown',
+            floor: Math.floor(parseInt(task.roomNumber || '0') / 100)
           },
           taskType: task.taskType || task.task_type,
           status: task.status,
@@ -180,7 +178,7 @@ const HousekeepingDashboard: React.FC = () => {
         throw new Error(`API error: ${response.status}`);
       }
     } catch (err) {
-      console.error('Failed to load housekeeping tasks:', err);
+      // console.error('Failed to load housekeeping tasks:', err);
       setError('Unable to load tasks - please check your connection');
       setTasks([]); // Set empty array instead of mock data
     } finally {
@@ -216,11 +214,11 @@ const HousekeepingDashboard: React.FC = () => {
         }));
         setStaff(transformedStaff);
       } else {
-        console.error('Failed to load staff data:', response.status);
+        // console.error('Failed to load staff data:', response.status);
         setStaff([]); // Set empty array instead of mock data
       }
     } catch (err) {
-      console.error('Failed to load housekeeping staff:', err);
+      // console.error('Failed to load housekeeping staff:', err);
       setStaff([]); // Set empty array instead of mock data
     }
   };
@@ -236,7 +234,7 @@ const HousekeepingDashboard: React.FC = () => {
       
       setCreateTaskOpen(false);
       setCreateTaskForm({
-        roomId: '',
+        roomNumber: '',
         taskType: '',
         description: '',
         priority: 'NORMAL',
@@ -252,21 +250,31 @@ const HousekeepingDashboard: React.FC = () => {
     if (!selectedTaskId || !selectedStaffId) return;
     
     try {
-      const response = await fetch(`${API_BASE_URL}/supervisor/tasks/housekeeping/${selectedTaskId}/assign/${selectedStaffId}`, {
-        method: 'PUT',
-        headers: TokenManager.getAuthHeaders()
+      const response = await fetch(`${API_BASE_URL}/housekeeping/tasks/${selectedTaskId}/assign`, {
+        method: 'POST',
+        headers: {
+          ...TokenManager.getAuthHeaders(),
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          staffId: selectedStaffId
+        })
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to assign task: ${response.status}`);
+        const errorText = await response.text();
+        // console.error('Assignment failed:', response.status, errorText);
+        throw new Error(`Failed to assign task: ${response.status} - ${errorText}`);
       }
 
+      await response.json();
+      
       setAssignTaskOpen(false);
       setSelectedTaskId(null);
       setSelectedStaffId('');
       await loadTasks();
     } catch (err) {
-      console.error('Task assignment error:', err);
+      // console.error('Task assignment error:', err);
       setError(`Failed to assign task: ${err instanceof Error ? err.message : 'Unknown error'}`);
     }
   };
@@ -284,7 +292,7 @@ const HousekeepingDashboard: React.FC = () => {
 
       await loadTasks();
     } catch (err) {
-      console.error('Task start error:', err);
+      // console.error('Task start error:', err);
       setError(`Failed to start task: ${err instanceof Error ? err.message : 'Unknown error'}`);
     }
   };
@@ -312,7 +320,7 @@ const HousekeepingDashboard: React.FC = () => {
       setQualityRating(5);
       await loadTasks();
     } catch (err) {
-      console.error('Task completion error:', err);
+      // console.error('Task completion error:', err);
       setError(`Failed to complete task: ${err instanceof Error ? err.message : 'Unknown error'}`);
     }
   };
@@ -344,7 +352,6 @@ const HousekeepingDashboard: React.FC = () => {
     
     try {
       // TODO: Call API to update task
-      console.log('Saving task edit:', editTaskData);
       
       // For now, just update the local task
       const updatedTask = {
@@ -362,7 +369,7 @@ const HousekeepingDashboard: React.FC = () => {
       // await loadTasks();
       
     } catch (error) {
-      console.error('Error updating task:', error);
+      // console.error('Error updating task:', error);
     }
   };
 
@@ -416,6 +423,11 @@ const HousekeepingDashboard: React.FC = () => {
   const filteredTasks = getFilteredTasks();
   const paginatedTasks = filteredTasks.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
+  // Reset to first page when filter changes
+  useEffect(() => {
+    setPage(0);
+  }, [activeTab]);
+
   if (loading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
@@ -429,7 +441,7 @@ const HousekeepingDashboard: React.FC = () => {
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4" component="h1">
-          Housekeeping Management
+          Housekeeping Tasks
         </Typography>
         <Box sx={{ display: 'flex', gap: 2 }}>
           <Button
@@ -494,7 +506,31 @@ const HousekeepingDashboard: React.FC = () => {
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
-            <TableRow>
+            <TableRow
+              sx={{
+                background: COLORS.GRADIENT_SLATE,
+                '& .MuiTableCell-head': {
+                  color: COLORS.WHITE,
+                  fontWeight: 600,
+                  fontSize: '0.95rem',
+                  letterSpacing: '0.5px',
+                  textTransform: 'uppercase',
+                  border: 'none',
+                  padding: '20px 16px',
+                  position: 'relative',
+                  textShadow: `0 1px 2px ${addAlpha(COLORS.BLACK, 0.1)}`,
+                  '&::after': {
+                    content: '""',
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    height: '3px',
+                    background: `linear-gradient(90deg, ${addAlpha(COLORS.WHITE, 0.6)} 0%, ${addAlpha(COLORS.WHITE, 0.8)} 50%, ${addAlpha(COLORS.WHITE, 0.6)} 100%)`
+                  }
+                }
+              }}
+            >
               <TableCell>Room</TableCell>
               <TableCell>Task Type</TableCell>
               <TableCell>Status</TableCell>
@@ -510,10 +546,10 @@ const HousekeepingDashboard: React.FC = () => {
               <TableRow key={task.id}>
                 <TableCell>
                   <Typography variant="body2" fontWeight="medium">
-                    {task.room.roomNumber}
+                    {task.roomNumber || 'N/A'}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    Floor {task.room.floor}
+                    Floor {Math.floor(parseInt(task.roomNumber || '0') / 100) || 'N/A'}
                   </Typography>
                 </TableCell>
                 <TableCell>
@@ -613,7 +649,7 @@ const HousekeepingDashboard: React.FC = () => {
                     )}
                     
                     {/* Reassign button for assigned or in-progress tasks */}
-                    {currentUserRole === 'OPERATIONS_SUPERVISOR' && 
+                    {currentUserRole === 'OPERATIONAL_ADMIN' && 
                      (task.status === 'assigned' || task.status === 'ASSIGNED' || 
                       task.status === 'in_progress' || task.status === 'IN_PROGRESS') && (
                       <Tooltip title="Reassign Task">
@@ -627,7 +663,7 @@ const HousekeepingDashboard: React.FC = () => {
                       </Tooltip>
                     )}
                     
-                    {currentUserRole === 'OPERATIONS_SUPERVISOR' && (
+                    {currentUserRole === 'OPERATIONAL_ADMIN' && (
                       <Tooltip title="Edit Task">
                         <IconButton 
                           size="small"
@@ -665,9 +701,10 @@ const HousekeepingDashboard: React.FC = () => {
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 2 }}>
             <TextField
-              label="Room ID"
-              value={createTaskForm.roomId}
-              onChange={(e) => setCreateTaskForm({ ...createTaskForm, roomId: e.target.value })}
+              label="Room Number"
+              value={createTaskForm.roomNumber}
+              onChange={(e) => setCreateTaskForm({ ...createTaskForm, roomNumber: e.target.value })}
+              placeholder="e.g., 101, Lobby, Pool Area (optional)"
               fullWidth
             />
             <FormControl fullWidth>
@@ -793,7 +830,7 @@ const HousekeepingDashboard: React.FC = () => {
       <Dialog open={taskDetailOpen} onClose={() => setTaskDetailOpen(false)} maxWidth="md" fullWidth>
         <DialogTitle>
           Task Details
-          {!isEditingTask && currentUserRole === 'OPERATIONS_SUPERVISOR' && (
+          {!isEditingTask && currentUserRole === 'OPERATIONAL_ADMIN' && (
             <Button 
               startIcon={<EditIcon />} 
               onClick={handleEditTask}
@@ -807,7 +844,7 @@ const HousekeepingDashboard: React.FC = () => {
           {selectedTask && (
             <Box sx={{ pt: 2 }}>
               <Typography variant="h6" gutterBottom>
-                Task #{selectedTask.id} - Room {selectedTask.room.roomNumber}
+                Task #{selectedTask.id} - Room {selectedTask.roomNumber || 'N/A'}
               </Typography>
               
               <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mt: 2 }}>
@@ -914,7 +951,7 @@ const HousekeepingDashboard: React.FC = () => {
             </>
           ) : (
             <>
-              {selectedTask && currentUserRole === 'OPERATIONS_SUPERVISOR' && (
+              {selectedTask && currentUserRole === 'OPERATIONAL_ADMIN' && (
                 <Button 
                   onClick={() => {
                     setTaskDetailOpen(false);

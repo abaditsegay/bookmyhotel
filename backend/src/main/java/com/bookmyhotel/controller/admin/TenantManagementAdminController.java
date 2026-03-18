@@ -4,6 +4,7 @@ import com.bookmyhotel.dto.admin.CreateTenantRequest;
 import com.bookmyhotel.dto.admin.TenantDTO;
 import com.bookmyhotel.dto.admin.UpdateTenantRequest;
 import com.bookmyhotel.entity.Tenant;
+import com.bookmyhotel.annotation.Auditable;
 import com.bookmyhotel.service.TenantManagementService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,8 +23,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/admin/tenants")
-@PreAuthorize("hasRole('SYSTEM_ADMIN') or hasRole('ADMIN')")
-@CrossOrigin(origins = "*", maxAge = 3600)
+@PreAuthorize("hasRole('SUPER_ADMIN') or hasRole('ADMIN')")
 public class TenantManagementAdminController {
 
     @Autowired
@@ -60,6 +60,7 @@ public class TenantManagementAdminController {
     /**
      * Create new tenant
      */
+    @Auditable(action = "CREATE", entityType = "TENANT", description = "Admin created a tenant")
     @PostMapping
     public ResponseEntity<TenantDTO> createTenant(@Valid @RequestBody CreateTenantRequest request) {
         TenantDTO tenant = tenantManagementService.createTenant(request);
@@ -69,6 +70,7 @@ public class TenantManagementAdminController {
     /**
      * Update tenant
      */
+    @Auditable(action = "UPDATE", entityType = "TENANT", description = "Admin updated a tenant")
     @PutMapping("/{tenantId}")
     public ResponseEntity<TenantDTO> updateTenant(
             @PathVariable String tenantId,
@@ -80,6 +82,7 @@ public class TenantManagementAdminController {
     /**
      * Toggle tenant status
      */
+    @Auditable(action = "TOGGLE_STATUS", entityType = "TENANT", description = "Admin toggled tenant status")
     @PostMapping("/{tenantId}/toggle-status")
     public ResponseEntity<TenantDTO> toggleTenantStatus(@PathVariable String tenantId) {
         TenantDTO tenant = tenantManagementService.toggleTenantStatus(tenantId);
@@ -89,6 +92,7 @@ public class TenantManagementAdminController {
     /**
      * Delete tenant
      */
+    @Auditable(action = "DELETE", entityType = "TENANT", description = "Admin deleted a tenant")
     @DeleteMapping("/{tenantId}")
     public ResponseEntity<Void> deleteTenant(@PathVariable String tenantId) {
         tenantManagementService.deleteTenant(tenantId);

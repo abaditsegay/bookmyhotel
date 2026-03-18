@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box, CircularProgress, LinearProgress, Skeleton, Typography } from '@mui/material';
 import { styled, keyframes } from '@mui/material/styles';
+import { COLORS, addAlpha } from '../../theme/themeColors';
 
 // Styled components for custom loading animations
 const pulseAnimation = keyframes`
@@ -266,7 +267,7 @@ export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: backdrop ? 'rgba(0, 0, 0, 0.5)' : 'transparent',
+        backgroundColor: backdrop ? addAlpha(COLORS.BLACK, 0.5) : 'transparent',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',

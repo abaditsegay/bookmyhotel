@@ -20,7 +20,7 @@ const StaffDashboardPage: React.FC = () => {
       const userProfile = await staffApi.getCurrentUser();
       setUser(userProfile);
     } catch (err) {
-      console.error('Error loading user profile:', err);
+      // console.error('Error loading user profile:', err);
       
       // Fallback: determine role from local storage or URL
       const token = TokenManager.getToken();
@@ -32,7 +32,7 @@ const StaffDashboardPage: React.FC = () => {
           
           if (role) {
             const mockUser = {
-              id: payload.sub || 1,
+              id: payload.sub,
               username: payload.username || 'staff_user',
               role: role,
               staffType: role === 'HOUSEKEEPING' ? 'HOUSEKEEPING' : 

@@ -80,6 +80,12 @@ public class ShopOrder extends HotelScopedEntity {
     @Column(name = "tax_amount", precision = 10, scale = 2)
     private BigDecimal taxAmount = BigDecimal.ZERO;
 
+    @Column(name = "vat_amount", precision = 10, scale = 2)
+    private BigDecimal vatAmount = BigDecimal.ZERO;
+
+    @Column(name = "service_tax_amount", precision = 10, scale = 2)
+    private BigDecimal serviceTaxAmount = BigDecimal.ZERO;
+
     @Column(name = "payment_method", length = 100)
     private String paymentMethod;
 
@@ -238,6 +244,22 @@ public class ShopOrder extends HotelScopedEntity {
 
     public void setTaxAmount(BigDecimal taxAmount) {
         this.taxAmount = taxAmount;
+    }
+
+    public BigDecimal getVatAmount() {
+        return vatAmount;
+    }
+
+    public void setVatAmount(BigDecimal vatAmount) {
+        this.vatAmount = vatAmount;
+    }
+
+    public BigDecimal getServiceTaxAmount() {
+        return serviceTaxAmount;
+    }
+
+    public void setServiceTaxAmount(BigDecimal serviceTaxAmount) {
+        this.serviceTaxAmount = serviceTaxAmount;
     }
 
     public String getPaymentMethod() {

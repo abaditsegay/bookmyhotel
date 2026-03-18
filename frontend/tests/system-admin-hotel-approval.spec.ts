@@ -153,7 +153,7 @@ class HotelApprovalPage {
     await this.page.fill('[data-testid="email-input"]', 'admin@bookmyhotel.com');
     
     await this.highlightElement(this.page.locator('[data-testid="password-input"]'), 'Password field');
-    await this.page.fill('[data-testid="password-input"]', 'password123');
+    await this.page.fill('[data-testid="password-input"]', 'admin123');
     
     await this.highlightElement(this.page.locator('[data-testid="login-button"]'), 'Login button');
     await this.page.click('[data-testid="login-button"]');
@@ -449,8 +449,14 @@ test.describe('System Admin - Hotel Approval Functionality', () => {
     await hotelApprovalPage.navigateToHotelRegistrationsTab();
   });
 
-  test('should approve a hotel registration with tenant selection', async () => {
-    // Approve hotel registration with tenant selection
+  test('should approve a hotel registration with tenant selection', async ({ page }) => {
+    // We now have a hotel registration in the database, so let's approve it
+    
+    // Reload to ensure we see the latest data
+    await page.reload();
+    await page.waitForLoadState('networkidle');
+    
+    // Try the approval process
     await hotelApprovalPage.approveHotelRegistration();
     
     // Show success message

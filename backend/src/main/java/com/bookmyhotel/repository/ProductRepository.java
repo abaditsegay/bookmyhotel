@@ -149,9 +149,14 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
        /**
         * Find products with low stock by hotel ID
         */
+       @Query("SELECT p FROM Product p WHERE p.hotel.id = :hotelId AND p.isActive = true AND p.stockQuantity <= p.minimumStockLevel")
+       List<Product> findLowStockProductsByHotelId(@Param("hotelId") Long hotelId);
+
+       /**
+        * Find products with low stock by hotel ID using threshold (for backward compatibility)
+        */
        @Query("SELECT p FROM Product p WHERE p.hotel.id = :hotelId AND p.isActive = true AND p.stockQuantity <= :threshold")
-       List<Product> findLowStockProductsByHotelId(@Param("hotelId") Long hotelId,
-                     @Param("threshold") Integer threshold);
+       List<Product> findLowStockProductsByHotelIdAndThreshold(@Param("hotelId") Long hotelId, @Param("threshold") Integer threshold);
 
        /**
         * Find out of stock products by hotel ID
@@ -160,10 +165,16 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
        List<Product> findOutOfStockProductsByHotelId(@Param("hotelId") Long hotelId);
 
        /**
-        * Count products with low stock by hotel ID
+        * Count products with low stock by hotel ID using individual minimum stock levels
+        */
+       @Query("SELECT COUNT(p) FROM Product p WHERE p.hotel.id = :hotelId AND p.isActive = true AND p.stockQuantity <= p.minimumStockLevel")
+       long countLowStockProductsByHotelId(@Param("hotelId") Long hotelId);
+
+       /**
+        * Count products with low stock by hotel ID using threshold (for backward compatibility)
         */
        @Query("SELECT COUNT(p) FROM Product p WHERE p.hotel.id = :hotelId AND p.isActive = true AND p.stockQuantity <= :threshold")
-       long countLowStockProductsByHotelId(@Param("hotelId") Long hotelId, @Param("threshold") Integer threshold);
+       long countLowStockProductsByHotelIdAndThreshold(@Param("hotelId") Long hotelId, @Param("threshold") Integer threshold);
 
        /**
         * Count out of stock products by hotel ID

@@ -8,7 +8,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -27,7 +26,6 @@ import com.bookmyhotel.service.TenantManagementService;
  */
 @RestController
 @RequestMapping("/api/system")
-@CrossOrigin(origins = "*", maxAge = 3600)
 public class SystemController {
 
     @Autowired
@@ -43,7 +41,7 @@ public class SystemController {
      * Get all hotels across all tenants - System admin only
      */
     @GetMapping("/hotels")
-    @PreAuthorize("hasRole('SYSTEM_ADMIN') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('SUPER_ADMIN') or hasRole('ADMIN')")
     public ResponseEntity<List<HotelDTO>> getAllHotels(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "1000") int size) {
@@ -57,7 +55,7 @@ public class SystemController {
      * Get all system-wide users - System admin only
      */
     @GetMapping("/users")
-    @PreAuthorize("hasRole('SYSTEM_ADMIN') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('SUPER_ADMIN') or hasRole('ADMIN')")
     public ResponseEntity<List<UserManagementResponse>> getAllUsers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "1000") int size) {
@@ -71,7 +69,7 @@ public class SystemController {
      * Get all tenants - System admin only
      */
     @GetMapping("/tenants")
-    @PreAuthorize("hasRole('SYSTEM_ADMIN') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('SUPER_ADMIN') or hasRole('ADMIN')")
     public ResponseEntity<List<TenantDTO>> getAllTenants(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "1000") int size) {
@@ -85,7 +83,7 @@ public class SystemController {
      * Get system statistics - System admin only
      */
     @GetMapping("/statistics")
-    @PreAuthorize("hasRole('SYSTEM_ADMIN') or hasRole('ADMIN')")
+    @PreAuthorize("hasRole('SUPER_ADMIN') or hasRole('ADMIN')")
     public ResponseEntity<SystemStatistics> getSystemStatistics() {
 
         // Get counts from each service

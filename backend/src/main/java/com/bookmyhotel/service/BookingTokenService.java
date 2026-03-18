@@ -2,15 +2,15 @@ package com.bookmyhotel.service;
 
 import java.util.Date;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.bookmyhotel.util.JwtUtil;
-
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
+import javax.crypto.SecretKey;
 
 /**
  * Service for generating and validating booking management tokens
@@ -19,8 +19,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 @Service
 public class BookingTokenService {
 
-    @Autowired
-    private JwtUtil jwtUtil;
+    private static final Logger logger = LoggerFactory.getLogger(BookingTokenService.class);
 
     @Value("${jwt.secret.key}")
     private String jwtSecret;
@@ -36,6 +35,8 @@ public class BookingTokenService {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + BOOKING_TOKEN_VALIDITY);
 
+        SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
+
         return Jwts.builder()
                 .subject("booking:" + reservationId)
                 .claim("reservationId", reservationId)
@@ -43,7 +44,7 @@ public class BookingTokenService {
                 .claim("type", "booking_management")
                 .issuedAt(now)
                 .expiration(expiryDate)
-                .signWith(new javax.crypto.spec.SecretKeySpec(jwtSecret.getBytes(), "HmacSHA512"))
+                .signWith(key)
                 .compact();
     }
 
@@ -52,22 +53,28 @@ public class BookingTokenService {
      */
     public Long validateBookingToken(String token) {
         try {
+            SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
+
             Claims claims = Jwts.parser()
-                    .verifyWith(javax.crypto.spec.SecretKeySpec.class
-                            .cast(new javax.crypto.spec.SecretKeySpec(jwtSecret.getBytes(), "HmacSHA512")))
+                    .verifyWith(key)
                     .build()
                     .parseSignedClaims(token)
                     .getPayload();
 
             String type = claims.get("type", String.class);
             if (!"booking_management".equals(type)) {
+                // System.err.println("JWT validation error: Invalid token type: " + type);
                 return null;
             }
 
-            return claims.get("reservationId", Long.class);
+            Long reservationId = claims.get("reservationId", Long.class);
+            // System.out.println("JWT validation successful for reservation ID: " +
+            // reservationId);
+            return reservationId;
         } catch (Exception e) {
-            System.err.println("JWT validation error: " + e.getClass().getSimpleName() + " - " + e.getMessage());
-            e.printStackTrace();
+            // System.err.println("JWT validation error: " + e.getClass().getSimpleName() +
+            // " - " + e.getMessage());
+            logger.error("Operation failed", e);
             return null;
         }
     }
@@ -77,17 +84,21 @@ public class BookingTokenService {
      */
     public String getGuestEmailFromToken(String token) {
         try {
+            SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
+
             Claims claims = Jwts.parser()
-                    .verifyWith(javax.crypto.spec.SecretKeySpec.class
-                            .cast(new javax.crypto.spec.SecretKeySpec(jwtSecret.getBytes(), "HmacSHA512")))
+                    .verifyWith(key)
                     .build()
                     .parseSignedClaims(token)
                     .getPayload();
 
-            return claims.get("guestEmail", String.class);
+            String email = claims.get("guestEmail", String.class);
+            // System.out.println("JWT email extraction successful: " + email);
+            return email;
         } catch (Exception e) {
-            System.err.println("JWT email extraction error: " + e.getClass().getSimpleName() + " - " + e.getMessage());
-            e.printStackTrace();
+            // System.err.println("JWT email extraction error: " +
+            // e.getClass().getSimpleName() + " - " + e.getMessage());
+            logger.error("Operation failed", e);
             return null;
         }
     }

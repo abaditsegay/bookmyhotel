@@ -1,0 +1,11 @@
+Room Number,Room Type,Capacity,Price Per Night,Description,Status
+101,Standard,2,120.00,Comfortable standard room with city view,Available
+102,Standard,2,120.00,Comfortable standard room with city view,Available
+103,Deluxe,2,180.00,Spacious deluxe room with premium amenities,Available
+201,Suite,4,350.00,Luxurious suite with separate living area,Available
+202,Standard,2,125.00,Standard room on second floor,Available
+203,Deluxe,3,200.00,Deluxe room with extra bed,Available
+301,Premium,2,250.00,Premium room with ocean view,Available
+302,Standard,1,100.00,Cozy single occupancy room,Available
+303,Family,6,300.00,Large family room with bunk beds,Available
+401,Penthouse,4,500.00,Exclusive penthouse with panoramic views,Available

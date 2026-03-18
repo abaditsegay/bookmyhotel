@@ -28,6 +28,9 @@ public class ProductRequest {
     @PositiveOrZero(message = "Stock quantity must be zero or positive")
     private Integer stockQuantity;
 
+    @PositiveOrZero(message = "Minimum stock level must be zero or positive")
+    private Integer minimumStockLevel = 0;
+
     private String sku;
 
     private String imageUrl;
@@ -90,6 +93,14 @@ public class ProductRequest {
 
     public void setStockQuantity(Integer stockQuantity) {
         this.stockQuantity = stockQuantity;
+    }
+
+    public Integer getMinimumStockLevel() {
+        return minimumStockLevel;
+    }
+
+    public void setMinimumStockLevel(Integer minimumStockLevel) {
+        this.minimumStockLevel = minimumStockLevel;
     }
 
     public String getSku() {

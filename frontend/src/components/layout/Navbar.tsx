@@ -24,15 +24,19 @@ import {
   Person as PersonIcon,
   Logout as LogoutIcon,
   Business as BusinessIcon,
-  AppRegistration as RegisterIcon,
   Search as SearchIcon,
   Store as StoreIcon,
   Notifications as NotificationsIcon,
+  Home as HomeIcon,
+  Apartment as ApartmentIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { themeConstants } from '../../theme/theme';
 import { useNotifications } from '../../hooks/useNotifications';
+import NetworkStatusIndicator from '../NetworkStatusIndicator';
+import LanguageSelector from '../common/LanguageSelector';
+
+import { COLORS, addAlpha } from '../../theme/themeColors';
 
 const Navbar: React.FC = () => {
   const navigate = useNavigate();
@@ -56,6 +60,14 @@ const Navbar: React.FC = () => {
 
   const handleNavigation = (path?: string) => {
     if (path) {
+      // Known issue: React Router context doesn't update when navigating from /hotels/search
+      // This is due to the full-width layout with gradient background creating a context boundary
+      // Using direct navigation ensures clean, instant navigation without re-renders
+      if (location.pathname === '/hotels/search') {
+        window.location.href = path;
+        return;
+      }
+      
       navigate(path);
     }
     setMobileDrawerOpen(false);
@@ -83,16 +95,15 @@ const Navbar: React.FC = () => {
   // Helper function to get user role display name
   const getRoleDisplayName = (role: string) => {
     const roleMap: { [key: string]: string } = {
-      'SYSTEM_ADMIN': 'System Admin',
-      'ADMIN': 'System Administrator',
+      'SUPER_ADMIN': 'Super Administrator',
+      'ADMIN': 'Administrator',
       'HOTEL_ADMIN': 'Hotel Administrator',
+      'OPERATIONAL_ADMIN': 'Operational Administrator',
       'FRONTDESK': 'Front Desk Staff',
-      'CUSTOMER': 'Customer', // Registered users with accounts
-      'HOTEL_MANAGER': 'Hotel Manager',
       'HOUSEKEEPING': 'Housekeeping Staff',
-      'OPERATIONS_SUPERVISOR': 'Operations Supervisor',
       'MAINTENANCE': 'Maintenance Staff',
-      'GUEST': 'Guest' // Anonymous users (rarely seen in UI)
+      'CUSTOMER': 'Customer',
+      'GUEST': 'Guest'
     };
     return roleMap[role] || role;
   };
@@ -100,16 +111,15 @@ const Navbar: React.FC = () => {
   // Helper function to get role color
   const getRoleColor = (role: string) => {
     const colorMap: { [key: string]: 'primary' | 'secondary' | 'success' | 'warning' | 'info' | 'error' } = {
-      'SYSTEM_ADMIN': 'error',
+      'SUPER_ADMIN': 'error',
       'ADMIN': 'error',
       'HOTEL_ADMIN': 'primary',
+      'OPERATIONAL_ADMIN': 'primary',
       'FRONTDESK': 'info',
-      'CUSTOMER': 'success', // Registered customers
-      'HOTEL_MANAGER': 'secondary',
       'HOUSEKEEPING': 'warning',
-      'OPERATIONS_SUPERVISOR': 'primary',
       'MAINTENANCE': 'warning',
-      'GUEST': 'secondary' // Anonymous guests
+      'CUSTOMER': 'success',
+      'GUEST': 'secondary'
     };
     return colorMap[role] || 'primary';
   };
@@ -118,26 +128,17 @@ const Navbar: React.FC = () => {
   const shouldShowHotelName = () => {
     // Hide hotel name for system admin and customer users
     if (!user) return true; // Show for anonymous users
-    return user.role !== 'SYSTEM_ADMIN' && user.role !== 'ADMIN' && user.role !== 'CUSTOMER';
+    return user.role !== 'SUPER_ADMIN' && user.role !== 'ADMIN' && user.role !== 'CUSTOMER';
   };
 
   // Navigation items based on user role
   const getNavigationItems = () => {
-    // Book MyStay should only be visible to CUSTOMER, GUEST roles, and non-authenticated users
-    const shouldShowBookMyStay = !user || user.role === 'CUSTOMER' || user.role === 'GUEST';
-    
     const baseItems: { label: string; path?: string; icon: React.ReactNode; action?: () => void }[] = [];
     
-    // Add Book MyStay only for appropriate users
-    if (shouldShowBookMyStay) {
-      baseItems.push({ label: 'Book MyStay', path: '/hotels/search', icon: <SearchIcon /> });
-    }
+    // No base navigation items for guests - they will use guest action buttons instead
 
     if (user) {
-      // For system admin and admin, show minimal navigation without Book MyStay
-      if (user.role === 'SYSTEM_ADMIN' || user.role === 'ADMIN') {
-        return [...baseItems];
-      }
+
 
       // For hotel admin, show notifications and shop navigation
       if (user.role === 'HOTEL_ADMIN') {
@@ -173,9 +174,9 @@ const Navbar: React.FC = () => {
         return [...baseItems, ...frontdeskItems];
       }
 
-      // For operations supervisor, don't show operations dashboard link since it's their landing page
-      if (user.role === 'OPERATIONS_SUPERVISOR') {
-        // Operations supervisors land directly on their dashboard, no additional nav needed
+      // For operational admin, don't show operations dashboard link since it's their landing page
+      if (user.role === 'OPERATIONAL_ADMIN') {
+        // Operational admins land directly on their dashboard, no additional nav needed
         return [...baseItems];
       }
 
@@ -197,11 +198,11 @@ const Navbar: React.FC = () => {
         return [...baseItems, ...customerItems];
       }
 
-      // For other roles (like HOUSEKEEPING, HOTEL_MANAGER), show only base items (which won't include Book MyStay)
+      // For other roles (like HOUSEKEEPING), show only base items
       return [...baseItems];
     }
 
-    // For non-authenticated users, show Book MyStay
+    // For non-authenticated users, show base items (none)
     return baseItems;
   };
 
@@ -225,15 +226,19 @@ const Navbar: React.FC = () => {
             mx: 0.5,
             borderRadius: 2,
             fontSize: '0.8rem', // Smaller font size
+            fontWeight: item.label === 'Shop' ? 700 : user ? 'bold' : 'normal', // Bold for Shop and authenticated users
+            textTransform: 'none', // Disable all caps
+            color: item.label === 'Shop' ? COLORS.WHITE : getTextColor(),
             backgroundColor: item.label === 'Shop' 
-              ? 'red' 
+              ? theme.palette.success.main
               : item.path && isActivePath(item.path) 
-                ? 'rgba(255, 255, 255, 0.1)' 
+                ? getActiveBackground()
                 : 'transparent',
             '&:hover': {
               backgroundColor: item.label === 'Shop' 
-                ? 'error.dark' 
-                : 'rgba(255, 255, 255, 0.1)',
+                ? theme.palette.success.dark
+                : getHoverBackground(),
+              color: item.label === 'Shop' ? COLORS.WHITE : getTextColor(),
             },
             // Ensure proper stacking and boundaries
             position: 'relative',
@@ -290,27 +295,33 @@ const Navbar: React.FC = () => {
             onClick={() => handleItemClick(item)}
             sx={{
               cursor: 'pointer',
-              backgroundColor: item.label === 'Hotel Shop' 
-                ? theme.palette.error.main
+              backgroundColor: item.label === 'Shop' 
+                ? theme.palette.success.main
                 : item.path && isActivePath(item.path) 
                   ? theme.palette.action.selected 
                   : 'transparent',
               '&:hover': {
-                backgroundColor: item.label === 'Hotel Shop' 
-                  ? theme.palette.error.dark
+                backgroundColor: item.label === 'Shop' 
+                  ? theme.palette.success.dark
                   : theme.palette.action.hover,
               },
             }}
           >
-            <ListItemIcon sx={{ color: item.path && isActivePath(item.path) ? theme.palette.primary.main : 'inherit' }}>
+            <ListItemIcon sx={{ 
+              color: item.label === 'Shop' 
+                ? COLORS.WHITE
+                : item.path && isActivePath(item.path) ? theme.palette.primary.main : 'inherit' 
+            }}>
               {item.icon}
             </ListItemIcon>
             <ListItemText 
               primary={item.label}
               sx={{ 
                 '& .MuiListItemText-primary': {
-                  fontWeight: item.path && isActivePath(item.path) ? 600 : 400,
-                  color: item.path && isActivePath(item.path) ? theme.palette.primary.main : 'inherit',
+                  fontWeight: item.label === 'Shop' ? 700 : item.path && isActivePath(item.path) ? 600 : 400,
+                  color: item.label === 'Shop' 
+                    ? COLORS.WHITE
+                    : item.path && isActivePath(item.path) ? theme.palette.primary.main : 'inherit',
                 }
               }}
             />
@@ -320,17 +331,33 @@ const Navbar: React.FC = () => {
         {/* Additional items for non-authenticated users */}
         {!user && (
           <>
+            <ListItem onClick={() => handleNavigation('/')} sx={{ cursor: 'pointer' }}>
+              <ListItemIcon>
+                <HomeIcon />
+              </ListItemIcon>
+              <ListItemText primary="Home" />
+            </ListItem>
+            <ListItem onClick={() => {
+              toggleMobileDrawer();
+              if (location.pathname === '/') {
+                document.getElementById('partner-section')?.scrollIntoView({ behavior: 'smooth' });
+              } else {
+                navigate('/');
+                setTimeout(() => {
+                  document.getElementById('partner-section')?.scrollIntoView({ behavior: 'smooth' });
+                }, 500);
+              }
+            }} sx={{ cursor: 'pointer' }}>
+              <ListItemIcon>
+                <ApartmentIcon />
+              </ListItemIcon>
+              <ListItemText primary="Hotel Registration" />
+            </ListItem>
             <ListItem onClick={() => handleNavigation('/find-booking')} sx={{ cursor: 'pointer' }}>
               <ListItemIcon>
                 <BusinessIcon />
               </ListItemIcon>
-              <ListItemText primary="Find Booking" />
-            </ListItem>
-            <ListItem onClick={() => handleNavigation('/register-hotel')} sx={{ cursor: 'pointer' }}>
-              <ListItemIcon>
-                <RegisterIcon />
-              </ListItemIcon>
-              <ListItemText primary="Register" />
+              <ListItemText primary="My Reservation" />
             </ListItem>
           </>
         )}
@@ -357,6 +384,7 @@ const Navbar: React.FC = () => {
       anchorEl={anchorEl}
       open={Boolean(anchorEl)}
       onClose={handleMenuClose}
+      aria-label="User account menu"
       PaperProps={{
         sx: {
           mt: 1.5,
@@ -368,58 +396,95 @@ const Navbar: React.FC = () => {
         },
       }}
     >
-      <MenuItem onClick={() => handleNavigation('/profile')}>
-        <PersonIcon sx={{ mr: 1 }} />
+      <MenuItem onClick={() => handleNavigation('/profile')} aria-label="Go to profile page">
+        <PersonIcon sx={{ mr: 1 }} aria-hidden="true" />
         Profile
       </MenuItem>
       {user?.role === 'CUSTOMER' && (
         <>
-          <MenuItem onClick={() => handleNavigation('/hotels/search')}>
-            <SearchIcon sx={{ mr: 1 }} />
+          <MenuItem onClick={() => handleNavigation('/hotels/search')} aria-label="Search for hotels">
+            <SearchIcon sx={{ mr: 1 }} aria-hidden="true" />
             Hotel Search
           </MenuItem>
-          <MenuItem onClick={() => handleNavigation('/my-bookings')}>
-            <BusinessIcon sx={{ mr: 1 }} />
+          <MenuItem onClick={() => handleNavigation('/my-bookings')} aria-label="View my bookings">
+            <BusinessIcon sx={{ mr: 1 }} aria-hidden="true" />
             My Bookings
           </MenuItem>
         </>
       )}
       <Divider />
-      <MenuItem onClick={handleLogout}>
-        <LogoutIcon sx={{ mr: 1 }} />
+      <MenuItem onClick={handleLogout} aria-label="Logout from account">
+        <LogoutIcon sx={{ mr: 1 }} aria-hidden="true" />
         Logout
       </MenuItem>
     </Menu>
   );
 
+  // Helper function to get hover background based on authentication state
+  const getHoverBackground = () => {
+    // Use white overlay for all users with the blue background
+    return addAlpha(COLORS.WHITE, 0.1);
+  };
+
+  // Helper function to get active background based on authentication state
+  const getActiveBackground = () => {
+    // Use white overlay for all users with the blue background
+    return addAlpha(COLORS.WHITE, 0.2);
+  };
+
+  // Helper function to get text color based on authentication state
+  const getTextColor = () => {
+    // For both authenticated users and guests with dark backgrounds, use white text
+    if (user) {
+      return COLORS.WHITE; // White text on navy blue background
+    }
+    // For guest booking with blue background, use white text
+    return COLORS.WHITE;
+  };
+
+  // Helper function to get navbar background based on authentication state
+  const getNavbarBackground = () => {
+    // Use the same blue gradient for both authenticated and guest users
+    return {
+      backgroundColor: theme.palette.primary.main,
+      backgroundImage: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+    };
+  };
+
   return (
     <>
       <AppBar 
-        position="sticky" 
-        elevation={2}
+        position="fixed" 
+        elevation={2} // Add subtle elevation for better visual separation
         sx={{
-          backgroundColor: theme.palette.primary.main,
-          backgroundImage: (theme) => theme.custom.constants.gradients.primaryButton,
-          height: 'auto', // Allow AppBar to grow with content
+          ...getNavbarBackground(),
+          height: 70, // Fixed height to prevent movement
+          zIndex: theme.zIndex.appBar, // Ensure proper z-index above sidebar
+          top: 0, // Explicitly set top position
+          left: 0, // Explicitly set left position
+          right: 0, // Explicitly set right position
         }}
       >
         <Toolbar 
           sx={{ 
             justifyContent: 'space-between',
-            minHeight: 56, // Compact navbar height
-            height: 'auto', // Allow toolbar to grow
+            minHeight: 70, // Fixed height to match AppBar
+            height: 70, // Fixed height to prevent movement
             alignItems: 'center', // Center items vertically
-            py: 1 // Reduced padding for compact look
+            py: 0, // Remove padding to maintain fixed height
+            px: { xs: 1, sm: 2 }, // Responsive padding
+            margin: 0, // Ensure no margin
           }}
           disableGutters={false}
         >
-          {/* Left Section: Logo + Mobile Menu */}
+          {/* Left Section: Mobile Menu + Theme Toggle + Logo */}
           <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+            {/* Mobile Menu - Leftmost position on mobile */}
             {isMobile && (
               <IconButton
                 edge="start"
                 color="inherit"
-                aria-label="menu"
+                aria-label="Open navigation menu"
                 onClick={toggleMobileDrawer}
                 sx={{ mr: 1 }}
               >
@@ -427,49 +492,73 @@ const Navbar: React.FC = () => {
               </IconButton>
             )}
             
-            {/* Logo */}
-            <Box 
-              sx={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                cursor: 'pointer',
-                '&:hover': { opacity: 0.9 },
-                height: 'auto', // Let container size naturally
-              }}
-              onClick={() => handleNavigation('/')}
-            >
-              <Box
-                component="img"
-                src="/logo.svg" 
-                alt="BookMyHotel" 
-                sx={{ 
-                  height: 32, // Compact logo for compact navbar
-                  width: 'auto', // Maintain aspect ratio
-                  maxHeight: 32, // Prevent shrinking
-                  minHeight: 32, // Prevent shrinking
-                  objectFit: 'contain', // Ensure proper scaling
+            {/* Language Selector - After mobile menu */}
+            <LanguageSelector variant="icon" size="small" />
+            
+            {/* Dashboard Link - Only for logged-in users */}
+            {user && (
+              <Box 
+                component="button"
+                role="link"
+                aria-label="Go to dashboard"
+                tabIndex={0}
+                onKeyPress={(e: React.KeyboardEvent) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    handleNavigation('/');
+                  }
                 }}
-              />
-            </Box>
+                sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  cursor: 'pointer',
+                  '&:hover': { opacity: 0.9 },
+                  height: 'auto',
+                  ml: 1,
+                  border: 'none',
+                  background: 'transparent',
+                  padding: 0,
+                }}
+                onClick={() => handleNavigation('/')}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontWeight: 600,
+                    color: COLORS.WHITE,
+                    fontSize: { xs: '1.1rem', md: '1.25rem' },
+                    letterSpacing: '0.02em',
+                  }}
+                >
+                  Dashboard
+                </Typography>
+              </Box>
+            )}
           </Box>
 
-          {/* Center Section: Hotel Name for Hotel Admin and Front Desk */}
+          {/* Center Section: Hotel Name for Hotel Admin and Front Desk - Hidden on Mobile */}
           {user && user.hotelName && shouldShowHotelName() && (
-            <Box sx={{ display: 'flex', justifyContent: 'center', flex: 1 }}>
+            <Box sx={{ 
+              display: { xs: 'none', md: 'flex' }, // Hide on mobile (xs and sm), show on md and up
+              justifyContent: 'center', 
+              flex: 1 
+            }}>
               <Typography 
                 variant="h4" 
                 component="div" 
                 sx={{ 
-                  fontWeight: 'bold',
-                  color: themeConstants.brandGold,
+                  fontWeight: 900,
+                  fontFamily: '"Pacifico", "Lobster", cursive',
+                  fontStyle: 'italic',
+                  color: COLORS.GOLD,
                   textAlign: 'center',
-                  fontSize: { xs: '1.2rem', sm: '1.8rem', md: '2rem' },
-                  textShadow: themeConstants.shadows.textShadow,
-                  // Allow text to wrap and display fully
-                  whiteSpace: 'normal',
-                  wordBreak: 'break-word',
-                  maxWidth: themeConstants.headerMaxWidths,
+                  fontSize: { md: '2rem', lg: '2.5rem' },
+                  textShadow: `3px 3px 6px ${addAlpha(COLORS.BLACK, 0.4)}`,
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  maxWidth: '500px',
                   lineHeight: 1.2,
+                  letterSpacing: '0.03em',
                 }}
               >
                 {user.hotelName}
@@ -477,9 +566,9 @@ const Navbar: React.FC = () => {
             </Box>
           )}
 
-          {/* For users who shouldn't see hotel name, show navigation in center */}
-          {(!user || !user.hotelName || !shouldShowHotelName()) && (
-            <Box sx={{ display: 'flex', justifyContent: 'center', flex: 1 }}>
+          {/* For users who shouldn't see hotel name, or on mobile, show navigation in center */}
+          {user && (!user.hotelName || !shouldShowHotelName() || isMobile) && (
+            <Box sx={{ display: { xs: 'none', md: 'flex' }, justifyContent: 'center', flex: 1 }}>
               <DesktopNavigation />
             </Box>
           )}
@@ -501,8 +590,8 @@ const Navbar: React.FC = () => {
                   variant="outlined"
                   data-testid="user-role"
                   sx={{ 
-                    color: 'white', 
-                    borderColor: 'rgba(255, 255, 255, 0.5)',
+                    color: COLORS.WHITE, 
+                    borderColor: user ? addAlpha(COLORS.WHITE, 0.7) : addAlpha(COLORS.WHITE, 0.5),
                     fontSize: '0.75rem',
                     fontWeight: 500,
                     display: { xs: 'none', sm: 'flex' }, // Hide on mobile to save space
@@ -511,8 +600,16 @@ const Navbar: React.FC = () => {
                   }}
                 />
                 
+                {/* Network Status Indicator - Only for staff/admin roles */}
+                {user.roles && user.roles.some(role => ['HOTEL_ADMIN', 'ADMIN', 'SUPER_ADMIN', 'FRONTDESK', 'HOUSEKEEPING', 'MAINTENANCE', 'OPERATIONAL_ADMIN'].includes(role)) && (
+                  <NetworkStatusIndicator 
+                    variant="minimal" 
+                    className="network-status-navbar"
+                  />
+                )}
+                
                 {/* User Icon & Menu */}
-                <IconButton onClick={handleMenuOpen} sx={{ p: 0.5, color: 'white', position: 'relative', zIndex: 10 }}>
+                <IconButton onClick={handleMenuOpen} sx={{ p: 0.5, color: getTextColor(), position: 'relative', zIndex: 10 }}>
                   <PersonIcon sx={{ fontSize: 28 }} />
                 </IconButton>
                 <UserMenu />
@@ -524,25 +621,53 @@ const Navbar: React.FC = () => {
                   <>
                     <Button
                       color="inherit"
+                      onClick={() => handleNavigation('/')}
+                      startIcon={<HomeIcon />}
+                      sx={{
+                        borderRadius: 2,
+                        fontSize: '0.8rem',
+                        fontWeight: 'normal',
+                        textTransform: 'none',
+                        '&:hover': { backgroundColor: getHoverBackground() },
+                      }}
+                    >
+                      Home
+                    </Button>
+                    <Button
+                      color="inherit"
+                      onClick={() => {
+                        if (location.pathname === '/') {
+                          document.getElementById('partner-section')?.scrollIntoView({ behavior: 'smooth' });
+                        } else {
+                          navigate('/');
+                          setTimeout(() => {
+                            document.getElementById('partner-section')?.scrollIntoView({ behavior: 'smooth' });
+                          }, 500);
+                        }
+                      }}
+                      startIcon={<ApartmentIcon />}
+                      sx={{
+                        borderRadius: 2,
+                        fontSize: '0.8rem',
+                        fontWeight: 'normal',
+                        textTransform: 'none',
+                        '&:hover': { backgroundColor: getHoverBackground() },
+                      }}
+                    >
+                      Hotel Registration
+                    </Button>
+                    <Button
+                      color="inherit"
                       onClick={() => handleNavigation('/find-booking')}
                       sx={{
                         borderRadius: 2,
                         fontSize: '0.8rem', // Smaller font size
+                        fontWeight: user ? 'bold' : 'normal', // Bold for authenticated users
+                        textTransform: 'none', // Disable all caps
                         '&:hover': { backgroundColor: 'action.hover' },
                       }}
                     >
-                      Find Booking
-                    </Button>
-                    <Button
-                      color="inherit"
-                      onClick={() => handleNavigation('/register-hotel')}
-                      sx={{
-                        borderRadius: 2,
-                        fontSize: '0.8rem', // Smaller font size
-                        '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' },
-                      }}
-                    >
-                      Register
+                      My Reservation
                     </Button>
                   </>
                 )}
@@ -552,7 +677,9 @@ const Navbar: React.FC = () => {
                   sx={{
                     borderRadius: 2,
                     fontSize: '0.8rem', // Smaller font size
-                    '&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.1)' },
+                    fontWeight: user ? 'bold' : 'normal', // Bold for authenticated users
+                    textTransform: 'none', // Disable all caps
+                    '&:hover': { backgroundColor: getHoverBackground() },
                   }}
                 >
                   Login

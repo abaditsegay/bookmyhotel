@@ -62,7 +62,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
         */
        @Query("SELECT r FROM Reservation r " +
                      "WHERE r.checkInDate = :date " +
-                     "AND r.status = com.bookmyhotel.entity.ReservationStatus.CONFIRMED " +
+                     "AND r.status = com.bookmyhotel.entity.ReservationStatus.BOOKED " +
                      "AND r.hotel.id = :hotelId")
        List<Reservation> findUpcomingCheckInsByHotelId(@Param("date") LocalDate date,
                      @Param("hotelId") Long hotelId);
@@ -83,11 +83,22 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
        Optional<Reservation> findByPaymentIntentId(String paymentIntentId);
 
        /**
+        * Find reservation by payment reference ID
+        */
+       Optional<Reservation> findByPaymentReference(String paymentReference);
+
+       /**
+        * Find reservation by payment reference ID (public search across all tenants)
+        */
+       @Query("SELECT r FROM Reservation r JOIN FETCH r.hotel WHERE r.paymentReference = ?1")
+       Optional<Reservation> findByPaymentReferencePublic(String paymentReference);
+
+       /**
         * Find upcoming check-ins
         */
        @Query("SELECT r FROM Reservation r " +
                      "WHERE r.checkInDate = :date " +
-                     "AND r.status = com.bookmyhotel.entity.ReservationStatus.CONFIRMED")
+                     "AND r.status = com.bookmyhotel.entity.ReservationStatus.BOOKED")
        List<Reservation> findUpcomingCheckIns(@Param("date") LocalDate date);
 
        /**
@@ -142,25 +153,29 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
                      @Param("statuses") Set<ReservationStatus> statuses);
 
        /**
-        * Search reservations by guest name, room number, or confirmation number with
+        * Search reservations by guest name, room number, confirmation number, or
+        * payment reference with
         * pagination (updated for new structure)
         */
        @Query("SELECT r FROM Reservation r " +
                      "WHERE LOWER(r.guestInfo.name) LIKE LOWER(CONCAT('%', :search, '%')) " +
                      "OR LOWER(COALESCE(r.assignedRoom.roomNumber, 'TBA')) LIKE LOWER(CONCAT('%', :search, '%')) " +
                      "OR LOWER(r.confirmationNumber) LIKE LOWER(CONCAT('%', :search, '%')) " +
+                     "OR LOWER(COALESCE(r.paymentReference, '')) LIKE LOWER(CONCAT('%', :search, '%')) " +
                      "ORDER BY r.checkInDate DESC")
        Page<Reservation> findByGuestNameOrRoomNumberOrConfirmationNumber(@Param("search") String search,
                      Pageable pageable);
 
        /**
-        * Search reservations by guest name, room number, or confirmation number with
+        * Search reservations by guest name, room number, confirmation number, or
+        * payment reference with
         * pagination and tenant filtering (updated for new structure)
         */
        @Query("SELECT r FROM Reservation r " +
                      "WHERE (LOWER(r.guestInfo.name) LIKE LOWER(CONCAT('%', :search, '%')) " +
                      "OR LOWER(COALESCE(r.assignedRoom.roomNumber, 'TBA')) LIKE LOWER(CONCAT('%', :search, '%')) " +
-                     "OR LOWER(r.confirmationNumber) LIKE LOWER(CONCAT('%', :search, '%'))) " +
+                     "OR LOWER(r.confirmationNumber) LIKE LOWER(CONCAT('%', :search, '%')) " +
+                     "OR LOWER(COALESCE(r.paymentReference, '')) LIKE LOWER(CONCAT('%', :search, '%'))) " +
                      "AND r.hotel.id = :hotelId " +
                      "ORDER BY r.checkInDate DESC")
        Page<Reservation> findByGuestNameOrRoomNumberOrConfirmationNumberAndHotelId(@Param("search") String search,
@@ -186,11 +201,37 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
        /**
         * Find active reservations by guest email (for uniqueness validation)
+        * 
+        * @deprecated Use findOverlappingActiveReservations instead for date-based
+        *             checking
         */
+       @Deprecated
        @Query("SELECT r FROM Reservation r " +
                      "WHERE r.guestInfo.email = :email " +
                      "AND r.status NOT IN ('CANCELLED', 'NO_SHOW', 'CHECKED_OUT')")
        List<Reservation> findActiveReservationsByGuestEmail(@Param("email") String email);
+
+       /**
+        * Find overlapping active reservations by guest email and date range
+        * This allows multiple bookings with the same email as long as dates don't
+        * overlap
+        */
+       @Query("SELECT r FROM Reservation r " +
+                     "WHERE r.guestInfo.email = :email " +
+                     "AND r.status IN ('BOOKED', 'CHECKED_IN') " +
+                     "AND NOT (r.checkOutDate <= :newCheckInDate OR r.checkInDate >= :newCheckOutDate)")
+       List<Reservation> findOverlappingActiveReservations(
+                     @Param("email") String email,
+                     @Param("newCheckInDate") LocalDate newCheckInDate,
+                     @Param("newCheckOutDate") LocalDate newCheckOutDate);
+
+       /**
+        * Find expired PENDING reservations for auto-cancellation
+        */
+       @Query("SELECT r FROM Reservation r " +
+                     "WHERE r.status = com.bookmyhotel.entity.ReservationStatus.PENDING " +
+                     "AND r.createdAt < :cutoffTime")
+       List<Reservation> findExpiredPendingReservations(@Param("cutoffTime") java.time.LocalDateTime cutoffTime);
 
        /**
         * Find expired checked-in reservations (for auto-checkout)
@@ -199,4 +240,43 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
                      "WHERE r.status = com.bookmyhotel.entity.ReservationStatus.CHECKED_IN " +
                      "AND r.checkOutDate < :currentDate")
        List<Reservation> findExpiredCheckedInReservations(@Param("currentDate") LocalDate currentDate);
+
+       /**
+        * Find reservations by hotel ID and date range for financial audit
+        */
+       @Query("SELECT r FROM Reservation r " +
+                     "WHERE r.hotel.id = :hotelId " +
+                     "AND ((r.checkInDate <= :endDate AND r.checkOutDate >= :startDate) " +
+                     "OR (r.createdAt >= :startDate AND r.createdAt <= :endDate))")
+       List<Reservation> findByHotelIdAndDateRange(@Param("hotelId") Long hotelId,
+                     @Param("startDate") java.time.LocalDateTime startDate,
+                     @Param("endDate") java.time.LocalDateTime endDate);
+
+       /**
+        * Find reservations by assigned room
+        */
+       List<Reservation> findByAssignedRoom(com.bookmyhotel.entity.Room room);
+
+       /**
+        * Find reservations by assigned room and status
+        */
+       List<Reservation> findByAssignedRoomAndStatusIn(com.bookmyhotel.entity.Room room,
+                     List<ReservationStatus> statuses);
+
+       /**
+        * Check if a room is booked by OTHER reservations during a specific date range
+        * Excludes the current reservation from the check
+        */
+       @Query("SELECT COUNT(r) > 0 FROM Reservation r " +
+                     "WHERE r.assignedRoom.id = :roomId " +
+                     "AND r.hotel.id = :hotelId " +
+                     "AND r.id != :excludeReservationId " +
+                     "AND r.status NOT IN ('CANCELLED', 'NO_SHOW') " +
+                     "AND NOT (r.checkOutDate <= :checkInDate OR r.checkInDate >= :checkOutDate)")
+       boolean existsByAssignedRoomAndDateRangeExcludingReservation(
+                     @Param("roomId") Long roomId,
+                     @Param("checkInDate") LocalDate checkInDate,
+                     @Param("checkOutDate") LocalDate checkOutDate,
+                     @Param("excludeReservationId") Long excludeReservationId,
+                     @Param("hotelId") Long hotelId);
 }

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { COLORS } from '../../theme/themeColors';
 import {
   Paper,
   Table,
@@ -10,7 +11,6 @@ import {
   TablePagination,
   IconButton,
   Button,
-  TextField,
   InputAdornment,
   Box,
   Typography,
@@ -21,16 +21,12 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  FormControl,
-  InputLabel,
-  Select,
   MenuItem,
   Grid,
   Avatar,
 } from '@mui/material';
 import {
   Search as SearchIcon,
-  Delete as DeleteIcon,
   Visibility as ViewIcon,
   Refresh as RefreshIcon,
   Add as AddIcon,
@@ -48,6 +44,8 @@ import {
   CreateTenantRequest, 
   UpdateTenantRequest 
 } from '../../services/adminApi';
+import PremiumTextField from '../../components/common/PremiumTextField';
+import PremiumSelect from '../../components/common/PremiumSelect';
 
 interface TenantFilters {
   search: string;
@@ -71,7 +69,6 @@ const TenantManagementAdmin: React.FC = () => {
   // Dialog states
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
   const [selectedTenant, setSelectedTenant] = useState<TenantDTO | null>(null);
 
@@ -88,8 +85,6 @@ const TenantManagementAdmin: React.FC = () => {
     description: '',
   });
 
-  const statusOptions = ['ALL', 'ACTIVE', 'INACTIVE'];
-
   // Set token in API service when component mounts
   useEffect(() => {
     if (token) {
@@ -104,30 +99,40 @@ const TenantManagementAdmin: React.FC = () => {
       setLoading(true);
       setError(null);
       
+      // Convert status filter to boolean for API
+      let isActiveFilter: boolean | undefined = undefined;
+      if (filters.status === 'ACTIVE') {
+        isActiveFilter = true;
+      } else if (filters.status === 'INACTIVE') {
+        isActiveFilter = false;
+      }
+      // If status is 'ALL' or empty, leave isActiveFilter as undefined
+      
       const response = await adminApiService.getTenants(
         page,
         rowsPerPage,
-        filters.search || undefined
+        filters.search || undefined,
+        isActiveFilter
       );
       
-      console.log('Tenant API Response:', response);
+      // console.log('Tenant API Response:', response);
       if (response.content) {
         setTenants(response.content);
         // Spring Boot Page object has totalElements directly on the response
         const totalCount = response.totalElements || response.page?.totalElements || response.content.length || 0;
         setTotalElements(totalCount);
-        console.log('Total Elements:', totalCount, 'Response structure:', { 
-          hasPage: !!response.page, 
-          pageTotalElements: response.page?.totalElements,
-          directTotalElements: response.totalElements,
-          contentLength: response.content.length 
-        });
+        // console.log('Total Elements:', totalCount, 'Response structure:', { 
+        //   hasPage: !!response.page, 
+        //   pageTotalElements: response.page?.totalElements,
+        //   directTotalElements: response.totalElements,
+        //   contentLength: response.content.length 
+        // });
       } else {
         setError('Failed to load tenants');
         setTotalElements(0);
       }
     } catch (err) {
-      console.error('Error loading tenants:', err);
+      // console.error('Error loading tenants:', err);
       setError('Failed to load tenants. Please try again.');
       setTotalElements(0);
     } finally {
@@ -138,11 +143,11 @@ const TenantManagementAdmin: React.FC = () => {
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       loadTenants();
-    }, filters.search ? 500 : 0); // Debounce search
+    }, filters.search ? 500 : 0); // Debounce search, but load immediately for status changes
 
     return () => clearTimeout(timeoutId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loadTenants, filters.search]);
+  }, [loadTenants, filters.search, filters.status]);
 
   // Memoized search handler to prevent input focus loss
   const handleSearchChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
@@ -196,7 +201,7 @@ const TenantManagementAdmin: React.FC = () => {
       await loadTenants();
       setError(null);
     } catch (err) {
-      console.error('Error creating tenant:', err);
+      // console.error('Error creating tenant:', err);
       setError('Failed to create tenant. Please check if the name and subdomain are unique.');
     } finally {
       setLoading(false);
@@ -214,26 +219,8 @@ const TenantManagementAdmin: React.FC = () => {
       await loadTenants();
       setError(null);
     } catch (err) {
-      console.error('Error updating tenant:', err);
+      // console.error('Error updating tenant:', err);
       setError('Failed to update tenant.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDeleteTenant = async () => {
-    if (!selectedTenant || !token) return;
-    
-    try {
-      setLoading(true);
-      await adminApiService.deleteTenant(selectedTenant.tenantId);
-      setDeleteDialogOpen(false);
-      setSelectedTenant(null);
-      await loadTenants();
-      setError(null);
-    } catch (err) {
-      console.error('Error deleting tenant:', err);
-      setError('Failed to delete tenant.');
     } finally {
       setLoading(false);
     }
@@ -248,7 +235,7 @@ const TenantManagementAdmin: React.FC = () => {
       await loadTenants();
       setError(null);
     } catch (err) {
-      console.error('Error toggling tenant status:', err);
+      // console.error('Error toggling tenant status:', err);
       setError('Failed to update tenant status.');
     } finally {
       setLoading(false);
@@ -263,11 +250,6 @@ const TenantManagementAdmin: React.FC = () => {
       description: tenant.description || '',
     });
     setEditDialogOpen(true);
-  };
-
-  const openDeleteDialog = (tenant: TenantDTO) => {
-    setSelectedTenant(tenant);
-    setDeleteDialogOpen(true);
   };
 
   const getStatusColor = (isActive: boolean) => {
@@ -296,13 +278,12 @@ const TenantManagementAdmin: React.FC = () => {
     <Box sx={{ width: '100%', p: 3 }}>
       <Box sx={{ py: 4 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-          <IconButton
-            onClick={() => navigate('/system-dashboard')}
-            sx={{ mr: 2 }}
-          >
-            <ArrowBackIcon />
-          </IconButton>
-          <Typography variant="h5" component="h1" sx={{ flexGrow: 1 }}>
+          <Typography variant="h5" component="h1" sx={{ 
+            flexGrow: 1,
+            color: COLORS.PRIMARY,
+            fontWeight: 600,
+            letterSpacing: '0.5px'
+          }}>
             Tenant Management
           </Typography>
           <Button
@@ -324,7 +305,7 @@ const TenantManagementAdmin: React.FC = () => {
         <Paper sx={{ p: 2, mb: 2 }}>
           <Grid container spacing={2} alignItems="center">
             <Grid item xs={12} md={4}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Search tenants..."
                 value={filters.search}
@@ -339,19 +320,16 @@ const TenantManagementAdmin: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12} md={3}>
-              <FormControl fullWidth>
-                <InputLabel>Status</InputLabel>
-                <Select
-                  value={filters.status}
-                  label="Status"
-                  onChange={(e) => handleFilterChange('status', e.target.value)}
-                >
-                  <MenuItem value="">All Status</MenuItem>
-                  {statusOptions.filter(status => status !== 'ALL').map(status => (
-                    <MenuItem key={status} value={status}>{status}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+              <PremiumSelect
+                fullWidth
+                label="Status"
+                value={filters.status}
+                onChange={(e) => handleFilterChange('status', e.target.value)}
+              >
+                <MenuItem value="">All Status</MenuItem>
+                <MenuItem value="ACTIVE">Active</MenuItem>
+                <MenuItem value="INACTIVE">Inactive</MenuItem>
+              </PremiumSelect>
             </Grid>
             <Grid item xs={12} md={5}>
               <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
@@ -378,7 +356,22 @@ const TenantManagementAdmin: React.FC = () => {
           <TableContainer>
             <Table>
               <TableHead>
-                <TableRow>
+                <TableRow
+                  sx={{
+                    background: `linear-gradient(135deg, ${COLORS.BG_DEFAULT} 0%, ${COLORS.BG_LIGHT} 100%)`,
+                    borderBottom: `2px solid ${COLORS.SECONDARY}`,
+                    '& .MuiTableCell-head': {
+                      color: COLORS.PRIMARY,
+                      fontWeight: 700,
+                      fontSize: '0.875rem',
+                      letterSpacing: '0.5px',
+                      textTransform: 'uppercase',
+                      border: 'none',
+                      padding: '20px 16px',
+                      position: 'relative'
+                    }
+                  }}
+                >
                   <TableCell>Tenant</TableCell>
                   <TableCell>Subdomain</TableCell>
                   <TableCell>Description</TableCell>
@@ -457,14 +450,6 @@ const TenantManagementAdmin: React.FC = () => {
                           >
                             {tenant.isActive ? <ToggleOnIcon /> : <ToggleOffIcon />}
                           </IconButton>
-                          <IconButton
-                            size="small"
-                            onClick={() => openDeleteDialog(tenant)}
-                            title="Delete Tenant"
-                            color="error"
-                          >
-                            <DeleteIcon />
-                          </IconButton>
                         </Box>
                       </TableCell>
                     </TableRow>
@@ -495,7 +480,7 @@ const TenantManagementAdmin: React.FC = () => {
           <DialogContent>
             <Grid container spacing={2} sx={{ mt: 1 }}>
               <Grid item xs={12}>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="Tenant Name"
                   value={tenantForm.name || ''}
@@ -504,7 +489,7 @@ const TenantManagementAdmin: React.FC = () => {
                 />
               </Grid>
               <Grid item xs={12}>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="Subdomain (Optional)"
                   value={tenantForm.subdomain || ''}
@@ -513,7 +498,7 @@ const TenantManagementAdmin: React.FC = () => {
                 />
               </Grid>
               <Grid item xs={12}>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="Description"
                   value={tenantForm.description || ''}
@@ -547,7 +532,7 @@ const TenantManagementAdmin: React.FC = () => {
           <DialogContent>
             <Grid container spacing={2} sx={{ mt: 1 }}>
               <Grid item xs={12}>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="Tenant Name"
                   value={editForm.name || ''}
@@ -556,7 +541,7 @@ const TenantManagementAdmin: React.FC = () => {
                 />
               </Grid>
               <Grid item xs={12}>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="Subdomain (Optional)"
                   value={editForm.subdomain || ''}
@@ -565,7 +550,7 @@ const TenantManagementAdmin: React.FC = () => {
                 />
               </Grid>
               <Grid item xs={12}>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="Description"
                   value={editForm.description || ''}
@@ -588,31 +573,6 @@ const TenantManagementAdmin: React.FC = () => {
           </DialogActions>
         </Dialog>
 
-        {/* Delete Confirmation Dialog */}
-        <Dialog
-          open={deleteDialogOpen}
-          onClose={() => setDeleteDialogOpen(false)}
-        >
-          <DialogTitle>Confirm Delete</DialogTitle>
-          <DialogContent>
-            <Typography>
-              Are you sure you want to delete tenant "{selectedTenant?.name}"? 
-              This action cannot be undone and will permanently remove all associated data.
-            </Typography>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
-            <Button 
-              onClick={handleDeleteTenant}
-              variant="contained"
-              color="error"
-              disabled={loading}
-            >
-              Delete
-            </Button>
-          </DialogActions>
-        </Dialog>
-
         {/* Details Dialog */}
         <Dialog
           open={detailsDialogOpen}
@@ -625,74 +585,67 @@ const TenantManagementAdmin: React.FC = () => {
             {selectedTenant && (
               <Grid container spacing={2} sx={{ mt: 1 }}>
                 <Grid item xs={12}>
-                  <TextField
+                  <PremiumTextField
                     fullWidth
                     label="Tenant Name"
                     value={selectedTenant.name || ''}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
                 
                 <Grid item xs={12}>
-                  <TextField
+                  <PremiumTextField
                     fullWidth
                     label="Subdomain"
                     value={selectedTenant.subdomain || ''}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
                 
                 <Grid item xs={12}>
-                  <TextField
+                  <PremiumTextField
                     fullWidth
                     label="Description"
                     multiline
                     rows={3}
                     value={selectedTenant.description || ''}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
                 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     fullWidth
                     label="Status"
                     value={selectedTenant.isActive ? 'Active' : 'Inactive'}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     fullWidth
                     label="Tenant ID"
                     value={selectedTenant.tenantId || ''}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     fullWidth
                     label="Created At"
                     value={selectedTenant.createdAt ? new Date(selectedTenant.createdAt).toLocaleString() : ''}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
 
                 <Grid item xs={12} sm={6}>
-                  <TextField
+                  <PremiumTextField
                     fullWidth
                     label="Last Updated"
                     value={selectedTenant.updatedAt ? new Date(selectedTenant.updatedAt).toLocaleString() : ''}
                     disabled
-                    variant="filled"
                   />
                 </Grid>
               </Grid>

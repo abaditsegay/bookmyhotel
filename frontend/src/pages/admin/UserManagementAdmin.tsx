@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { COLORS } from '../../theme/themeColors';
+import { formatEthiopianPhone } from '../../utils/phoneUtils';
 import {
   Box,
   Paper,
@@ -15,21 +17,17 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  TextField,
   IconButton,
   Chip,
   Alert,
   CircularProgress,
-  FormControl,
-  InputLabel,
-  Select,
   MenuItem,
   Grid,
   Tooltip,
+  Snackbar,
 } from '@mui/material';
 import {
   Edit as EditIcon,
-  Delete as DeleteIcon,
   Visibility as VisibilityIcon,
   Add as AddIcon,
   FilterList as FilterListIcon,
@@ -48,6 +46,8 @@ import {
   TenantDTO,
   HotelDTO
 } from '../../services/adminApi';
+import PremiumTextField from '../../components/common/PremiumTextField';
+import PremiumSelect from '../../components/common/PremiumSelect';
 
 interface UserFilters {
   search: string;
@@ -56,7 +56,7 @@ interface UserFilters {
 }
 
 const UserManagementAdmin: React.FC = () => {
-  const { token } = useAuth();
+  const { token, user: currentUser } = useAuth();
   const navigate = useNavigate();
   const [users, setUsers] = useState<UserManagementResponse[]>([]);
   const [loading, setLoading] = useState(true);
@@ -73,9 +73,12 @@ const UserManagementAdmin: React.FC = () => {
   // Dialog states
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  // Delete functionality removed - use deactivation instead
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
   const [passwordResetDialogOpen, setPasswordResetDialogOpen] = useState(false);
+  const [toggleStatusDialogOpen, setToggleStatusDialogOpen] = useState(false);
+  const [toggleStatusReason, setToggleStatusReason] = useState('');
+  const [toggleUser, setToggleUser] = useState<UserManagementResponse | null>(null);
   const [selectedUser, setSelectedUser] = useState<UserManagementResponse | null>(null);
   const [createError, setCreateError] = useState<string | null>(null);
 
@@ -87,6 +90,8 @@ const UserManagementAdmin: React.FC = () => {
     phone: '',
     password: '',
     roles: [],
+    tenantId: undefined,
+    hotelId: undefined,
   });
 
   const [editForm, setEditForm] = useState<UpdateUserRequest>({
@@ -98,18 +103,33 @@ const UserManagementAdmin: React.FC = () => {
     roles: [],
   });
 
-  const [newPassword, setNewPassword] = useState('');
-
   // Tenant and Hotel state for user creation
   const [tenants, setTenants] = useState<TenantDTO[]>([]);
   const [hotels, setHotels] = useState<HotelDTO[]>([]);
   const [loadingTenants, setLoadingTenants] = useState(false);
   const [loadingHotels, setLoadingHotels] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const roleOptions = ['SYSTEM_ADMIN', 'ADMIN', 'HOTEL_MANAGER', 'HOTEL_ADMIN', 'FRONTDESK', 'HOUSEKEEPING', 'CUSTOMER', 'GUEST'];
-  const statusOptions = ['ALL', 'ACTIVE', 'INACTIVE'];
+  const allRoleOptions = ['SUPER_ADMIN', 'ADMIN', 'HOTEL_ADMIN', 'OPERATIONAL_ADMIN', 'FRONTDESK', 'HOUSEKEEPING', 'MAINTENANCE', 'CUSTOMER'];
 
-  // Set token in API service when component mounts
+  // Roles visible in the filter dropdown — ADMIN cannot see SUPER_ADMIN
+  const callerRoleForFilter = currentUser?.role || (currentUser?.roles?.[0] ?? '');
+  const roleOptions = callerRoleForFilter === 'ADMIN'
+    ? allRoleOptions.filter(r => r !== 'SUPER_ADMIN')
+    : allRoleOptions;
+
+  // Roles this user is permitted to assign when creating/editing users
+  const creatableRoleOptions = (() => {
+    const callerRole = currentUser?.role || (currentUser?.roles?.[0] ?? '');
+    if (callerRole === 'SUPER_ADMIN') return ['ADMIN', 'HOTEL_ADMIN'];
+    if (callerRole === 'ADMIN') return ['HOTEL_ADMIN'];
+    return roleOptions;
+  })();
+  const statusOptions = [
+    { value: '', label: 'All Status' },
+    { value: 'ACTIVE', label: 'Active' },
+    { value: 'INACTIVE', label: 'Inactive' }
+  ];  // Set token in API service when component mounts
   useEffect(() => {
     if (token) {
       adminApiService.setToken(token);
@@ -124,30 +144,41 @@ const UserManagementAdmin: React.FC = () => {
       setError(null);
       
       let response;
+      
+      // Determine which API to call based on filters
       if (filters.search) {
+        // Search has highest priority
         response = await adminApiService.searchUsers(filters.search, page, rowsPerPage);
+      } else if (filters.role) {
+        // Role filter
+        response = await adminApiService.getUsersByRole(filters.role, page, rowsPerPage);
+      } else if (filters.status && filters.status !== '' && filters.status !== 'ALL') {
+        // Status filter (convert status to boolean)
+        const isActive = filters.status === 'ACTIVE';
+        response = await adminApiService.getUsersByStatus(isActive, page, rowsPerPage);
       } else {
+        // No filters - get all users
         response = await adminApiService.getUsers(page, rowsPerPage);
       }
       
-      console.log('User API Response:', response);
+      // console.log('User API Response:', response);
       if (response.content) {
         setUsers(response.content);
         // Spring Boot Page object has totalElements directly on the response
         const totalCount = response.totalElements || response.page?.totalElements || response.content.length || 0;
         setTotalElements(totalCount);
-        console.log('Total Elements:', totalCount, 'Response structure:', { 
-          hasPage: !!response.page, 
-          pageTotalElements: response.page?.totalElements,
-          directTotalElements: response.totalElements,
-          contentLength: response.content.length 
-        });
+        // console.log('Total Elements:', totalCount, 'Response structure:', { 
+        //   hasPage: !!response.page, 
+        //   pageTotalElements: response.page?.totalElements,
+        //   directTotalElements: response.totalElements,
+        //   contentLength: response.content.length 
+        // });
       } else {
         setError('Failed to load users');
         setTotalElements(0);
       }
     } catch (err) {
-      console.error('Error loading users:', err);
+      // console.error('Error loading users:', err);
       setError('Failed to load users');
       setTotalElements(0);
     } finally {
@@ -177,7 +208,7 @@ const UserManagementAdmin: React.FC = () => {
       const response = await adminApiService.getActiveTenants();
       setTenants(response || []);
     } catch (err) {
-      console.error('Error loading tenants:', err);
+      // console.error('Error loading tenants:', err);
       setError('Failed to load tenants');
     } finally {
       setLoadingTenants(false);
@@ -192,7 +223,7 @@ const UserManagementAdmin: React.FC = () => {
       const response = await adminApiService.getHotelsByTenant(tenantId);
       setHotels(response || []);
     } catch (err) {
-      console.error('Error loading hotels:', err);
+      // console.error('Error loading hotels:', err);
       setError('Failed to load hotels');
     } finally {
       setLoadingHotels(false);
@@ -231,11 +262,13 @@ const UserManagementAdmin: React.FC = () => {
         phone: '',
         password: '',
         roles: [],
+        tenantId: undefined,
+        hotelId: undefined,
       });
       setHotels([]); // Clear hotels when form is reset
       loadUsers();
     } catch (err) {
-      console.error('Error creating user:', err);
+      // console.error('Error creating user:', err);
       
       // Extract meaningful error message from API response
       if (err instanceof Error) {
@@ -268,47 +301,37 @@ const UserManagementAdmin: React.FC = () => {
       setSelectedUser(null);
       loadUsers();
     } catch (err) {
-      console.error('Error updating user:', err);
+      // console.error('Error updating user:', err);
       setError('Failed to update user');
     }
   };
 
-  const handleDeleteUser = async () => {
-    if (!selectedUser) return;
-    
+  const handleToggleUserStatus = async () => {
+    if (!toggleUser) return;
     try {
-      await adminApiService.deleteUser(selectedUser.id);
-      setDeleteDialogOpen(false);
-      setSelectedUser(null);
+      await adminApiService.toggleUserStatus(toggleUser.id, toggleStatusReason);
+      setToggleStatusDialogOpen(false);
+      setToggleStatusReason('');
+      setToggleUser(null);
       loadUsers();
     } catch (err) {
-      console.error('Error deleting user:', err);
-      setError('Failed to delete user');
-    }
-  };
-
-  const handleToggleUserStatus = async (userId: number) => {
-    try {
-      await adminApiService.toggleUserStatus(userId);
-      loadUsers();
-    } catch (err) {
-      console.error('Error toggling user status:', err);
+      // console.error('Error toggling user status:', err);
       setError('Failed to toggle user status');
     }
   };
 
   const handlePasswordReset = async () => {
-    if (!selectedUser || !newPassword) return;
-    
+    if (!selectedUser) return;
+    setLoading(true);
     try {
-      await adminApiService.resetUserPassword(selectedUser.id, newPassword);
+      await adminApiService.resetUserPassword(selectedUser.id);
       setPasswordResetDialogOpen(false);
       setSelectedUser(null);
-      setNewPassword('');
-      alert('Password reset successfully');
+      setSuccessMessage('A new password has been generated and sent to the user\'s email.');
     } catch (err) {
-      console.error('Error resetting password:', err);
       setError('Failed to reset password');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -325,11 +348,6 @@ const UserManagementAdmin: React.FC = () => {
     setEditDialogOpen(true);
   };
 
-  const openDeleteDialog = (user: UserManagementResponse) => {
-    setSelectedUser(user);
-    setDeleteDialogOpen(true);
-  };
-
   const openDetailsDialog = (user: UserManagementResponse) => {
     setSelectedUser(user);
     setDetailsDialogOpen(true);
@@ -342,14 +360,15 @@ const UserManagementAdmin: React.FC = () => {
 
   const getRoleColor = (role: string) => {
     switch (role) {
-      case 'SYSTEM_ADMIN': return 'error';
-      case 'ADMIN': return 'error';
-      case 'HOTEL_MANAGER': return 'warning';
-      case 'HOTEL_ADMIN': return 'info';
-      case 'FRONTDESK': return 'success';
-      case 'HOUSEKEEPING': return 'primary';
+      case 'SUPER_ADMIN': return 'error';
+      case 'ADMIN': return 'primary';
+      case 'HOTEL_ADMIN': return 'secondary';
+      case 'OPERATIONAL_ADMIN': return 'primary';
+      case 'FRONTDESK': return 'info';
+      case 'HOUSEKEEPING': return 'success';
+      case 'MAINTENANCE': return 'warning';
       case 'CUSTOMER': return 'default';
-      case 'GUEST': return 'secondary';
+      case 'GUEST': return 'default';
       default: return 'default';
     }
   };
@@ -370,13 +389,12 @@ const UserManagementAdmin: React.FC = () => {
     <Box sx={{ p: 3 }}>
       {/* Header */}
       <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
-        <IconButton
-          onClick={() => navigate('/system-dashboard')}
-          sx={{ mr: 2 }}
-        >
-          <ArrowBackIcon />
-        </IconButton>
-        <Typography variant="h4" component="h1" sx={{ flexGrow: 1 }}>
+        <Typography variant="h4" component="h1" sx={{ 
+          flexGrow: 1,
+          color: COLORS.PRIMARY,
+          fontWeight: 600,
+          letterSpacing: '0.5px'
+        }}>
           User Management
         </Typography>
         <Button
@@ -395,14 +413,14 @@ const UserManagementAdmin: React.FC = () => {
       )}
 
       {/* Filters */}
-      <Paper sx={{ p: 2, mb: 2 }}>
+      <Box sx={{ mb: 2 }}>
         <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
           <FilterListIcon />
           Filters
         </Typography>
         <Grid container spacing={2}>
           <Grid item xs={12} md={4}>
-            <TextField
+            <PremiumTextField
               fullWidth
               label="Search"
               value={filters.search}
@@ -411,47 +429,57 @@ const UserManagementAdmin: React.FC = () => {
             />
           </Grid>
           <Grid item xs={12} md={4}>
-            <FormControl fullWidth>
-              <InputLabel>Role</InputLabel>
-              <Select
-                value={filters.role}
-                onChange={(e) => handleFilterChange('role', e.target.value)}
-                label="Role"
-              >
-                <MenuItem value="">All Roles</MenuItem>
-                {roleOptions.map((role) => (
-                  <MenuItem key={role} value={role}>
-                    {role.replace('_', ' ')}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            <PremiumSelect
+              fullWidth
+              label="Role"
+              value={filters.role}
+              onChange={(e) => handleFilterChange('role', e.target.value)}
+            >
+              <MenuItem value="">All Roles</MenuItem>
+              {roleOptions.map((role) => (
+                <MenuItem key={role} value={role}>
+                  {role.replace('_', ' ')}
+                </MenuItem>
+              ))}
+            </PremiumSelect>
           </Grid>
           <Grid item xs={12} md={4}>
-            <FormControl fullWidth>
-              <InputLabel>Status</InputLabel>
-              <Select
-                value={filters.status}
-                onChange={(e) => handleFilterChange('status', e.target.value)}
-                label="Status"
-              >
-                {statusOptions.map((status) => (
-                  <MenuItem key={status} value={status}>
-                    {status}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            <PremiumSelect
+              fullWidth
+              label="Status"
+              value={filters.status}
+              onChange={(e) => handleFilterChange('status', e.target.value)}
+            >
+              {statusOptions.map((status) => (
+                <MenuItem key={status.value} value={status.value}>
+                  {status.label}
+                </MenuItem>
+              ))}
+            </PremiumSelect>
           </Grid>
         </Grid>
-      </Paper>
+      </Box>
 
       {/* Users Table */}
       <Paper>
         <TableContainer>
           <Table>
             <TableHead>
-              <TableRow>
+              <TableRow
+                sx={{
+                  background: `linear-gradient(135deg, ${COLORS.BG_DEFAULT} 0%, ${COLORS.BG_LIGHT} 50%, ${COLORS.BG_DEFAULT} 100%)`,
+                  borderBottom: `2px solid ${COLORS.SECONDARY}`,
+                  '& .MuiTableCell-head': {
+                    color: COLORS.PRIMARY,
+                    fontWeight: 700,
+                    fontSize: '0.95rem',
+                    letterSpacing: '0.5px',
+                    textTransform: 'uppercase',
+                    border: 'none',
+                    padding: '20px 16px',
+                  }
+                }}
+              >
                 <TableCell>Name</TableCell>
                 <TableCell>Email</TableCell>
                 <TableCell>Phone</TableCell>
@@ -469,7 +497,7 @@ const UserManagementAdmin: React.FC = () => {
                     {user.firstName} {user.lastName}
                   </TableCell>
                   <TableCell>{user.email}</TableCell>
-                  <TableCell>{user.phone}</TableCell>
+                  <TableCell>{user.phone ? formatEthiopianPhone(user.phone) : ''}</TableCell>
                   <TableCell>
                     <Chip
                       label={user.roles.length > 0 ? user.roles[0].replace('_', ' ') : 'No Role'}
@@ -492,40 +520,41 @@ const UserManagementAdmin: React.FC = () => {
                   </TableCell>
                   <TableCell align="center">
                     <Box sx={{ display: 'flex', gap: 1 }}>
-                      <Tooltip title="View Details">
-                        <IconButton
-                          size="small"
-                          onClick={() => openDetailsDialog(user)}
-                        >
-                          <VisibilityIcon />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title={user.isActive ? 'Deactivate User' : 'Activate User'}>
-                        <IconButton
-                          size="small"
-                          onClick={() => handleToggleUserStatus(user.id)}
-                          color={user.isActive ? 'success' : 'error'}
-                        >
-                          {user.isActive ? <ToggleOnIcon /> : <ToggleOffIcon />}
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Reset Password">
-                        <IconButton
-                          size="small"
-                          onClick={() => openPasswordResetDialog(user)}
-                        >
-                          <LockResetIcon />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Delete User">
-                        <IconButton
-                          size="small"
-                          onClick={() => openDeleteDialog(user)}
-                          color="error"
-                        >
-                          <DeleteIcon />
-                        </IconButton>
-                      </Tooltip>
+                      {!user.roles.includes('SUPER_ADMIN') && (
+                        <Tooltip title="View Details">
+                          <IconButton
+                            size="small"
+                            onClick={() => openDetailsDialog(user)}
+                          >
+                            <VisibilityIcon />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                      {!user.roles.includes('SUPER_ADMIN') && (
+                        <Tooltip title={user.isActive ? 'Deactivate User' : 'Activate User'}>
+                          <IconButton
+                            size="small"
+                            onClick={() => {
+                              setToggleUser(user);
+                              setToggleStatusReason('');
+                              setToggleStatusDialogOpen(true);
+                            }}
+                            color={user.isActive ? 'success' : 'error'}
+                          >
+                            {user.isActive ? <ToggleOnIcon /> : <ToggleOffIcon />}
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                      {!user.roles.includes('SUPER_ADMIN') && (
+                        <Tooltip title="Reset Password">
+                          <IconButton
+                            size="small"
+                            onClick={() => openPasswordResetDialog(user)}
+                          >
+                            <LockResetIcon />
+                          </IconButton>
+                        </Tooltip>
+                      )}
                     </Box>
                   </TableCell>
                 </TableRow>
@@ -559,7 +588,7 @@ const UserManagementAdmin: React.FC = () => {
         <DialogContent>
           <Grid container spacing={2} sx={{ mt: 1 }}>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="First Name"
                 value={userForm.firstName || ''}
@@ -568,7 +597,7 @@ const UserManagementAdmin: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Last Name"
                 value={userForm.lastName || ''}
@@ -577,7 +606,7 @@ const UserManagementAdmin: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Email"
                 type="email"
@@ -587,7 +616,7 @@ const UserManagementAdmin: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Password"
                 type="password"
@@ -597,7 +626,7 @@ const UserManagementAdmin: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Phone"
                 value={userForm.phone || ''}
@@ -606,76 +635,77 @@ const UserManagementAdmin: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <FormControl fullWidth required>
-                <InputLabel>Role</InputLabel>
-                <Select
-                  value={userForm.roles.length > 0 ? userForm.roles[0] : ''}
-                  onChange={(e) => {
-                    const selectedRole = e.target.value;
-                    setUserForm({ 
-                      ...userForm, 
-                      roles: [selectedRole],
-                      // Clear hotel selection if role changes from HOTEL_ADMIN
-                      hotelId: selectedRole === 'HOTEL_ADMIN' ? userForm.hotelId : undefined
-                    });
-                  }}
-                  label="Role"
-                >
-                  {roleOptions.map((role) => (
-                    <MenuItem key={role} value={role}>
-                      {role.replace('_', ' ')}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+              <PremiumSelect
+                fullWidth
+                required
+                label="Role"
+                value={userForm.roles.length > 0 ? userForm.roles[0] : ''}
+                onChange={(e) => {
+                  const selectedRole = e.target.value as string;
+                  const isHotelBoundRole = ['HOTEL_ADMIN', 'FRONTDESK', 'HOUSEKEEPING'].includes(selectedRole);
+                  setUserForm({ 
+                    ...userForm, 
+                    roles: [selectedRole],
+                    hotelId: isHotelBoundRole ? userForm.hotelId : undefined,
+                    tenantId: isHotelBoundRole ? userForm.tenantId : undefined
+                  });
+                }}
+              >
+                {creatableRoleOptions.map((role) => (
+                  <MenuItem key={role} value={role}>
+                    {role.replace('_', ' ')}
+                  </MenuItem>
+                ))}
+              </PremiumSelect>
             </Grid>
             
-            {/* Tenant Selection - Show for HOTEL_ADMIN */}
-            {userForm.roles.includes('HOTEL_ADMIN') && (
+            {/* Tenant Selection - Show for hotel-bound roles */}
+            {(() => {
+              const shouldShow = (userForm.roles.includes('HOTEL_ADMIN') || userForm.roles.includes('FRONTDESK') || userForm.roles.includes('HOUSEKEEPING'));
+              return shouldShow;
+            })() && (
               <Grid item xs={12} md={6}>
-                <FormControl fullWidth required>
-                  <InputLabel>Tenant</InputLabel>
-                  <Select
-                    value={userForm.tenantId || ''}
-                    onChange={(e) => {
-                      const selectedTenantId = e.target.value;
-                      setUserForm({ 
-                        ...userForm, 
-                        tenantId: selectedTenantId,
-                        hotelId: undefined // Clear hotel selection when tenant changes
-                      });
-                    }}
-                    label="Tenant"
-                    disabled={loadingTenants}
-                  >
-                    {tenants.map((tenant) => (
-                      <MenuItem key={tenant.tenantId} value={tenant.tenantId}>
-                        {tenant.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                <PremiumSelect
+                  fullWidth
+                  required
+                  label="Tenant"
+                  value={userForm.tenantId || ''}
+                  disabled={loadingTenants}
+                  onChange={(e) => {
+                    const selectedTenantId = e.target.value as string;
+                    setUserForm({ 
+                      ...userForm, 
+                      tenantId: selectedTenantId,
+                      hotelId: undefined
+                    });
+                  }}
+                >
+                  {tenants.map((tenant) => (
+                    <MenuItem key={tenant.tenantId} value={tenant.tenantId}>
+                      {tenant.name}
+                    </MenuItem>
+                  ))}
+                </PremiumSelect>
               </Grid>
             )}
 
-            {/* Hotel Selection - Show for HOTEL_ADMIN when tenant is selected */}
-            {userForm.roles.includes('HOTEL_ADMIN') && userForm.tenantId && (
+            {/* Hotel Selection - Show for hotel-bound roles when tenant is selected */}
+            {(userForm.roles.includes('HOTEL_ADMIN') || userForm.roles.includes('FRONTDESK') || userForm.roles.includes('HOUSEKEEPING')) && userForm.tenantId && (
               <Grid item xs={12} md={6}>
-                <FormControl fullWidth required>
-                  <InputLabel>Hotel</InputLabel>
-                  <Select
-                    value={userForm.hotelId || ''}
-                    onChange={(e) => setUserForm({ ...userForm, hotelId: e.target.value as number })}
-                    label="Hotel"
-                    disabled={loadingHotels}
-                  >
-                    {hotels.map((hotel) => (
-                      <MenuItem key={hotel.id} value={hotel.id}>
-                        {hotel.name} - {hotel.city}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                <PremiumSelect
+                  fullWidth
+                  required
+                  label="Hotel"
+                  value={userForm.hotelId || ''}
+                  disabled={loadingHotels}
+                  onChange={(e) => setUserForm({ ...userForm, hotelId: e.target.value as number })}
+                >
+                  {hotels.map((hotel) => (
+                    <MenuItem key={hotel.id} value={hotel.id}>
+                      {hotel.name} - {hotel.city}
+                    </MenuItem>
+                  ))}
+                </PremiumSelect>
               </Grid>
             )}
           </Grid>
@@ -705,7 +735,7 @@ const UserManagementAdmin: React.FC = () => {
         <DialogContent>
           <Grid container spacing={2} sx={{ mt: 1 }}>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="First Name"
                 value={editForm.firstName || ''}
@@ -714,7 +744,7 @@ const UserManagementAdmin: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Last Name"
                 value={editForm.lastName || ''}
@@ -723,7 +753,7 @@ const UserManagementAdmin: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Email"
                 type="email"
@@ -733,7 +763,7 @@ const UserManagementAdmin: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Phone"
                 value={editForm.phone || ''}
@@ -742,20 +772,19 @@ const UserManagementAdmin: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <FormControl fullWidth required>
-                <InputLabel>Role</InputLabel>
-                <Select
-                  value={editForm.roles.length > 0 ? editForm.roles[0] : ''}
-                  onChange={(e) => setEditForm({ ...editForm, roles: [e.target.value] })}
-                  label="Role"
-                >
-                  {roleOptions.map((role) => (
-                    <MenuItem key={role} value={role}>
-                      {role.replace('_', ' ')}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+              <PremiumSelect
+                fullWidth
+                required
+                label="Role"
+                value={editForm.roles.length > 0 ? editForm.roles[0] : ''}
+                onChange={(e) => setEditForm({ ...editForm, roles: [e.target.value as string] })}
+              >
+                {creatableRoleOptions.map((role) => (
+                  <MenuItem key={role} value={role}>
+                    {role.replace('_', ' ')}
+                  </MenuItem>
+                ))}
+              </PremiumSelect>
             </Grid>
           </Grid>
         </DialogContent>
@@ -767,19 +796,50 @@ const UserManagementAdmin: React.FC = () => {
         </DialogActions>
       </Dialog>
 
-      {/* Delete User Dialog */}
-      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
-        <DialogTitle>Delete User</DialogTitle>
+      {/* Toggle Status Confirmation Dialog */}
+      <Dialog
+        open={toggleStatusDialogOpen}
+        onClose={() => {
+          setToggleStatusDialogOpen(false);
+          setToggleStatusReason('');
+          setToggleUser(null);
+        }}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          {toggleUser?.isActive ? 'Deactivate User' : 'Activate User'}
+        </DialogTitle>
         <DialogContent>
-          <Typography>
-            Are you sure you want to delete user "{selectedUser?.firstName} {selectedUser?.lastName}"?
-            This action cannot be undone.
+          <Typography sx={{ mb: 2 }}>
+            Are you sure you want to {toggleUser?.isActive ? 'deactivate' : 'activate'} user "{toggleUser?.firstName} {toggleUser?.lastName}" ({toggleUser?.email})?
           </Typography>
+          <PremiumTextField
+            label="Reason"
+            fullWidth
+            required
+            multiline
+            rows={3}
+            value={toggleStatusReason}
+            onChange={(e) => setToggleStatusReason(e.target.value)}
+            placeholder={`Enter reason for ${toggleUser?.isActive ? 'deactivation' : 'activation'}...`}
+          />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
-          <Button onClick={handleDeleteUser} color="error" variant="contained">
-            Delete
+          <Button onClick={() => {
+            setToggleStatusDialogOpen(false);
+            setToggleStatusReason('');
+            setToggleUser(null);
+          }}>
+            Cancel
+          </Button>
+          <Button
+            onClick={handleToggleUserStatus}
+            variant="contained"
+            color={toggleUser?.isActive ? 'error' : 'success'}
+            disabled={!toggleStatusReason.trim() || loading}
+          >
+            {loading ? <CircularProgress size={20} /> : (toggleUser?.isActive ? 'Deactivate' : 'Activate')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -789,119 +849,110 @@ const UserManagementAdmin: React.FC = () => {
         <DialogTitle>Reset Password</DialogTitle>
         <DialogContent>
           <Typography sx={{ mb: 2 }}>
-            Reset password for user "{selectedUser?.email}"?
+            A new random password will be generated and sent to <strong>{selectedUser?.email}</strong> via email.
           </Typography>
-          <TextField
-            fullWidth
-            label="New Password"
-            type="password"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            required
-          />
+          <Typography variant="body2" color="text.secondary">
+            The new password will not be visible to you.
+          </Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setPasswordResetDialogOpen(false)}>Cancel</Button>
-          <Button onClick={handlePasswordReset} variant="contained">
-            Reset Password
+          <Button onClick={handlePasswordReset} variant="contained" disabled={loading}>
+            {loading ? 'Sending...' : 'Reset & Send Email'}
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* Details Dialog */}
-      <Dialog open={detailsDialogOpen} onClose={() => setDetailsDialogOpen(false)} maxWidth="md" fullWidth>
+      <Dialog 
+        open={detailsDialogOpen} 
+        onClose={() => setDetailsDialogOpen(false)} 
+        maxWidth="md" 
+        fullWidth
+      >
         <DialogTitle>User Details</DialogTitle>
         <DialogContent>
           {selectedUser && (
             <Grid container spacing={2} sx={{ mt: 1 }}>
               <Grid item xs={12} sm={6}>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="First Name"
                   value={selectedUser.firstName || ''}
                   disabled
-                  variant="filled"
                 />
               </Grid>
               
               <Grid item xs={12} sm={6}>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="Last Name"
                   value={selectedUser.lastName || ''}
                   disabled
-                  variant="filled"
                 />
               </Grid>
               
               <Grid item xs={12}>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="Email"
                   type="email"
                   value={selectedUser.email || ''}
                   disabled
-                  variant="filled"
                 />
               </Grid>
               
               <Grid item xs={12} sm={6}>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="Phone"
-                  value={selectedUser.phone || ''}
+                  value={selectedUser.phone ? formatEthiopianPhone(selectedUser.phone) : ''}
                   disabled
-                  variant="filled"
                 />
               </Grid>
 
               <Grid item xs={12} sm={6}>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="Role"
                   value={selectedUser.roles.length > 0 ? selectedUser.roles[0].replace('_', ' ') : 'No Role'}
                   disabled
-                  variant="filled"
                 />
               </Grid>
 
               <Grid item xs={12} sm={6}>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="Status"
                   value={selectedUser.isActive ? 'Active' : 'Inactive'}
                   disabled
-                  variant="filled"
                 />
               </Grid>
 
               <Grid item xs={12} sm={6}>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="Created At"
                   value={selectedUser.createdAt ? new Date(selectedUser.createdAt).toLocaleString() : ''}
                   disabled
-                  variant="filled"
                 />
               </Grid>
 
               <Grid item xs={12} sm={6}>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="Last Login"
                   value="N/A"
                   disabled
-                  variant="filled"
                 />
               </Grid>
 
               <Grid item xs={12} sm={6}>
-                <TextField
+                <PremiumTextField
                   fullWidth
                   label="User ID"
                   value={selectedUser.id?.toString() || ''}
                   disabled
-                  variant="filled"
                 />
               </Grid>
             </Grid>
@@ -923,6 +974,18 @@ const UserManagementAdmin: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Success Snackbar */}
+      <Snackbar
+        open={!!successMessage}
+        autoHideDuration={5000}
+        onClose={() => setSuccessMessage(null)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert onClose={() => setSuccessMessage(null)} severity="success" variant="filled" sx={{ width: '100%' }}>
+          {successMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

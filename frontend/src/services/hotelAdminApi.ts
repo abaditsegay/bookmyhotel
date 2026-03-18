@@ -48,6 +48,7 @@ export interface BookingStats {
 export interface HotelStatistics {
   totalRooms: number;
   availableRooms: number;
+  bookedBookings: number;
   bookedRooms: number;
   totalStaff: number;
   activeStaff: number;
@@ -66,6 +67,7 @@ export interface RoomResponse {
   status: string;
   hotelId: number;
   hotelName: string;
+  currentGuest?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -86,12 +88,60 @@ export interface RoomCreateRequest {
   description?: string;
 }
 
+export interface BatchRoomCreateRequest {
+  roomNumbers: string[];
+  roomType: string;
+  pricePerNight: number;
+  capacity: number;
+  description?: string;
+}
+
+export interface BatchRoomCreateResponse {
+  totalRequested: number;
+  created: number;
+  failed: number;
+  createdRooms: RoomResponse[];
+  failedRooms: { roomNumber: string; error: string }[];
+}
+
 export interface RoomUpdateRequest {
   roomNumber: string;
   roomType: string;
   pricePerNight: number;
   capacity: number;
   description?: string;
+}
+
+export interface RoomLimitInfo {
+  currentRoomCount: number;
+  registeredLimit: number | null;
+  canAddRooms: boolean;
+  remainingSlots: number | null;
+}
+
+// Hotel Image Management Interfaces
+export interface HotelImageUploadRequest {
+  roomType?: string; // Optional for hotel general images
+  heroImage?: File;
+  heroAltText?: string;
+  isHotelGeneral?: boolean; // For hotel-wide images (lobby, exterior, etc.)
+}
+
+export interface HotelImageResponse {
+  id: number;
+  tenantId: string;
+  hotelId: number;
+  roomTypeId?: number;
+  roomTypeName?: string;
+  imageCategory: string;
+  s3Key: string;
+  s3Url: string;
+  fileName: string;
+  altText?: string;
+  displayOrder: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 // Staff interfaces
@@ -168,13 +218,17 @@ export const hotelAdminApi = {
       
       if (search && search.trim()) {
         params.append('search', search.trim());
+        // console.log('HotelAdminApi: Adding search parameter:', search.trim());
       }
 
       // Get tenant ID from token/user
       const user = TokenManager.getUser();
       const tenantId = user?.tenantId || '';
 
-      const response = await fetch(`${API_BASE_URL}/hotel-admin/bookings?${params.toString()}&_t=${Date.now()}`, {
+      const url = `${API_BASE_URL}/hotel-admin/bookings?${params.toString()}&_t=${Date.now()}`;
+      // console.log('HotelAdminApi: Fetching bookings from URL:', url);
+
+      const response = await fetch(url, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -191,7 +245,7 @@ export const hotelAdminApi = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Bookings fetch error:', error);
+      // console.error('Bookings fetch error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to fetch bookings' 
@@ -215,7 +269,7 @@ export const hotelAdminApi = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Booking stats fetch error:', error);
+      // console.error('Booking stats fetch error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to fetch booking statistics' 
@@ -239,7 +293,7 @@ export const hotelAdminApi = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Hotel stats fetch error:', error);
+      // console.error('Hotel stats fetch error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to fetch hotel statistics' 
@@ -270,10 +324,74 @@ export const hotelAdminApi = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Booking status update error:', error);
+      // console.error('Booking status update error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to update booking status' 
+      };
+    }
+  },
+
+  // Update booking payment status
+  updateBookingPaymentStatus: async (
+    token: string,
+    reservationId: number, 
+    paymentStatus: string,
+    tenantId: string | null = null
+  ): Promise<{ success: boolean; data?: BookingResponse; message?: string }> => {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/hotel-admin/bookings/${reservationId}/payment-status?paymentStatus=${encodeURIComponent(paymentStatus)}`,
+        {
+          method: 'PUT',
+          headers: getAuthHeaders(),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to update payment status');
+      }
+
+      const data = await response.json();
+      return { success: true, data };
+    } catch (error) {
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Failed to update payment status' 
+      };
+    }
+  },
+
+  /**
+   * Update booking payment type (CASH, BANK, MOBILE)
+   */
+  updateBookingPaymentType: async (
+    token: string,
+    reservationId: number,
+    paymentType: string,
+    tenantId: string | null = null
+  ): Promise<{ success: boolean; data?: BookingResponse; message?: string }> => {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/hotel-admin/bookings/${reservationId}/payment-type?paymentType=${encodeURIComponent(paymentType)}`,
+        {
+          method: 'PUT',
+          headers: getAuthHeaders(),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to update payment type');
+      }
+
+      const data = await response.json();
+      return { success: true, data };
+    } catch (error) {
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : 'Failed to update payment type'
       };
     }
   },
@@ -313,7 +431,7 @@ export const hotelAdminApi = {
       const data = await response.json();
       return { success: true, data, message: data.message };
     } catch (error) {
-      console.error('Booking modification error:', error);
+      // console.error('Booking modification error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to modify booking' 
@@ -347,7 +465,7 @@ export const hotelAdminApi = {
 
       return { success: true };
     } catch (error) {
-      console.error('Booking delete error:', error);
+      // console.error('Booking delete error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to delete booking' 
@@ -374,7 +492,7 @@ export const hotelAdminApi = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Booking fetch error:', error);
+      // console.error('Booking fetch error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to fetch booking details' 
@@ -441,7 +559,7 @@ export const hotelAdminApi = {
       
       return { success: true, data: transformedData };
     } catch (error) {
-      console.error('Rooms fetch error:', error);
+      // console.error('Rooms fetch error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to fetch rooms' 
@@ -468,7 +586,7 @@ export const hotelAdminApi = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Room fetch error:', error);
+      // console.error('Room fetch error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to fetch room details' 
@@ -496,10 +614,62 @@ export const hotelAdminApi = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Room creation error:', error);
+      // console.error('Room creation error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to create room' 
+      };
+    }
+  },
+
+  // Create multiple rooms in a single batch
+  createRoomsBatch: async (
+    token: string,
+    batchData: BatchRoomCreateRequest
+  ): Promise<{ success: boolean; data?: BatchRoomCreateResponse; message?: string }> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/hotel-admin/rooms/batch`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(batchData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to create rooms');
+      }
+
+      const data = await response.json();
+      return { success: true, data };
+    } catch (error) {
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : 'Failed to create rooms'
+      };
+    }
+  },
+
+  // Get room limit info for the hotel
+  getRoomLimit: async (
+    token: string
+  ): Promise<{ success: boolean; data?: RoomLimitInfo; message?: string }> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/hotel-admin/rooms/limit`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to fetch room limit');
+      }
+
+      const data = await response.json();
+      return { success: true, data };
+    } catch (error) {
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : 'Failed to fetch room limit'
       };
     }
   },
@@ -525,7 +695,7 @@ export const hotelAdminApi = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Room update error:', error);
+      // console.error('Room update error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to update room' 
@@ -551,7 +721,7 @@ export const hotelAdminApi = {
 
       return { success: true };
     } catch (error) {
-      console.error('Room deletion error:', error);
+      // console.error('Room deletion error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to delete room' 
@@ -582,7 +752,7 @@ export const hotelAdminApi = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Room availability update error:', error);
+      // console.error('Room availability update error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to update room availability' 
@@ -619,7 +789,7 @@ export const hotelAdminApi = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Room status update error:', error);
+      // console.error('Room status update error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to update room status' 
@@ -675,7 +845,7 @@ export const hotelAdminApi = {
           phone: user.phone || '',
           roles: user.roles ? user.roles.map((role: any) => typeof role === 'string' ? role : role.name || role.toString()) : [],
           isActive: user.isActive === true,
-          hotelId: user.hotelId || 0,
+          hotelId: user.hotelId || null,
           hotelName: user.hotelName || '',
           createdAt: user.createdAt || new Date().toISOString(),
           updatedAt: user.updatedAt || new Date().toISOString(),
@@ -691,7 +861,7 @@ export const hotelAdminApi = {
       
       return { success: true, data: transformedData };
     } catch (error) {
-      console.error('Get staff error:', error);
+      // console.error('Get staff error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to fetch staff' 
@@ -729,7 +899,7 @@ export const hotelAdminApi = {
         phone: user.phone || '',
         roles: user.roles ? user.roles.map((role: any) => typeof role === 'string' ? role : role.name || role.toString()) : [],
         isActive: user.isActive === true,
-        hotelId: user.hotelId || 0,
+        hotelId: user.hotelId || null,
         hotelName: user.hotelName || '',
         createdAt: user.createdAt || new Date().toISOString(),
         updatedAt: user.updatedAt || new Date().toISOString(),
@@ -738,7 +908,7 @@ export const hotelAdminApi = {
       
       return { success: true, data: transformedData };
     } catch (error) {
-      console.error('Get staff by ID error:', error);
+      // console.error('Get staff by ID error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to fetch staff member' 
@@ -771,8 +941,8 @@ export const hotelAdminApi = {
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('Staff creation error response:', errorData);
-        console.error('Request body was:', userDTO);
+        // console.error('Staff creation error response:', errorData);
+        // console.error('Request body was:', userDTO);
         
         // Handle specific error cases
         if (errorData.error === 'User with this email already exists') {
@@ -816,7 +986,7 @@ export const hotelAdminApi = {
         phone: user.phone || '',
         roles: user.roles ? user.roles.map((role: any) => typeof role === 'string' ? role : role.name || role.toString()) : [],
         isActive: user.isActive === true,
-        hotelId: user.hotelId || 0,
+        hotelId: user.hotelId || null,
         hotelName: user.hotelName || '',
         createdAt: user.createdAt || new Date().toISOString(),
         updatedAt: user.updatedAt || new Date().toISOString(),
@@ -825,7 +995,7 @@ export const hotelAdminApi = {
       
       return { success: true, data: transformedData };
     } catch (error) {
-      console.error('Create staff error:', error);
+      // console.error('Create staff error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to create staff member' 
@@ -862,7 +1032,7 @@ export const hotelAdminApi = {
         phone: user.phone || '',
         roles: user.roles ? user.roles.map((role: any) => typeof role === 'string' ? role : role.name || role.toString()) : [],
         isActive: user.isActive === true,
-        hotelId: user.hotelId || 0,
+        hotelId: user.hotelId || null,
         hotelName: user.hotelName || '',
         createdAt: user.createdAt || new Date().toISOString(),
         updatedAt: user.updatedAt || new Date().toISOString(),
@@ -871,7 +1041,7 @@ export const hotelAdminApi = {
       
       return { success: true, data: transformedData };
     } catch (error) {
-      console.error('Update staff error:', error);
+      // console.error('Update staff error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to update staff member' 
@@ -897,7 +1067,7 @@ export const hotelAdminApi = {
 
       return { success: true };
     } catch (error) {
-      console.error('Delete staff error:', error);
+      // console.error('Delete staff error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to delete staff member' 
@@ -927,7 +1097,7 @@ export const hotelAdminApi = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Activate staff error:', error);
+      // console.error('Activate staff error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to activate staff member' 
@@ -957,7 +1127,7 @@ export const hotelAdminApi = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Deactivate staff error:', error);
+      // console.error('Deactivate staff error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to deactivate staff member' 
@@ -985,7 +1155,7 @@ export const hotelAdminApi = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Hotel fetch error:', error);
+      // console.error('Hotel fetch error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to fetch hotel details' 
@@ -1013,7 +1183,7 @@ export const hotelAdminApi = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Hotel update error:', error);
+      // console.error('Hotel update error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to update hotel details' 
@@ -1037,18 +1207,10 @@ export const hotelAdminApi = {
 
       if (!response.ok) {
         if (response.status === 404) {
-          // No pricing found for this room type, return default
+          // No pricing found for this room type, return error
           return { 
-            success: true, 
-            data: { 
-              roomType, 
-              basePricePerNight: 100, // Default price
-              weekendMultiplier: 1.2,
-              holidayMultiplier: 1.5,
-              peakSeasonMultiplier: 1.3,
-              isActive: true,
-              currency: 'ETB'
-            } 
+            success: false, 
+            message: `No pricing configuration found for room type: ${roomType}. Please configure pricing before using this room type.` 
           };
         }
         const errorData = await response.json();
@@ -1058,7 +1220,7 @@ export const hotelAdminApi = {
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Room type pricing fetch error:', error);
+      // console.error('Room type pricing fetch error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to fetch room type pricing' 
@@ -1082,18 +1244,321 @@ export const hotelAdminApi = {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to create walk-in booking');
+        let errorMessage = 'Failed to create walk-in booking';
+        
+        try {
+          const errorData = await response.json();
+          // Use the detailed error message from the backend
+          // For BookingException, the specific message is in 'details', not 'message'
+          errorMessage = errorData.details || errorData.message || errorData.error || errorMessage;
+          // console.log('Hotel Admin API Error:', errorMessage);
+        } catch (parseError) {
+          // If we can't parse the error response, use the status text
+          errorMessage = response.statusText || errorMessage;
+        }
+        
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
       return { success: true, data };
     } catch (error) {
-      console.error('Walk-in booking creation error:', error);
+      // console.error('Walk-in booking creation error:', error);
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to create walk-in booking' 
       };
     }
   },
+
+  // Hotel Image Management API methods
+  // Fetch existing hotel images by room type
+  getHotelImages: async (
+    token: string,
+    roomType?: string
+  ): Promise<{ success: boolean; data?: HotelImageResponse[]; message?: string }> => {
+    try {
+      const queryParams = roomType ? `?roomType=${encodeURIComponent(roomType)}` : '';
+      const response = await fetch(`${API_BASE_URL}/hotel-admin/images${queryParams}`, {
+        method: 'GET',
+        headers: getAuthHeaders(),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to fetch hotel images');
+      }
+
+      const responseData = await response.json();
+      // Transform backend response to match frontend interface
+      const transformedData = (responseData.data || []).map((image: any) => ({
+        ...image,
+        s3Url: image.filePath, // Backend uses 'filePath' for S3 URL
+        s3Key: image.filePath?.split('/').pop() || '', // Extract filename as key
+        imageCategory: image.category || image.imageCategory, // Handle both formats
+        roomTypeName: image.roomTypeId ? `ROOM_TYPE_${image.roomTypeId}` : undefined, // Generate room type name
+      }));
+      return { success: true, data: transformedData };
+    } catch (error) {
+      // console.error('Hotel images fetch error:', error);
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Failed to fetch hotel images' 
+      };
+    }
+  },
+
+  // Upload hotel images for a specific room type or hotel general
+  uploadHotelImages: async (
+    token: string,
+    imageData: HotelImageUploadRequest
+  ): Promise<{ success: boolean; data?: HotelImageResponse[]; message?: string }> => {
+    try {
+      const formData = new FormData();
+      
+      // Add room type (if not hotel general)
+      if (imageData.roomType) {
+        formData.append('roomType', imageData.roomType);
+      }
+      
+      // Add hotel general flag
+      if (imageData.isHotelGeneral) {
+        formData.append('isHotelGeneral', 'true');
+      }
+      
+      // Add hero image and alt text
+      if (imageData.heroImage) {
+        formData.append('heroImage', imageData.heroImage);
+        if (imageData.heroAltText) {
+          formData.append('heroAltText', imageData.heroAltText);
+        }
+      }
+
+      const response = await fetch(`${API_BASE_URL}/hotel-admin/images/upload`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          // Don't set Content-Type - let browser set it with boundary for multipart
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to upload hotel images');
+      }
+
+      const responseData = await response.json();
+      // Transform backend response to match frontend interface
+      const transformedData = (responseData.data || []).map((image: any) => ({
+        ...image,
+        s3Url: image.filePath, // Backend uses 'filePath' for S3 URL
+        s3Key: image.filePath?.split('/').pop() || '', // Extract filename as key
+        imageCategory: image.category || image.imageCategory, // Handle both formats
+        roomTypeName: image.roomTypeId ? `ROOM_TYPE_${image.roomTypeId}` : undefined, // Generate room type name
+      }));
+      return { success: true, data: transformedData };
+    } catch (error) {
+      // console.error('Hotel images upload error:', error);
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Failed to upload hotel images' 
+      };
+    }
+  },
+
+  // Delete a hotel image
+  deleteHotelImage: async (
+    token: string,
+    imageId: number
+  ): Promise<{ success: boolean; message?: string }> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/hotel-admin/images/${imageId}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to delete hotel image');
+      }
+
+      return { success: true };
+    } catch (error) {
+      // console.error('Hotel image deletion error:', error);
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Failed to delete hotel image' 
+      };
+    }
+  },
+
+  // Bulk upload rooms from CSV
+  bulkUploadRooms: async (
+    token: string,
+    file: File,
+    skipErrors: boolean = false,
+    hotelId?: string
+  ): Promise<{ success: boolean; data?: any; message?: string }> => {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const user = TokenManager.getUser();
+      const targetHotelId = hotelId || user?.hotelId || '';
+      
+      const response = await fetch(
+        `${API_BASE_URL}/hotel-admin/hotels/${targetHotelId}/rooms/bulk/upload?skipErrors=${skipErrors}`, 
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'X-Tenant-ID': user?.tenantId || '',
+          },
+          body: formData,
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to upload rooms');
+      }
+
+      const data = await response.json();
+      return { success: true, data };
+    } catch (error) {
+      // console.error('Bulk upload error:', error);
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Failed to upload rooms'
+      };
+    }
+  },
+
+  // Validate CSV file without importing
+  validateCsv: async (
+    token: string,
+    file: File,
+    hotelId?: string
+  ): Promise<{ success: boolean; data?: any; message?: string }> => {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const user = TokenManager.getUser();
+      const targetHotelId = hotelId || user?.hotelId || '';
+      
+      const response = await fetch(
+        `${API_BASE_URL}/hotel-admin/hotels/${targetHotelId}/rooms/bulk/validate`, 
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'X-Tenant-ID': user?.tenantId || '',
+          },
+          body: formData,
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to validate CSV');
+      }
+
+      const data = await response.json();
+      return { success: true, data };
+    } catch (error) {
+      // console.error('CSV validation error:', error);
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Failed to validate CSV'
+      };
+    }
+  },
+
+  // Get bulk upload template info
+  getBulkUploadTemplateInfo: async (
+    token: string
+  ): Promise<{ success: boolean; data?: any; message?: string }> => {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/hotel-admin/rooms/bulk/template-info`, 
+        {
+          method: 'GET',
+          headers: getAuthHeaders(token),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to get template info');
+      }
+
+      const data = await response.json();
+      return { success: true, data };
+    } catch (error) {
+      // console.error('Template info error:', error);
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Failed to get template info'
+      };
+    }
+  },
+
+  /**
+   * Fix room status consistency
+   */
+  fixRoomStatusConsistency: async (token: string): Promise<{ success: boolean; data?: any; message?: string; automatedSystem?: any }> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/hotel-admin/fix-room-status`, {
+        method: 'POST',
+        headers: getAuthHeaders(token),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        return { success: false, message: result.message || 'Failed to fix room status consistency' };
+      }
+
+      return { 
+        success: true, 
+        data: result,
+        message: result.message,
+        automatedSystem: result.automatedSystem
+      };
+    } catch (error) {
+      // console.error('Fix room status consistency error:', error);
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Failed to fix room status consistency'
+      };
+    }
+  },
+
+  /**
+   * Get automation status for room management
+   */
+  getAutomationStatus: async (token: string): Promise<{ success: boolean; data?: any; message?: string }> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/hotel-admin/automation-status`, {
+        method: 'GET',
+        headers: getAuthHeaders(token),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        return { success: false, message: result.message || 'Failed to get automation status' };
+      }
+
+      return { success: true, data: result };
+    } catch (error) {
+      // console.error('Get automation status error:', error);
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Network error' 
+      };
+    }
+  }
 };

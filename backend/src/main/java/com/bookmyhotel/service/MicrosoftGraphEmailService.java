@@ -23,7 +23,7 @@ public class MicrosoftGraphEmailService {
     @Autowired
     private MicrosoftGraphConfig microsoftGraphConfig;
 
-    @Value("${app.email.from:noreply@bookmyhotel.com}")
+    @Value("${app.email.from:noreply@shegersolutions.com}")
     private String fromEmail;
 
     private final WebClient webClient;

@@ -56,6 +56,7 @@ public class ProductService {
         product.setCategory(request.getCategory());
         product.setPrice(request.getPrice());
         product.setStockQuantity(request.getStockQuantity());
+        product.setMinimumStockLevel(request.getMinimumStockLevel() != null ? request.getMinimumStockLevel() : 0);
         product.setSku(request.getSku());
         product.setImageUrl(request.getImageUrl());
         product.setIsActive(request.getIsActive() != null ? request.getIsActive() : true);
@@ -101,6 +102,8 @@ public class ProductService {
         product.setCategory(request.getCategory());
         product.setPrice(request.getPrice());
         product.setStockQuantity(request.getStockQuantity());
+        product.setMinimumStockLevel(request.getMinimumStockLevel() != null ? request.getMinimumStockLevel()
+                : product.getMinimumStockLevel());
         product.setSku(request.getSku());
         product.setImageUrl(request.getImageUrl());
         product.setIsActive(request.getIsActive() != null ? request.getIsActive() : product.getIsActive());
@@ -279,11 +282,20 @@ public class ProductService {
     }
 
     /**
-     * Get low stock products
+     * Get low stock products (products with stock at or below their minimum stock level)
+     */
+    @Transactional(readOnly = true)
+    public List<ProductResponse> getLowStockProducts(Long hotelId) {
+        List<Product> products = productRepository.findLowStockProductsByHotelId(hotelId);
+        return products.stream().map(this::convertToResponse).toList();
+    }
+
+    /**
+     * Get low stock products with custom threshold (for backward compatibility)
      */
     @Transactional(readOnly = true)
     public List<ProductResponse> getLowStockProducts(Long hotelId, Integer threshold) {
-        List<Product> products = productRepository.findLowStockProductsByHotelId(hotelId, threshold);
+        List<Product> products = productRepository.findLowStockProductsByHotelIdAndThreshold(hotelId, threshold);
         return products.stream().map(this::convertToResponse).toList();
     }
 
@@ -329,7 +341,7 @@ public class ProductService {
     public com.bookmyhotel.controller.InventoryController.InventorySummary getInventorySummary(Long hotelId) {
         long totalProducts = productRepository.countByHotelId(hotelId);
         long activeProducts = productRepository.countByHotelIdAndIsActiveTrue(hotelId);
-        long lowStockProducts = productRepository.countLowStockProductsByHotelId(hotelId, 10); // threshold of 10
+        long lowStockProducts = productRepository.countLowStockProductsByHotelId(hotelId); // use individual minimum stock levels
         long outOfStockProducts = productRepository.countOutOfStockProductsByHotelId(hotelId);
 
         return new com.bookmyhotel.controller.InventoryController.InventorySummary(
@@ -413,6 +425,7 @@ public class ProductService {
         response.setCategory(product.getCategory());
         response.setPrice(product.getPrice());
         response.setStockQuantity(product.getStockQuantity());
+        response.setMinimumStockLevel(product.getMinimumStockLevel());
         response.setSku(product.getSku());
         response.setImageUrl(product.getImageUrl());
         response.setIsActive(product.getIsActive());

@@ -27,10 +27,15 @@ class OperationsApiService {
     endpoint: string,
     options: RequestInit = {}
   ): Promise<ApiResponse<T>> {
-    const headers: HeadersInit = {
+    const headers: Record<string, string> = {
       ...TokenManager.getAuthHeaders(),
-      ...options.headers,
+      ...(options.headers as Record<string, string>),
     };
+
+    // Add Content-Type header for requests with body
+    if (options.body && !headers['Content-Type'] && !headers['content-type']) {
+      headers['Content-Type'] = 'application/json';
+    }
 
     try {
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
@@ -45,7 +50,7 @@ class OperationsApiService {
 
       return await response.json();
     } catch (error) {
-      console.error(`API request failed: ${endpoint}`, error);
+      // console.error(`API request failed: ${endpoint}`, error);
       throw error;
     }
   }

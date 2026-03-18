@@ -4,6 +4,8 @@ import { API_CONFIG } from '../config/apiConfig';
 import { updateUserProfile, changeUserPassword } from '../services/userApi';
 import TokenManager, { type AuthUser } from '../utils/tokenManager';
 import { apiClient } from '../utils/apiClient';
+import { offlineStorage, type StaffSession } from '../services/OfflineStorageService';
+import { roomCacheService } from '../services/RoomCacheService';
 
 interface User {
   id: string;
@@ -11,7 +13,7 @@ interface User {
   firstName?: string;
   lastName?: string;
   phone?: string;
-  role: 'ADMIN' | 'HOTEL_ADMIN' | 'HOTEL_MANAGER' | 'FRONTDESK' | 'HOUSEKEEPING' | 'OPERATIONS_SUPERVISOR' | 'MAINTENANCE' | 'CUSTOMER' | 'GUEST' | 'SYSTEM_ADMIN';
+  role: 'SUPER_ADMIN' | 'ADMIN' | 'HOTEL_ADMIN' | 'OPERATIONAL_ADMIN' | 'FRONTDESK' | 'HOUSEKEEPING' | 'MAINTENANCE' | 'CUSTOMER' | 'GUEST';
   roles: string[]; // Support multiple roles
   tenantId?: string | null; // null for system-wide users
   hotelId?: string;
@@ -19,6 +21,8 @@ interface User {
   createdAt?: string;
   lastLogin?: string;
   isActive?: boolean;
+  needsOnboarding?: boolean; // true if hotel admin needs to complete profile
+  accountStatus?: 'ACTIVE' | 'HOTEL_INACTIVE' | 'USER_SUSPENDED';
   // Helper properties
   isSystemWide?: boolean; // true if tenantId is null
   isTenantBound?: boolean; // true if tenantId is not null
@@ -36,10 +40,12 @@ interface AuthContextType {
   handleSessionExpired: () => void; // Add session expiration handler
   updateProfile: (updates: Partial<User>) => Promise<boolean>;
   changePassword: (currentPassword: string, newPassword: string) => Promise<boolean>;
+  setAccountStatus: (status: 'ACTIVE' | 'HOTEL_INACTIVE' | 'USER_SUSPENDED') => void;
   isAuthenticated: boolean;
   onTokenChange?: (token: string) => void;
   clearError: () => void;
   clearSessionExpired: () => void; // Add method to clear session expired state
+  getDashboardPath: () => string; // Get the appropriate dashboard path for the current user
   // Helper functions for role checking
   hasRole: (role: string) => boolean;
   hasAnyRole: (roles: string[]) => boolean;
@@ -70,13 +76,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
 
   // Load authentication state from localStorage on startup
   useEffect(() => {
+    // Initialize OfflineStorageService early
+    const initOfflineStorage = async () => {
+      try {
+        await offlineStorage.init();
+      } catch (error) {
+        // console.error('❌ AuthContext: Failed to initialize OfflineStorageService:', error);
+      }
+    };
+    
+    initOfflineStorage();
+    
     // Set up API client session expiration callback
     apiClient.setSessionExpiredCallback(() => {
-      console.log('Session expired - logging out user');
-      setSessionExpired(true);
       setUser(null);
       setToken(null);
-      setError('Your session has expired. Please log in again.');
+      
+      // Stop room cache periodic refresh
+      roomCacheService.stopPeriodicRefresh();
       
       // Clear localStorage using TokenManager
       TokenManager.clearAuth();
@@ -95,12 +112,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
       try {
         setToken(savedToken);
         setUser(savedUser as User);
-        console.log('Restored auth state from TokenManager');
         
         // Notify parent component of token change
         onTokenChange?.(savedToken);
       } catch (error) {
-        console.error('Failed to restore auth state:', error);
+        // console.error('Failed to restore auth state:', error);
         TokenManager.clearAuth();
       }
     }
@@ -109,17 +125,96 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
     setIsInitializing(false);
   }, [onTokenChange, onLogout]);
 
+  const attemptOfflineLogin = async (email: string, password: string): Promise<boolean> => {
+    try {
+      
+      // Ensure OfflineStorageService is initialized
+      try {
+        await offlineStorage.init();
+      } catch (initError) {
+        // console.error('❌ Mobile AuthContext: Failed to initialize OfflineStorageService for offline login:', initError);
+        return false;
+      }
+      
+      // Get cached staff session for offline authentication (includes inactive sessions)
+      const cachedSession = await offlineStorage.getStaffSessionForOfflineAuth(email);
+      if (!cachedSession) {
+        return false;
+      }
+
+      // Check if cached session matches login credentials
+      if (cachedSession.email !== email) {
+        return false;
+      }
+
+      // Validate password if hash is available
+      if (cachedSession.passwordHash) {
+        const isPasswordValid = offlineStorage.validatePassword(password, email, cachedSession.passwordHash);
+        if (!isPasswordValid) {
+          return false;
+        }
+      } else {
+      }
+
+      // Check if session is not expired
+      if (new Date(cachedSession.expiresAt) <= new Date()) {
+        return false;
+      }
+
+      // Check if it's a hotel staff role (HOTEL_ADMIN or FRONTDESK)
+      const isHotelStaff = cachedSession.roles?.some(role => 
+        ['HOTEL_ADMIN', 'FRONTDESK'].includes(role)
+      ) || ['HOTEL_ADMIN', 'FRONTDESK'].includes(cachedSession.role);
+
+      if (!isHotelStaff) {
+        return false;
+      }
+
+      
+      // Map cached session to user format
+      const offlineUser: User = {
+        id: cachedSession.userId.toString(),
+        email: cachedSession.email,
+        firstName: cachedSession.username.split(' ')[0] || cachedSession.username,
+        lastName: cachedSession.username.split(' ').slice(1).join(' ') || '',
+        phone: '', // Not available in cached session
+        role: cachedSession.role as User['role'],
+        roles: cachedSession.roles || [cachedSession.role],
+        hotelId: cachedSession.hotelId?.toString(),
+        hotelName: cachedSession.hotelName,
+        tenantId: cachedSession.tenantId || null,
+        isActive: true,
+        createdAt: '',
+        lastLogin: cachedSession.lastActivity
+      };
+
+      // Set user state
+      setUser(offlineUser);
+      setToken(cachedSession.token);
+      
+      // Update session as active and update last activity
+      cachedSession.isActive = true;
+      cachedSession.lastActivity = new Date().toISOString();
+      await offlineStorage.saveStaffSession(cachedSession);
+
+      // Notify parent component of token change
+      onTokenChange?.(cachedSession.token);
+
+      return true;
+
+    } catch (error) {
+      // console.error('❌ Mobile AuthContext: Offline authentication failed:', error);
+      return false;
+    }
+  };
+
   const login = async (email: string, password: string): Promise<boolean> => {
     setLoading(true);
     setError(null);
     
     try {
-      console.log('Mobile AuthContext: Starting login process');
-      console.log('Mobile AuthContext: API URL:', API_CONFIG.BASE_URL);
-      console.log('Mobile AuthContext: User Agent:', navigator.userAgent);
       
       const requestBody = { email, password };
-      console.log('Mobile AuthContext: Request body prepared');
       
       const response = await fetch(`${API_CONFIG.BASE_URL}/auth/login`, {
         method: 'POST',
@@ -130,22 +225,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
         body: JSON.stringify(requestBody),
       });
 
-      console.log('Mobile AuthContext: Response received:', response.status, response.statusText);
-      console.log('Mobile AuthContext: Response headers:', Object.fromEntries(response.headers));
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Mobile AuthContext: Login failed with error:', errorText);
+        // console.error('Mobile AuthContext: Online login failed with status:', response.status, errorText);
+        
+        // Attempt offline authentication for hotel staff when server responds with error
+        const offlineSuccess = await attemptOfflineLogin(email, password);
+        
+        if (offlineSuccess) {
+          return true;
+        }
+        
+        // console.error('❌ Mobile AuthContext: Both server and offline login failed');
         setError(errorText || 'Login failed');
         return false;
       }
 
       const loginData = await response.json();
-      console.log('Mobile AuthContext: Login successful, parsing data...');
-      console.log('Mobile AuthContext: Login data keys:', Object.keys(loginData));
 
       // Map backend response to frontend User interface
-      console.log('Mobile AuthContext: Mapping user data...');
       const user: User = {
         id: loginData.id.toString(),
         email: loginData.email,
@@ -160,36 +259,97 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
         createdAt: new Date().toISOString(),
         lastLogin: new Date().toISOString(),
         isActive: true,
+        needsOnboarding: loginData.needsOnboarding || false,
+        accountStatus: (loginData.accountStatus as 'ACTIVE' | 'HOTEL_INACTIVE' | 'USER_SUSPENDED') || 'ACTIVE',
         // Helper properties
         isSystemWide: (loginData.tenantId === null || loginData.tenantId === undefined) && 
                       (Array.isArray(loginData.roles) ? loginData.roles : [loginData.roles])
-                      .some((role: string) => ['SYSTEM_ADMIN', 'ADMIN', 'GUEST', 'CUSTOMER'].includes(role)), // true if no tenant AND has system-wide role
+                      .some((role: string) => ['SUPER_ADMIN', 'ADMIN', 'GUEST', 'CUSTOMER'].includes(role)), // true if no tenant AND has system-wide role
         isTenantBound: (loginData.tenantId !== null && loginData.tenantId !== undefined), // true if user has a tenant assignment
       };
 
-      console.log('Mobile AuthContext: Setting user state...');
       setUser(user);
       setToken(loginData.token);
       
       // Persist to localStorage using TokenManager
-      console.log('Mobile AuthContext: Persisting to localStorage...');
       try {
         TokenManager.setAuth(loginData.token, user as AuthUser);
-        console.log('Mobile AuthContext: localStorage save successful');
       } catch (storageError) {
-        console.error('Mobile AuthContext: localStorage save failed:', storageError);
+        // console.error('Mobile AuthContext: localStorage save failed:', storageError);
+      }
+      
+      // Save staff session for offline use
+      try {
+        // Ensure OfflineStorageService is initialized before saving session
+        try {
+          await offlineStorage.init(); // This will be a no-op if already initialized
+        } catch (initError) {
+          // console.error('❌ Mobile AuthContext: Failed to initialize OfflineStorageService:', initError);
+          throw initError;
+        }
+        
+        const staffSession: StaffSession = {
+          id: `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          userId: parseInt(loginData.id.toString()),
+          username: `${loginData.firstName || ''} ${loginData.lastName || ''}`.trim(),
+          email: loginData.email,
+          role: Array.isArray(loginData.roles) ? loginData.roles[0] : loginData.roles,
+          roles: Array.isArray(loginData.roles) ? loginData.roles : [loginData.roles],
+          hotelId: loginData.hotelId ? parseInt(loginData.hotelId.toString()) : undefined,
+          hotelName: loginData.hotelName,
+          tenantId: loginData.tenantId || undefined,
+          token: loginData.token,
+          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours from now
+          lastActivity: new Date().toISOString(),
+          isActive: true
+        };
+        
+        await offlineStorage.saveStaffSession(staffSession, password);
+        
+        // Cache room data immediately after successful login for hotel staff
+        const userRoles = Array.isArray(loginData.roles) ? loginData.roles : [loginData.roles];
+        const isHotelStaff = userRoles.some((role: string) => ['HOTEL_ADMIN', 'FRONTDESK', 'HOUSEKEEPING', 'OPERATIONAL_ADMIN'].includes(role));
+        
+        
+        if (loginData.hotelId && isHotelStaff) {
+          try {
+            const hotelId = parseInt(loginData.hotelId.toString());
+            // Start room caching in background - don't wait for it to complete
+            roomCacheService.fetchAndCacheRooms(hotelId).then((cachedRooms) => {
+              // Start periodic refresh for cached rooms
+              roomCacheService.startPeriodicRefresh(hotelId);
+            }).catch((cacheError) => {
+              // console.warn('⚠️ Mobile AuthContext: Room caching failed, but login continues:', cacheError);
+              // console.error('⚠️ Mobile AuthContext: Room caching error details:', cacheError);
+            });
+          } catch (cacheError) {
+            // console.warn('⚠️ Mobile AuthContext: Failed to start room caching:', cacheError);
+          }
+        } else {
+        }
+      } catch (sessionError) {
+        // console.error('❌ Mobile AuthContext: Failed to save staff session:', sessionError);
+        // console.error('❌ Mobile AuthContext: Session error stack:', sessionError instanceof Error ? sessionError.stack : 'No stack');
+        // Don't fail login if offline storage fails
       }
       
       // Notify parent component of token change
-      console.log('Mobile AuthContext: Notifying token change...');
       onTokenChange?.(loginData.token);
       
-      console.log('Mobile AuthContext: Login process completed successfully');
       return true;
     } catch (error) {
-      console.error('Mobile AuthContext: Login failed with error:', error);
-      console.error('Mobile AuthContext: Error stack:', (error as Error).stack);
-      setError((error as Error).message || 'Login failed');
+      // console.error('Mobile AuthContext: Online login failed with error:', error);
+      // console.error('Mobile AuthContext: Error stack:', (error as Error).stack);
+      
+      // Attempt offline authentication for hotel staff
+      const offlineSuccess = await attemptOfflineLogin(email, password);
+      
+      if (offlineSuccess) {
+        return true;
+      }
+      
+      // console.error('❌ Mobile AuthContext: Both online and offline login failed');
+      setError((error as Error).message || 'Login failed - no network connection and no cached credentials');
       return false;
     } finally {
       setLoading(false);
@@ -201,21 +361,30 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
     setToken(null);
     setSessionExpired(false); // Clear session expired state on manual logout
     
+    // Stop room cache periodic refresh
+    roomCacheService.stopPeriodicRefresh();
+    
+    // Deactivate staff sessions (preserve for offline authentication)
+    offlineStorage.deactivateStaffSessions().catch(error => {
+      // console.error('Failed to deactivate staff sessions:', error);
+    });
+    
     // Clear localStorage using TokenManager
     TokenManager.clearAuth();
     
     // Clear tenant context
     onLogout?.();
     
-    console.log('User logged out');
   };
 
   const handleSessionExpired = () => {
-    console.log('Session expired - logging out user');
     setSessionExpired(true);
     setUser(null);
     setToken(null);
     setError('Your session has expired. Please log in again.');
+    
+    // Stop room cache periodic refresh
+    roomCacheService.stopPeriodicRefresh();
     
     // Clear localStorage using TokenManager
     TokenManager.clearAuth();
@@ -251,12 +420,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
         return false;
       }
     } catch (error) {
-      console.error('Profile update failed:', error);
+      // console.error('Profile update failed:', error);
       setError('Failed to update profile. Please try again.');
       return false;
     } finally {
       setLoading(false);
     }
+  };
+
+  const setAccountStatus = (status: 'ACTIVE' | 'HOTEL_INACTIVE' | 'USER_SUSPENDED') => {
+    if (!user || !token) return;
+    const updatedUser = { ...user, accountStatus: status };
+    setUser(updatedUser);
+    TokenManager.setAuth(token, updatedUser as AuthUser);
   };
 
   const changePassword = async (currentPassword: string, newPassword: string): Promise<boolean> => {
@@ -279,7 +455,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
         return false;
       }
     } catch (error) {
-      console.error('Password change failed:', error);
+      // console.error('Password change failed:', error);
       setError('Failed to change password. Please try again.');
       return false;
     } finally {
@@ -316,6 +492,72 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
     return hasAnyRole(['FRONTDESK', 'HOTEL_ADMIN', 'ADMIN']);
   };
 
+  const getDashboardPath = (): string => {
+    if (!user) {
+      return '/hotels/search';
+    }
+
+    // Normalize roles array - handle various backend formats
+    const normalizedRoles: string[] = [];
+    
+    if (user.roles && Array.isArray(user.roles)) {
+      user.roles.forEach(role => {
+        if (typeof role === 'string') {
+          // Remove ROLE_ prefix if present
+          const cleanRole = role.replace(/^ROLE_/, '');
+          normalizedRoles.push(cleanRole.toUpperCase());
+        } else if (role && typeof role === 'object' && 'name' in role) {
+          // Handle role objects with name property
+          const cleanRole = (role as any).name.replace(/^ROLE_/, '');
+          normalizedRoles.push(cleanRole.toUpperCase());
+        }
+      });
+    }
+    
+    // Add legacy single role if present
+    if (user.role && typeof user.role === 'string') {
+      const cleanRole = user.role.replace(/^ROLE_/, '');
+      if (!normalizedRoles.includes(cleanRole.toUpperCase())) {
+        normalizedRoles.push(cleanRole.toUpperCase());
+      }
+    }
+
+    // Check normalized roles
+    if (normalizedRoles.length > 0) {
+      // System-wide users
+      if (normalizedRoles.includes('SUPER_ADMIN') || (normalizedRoles.includes('ADMIN') && !user.tenantId)) {
+        return '/system-dashboard';
+      }
+      
+      // Tenant-bound users - priority order
+      if (normalizedRoles.includes('HOTEL_ADMIN')) {
+        // Redirect to onboarding if hotel admin needs to complete profile
+        if (user.needsOnboarding) {
+          return '/hotel-onboarding';
+        }
+        return '/hotel-admin/dashboard';
+      }
+      
+      if (normalizedRoles.includes('ADMIN') && user.tenantId) {
+        return '/admin/dashboard';
+      }
+      
+      if (normalizedRoles.includes('FRONTDESK')) {
+        return '/frontdesk/dashboard';
+      }
+      
+      if (normalizedRoles.includes('OPERATIONAL_ADMIN')) {
+        return '/operations/dashboard';
+      }
+      
+      if (normalizedRoles.includes('HOUSEKEEPING') || normalizedRoles.includes('MAINTENANCE')) {
+        return '/staff/dashboard';
+      }
+    }
+    
+    return '/hotels/search';
+  };
+
   const value: AuthContextType = {
     user,
     loading,
@@ -328,10 +570,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
     handleSessionExpired,
     updateProfile,
     changePassword,
+    setAccountStatus,
     isAuthenticated: !!user,
     onTokenChange,
     clearError,
     clearSessionExpired,
+    getDashboardPath,
     hasRole,
     hasAnyRole,
     isFrontDesk,

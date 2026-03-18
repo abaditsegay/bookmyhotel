@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { formatEthiopianPhone, normalizeEthiopianPhone } from '../../utils/phoneUtils';
 import {
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
   Button,
-  TextField,
   Grid,
   Typography,
-  MenuItem,
   Box,
   Stepper,
   Step,
@@ -18,22 +17,24 @@ import {
   CardContent,
   Chip,
   Divider,
-  FormControl,
-  InputLabel,
-  Select,
   CircularProgress,
-  Backdrop,
+  useTheme,
 } from '@mui/material';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { formatDateCalendarAware } from '../../utils/dateUtils';
 import { format, addDays } from 'date-fns';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTenant } from '../../contexts/TenantContext';
 import { hotelApiService } from '../../services/hotelApi';
 import { hotelAdminApi } from '../../services/hotelAdminApi';
 import { frontDeskApiService } from '../../services/frontDeskApi';
-import { API_CONFIG } from '../../config/apiConfig';
+import { formatCurrency, formatCurrencyWithDecimals } from '../../utils/currencyUtils';
+import { API_CONFIG, buildApiUrl } from '../../config/apiConfig';
+import PremiumTextField from '../common/PremiumTextField';
+import PremiumDatePicker from '../common/PremiumDatePicker';
+import NumberStepper from '../common/NumberStepper';
+import { COLORS, addAlpha } from '../../theme/themeColors';
+import { extractBookingErrorMessage } from '../../utils/errorHandling';
 
 // API base URL for backend calls
 const API_BASE_URL = API_CONFIG.SERVER_URL;
@@ -63,18 +64,23 @@ interface WalkInBookingModalProps {
   apiContext?: 'frontdesk' | 'hotel-admin'; // To distinguish which API to use
 }
 
-const steps = ['Guest Information', 'Room Selection', 'Confirmation'];
-
 const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
   open,
   onClose,
   onSuccess,
   apiContext = 'frontdesk', // Default to frontdesk for backwards compatibility
 }) => {
-  console.log('WalkInBookingModal render - open:', open); // Debug log
-  
+  const { t } = useTranslation();
   const { token, user } = useAuth();
   const { tenantId } = useTenant();
+  const theme = useTheme();
+  
+  // Get translated steps
+  const steps = [
+    t('walkInBooking.steps.guestInformation'),
+    t('walkInBooking.steps.roomSelection'),
+    t('walkInBooking.steps.confirmation')
+  ];
   
   const [activeStep, setActiveStep] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -98,17 +104,22 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
   const [availableRooms, setAvailableRooms] = useState<AvailableRoom[]>([]);
   const [selectedRoom, setSelectedRoom] = useState<AvailableRoom | null>(null);
   const [roomsLoading, setRoomsLoading] = useState(false);
+  const [roomTypeFilter, setRoomTypeFilter] = useState<string>('ALL');
   
   // Hotel information (we'll need to get this from the backend)
   const [hotelId, setHotelId] = useState<number | null>(null);
+  
+  // Tax rate information
+  const [hotelVatRate, setHotelVatRate] = useState<number>(0);
+  const [hotelServiceTaxRate, setHotelServiceTaxRate] = useState<number>(0);
 
   // Memoized change handlers to prevent input focus loss
   const handleGuestInfoChange = React.useCallback((field: keyof WalkInGuestInfo) => (e: React.ChangeEvent<HTMLInputElement>) => {
     setGuestInfo(prev => ({ ...prev, [field]: e.target.value }));
   }, []);
 
-  const handleGuestsChange = React.useCallback((e: any) => {
-    setGuests(Number(e.target.value));
+  const handleGuestsChange = React.useCallback((newValue: number) => {
+    setGuests(newValue);
   }, []);
 
   const handleSpecialRequestsChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -140,7 +151,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
           const isHotelAdmin = user?.role === 'HOTEL_ADMIN' || user?.roles?.includes('HOTEL_ADMIN');
           const endpoint = isHotelAdmin ? `${API_BASE_URL}/api/hotel-admin/hotel` : `${API_BASE_URL}/api/front-desk/hotel`;
           
-          console.log('Loading hotel info for user role:', user?.role, 'using endpoint:', endpoint);
+          // console.log('Loading hotel info for user role:', user?.role, 'using endpoint:', endpoint);
           
           const response = await fetch(endpoint, {
             headers
@@ -149,20 +160,18 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
           if (response.ok) {
             const hotelData = await response.json();
             setHotelId(hotelData.id);
-            console.log('Loaded hotel info:', hotelData); // Debug log
           } else {
-            const errorText = await response.text();
-            console.error('Failed to fetch hotel information:', response.status, errorText);
+            // console.error('Failed to fetch hotel information:', response.status);
             throw new Error(`Failed to fetch hotel information: ${response.status}`);
           }
         } catch (hotelError) {
-          console.error('Failed to fetch hotel information:', hotelError);
-          setError('Failed to load hotel information. Please ensure you are logged in with appropriate permissions.');
+          // console.error('Failed to fetch hotel information:', hotelError);
+          setError(t('walkInBooking.messages.failedToLoadHotelPermissions'));
           return;
         }
       } catch (error) {
-        console.error('Failed to load hotel info:', error);
-        setError('Failed to load hotel information');
+        // console.error('Failed to load hotel info:', error);
+        setError(t('walkInBooking.messages.failedToLoadHotel'));
       }
     };
 
@@ -180,18 +189,58 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
       setSpecialRequests('');
       setSelectedRoom(null);
       setAvailableRooms([]);
+      setRoomTypeFilter('ALL');
       setError(null);
       
       // Get hotel ID from user context - we'll need to add this to the front desk API
       loadHotelInfo();
     }
-  }, [open, token, tenantId, user?.role, user?.roles]);
+  }, [open, token, tenantId, user?.role, user?.roles, t]);
+  
+  // Fetch hotel tax rates when hotelId is available
+  useEffect(() => {
+    const fetchTaxRates = async () => {
+      if (!hotelId || !token) {
+        // console.log('🏨 Cannot fetch tax rates - missing hotelId or token');
+        return;
+      }
+      
+      try {
+        // console.log('🔍 Fetching tax rates for hotel:', hotelId);
+        const response = await fetch(buildApiUrl(`/hotels/${hotelId}/tax-rate`), {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'X-Tenant-ID': tenantId || '',
+          },
+        });
+        
+        if (response.ok) {
+          const taxData = await response.json();
+          // console.log('📊 Tax rates loaded:', taxData);
+          setHotelVatRate(taxData.vatRate || 0);
+          setHotelServiceTaxRate(taxData.serviceTaxRate || 0);
+        } else {
+          // console.error('Failed to fetch tax rates:', response.status);
+          // Set default tax rates if fetch fails
+          setHotelVatRate(0);
+          setHotelServiceTaxRate(0);
+        }
+      } catch (error) {
+        // console.error('Error fetching tax rates:', error);
+        // Set default tax rates if error occurs
+        setHotelVatRate(0);
+        setHotelServiceTaxRate(0);
+      }
+    };
+    
+    fetchTaxRates();
+  }, [hotelId, token, tenantId]);
 
   // Load available rooms when dates/guests change and we're on step 1
   useEffect(() => {
     const loadAvailableRooms = async () => {
       if (!hotelId || !token) {
-        console.log('Cannot load rooms - missing hotelId or token:', { hotelId, hasToken: !!token });
+        // console.log('Cannot load rooms - missing hotelId or token:', { hotelId, hasToken: !!token });
         return;
       }
       
@@ -199,13 +248,13 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
       setError(null);
       
       try {
-        console.log('Loading available rooms for:', {
-          hotelId,
-          checkIn: format(checkInDate, 'yyyy-MM-dd'),
-          checkOut: format(checkOutDate, 'yyyy-MM-dd'),
-          guests,
-          userRole: user?.role
-        });
+        // console.log('Loading available rooms for:', {
+        //   hotelId,
+        //   checkIn: format(checkInDate, 'yyyy-MM-dd'),
+        //   checkOut: format(checkOutDate, 'yyyy-MM-dd'),
+        //   guests,
+        //   userRole: user?.role
+        // });
         
         // Use different APIs based on user role
         const isHotelAdmin = user?.role === 'HOTEL_ADMIN' || user?.roles?.includes('HOTEL_ADMIN');
@@ -231,7 +280,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
             size: '100'
           });
           
-          console.log('Hotel admin fetching available rooms for date range:', format(checkInDate, 'yyyy-MM-dd'), 'to', format(checkOutDate, 'yyyy-MM-dd'), 'guests:', guests);
+          // console.log('Hotel admin fetching available rooms for date range:', format(checkInDate, 'yyyy-MM-dd'), 'to', format(checkOutDate, 'yyyy-MM-dd'), 'guests:', guests);
           
           const response = await fetch(`${API_BASE_URL}/api/hotel-admin/available-rooms?${params.toString()}`, {
             headers
@@ -269,7 +318,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
             guests: guests.toString()
           });
           
-          console.log('Front desk fetching available rooms for date range:', format(checkInDate, 'yyyy-MM-dd'), 'to', format(checkOutDate, 'yyyy-MM-dd'), 'guests:', guests);
+          // console.log('Front desk fetching available rooms for date range:', format(checkInDate, 'yyyy-MM-dd'), 'to', format(checkOutDate, 'yyyy-MM-dd'), 'guests:', guests);
           
           const response = await fetch(`${API_BASE_URL}/api/front-desk/hotels/${hotelId}/available-rooms?${params.toString()}`, {
             headers
@@ -298,13 +347,13 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
           (room.isAvailable !== false)
         );
         
-        console.log('Available rooms loaded:', filteredRooms.length, 'out of', rooms.length, 'total rooms');
-        console.log('Filtered for', guests, 'guests on', format(checkInDate, 'yyyy-MM-dd'), 'to', format(checkOutDate, 'yyyy-MM-dd'));
+        // console.log('Available rooms loaded:', filteredRooms.length, 'out of', rooms.length, 'total rooms');
+        // console.log('Filtered for', guests, 'guests on', format(checkInDate, 'yyyy-MM-dd'), 'to', format(checkOutDate, 'yyyy-MM-dd'));
         setAvailableRooms(filteredRooms);
         setSelectedRoom(null);
       } catch (error) {
-        console.error('Failed to load available rooms:', error);
-        setError('Failed to load available rooms. Please try again.');
+        // console.error('Failed to load available rooms:', error);
+        setError(t('walkInBooking.messages.failedToLoadRooms'));
         setAvailableRooms([]);
       } finally {
         setRoomsLoading(false);
@@ -314,23 +363,23 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
     if (activeStep === 1 && hotelId && checkInDate && checkOutDate) {
       loadAvailableRooms();
     }
-  }, [activeStep, hotelId, checkInDate, checkOutDate, guests, token, user?.role, user?.roles, tenantId]);
+  }, [activeStep, hotelId, checkInDate, checkOutDate, guests, token, user?.role, user?.roles, tenantId, t]);
 
   const handleNext = () => {
     if (activeStep === 0) {
       // Validate guest information
       if (!guestInfo.firstName || !guestInfo.lastName || !guestInfo.email || !guestInfo.phone) {
-        setError('Please fill in all guest information fields');
+        setError(t('walkInBooking.validationErrors.fillAllFields'));
         return;
       }
       if (!guestInfo.email.includes('@')) {
-        setError('Please enter a valid email address');
+        setError(t('walkInBooking.validationErrors.invalidEmail'));
         return;
       }
     } else if (activeStep === 1) {
       // Validate room selection
       if (!selectedRoom) {
-        setError('Please select a room');
+        setError(t('walkInBooking.validationErrors.selectRoom'));
         return;
       }
     }
@@ -371,7 +420,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
       const isHotelAdmin = user?.role === 'HOTEL_ADMIN' || user?.roles?.includes('HOTEL_ADMIN');
       
       if (isHotelAdmin) {
-        console.log('Creating walk-in booking via hotel admin API');
+        // console.log('Creating walk-in booking via hotel admin API');
         response = await hotelAdminApi.createWalkInBooking(token, bookingRequest);
         if (response.success) {
           response = response.data;
@@ -379,7 +428,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
           throw new Error(response.message || 'Failed to create booking');
         }
       } else {
-        console.log('Creating walk-in booking via front desk API');
+        // console.log('Creating walk-in booking via front desk API');
         // Use the new front desk walk-in booking endpoint that ensures email goes to guest
         response = await frontDeskApiService.createWalkInBooking(token, bookingRequest);
         if (response.success) {
@@ -397,34 +446,10 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
         BookingNotificationEvents.afterCreation();
       }
     } catch (error) {
-      console.error('Failed to create walk-in booking:', error);
+      // console.error('Failed to create walk-in booking:', error);
       
-      // Extract meaningful error message
-      let errorMessage = 'Failed to create booking. Please try again.';
-      
-      if (error instanceof Error) {
-        const message = error.message.toLowerCase();
-        
-        if (message.includes('no available rooms') || 
-            message.includes('room not available') ||
-            message.includes('room is not available') ||
-            message.includes('room does not belong') ||
-            message.includes('room already occupied')) {
-          errorMessage = 'The selected room is no longer available. Please choose a different room or refresh the available rooms.';
-        } else if (message.includes('room not found')) {
-          errorMessage = 'The selected room could not be found. Please refresh and try again.';
-        } else if (message.includes('guest information') || message.includes('invalid guest')) {
-          errorMessage = 'Please check the guest information and try again.';
-        } else if (message.includes('payment')) {
-          errorMessage = 'There was an issue processing the payment information. Please try again.';
-        } else if (message.includes('date') || message.includes('check-in') || message.includes('check-out')) {
-          errorMessage = 'Please check the check-in and check-out dates and try again.';
-        } else if (error.message !== 'Failed to create booking. Please try again.') {
-          // Use the actual error message if it's not the generic one
-          errorMessage = error.message;
-        }
-      }
-      
+      // Use the centralized error handling utility
+      const errorMessage = extractBookingErrorMessage(error);
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -435,207 +460,360 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
     if (!selectedRoom) return 0;
     
     const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24));
-    return selectedRoom.pricePerNight * nights;
+    const subtotal = selectedRoom.pricePerNight * nights;
+    
+    // Calculate taxes
+    const vatAmount = subtotal * hotelVatRate;
+    const serviceTaxAmount = subtotal * hotelServiceTaxRate;
+    const totalWithTaxes = subtotal + vatAmount + serviceTaxAmount;
+    
+    // console.log('💰 Price calculation:', {
+    //   subtotal,
+    //   vatRate: hotelVatRate,
+    //   serviceTaxRate: hotelServiceTaxRate,
+    //   vatAmount,
+    //   serviceTaxAmount,
+    //   totalWithTaxes
+    // });
+    
+    return totalWithTaxes;
   };
 
   const renderStepContent = () => {
     switch (activeStep) {
       case 0:
         return (
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <Typography variant="h6" gutterBottom>
-                Guest Information
-              </Typography>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="First Name"
-                value={guestInfo.firstName}
-                onChange={handleGuestInfoChange('firstName')}
-                required
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Last Name"
-                value={guestInfo.lastName}
-                onChange={handleGuestInfoChange('lastName')}
-                required
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Email"
-                type="email"
-                value={guestInfo.email}
-                onChange={handleGuestInfoChange('email')}
-                required
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Phone"
-                value={guestInfo.phone}
-                onChange={handleGuestInfoChange('phone')}
-                required
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <Divider sx={{ my: 2 }} />
-              <Typography variant="h6" gutterBottom>
-                Stay Details
-              </Typography>
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <LocalizationProvider dateAdapter={AdapterDateFns}>
-                <DatePicker
-                  label="Check-in Date"
-                  value={checkInDate}
-                  onChange={(newValue) => newValue && setCheckInDate(newValue)}
-                  minDate={new Date()}
-                  slotProps={{ textField: { fullWidth: true } }}
-                />
-              </LocalizationProvider>
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <LocalizationProvider dateAdapter={AdapterDateFns}>
-                <DatePicker
-                  label="Check-out Date"
-                  value={checkOutDate}
-                  onChange={(newValue) => newValue && setCheckOutDate(newValue)}
-                  minDate={addDays(checkInDate, 1)}
-                  slotProps={{ textField: { fullWidth: true } }}
-                />
-              </LocalizationProvider>
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <FormControl fullWidth>
-                <InputLabel>Number of Guests</InputLabel>
-                <Select
-                  value={guests}
-                  label="Number of Guests"
-                  onChange={handleGuestsChange}
-                >
-                  {[1, 2, 3, 4, 5, 6].map((num) => (
-                    <MenuItem key={num} value={num}>
-                      {num} Guest{num !== 1 ? 's' : ''}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-          </Grid>
+          <Box>
+            {/* Guest Information Section */}
+            <Card 
+              elevation={2}
+              sx={{ 
+                mb: 3,
+                backgroundColor: theme.palette.background.paper,
+                border: `2px solid ${theme.palette.divider}`,
+                borderRadius: 2,
+                boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.08)}`,
+              }}
+            >
+              <CardContent sx={{ p: 3 }}>
+                <Box sx={{ 
+                  display: 'flex',
+                  alignItems: 'center',
+                  mb: 3,
+                }}>
+                  <Box>
+                    <Typography variant="h6" sx={{ 
+                      fontWeight: 700,
+                      color: COLORS.PRIMARY,
+                      mb: 0.5,
+                    }}>
+                      {t('walkInBooking.guestInformation.title')}
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+                      {t('walkInBooking.guestInformation.description')}
+                    </Typography>
+                  </Box>
+                </Box>
+                
+                <Grid container spacing={3}>
+                  <Grid item xs={12} sm={6}>
+                    <PremiumTextField
+                      fullWidth
+                      label={t('walkInBooking.guestInformation.firstName')}
+                      value={guestInfo.firstName}
+                      onChange={handleGuestInfoChange('firstName')}
+                      required
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <PremiumTextField
+                      fullWidth
+                      label={t('walkInBooking.guestInformation.lastName')}
+                      value={guestInfo.lastName}
+                      onChange={handleGuestInfoChange('lastName')}
+                      required
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <PremiumTextField
+                      fullWidth
+                      label={t('walkInBooking.guestInformation.email')}
+                      type="email"
+                      value={guestInfo.email}
+                      onChange={handleGuestInfoChange('email')}
+                      required
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <PremiumTextField
+                      fullWidth
+                      label={t('walkInBooking.guestInformation.phone')}
+                      value={guestInfo.phone}
+                      onChange={handleGuestInfoChange('phone')}
+                      required
+                    />
+                  </Grid>
+                </Grid>
+              </CardContent>
+            </Card>
+
+            {/* Stay Details Section */}
+            <Card 
+              elevation={2}
+              sx={{ 
+                backgroundColor: theme.palette.background.paper,
+                border: `2px solid ${theme.palette.divider}`,
+                borderRadius: 2,
+                boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.08)}`,
+              }}
+            >
+              <CardContent sx={{ p: 3 }}>
+                <Box sx={{ 
+                  display: 'flex',
+                  alignItems: 'center',
+                  mb: 3,
+                }}>
+                  <Box>
+                    <Typography variant="h6" sx={{ 
+                      fontWeight: 700,
+                      color: COLORS.PRIMARY,
+                      mb: 0.5,
+                    }}>
+                      {t('walkInBooking.stayDetails.title')}
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+                      {t('walkInBooking.stayDetails.description')}
+                    </Typography>
+                  </Box>
+                </Box>
+                
+                <Grid container spacing={3}>
+                  <Grid item xs={12} sm={4}>
+                    <PremiumDatePicker
+                      label={t('walkInBooking.stayDetails.checkInDate')}
+                      value={checkInDate}
+                      onChange={(newValue) => newValue && setCheckInDate(newValue)}
+                      minDate={new Date()}
+                      slotProps={{ 
+                        textField: { 
+                          fullWidth: true,
+                          sx: {
+                            '& .MuiInputBase-root': {
+                              backgroundColor: COLORS.BG_LIGHT,
+                              borderRadius: 2,
+                              borderLeft: `2px solid ${COLORS.SECONDARY}`,
+                              transition: 'all 0.3s ease',
+                            },
+                            '& .MuiOutlinedInput-root': {
+                              '&:hover': {
+                                backgroundColor: addAlpha(COLORS.SECONDARY, 0.04),
+                                '& fieldset': {
+                                  borderColor: COLORS.SECONDARY,
+                                },
+                              },
+                              '&.Mui-focused': {
+                                backgroundColor: addAlpha(COLORS.SECONDARY, 0.08),
+                                '& fieldset': {
+                                  borderColor: COLORS.SECONDARY,
+                                  borderWidth: '2px',
+                                },
+                              },
+                            },
+                            '& .MuiInputLabel-root': {
+                              '&.Mui-focused': {
+                                color: COLORS.PRIMARY,
+                                fontWeight: 700,
+                              },
+                            },
+                          }
+                        } 
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={4}>
+                    <PremiumDatePicker
+                      label={t('walkInBooking.stayDetails.checkOutDate')}
+                      value={checkOutDate}
+                      onChange={(newValue) => newValue && setCheckOutDate(newValue)}
+                      minDate={addDays(checkInDate, 1)}
+                      slotProps={{ 
+                        textField: { 
+                          fullWidth: true,
+                          sx: {
+                            '& .MuiInputBase-root': {
+                              backgroundColor: COLORS.BG_LIGHT,
+                              borderRadius: 2,
+                              borderLeft: `2px solid ${COLORS.SECONDARY}`,
+                              transition: 'all 0.3s ease',
+                            },
+                            '& .MuiOutlinedInput-root': {
+                              '&:hover': {
+                                backgroundColor: addAlpha(COLORS.SECONDARY, 0.04),
+                                '& fieldset': {
+                                  borderColor: COLORS.SECONDARY,
+                                },
+                              },
+                              '&.Mui-focused': {
+                                backgroundColor: addAlpha(COLORS.SECONDARY, 0.08),
+                                '& fieldset': {
+                                  borderColor: COLORS.SECONDARY,
+                                  borderWidth: '2px',
+                                },
+                              },
+                            },
+                            '& .MuiInputLabel-root': {
+                              '&.Mui-focused': {
+                                color: COLORS.PRIMARY,
+                                fontWeight: 700,
+                              },
+                            },
+                          }
+                        } 
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={4}>
+                    <NumberStepper
+                      value={guests}
+                      onChange={handleGuestsChange}
+                      min={1}
+                      max={10}
+                      label={t('walkInBooking.stayDetails.numberOfGuests')}
+                      fullWidth
+                    />
+                  </Grid>
+                </Grid>
+              </CardContent>
+            </Card>
+          </Box>
         );
         
       case 1:
         return (
           <Box>
-            <Typography variant="h6" gutterBottom>
-              Available Rooms
+            <Typography variant="h6" gutterBottom sx={{ fontWeight: 700, color: COLORS.PRIMARY }}>
+              {t('walkInBooking.roomSelection.title')}
             </Typography>
-            <Typography variant="body2" color="text.secondary" gutterBottom>
-              {format(checkInDate, 'MMM dd, yyyy')} - {format(checkOutDate, 'MMM dd, yyyy')} • {guests} Guest{guests !== 1 ? 's' : ''}
+            <Typography variant="body2" sx={{ color: theme.palette.text.secondary }} gutterBottom>
+              {t('walkInBooking.roomSelection.description', { 
+                checkIn: formatDateCalendarAware(checkInDate),
+                checkOut: formatDateCalendarAware(checkOutDate),
+                guests: guests,
+                guestsPlural: guests !== 1 ? 's' : ''
+              })}
             </Typography>
+            
+            {/* Room Type Filter */}
+            {!roomsLoading && availableRooms.length > 0 && (() => {
+              const roomTypes = Array.from(new Set(availableRooms.map(r => r.roomType)));
+              return roomTypes.length > 1 ? (
+                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 1, mb: 1 }}>
+                  <Chip
+                    label={t('walkInBooking.roomSelection.allTypes') || 'All Types'}
+                    onClick={() => setRoomTypeFilter('ALL')}
+                    color={roomTypeFilter === 'ALL' ? 'primary' : 'default'}
+                    variant={roomTypeFilter === 'ALL' ? 'filled' : 'outlined'}
+                    sx={{ fontWeight: 600 }}
+                  />
+                  {roomTypes.map(type => (
+                    <Chip
+                      key={type}
+                      label={type.toUpperCase()}
+                      onClick={() => setRoomTypeFilter(type)}
+                      color={roomTypeFilter === type ? 'primary' : 'default'}
+                      variant={roomTypeFilter === type ? 'filled' : 'outlined'}
+                      sx={{ fontWeight: 600 }}
+                    />
+                  ))}
+                </Box>
+              ) : null;
+            })()}
             
             {roomsLoading ? (
               <Box sx={{ textAlign: 'center', py: 4 }}>
                 <CircularProgress size={40} />
                 <Typography variant="body2" sx={{ mt: 2 }}>
-                  Loading available rooms...
+                  {t('walkInBooking.roomSelection.loadingRooms')}
                 </Typography>
               </Box>
             ) : availableRooms.length === 0 ? (
               <Alert severity="warning">
-                No rooms available for {guests} guest{guests !== 1 ? 's' : ''} from {format(checkInDate, 'MMM dd')} to {format(checkOutDate, 'MMM dd')}. 
-                Please try different dates or reduce the number of guests.
+                {t('walkInBooking.roomSelection.noRoomsAvailable', {
+                  guests: guests,
+                  guestsPlural: guests !== 1 ? 's' : '',
+                  checkIn: formatDateCalendarAware(checkInDate),
+                  checkOut: formatDateCalendarAware(checkOutDate)
+                })}
               </Alert>
             ) : (
               <Grid container spacing={2} sx={{ mt: 1 }}>
-                {availableRooms.map((room) => (
+                {availableRooms
+                  .filter(room => roomTypeFilter === 'ALL' || room.roomType === roomTypeFilter)
+                  .map((room) => (
                   <Grid item xs={12} sm={6} md={4} key={room.id}>
                     <Card 
                       sx={{ 
                         cursor: 'pointer',
                         border: selectedRoom?.id === room.id ? '3px solid' : '1px solid',
-                        borderColor: selectedRoom?.id === room.id ? 'primary.main' : 'divider',
-                        backgroundColor: selectedRoom?.id === room.id ? 'primary.light' : 'background.paper',
-                        transform: selectedRoom?.id === room.id ? 'scale(1.02)' : 'scale(1)',
-                        boxShadow: selectedRoom?.id === room.id ? '0 8px 25px rgba(25, 118, 210, 0.15)' : '0 2px 8px rgba(0,0,0,0.1)',
-                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                        position: 'relative',
+                        borderColor: selectedRoom?.id === room.id ? COLORS.SECONDARY : 'divider',
+                        borderLeft: selectedRoom?.id === room.id ? `6px solid ${COLORS.SECONDARY}` : `3px solid ${COLORS.SECONDARY}`,
+                        backgroundColor: selectedRoom?.id === room.id ? 'action.selected' : 'background.paper',
+                        elevation: 0,
+                        borderRadius: 2,
+                        transition: 'all 0.2s ease-in-out',
                         '&:hover': {
-                          transform: 'scale(1.02)',
-                          boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                          borderColor: COLORS.SECONDARY,
+                          backgroundColor: 'action.hover',
+                          transform: 'translateY(-2px)',
+                          boxShadow: 3,
                         }
                       }}
                       onClick={() => setSelectedRoom(room)}
                     >
-                      {selectedRoom?.id === room.id && (
-                        <Box
-                          sx={{
-                            position: 'absolute',
-                            top: 8,
-                            right: 8,
-                            backgroundColor: 'primary.main',
-                            color: 'white',
-                            borderRadius: '50%',
-                            width: 24,
-                            height: 24,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            zIndex: 1,
-                          }}
-                        >
-                          ✓
-                        </Box>
-                      )}
-                      <CardContent sx={{ 
-                        color: selectedRoom?.id === room.id ? 'primary.contrastText' : 'inherit',
-                        '& .MuiTypography-root': {
-                          color: selectedRoom?.id === room.id ? 'white' : 'inherit'
-                        }
-                      }}>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+                      <CardContent sx={{ p: 3 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
                           <Typography variant="h6" sx={{ 
-                            fontWeight: selectedRoom?.id === room.id ? 600 : 500,
-                            color: selectedRoom?.id === room.id ? 'white' : 'inherit'
+                            fontWeight: 'bold',
+                            color: 'text.primary',
+                            fontSize: '1.1rem'
                           }}>
-                            Room {room.roomNumber}
+                            {t('walkInBooking.roomSelection.roomNumber')} {room.roomNumber}
                           </Typography>
                           <Chip 
-                            label={room.roomType} 
+                            label={room.roomType.toUpperCase()} 
                             size="small" 
+                            variant="outlined"
                             sx={{
-                              backgroundColor: selectedRoom?.id === room.id ? 'rgba(255,255,255,0.2)' : 'inherit',
-                              color: selectedRoom?.id === room.id ? 'white' : 'inherit'
+                              borderColor: COLORS.SECONDARY,
+                              color: COLORS.SECONDARY,
+                              fontWeight: 'medium',
+                              fontSize: '0.75rem'
                             }}
                           />
                         </Box>
                         <Typography variant="body2" sx={{ 
-                          color: selectedRoom?.id === room.id ? 'rgba(255,255,255,0.9)' : 'text.secondary',
-                          mb: 1
+                          color: 'text.secondary',
+                          mb: 1,
+                          fontSize: '0.875rem'
                         }}>
-                          Capacity: {room.capacity} guest{room.capacity !== 1 ? 's' : ''}
+                          {t('walkInBooking.roomSelection.capacity')}: {t(room.capacity === 1 ? 'walkInBooking.roomSelection.capacityText' : 'walkInBooking.roomSelection.capacityTextPlural', { count: room.capacity })}
                         </Typography>
                         {room.description && (
                           <Typography variant="body2" sx={{ 
-                            color: selectedRoom?.id === room.id ? 'rgba(255,255,255,0.8)' : 'text.secondary',
-                            mb: 1
+                            color: 'text.secondary',
+                            mb: 3,
+                            fontSize: '0.875rem',
+                            lineHeight: 1.4
                           }}>
                             {room.description}
                           </Typography>
                         )}
                         <Typography variant="h6" sx={{
-                          color: selectedRoom?.id === room.id ? 'white' : 'primary.main',
-                          fontWeight: 600
+                          color: COLORS.SECONDARY,
+                          fontWeight: 'bold',
+                          fontSize: '1.2rem'
                         }}>
-                          ETB {room.pricePerNight?.toFixed(0)}/night
+                          {formatCurrency(room.pricePerNight || 0)}{t('walkInBooking.roomSelection.perNightShort')}
                         </Typography>
                       </CardContent>
                     </Card>
@@ -646,14 +824,14 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
             
             {selectedRoom && (
               <Box sx={{ mt: 2 }}>
-                <TextField
+                <PremiumTextField
                   fullWidth
-                  label="Special Requests (Optional)"
+                  label={t('walkInBooking.roomSelection.specialRequests')}
                   multiline
                   rows={3}
                   value={specialRequests}
                   onChange={handleSpecialRequestsChange}
-                  placeholder="Any special requests or notes for the guest stay..."
+                  placeholder={t('walkInBooking.roomSelection.specialRequestsPlaceholder')}
                 />
               </Box>
             )}
@@ -663,83 +841,241 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
       case 2:
         return (
           <Box>
-            <Typography variant="h6" gutterBottom>
-              Booking Confirmation
-            </Typography>
+            {/* Confirmation Header */}
+            <Box sx={{ 
+              textAlign: 'center',
+              mb: 4,
+              p: 3,
+              backgroundColor: 'background.paper',
+              borderRadius: 2,
+              border: '1px solid',
+              borderColor: 'divider',
+              boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.08)}`,
+            }}>
+              <Typography variant="h5" sx={{ 
+                fontWeight: 700,
+                color: theme.palette.text.primary,
+                mb: 1,
+              }}>
+                {t('walkInBooking.confirmation.bookingConfirmationTitle')}
+              </Typography>
+              <Typography variant="body1" sx={{ color: theme.palette.text.secondary }}>
+                {t('walkInBooking.confirmation.reviewDetails')}
+              </Typography>
+            </Box>
             
-            <Grid container spacing={2}>
+            <Grid container spacing={3}>
+              {/* Guest Information */}
               <Grid item xs={12} sm={6}>
-                <Card>
-                  <CardContent>
-                    <Typography variant="subtitle1" gutterBottom>
-                      Guest Information
-                    </Typography>
-                    <Typography variant="body2">
-                      <strong>Name:</strong> {guestInfo.firstName} {guestInfo.lastName}
-                    </Typography>
-                    <Typography variant="body2">
-                      <strong>Email:</strong> {guestInfo.email}
-                    </Typography>
-                    <Typography variant="body2">
-                      <strong>Phone:</strong> {guestInfo.phone}
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-              
-              <Grid item xs={12} sm={6}>
-                <Card>
-                  <CardContent>
-                    <Typography variant="subtitle1" gutterBottom>
-                      Stay Details
-                    </Typography>
-                    <Typography variant="body2">
-                      <strong>Room:</strong> {selectedRoom?.roomNumber} ({selectedRoom?.roomType})
-                    </Typography>
-                    <Typography variant="body2">
-                      <strong>Check-in:</strong> {format(checkInDate, 'MMM dd, yyyy')}
-                    </Typography>
-                    <Typography variant="body2">
-                      <strong>Check-out:</strong> {format(checkOutDate, 'MMM dd, yyyy')}
-                    </Typography>
-                    <Typography variant="body2">
-                      <strong>Guests:</strong> {guests}
-                    </Typography>
-                    {specialRequests && (
-                      <Typography variant="body2">
-                        <strong>Special Requests:</strong> {specialRequests}
+                <Card elevation={2} sx={{ 
+                  backgroundColor: 'background.paper',
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  borderLeft: `4px solid ${COLORS.SECONDARY}`,
+                  borderRadius: 2,
+                  boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.08)}`,
+                }}>
+                  <CardContent sx={{ p: 3 }}>
+                    <Box sx={{ 
+                      display: 'flex', 
+                      alignItems: 'center',
+                      mb: 2,
+                    }}>
+                      <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                        {t('walkInBooking.confirmation.guestInformation')}
                       </Typography>
-                    )}
+                    </Box>                    <Box sx={{ space: 1.5 }}>
+                      <Box sx={{ mb: 1.5 }}>
+                        <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 700 }}>
+                          {t('walkInBooking.confirmation.fullName')}
+                        </Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                          {guestInfo.firstName} {guestInfo.lastName}
+                        </Typography>
+                      </Box>
+                      <Box sx={{ mb: 1.5 }}>
+                        <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 700 }}>
+                          {t('walkInBooking.confirmation.emailAddress')}
+                        </Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                          {guestInfo.email}
+                        </Typography>
+                      </Box>
+                      <Box>
+                        <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 700 }}>
+                          {t('walkInBooking.confirmation.phoneNumber')}
+                        </Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                          {formatEthiopianPhone(guestInfo.phone)}
+                        </Typography>
+                      </Box>
+                    </Box>
                   </CardContent>
                 </Card>
               </Grid>
               
+              {/* Stay Details */}
+              <Grid item xs={12} sm={6}>
+                <Card elevation={2} sx={{ 
+                  backgroundColor: 'background.paper',
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  borderRadius: 2,
+                  boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.08)}`,
+                }}>
+                  <CardContent sx={{ p: 3 }}>
+                    <Box sx={{ 
+                      display: 'flex',
+                      alignItems: 'center',
+                      mb: 2,
+                    }}>
+                      <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                        {t('walkInBooking.confirmation.stayDetails')}
+                      </Typography>
+                    </Box>
+                    
+                    <Box sx={{ space: 1.5 }}>
+                      <Box sx={{ mb: 1.5 }}>
+                        <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 700 }}>
+                          {t('walkInBooking.confirmation.room')}
+                        </Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                          {selectedRoom?.roomNumber} ({selectedRoom?.roomType})
+                        </Typography>
+                      </Box>
+                      <Box sx={{ mb: 1.5 }}>
+                        <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 700 }}>
+                          {t('walkInBooking.confirmation.checkInCheckOut')}
+                        </Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                          {format(checkInDate, 'MMM dd, yyyy')} - {format(checkOutDate, 'MMM dd, yyyy')}
+                        </Typography>
+                      </Box>
+                      <Box sx={{ mb: 1.5 }}>
+                        <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 700 }}>
+                          {t('walkInBooking.confirmation.guests')}
+                        </Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                          {guests} {guests !== 1 ? t('walkInBooking.confirmation.guestPlural') : t('walkInBooking.confirmation.guest')}
+                        </Typography>
+                      </Box>
+                      {specialRequests && (
+                        <Box>
+                          <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 700 }}>
+                            {t('walkInBooking.confirmation.specialRequests')}
+                          </Typography>
+                          <Typography variant="body2" sx={{ fontWeight: 600, fontStyle: 'italic' }}>
+                            {specialRequests}
+                          </Typography>
+                        </Box>
+                      )}
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+              
+              {/* Pricing Summary */}
               <Grid item xs={12}>
-                <Card>
-                  <CardContent>
-                    <Typography variant="subtitle1" gutterBottom>
-                      Pricing Summary
-                    </Typography>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                      <Typography variant="body2">
-                        ETB {(selectedRoom?.pricePerNight || 0)?.toFixed(0)}/night × {Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24))} night{Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)) !== 1 ? 's' : ''}
-                      </Typography>
-                      <Typography variant="body2">
-                        ETB {calculateTotalAmount()?.toFixed(0)}
-                      </Typography>
-                    </Box>
-                    <Divider />
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
-                      <Typography variant="h6">
-                        Total Amount
-                      </Typography>
-                      <Typography variant="h6" color="primary.main">
-                        ${calculateTotalAmount()}
+                <Card elevation={3} sx={{ 
+                  backgroundColor: 'background.paper',
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  borderRadius: 2,
+                  boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.08)}`,
+                }}>
+                  <CardContent sx={{ p: 3 }}>
+                    <Box sx={{ 
+                      display: 'flex',
+                      alignItems: 'center',
+                      mb: 3,
+                    }}>
+                      <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                        {t('walkInBooking.confirmation.pricingSummary')}
                       </Typography>
                     </Box>
-                    <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                      Payment will be processed at the front desk
-                    </Typography>
+                    
+                    {/* Price Breakdown */}
+                    <Box sx={{ 
+                      p: 2,
+                      bgcolor: theme.palette.action.hover,
+                      borderRadius: 2,
+                      mb: 2,
+                      border: `1px solid ${theme.palette.divider}`,
+                    }}>
+                      {(() => {
+                        const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24));
+                        const subtotal = (selectedRoom?.pricePerNight || 0) * nights;
+                        const vatAmount = subtotal * hotelVatRate;
+                        const serviceTaxAmount = subtotal * hotelServiceTaxRate;
+                        
+                        return (
+                          <>
+                            {/* Subtotal */}
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1.5 }}>
+                              <Typography variant="body1" sx={{ color: theme.palette.text.secondary }}>
+                                {t('walkInBooking.confirmation.subtotal')} ({formatCurrencyWithDecimals(selectedRoom?.pricePerNight || 0)}{t('walkInBooking.confirmation.perNight')} × {nights} {nights !== 1 ? t('walkInBooking.confirmation.nightPlural') : t('walkInBooking.confirmation.night')})
+                              </Typography>
+                              <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                {formatCurrencyWithDecimals(subtotal)}
+                              </Typography>
+                            </Box>
+                            
+                            {/* VAT */}
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1.5 }}>
+                              <Typography variant="body1" sx={{ color: theme.palette.text.secondary }}>
+                                {t('walkInBooking.confirmation.vat')} ({(hotelVatRate * 100).toFixed(0)}%)
+                              </Typography>
+                              <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                {formatCurrencyWithDecimals(vatAmount)}
+                              </Typography>
+                            </Box>
+                            
+                            {/* Service Tax */}
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0 }}>
+                              <Typography variant="body1" sx={{ color: theme.palette.text.secondary }}>
+                                {t('walkInBooking.confirmation.serviceTax')} ({(hotelServiceTaxRate * 100).toFixed(0)}%)
+                              </Typography>
+                              <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                {formatCurrencyWithDecimals(serviceTaxAmount)}
+                              </Typography>
+                            </Box>
+                          </>
+                        );
+                      })()}
+                    </Box>
+                    
+                    <Divider sx={{ my: 2 }} />
+                    
+                    <Box sx={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      alignItems: 'center',
+                      p: 2,
+                      bgcolor: COLORS.SECONDARY,
+                      borderRadius: 2,
+                      mb: 2,
+                    }}>
+                      <Typography variant="h5" sx={{ color: COLORS.WHITE, fontWeight: 700 }}>
+                        {t('walkInBooking.confirmation.totalAmount')}
+                      </Typography>
+                      <Typography variant="h4" sx={{ color: COLORS.WHITE, fontWeight: 700 }}>
+                        {formatCurrencyWithDecimals(calculateTotalAmount() || 0)}
+                      </Typography>
+                    </Box>
+                    
+                    <Box sx={{
+                      p: 2,
+                      bgcolor: addAlpha(COLORS.SECONDARY, 0.1),
+                      color: COLORS.PRIMARY,
+                      borderRadius: 2,
+                      textAlign: 'center',
+                      border: '1px solid',
+                      borderColor: 'divider',
+                    }}>
+                      <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                        {t('walkInBooking.confirmation.paymentNote')}
+                      </Typography>
+                    </Box>
                   </CardContent>
                 </Card>
               </Grid>
@@ -759,25 +1095,80 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
       maxWidth="md" 
       fullWidth
       PaperProps={{
-        sx: { minHeight: '70vh' }
+        sx: { 
+          minHeight: '70vh',
+          borderRadius: 2,
+          backgroundColor: theme.palette.background.paper,
+          boxShadow: `0 8px 32px ${addAlpha(COLORS.BLACK, 0.12)}`,
+        }
       }}
     >
-      <DialogTitle>
-        Walk-in Guest Booking
-        <Box sx={{ mt: 2 }}>
-          <Stepper activeStep={activeStep} alternativeLabel>
-            {steps.map((label) => (
-              <Step key={label}>
-                <StepLabel>{label}</StepLabel>
-              </Step>
-            ))}
-          </Stepper>
+      <DialogTitle sx={{ 
+        backgroundColor: theme.palette.background.paper,
+        borderBottom: `2px solid ${theme.palette.divider}`,
+        pb: 2,
+      }}>
+        <Box sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 2,
+          mb: 2,
+        }}>
+          <Box>
+            <Typography 
+              variant="h5" 
+              sx={{ 
+                fontWeight: 700,
+                color: COLORS.PRIMARY,
+              }}
+            >
+              {t('walkInBooking.title')}
+            </Typography>
+            <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+              {t('walkInBooking.subtitle')}
+            </Typography>
+          </Box>
         </Box>
+        
+        <Stepper 
+          activeStep={activeStep} 
+          alternativeLabel
+          sx={{
+            '& .MuiStepLabel-root .Mui-completed': {
+              color: COLORS.PRIMARY,
+            },
+            '& .MuiStepLabel-root .Mui-active': {
+              color: COLORS.PRIMARY,
+            },
+          }}
+        >
+          {steps.map((label) => (
+            <Step key={label}>
+              <StepLabel>{label}</StepLabel>
+            </Step>
+          ))}
+        </Stepper>
       </DialogTitle>
       
       <DialogContent sx={{ position: 'relative', minHeight: '400px' }}>
         {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
+          <Alert 
+            severity="error" 
+            sx={{ 
+              mb: 2,
+              backgroundColor: addAlpha(COLORS.ERROR, 0.1),
+              border: `1px solid ${addAlpha(COLORS.ERROR, 0.3)}`,
+              borderRadius: 2,
+              '& .MuiAlert-icon': {
+                color: COLORS.ERROR,
+              },
+              '& .MuiAlert-message': {
+                color: COLORS.ERROR,
+                fontWeight: 500,
+                fontSize: '0.95rem',
+              },
+            }}
+          >
             {error}
           </Alert>
         )}
@@ -791,7 +1182,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
               left: 0,
               right: 0,
               bottom: 0,
-              backgroundColor: 'rgba(255, 255, 255, 0.7)',
+              backgroundColor: addAlpha(COLORS.WHITE, 0.7),
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -810,14 +1201,36 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
         {renderStepContent()}
       </DialogContent>
       
-      <DialogActions sx={{ px: 3, pb: 2 }}>
-        <Button onClick={onClose} disabled={loading}>
-          Cancel
+      <DialogActions sx={{ px: 3, pb: 2, backgroundColor: theme.palette.background.paper, borderTop: `2px solid ${theme.palette.divider}` }}>
+        <Button 
+          onClick={onClose} 
+          disabled={loading}
+          sx={{
+            color: theme.palette.text.secondary,
+            borderColor: theme.palette.divider,
+            '&:hover': {
+              backgroundColor: theme.palette.action.hover,
+              borderColor: COLORS.PRIMARY,
+            },
+          }}
+        >
+          {t('walkInBooking.actions.cancel')}
         </Button>
         
         {activeStep > 0 && (
-          <Button onClick={handleBack} disabled={loading}>
-            Back
+          <Button 
+            onClick={handleBack} 
+            disabled={loading}
+            sx={{
+              color: theme.palette.text.secondary,
+              borderColor: theme.palette.divider,
+              '&:hover': {
+                backgroundColor: theme.palette.action.hover,
+                borderColor: COLORS.PRIMARY,
+              },
+            }}
+          >
+            {t('walkInBooking.actions.back')}
           </Button>
         )}
         
@@ -826,18 +1239,40 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
             variant="contained" 
             onClick={handleNext}
             disabled={loading || (activeStep === 1 && (!selectedRoom || roomsLoading))}
-            startIcon={roomsLoading && activeStep === 1 ? <CircularProgress size={16} /> : undefined}
+            sx={{
+              backgroundColor: COLORS.PRIMARY,
+              color: 'white',
+              fontWeight: 600,
+              '&:hover': {
+                backgroundColor: COLORS.CHECKED_IN,
+              },
+              '&:disabled': {
+                backgroundColor: theme.palette.action.disabledBackground,
+                color: theme.palette.action.disabled,
+              },
+            }}
           >
-            {roomsLoading && activeStep === 1 ? 'Loading Rooms...' : 'Next'}
+            {roomsLoading && activeStep === 1 ? t('walkInBooking.actions.loadingRooms') : t('walkInBooking.actions.next')}
           </Button>
         ) : (
           <Button 
             variant="contained" 
             onClick={handleCreateBooking}
             disabled={loading || !selectedRoom}
-            startIcon={loading ? <CircularProgress size={16} /> : undefined}
+            sx={{
+              backgroundColor: COLORS.PRIMARY,
+              color: 'white',
+              fontWeight: 600,
+              '&:hover': {
+                backgroundColor: COLORS.CHECKED_IN,
+              },
+              '&:disabled': {
+                backgroundColor: theme.palette.action.disabledBackground,
+                color: theme.palette.action.disabled,
+              },
+            }}
           >
-            {loading ? 'Creating Booking...' : 'Create Booking'}
+            {loading ? t('walkInBooking.messages.creatingBooking') : t('walkInBooking.actions.confirm')}
           </Button>
         )}
       </DialogActions>

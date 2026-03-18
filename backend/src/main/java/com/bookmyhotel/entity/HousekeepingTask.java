@@ -25,13 +25,15 @@ public class HousekeepingTask extends HotelScopedEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "room_id", nullable = false)
-    private Room room;
+    @Column(name = "room_number")
+    private String roomNumber;
+
+    @Column(name = "title")
+    private String title;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "assigned_staff_id")
-    private HousekeepingStaff assignedStaff;
+    @JoinColumn(name = "assigned_user_id")
+    private User assignedUser;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "task_type", nullable = false)
@@ -79,19 +81,16 @@ public class HousekeepingTask extends HotelScopedEntity {
     public HousekeepingTask() {
     }
 
-    public HousekeepingTask(Room room, HousekeepingTaskType taskType, HousekeepingTaskStatus status,
+    public HousekeepingTask(String roomNumber, String title, HousekeepingTaskType taskType,
+            HousekeepingTaskStatus status,
             TaskPriority priority, String description) {
-        this.room = room;
+        this.roomNumber = roomNumber;
+        this.title = title;
         this.taskType = taskType;
         this.status = status;
         this.priority = priority;
         this.description = description;
         this.createdAt = LocalDateTime.now();
-
-        // Set hotel from room
-        if (room != null) {
-            setHotel(room.getHotel());
-        }
 
         // Set estimated duration based on task type
         if (taskType != null) {
@@ -108,21 +107,29 @@ public class HousekeepingTask extends HotelScopedEntity {
         this.id = id;
     }
 
-    public Room getRoom() {
-        return room;
+    public String getRoomNumber() {
+        return roomNumber;
     }
 
-    public void setRoom(Room room) {
-        this.room = room;
+    public void setRoomNumber(String roomNumber) {
+        this.roomNumber = roomNumber;
     }
 
-    public HousekeepingStaff getAssignedStaff() {
-        return assignedStaff;
+    public String getTitle() {
+        return title;
     }
 
-    public void setAssignedStaff(HousekeepingStaff assignedStaff) {
-        this.assignedStaff = assignedStaff;
-        if (assignedStaff != null && this.assignedAt == null) {
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public User getAssignedUser() {
+        return assignedUser;
+    }
+
+    public void setAssignedUser(User assignedUser) {
+        this.assignedUser = assignedUser;
+        if (assignedUser != null && this.assignedAt == null) {
             this.assignedAt = LocalDateTime.now();
         }
     }
@@ -308,8 +315,8 @@ public class HousekeepingTask extends HotelScopedEntity {
     }
 
     // Assignment method for service compatibility
-    public void assignToStaff(HousekeepingStaff staff) {
-        this.assignedStaff = staff;
+    public void assignToUser(User user) {
+        this.assignedUser = user;
         this.assignedAt = LocalDateTime.now();
         if (this.status == HousekeepingTaskStatus.PENDING) {
             this.status = HousekeepingTaskStatus.ASSIGNED;

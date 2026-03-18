@@ -1,147 +1,270 @@
-import { createTheme } from '@mui/material/styles';
+// Enhanced Material-UI Theme Configuration
+// Integrates our design system with Material-UI components
 
-// Custom theme constants
-export const themeConstants = {
-  // Brand colors
-  brandGold: '#FFD700',
-  hotelShopRed: '#cc0000',
-  
-  // Payment method colors
-  mbirrOrange: '#FF6B35',
-  telebirrGreen: '#00A651',
-  
-  // Layout constants
-  logoHeight: 32, // 32px - compact navbar logo
-  headerMaxWidths: {
-    xs: '280px',
-    sm: '400px', 
-    md: '600px'
-  },
-  
-  // Common dimensions
-  commonHeights: {
-    loading: '200px',
-    scrollableArea: '300px',
-    uploadArea: '400px'
-  },
-  
-  // Shadows and effects
-  shadows: {
-    textShadow: '2px 2px 4px rgba(0,0,0,0.7)',
-    cardShadow: '0 8px 32px rgba(0,0,0,0.3)',
-    buttonShadow: '0 4px 20px rgba(0,0,0,0.5)'
-  },
-  
-  // Border styles
-  borders: {
-    light: '1px solid',
-    medium: '2px solid',
-    dashed: '2px dashed'
-  },
-  
-  // Scrollbar styles
-  scrollbar: {
-    width: 6,
-    track: '#f1f1f1',
-    thumb: '#c1c1c1',
-    thumbRadius: 3,
-    thumbHover: '#a8a8a8',
-  },
-  
-  // Transparency values
-  alpha: {
-    low: 0.1,
-    medium: 0.2,
-    high: 0.3,
-  },
-  
-  // Gradient styles
-  gradients: {
-    primaryButton: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
-    successButton: 'linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)',
-  },
-  
-  // Performance-optimized animation styles
-  animations: {
-    fast: 'all 0.15s ease',
-    normal: 'all 0.2s ease', 
-    slow: 'all 0.3s ease',
-    none: 'none',
-  },
-  
-  // Lightweight shadow alternatives
-  lightShadows: {
-    minimal: '0 1px 3px rgba(0,0,0,0.1)',
-    light: '0 2px 4px rgba(0,0,0,0.1)', 
-    medium: '0 4px 8px rgba(0,0,0,0.1)',
-  },
-};
+import { createTheme, ThemeOptions } from '@mui/material/styles';
+import { designSystem, animations } from './designSystem';
+import { COLORS, addAlpha } from './themeColors';
 
-const theme = createTheme({
+const themeOptions: ThemeOptions = {
   palette: {
-    primary: {
-      main: '#1976d2',
-      light: '#42a5f5',
-      dark: '#1565c0',
-    },
-    secondary: {
-      main: '#f50057',
-      light: '#ff5983',
-      dark: '#c51162',
-    },
-    background: {
-      default: '#f5f5f5',
-      paper: '#ffffff',
-    },
-    // Add custom colors
-    success: {
-      main: themeConstants.telebirrGreen,
-      light: '#F0FFF4',
-    },
-    warning: {
-      main: themeConstants.mbirrOrange,
-      light: '#FFF5F0',
-    },
-    info: {
-      main: '#2196f3',
-      light: '#e3f2fd',
-    },
+    mode: 'light',
+    primary: designSystem.colors.primary,
+    secondary: designSystem.colors.secondary,
+    success: designSystem.colors.success,
+    warning: designSystem.colors.warning,
+    error: designSystem.colors.error,
+    info: designSystem.colors.info,
+    text: designSystem.colors.text,
+    background: designSystem.colors.background,
+    divider: designSystem.colors.divider
   },
+  
   typography: {
-    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+    fontFamily: '"Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, sans-serif',
     h1: {
-      fontWeight: 600,
+      ...designSystem.typography.h1,
+      fontSize: '3rem',
+      fontWeight: 700,
+      letterSpacing: '-0.02em'
     },
     h2: {
-      fontWeight: 600,
+      ...designSystem.typography.h2,
+      fontSize: '2.25rem',
+      fontWeight: 700
     },
     h3: {
-      fontWeight: 600,
+      ...designSystem.typography.h3,
+      fontWeight: 600
     },
+    h4: {
+      ...designSystem.typography.h4,
+      fontWeight: 600
+    },
+    h5: designSystem.typography.h5,
+    h6: designSystem.typography.h6,
+    body1: designSystem.typography.body1,
+    body2: designSystem.typography.body2,
+    caption: designSystem.typography.caption,
+    button: {
+      ...designSystem.typography.button,
+      fontWeight: 600,
+      letterSpacing: '0.02em'
+    }
   },
-  shape: {
-    borderRadius: 8,
-  },
-  spacing: 8, // Base spacing unit
-});
 
-// Extend theme with custom properties
+  spacing: designSystem.spacing.sm, // Base spacing unit (8px)
+
+  shape: {
+    borderRadius: designSystem.borderRadius.md
+  },
+
+  shadows: [
+    'none',
+    designSystem.shadows.xs,
+    designSystem.shadows.sm,
+    designSystem.shadows.sm,
+    designSystem.shadows.md,
+    designSystem.shadows.md,
+    designSystem.shadows.lg,
+    designSystem.shadows.lg,
+    designSystem.shadows.xl,
+    designSystem.shadows.xl,
+    designSystem.shadows.xl,
+    designSystem.shadows.xl,
+    designSystem.shadows.xl,
+    designSystem.shadows.xl,
+    designSystem.shadows.xl,
+    designSystem.shadows.xl,
+    designSystem.shadows.xl,
+    designSystem.shadows.xl,
+    designSystem.shadows.xl,
+    designSystem.shadows.xl,
+    designSystem.shadows.xl,
+    designSystem.shadows.xl,
+    designSystem.shadows.xl,
+    designSystem.shadows.xl,
+    designSystem.shadows.xl
+  ],
+
+  components: {
+    // Button component customization - Premium
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          textTransform: 'none',
+          fontWeight: 600,
+          borderRadius: designSystem.borderRadius.md,
+          padding: '10px 24px',
+          transition: `all ${animations.duration.standard}ms ${animations.easing.easeInOut}`
+        },
+        contained: {
+          background: `linear-gradient(135deg, ${COLORS.PRIMARY} 0%, ${COLORS.PRIMARY_PRESSED} 100%)`,
+          boxShadow: `0 4px 15px ${addAlpha(COLORS.PRIMARY, 0.25)}`,
+          '&:hover': {
+            background: `linear-gradient(135deg, ${COLORS.PRIMARY_HOVER} 0%, ${COLORS.PRIMARY} 100%)`,
+            boxShadow: `0 6px 20px ${addAlpha(COLORS.PRIMARY, 0.35)}`,
+            transform: 'translateY(-2px)'
+          },
+          '&:active': {
+            transform: 'translateY(0)',
+            boxShadow: `0 2px 8px ${addAlpha(COLORS.PRIMARY, 0.25)}`
+          },
+          '&.Mui-disabled': {
+            background: COLORS.BG_DEFAULT,
+            color: COLORS.TEXT_DISABLED,
+            boxShadow: 'none',
+            border: `2px solid ${COLORS.SECONDARY}`,
+          }
+        },
+        outlined: {
+          borderWidth: '2px',
+          borderColor: designSystem.colors.primary.main,
+          '&:hover': {
+            borderWidth: '2px',
+            backgroundColor: addAlpha(COLORS.PRIMARY, 0.04),
+            transform: 'translateY(-1px)'
+          }
+        },
+        text: {
+          '&:hover': {
+            backgroundColor: addAlpha(COLORS.PRIMARY, 0.04)
+          }
+        }
+      }
+    },
+
+    // Card component customization - Premium
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          borderRadius: designSystem.borderRadius.xl,
+          border: 'none',
+          boxShadow: `0 4px 20px ${addAlpha(COLORS.BLACK, 0.08)}`,
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          '&:hover': {
+            boxShadow: `0 8px 30px ${addAlpha(COLORS.BLACK, 0.12)}`,
+            transform: 'translateY(-4px)'
+          }
+        }
+      }
+    },
+
+    // TextField component customization - Premium
+    MuiTextField: {
+      styleOverrides: {
+        root: {
+          '& .MuiOutlinedInput-root': {
+            borderRadius: designSystem.borderRadius.md,
+            backgroundColor: COLORS.WHITE,
+            transition: `all ${animations.duration.standard}ms ${animations.easing.easeInOut}`,
+            '& fieldset': {
+              borderColor: COLORS.BORDER_LIGHT,
+              borderWidth: '1.5px'
+            },
+            '&:hover fieldset': {
+              borderColor: designSystem.colors.primary.light,
+              borderWidth: '1.5px'
+            },
+            '&.Mui-focused fieldset': {
+              borderColor: designSystem.colors.primary.main,
+              borderWidth: '2px',
+              boxShadow: `0 0 0 3px ${addAlpha(COLORS.PRIMARY, 0.1)}`
+            }
+          },
+          '& .MuiInputLabel-root.Mui-focused': {
+            color: designSystem.colors.primary.main
+          }
+        }
+      }
+    },
+
+    // FormControl component customization - Premium
+    MuiFormControl: {
+      styleOverrides: {
+        root: {
+          '& .MuiOutlinedInput-root': {
+            borderRadius: designSystem.borderRadius.md,
+            backgroundColor: COLORS.WHITE,
+            transition: `all ${animations.duration.standard}ms ${animations.easing.easeInOut}`,
+            '& fieldset': {
+              borderColor: COLORS.BORDER_LIGHT,
+              borderWidth: '1.5px'
+            },
+            '&:hover fieldset': {
+              borderColor: designSystem.colors.primary.light,
+              borderWidth: '1.5px'
+            },
+            '&.Mui-focused fieldset': {
+              borderColor: designSystem.colors.primary.main,
+              borderWidth: '2px',
+              boxShadow: `0 0 0 3px ${addAlpha(COLORS.PRIMARY, 0.1)}`
+            }
+          },
+          '& .MuiInputLabel-root.Mui-focused': {
+            color: designSystem.colors.primary.main
+          }
+        }
+      }
+    },
+
+    // Dialog component customization - Premium
+    MuiDialog: {
+      styleOverrides: {
+        paper: {
+          borderRadius: designSystem.borderRadius.xl,
+          boxShadow: `0 20px 60px ${addAlpha(COLORS.BLACK, 0.25)}`,
+          backgroundColor: COLORS.WHITE
+        }
+      }
+    },
+
+    // Chip component customization - Premium
+    MuiChip: {
+      styleOverrides: {
+        root: {
+          borderRadius: designSystem.borderRadius.md,
+          fontWeight: 600,
+          transition: 'all 0.2s ease'
+        },
+        filled: {
+          '&:hover': {
+            transform: 'scale(1.02)'
+          }
+        }
+      }
+    },
+
+    // Divider component customization
+    MuiDivider: {
+      styleOverrides: {
+        root: {
+          borderColor: designSystem.colors.primary[50]
+        }
+      }
+    }
+  }
+};
+
+export const theme = createTheme(themeOptions);
+
+// Extend theme with custom properties for backward compatibility
 declare module '@mui/material/styles' {
   interface Theme {
     custom: {
-      constants: typeof themeConstants;
+      designSystem: typeof designSystem;
     };
   }
   interface ThemeOptions {
     custom?: {
-      constants?: typeof themeConstants;
+      designSystem?: typeof designSystem;
     };
   }
 }
 
+// Create the extended theme with design system access
 const extendedTheme = createTheme(theme, {
   custom: {
-    constants: themeConstants,
+    designSystem,
   },
 });
 

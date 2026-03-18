@@ -54,6 +54,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
        Page<User> findByHotel_Id(Long hotelId, Pageable pageable);
 
        /**
+        * Find all users belonging to a specific hotel (no pagination).
+        */
+       List<User> findByHotel_Id(Long hotelId);
+
+       /**
         * Find system-wide users (where hotel is null)
         */
        Page<User> findByHotelIsNull(Pageable pageable);
@@ -113,6 +118,16 @@ public interface UserRepository extends JpaRepository<User, Long> {
        List<User> findByRolesContaining(UserRole role);
 
        /**
+        * Find users by role with pagination
+        */
+       Page<User> findByRolesContaining(UserRole role, Pageable pageable);
+
+       /**
+        * Find users by active status with pagination
+        */
+       Page<User> findByIsActive(boolean isActive, Pageable pageable);
+
+       /**
         * Count users by active status
         */
        long countByIsActive(boolean isActive);
@@ -121,6 +136,29 @@ public interface UserRepository extends JpaRepository<User, Long> {
         * Count users by role
         */
        long countByRolesContaining(UserRole role);
+
+       /**
+        * Find all users excluding those who have a given role
+        */
+       @Query("SELECT u FROM User u WHERE NOT EXISTS (SELECT 1 FROM u.roles r WHERE r = :excludedRole)")
+       Page<User> findAllExcludingRole(@Param("excludedRole") UserRole excludedRole, Pageable pageable);
+
+       /**
+        * Search users excluding those who have a given role
+        */
+       @Query("SELECT u FROM User u WHERE NOT EXISTS (SELECT 1 FROM u.roles r WHERE r = :excludedRole) AND (" +
+                     "LOWER(u.email) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+                     "LOWER(u.firstName) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+                     "LOWER(u.lastName) LIKE LOWER(CONCAT('%', :searchTerm, '%')))")
+       Page<User> searchUsersExcludingRole(@Param("searchTerm") String searchTerm,
+                     @Param("excludedRole") UserRole excludedRole, Pageable pageable);
+
+       /**
+        * Find users by active status excluding those who have a given role
+        */
+       @Query("SELECT u FROM User u WHERE u.isActive = :isActive AND NOT EXISTS (SELECT 1 FROM u.roles r WHERE r = :excludedRole)")
+       Page<User> findByIsActiveExcludingRole(@Param("isActive") boolean isActive,
+                     @Param("excludedRole") UserRole excludedRole, Pageable pageable);
 
        /**
         * Search users by email, first name, or last name

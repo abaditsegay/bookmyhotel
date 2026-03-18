@@ -41,6 +41,7 @@ import {
   PlayArrow as StartIcon,
   CheckCircle as CompleteIcon
 } from '@mui/icons-material';
+import { COLORS, addAlpha } from '../../theme/themeColors';
 
 interface MaintenanceTask {
   id: number;
@@ -222,7 +223,7 @@ const MaintenanceDashboard: React.FC = () => {
         throw new Error(`API error: ${response.status}`);
       }
     } catch (err) {
-      console.error('Failed to load maintenance tasks:', err);
+      // console.error('Failed to load maintenance tasks:', err);
       setError('Unable to load maintenance tasks - please check your connection');
       setTasks([]); // Set empty array instead of mock data
     } finally {
@@ -271,11 +272,11 @@ const MaintenanceDashboard: React.FC = () => {
         
         setStaff(maintenanceStaff);
       } else {
-        console.error('Failed to load staff data:', response.status);
+        // console.error('Failed to load staff data:', response.status);
         setStaff([]); // Set empty array instead of mock data
       }
     } catch (err) {
-      console.error('Failed to load maintenance staff:', err);
+      // console.error('Failed to load maintenance staff:', err);
       setStaff([]); // Set empty array instead of mock data
     }
   };
@@ -289,11 +290,11 @@ const MaintenanceDashboard: React.FC = () => {
       }
       const hotelId = parseInt(currentUser.hotelId);
       
-      console.log('Creating maintenance task with data:', {
-        hotelId,
-        currentUser,
-        createTaskForm
-      });
+      // console.log('Creating maintenance task with data:', {
+      //   hotelId,
+      //   currentUser,
+      //   createTaskForm
+      // });
       
       // Validate required data
       if (!hotelId) {
@@ -314,7 +315,7 @@ const MaintenanceDashboard: React.FC = () => {
         roomId: createTaskForm.roomId ? parseInt(createTaskForm.roomId) : null
       };
       
-      console.log('Request body:', requestBody);
+      // console.log('Request body:', requestBody);
       
       const response = await fetch(buildApiUrl('/maintenance/tasks'), {
         method: 'POST',
@@ -325,12 +326,12 @@ const MaintenanceDashboard: React.FC = () => {
         body: JSON.stringify(requestBody)
       });
       
-      console.log('Response status:', response.status);
-      console.log('Response ok:', response.ok);
+      // console.log('Response status:', response.status);
+      // console.log('Response ok:', response.ok);
       
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Error response:', errorText);
+        // console.error('Error response:', errorText);
         setError(`Failed to create maintenance task: ${errorText}`);
         return;
       }
@@ -507,7 +508,7 @@ const MaintenanceDashboard: React.FC = () => {
     
     try {
       // TODO: Call API to update task
-      console.log('Saving task edit:', editTaskData);
+      // console.log('Saving task edit:', editTaskData);
       
       // For now, just update the local task
       const updatedTask = {
@@ -527,7 +528,7 @@ const MaintenanceDashboard: React.FC = () => {
       // await loadTasks();
       
     } catch (error) {
-      console.error('Error updating task:', error);
+      // console.error('Error updating task:', error);
     }
   };
 
@@ -564,7 +565,7 @@ const MaintenanceDashboard: React.FC = () => {
           >
             Refresh
           </Button>
-          {currentUserRole === 'OPERATIONS_SUPERVISOR' && (
+          {currentUserRole === 'OPERATIONAL_ADMIN' && (
             <Button
               variant="contained"
               startIcon={<AddIcon />}
@@ -615,7 +616,31 @@ const MaintenanceDashboard: React.FC = () => {
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
-            <TableRow>
+            <TableRow
+              sx={{
+                background: COLORS.GRADIENT_SLATE,
+                '& .MuiTableCell-head': {
+                  color: COLORS.WHITE,
+                  fontWeight: 600,
+                  fontSize: '0.95rem',
+                  letterSpacing: '0.5px',
+                  textTransform: 'uppercase',
+                  border: 'none',
+                  padding: '20px 16px',
+                  position: 'relative',
+                  textShadow: `0 1px 2px ${addAlpha(COLORS.BLACK, 0.1)}`,
+                  '&::after': {
+                    content: '""',
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    height: '3px',
+                    background: `linear-gradient(90deg, ${addAlpha(COLORS.WHITE, 0.6)} 0%, ${addAlpha(COLORS.WHITE, 0.8)} 50%, ${addAlpha(COLORS.WHITE, 0.6)} 100%)`
+                  }
+                }
+              }}
+            >
               <TableCell>Task</TableCell>
               <TableCell>Type</TableCell>
               <TableCell>Status</TableCell>
@@ -726,7 +751,7 @@ const MaintenanceDashboard: React.FC = () => {
                     )}
                     
                     {/* Reassign button for assigned or in-progress tasks */}
-                    {currentUserRole === 'OPERATIONS_SUPERVISOR' && 
+                    {currentUserRole === 'OPERATIONAL_ADMIN' && 
                      (task.status === 'ASSIGNED' || task.status === 'assigned' || 
                       task.status === 'IN_PROGRESS' || task.status === 'in_progress') && (
                       <Tooltip title="Reassign Task">
@@ -764,7 +789,7 @@ const MaintenanceDashboard: React.FC = () => {
                       </Tooltip>
                     )}
                     
-                    {currentUserRole === 'OPERATIONS_SUPERVISOR' && (
+                    {currentUserRole === 'OPERATIONAL_ADMIN' && (
                       <Tooltip title="Edit Task">
                         <IconButton 
                           size="small"
@@ -954,7 +979,7 @@ const MaintenanceDashboard: React.FC = () => {
       <Dialog open={taskDetailOpen} onClose={() => setTaskDetailOpen(false)} maxWidth="md" fullWidth>
         <DialogTitle>
           Task Details
-          {!isEditingTask && currentUserRole === 'OPERATIONS_SUPERVISOR' && (
+          {!isEditingTask && currentUserRole === 'OPERATIONAL_ADMIN' && (
             <Button 
               startIcon={<EditIcon />} 
               onClick={handleEditTask}
@@ -1037,10 +1062,10 @@ const MaintenanceDashboard: React.FC = () => {
                       type="number"
                       value={editTaskData.estimatedCost || 0}
                       onChange={(e) => setEditTaskData({...editTaskData, estimatedCost: parseFloat(e.target.value) || 0})}
-                      InputProps={{ startAdornment: '$' }}
+                      InputProps={{ startAdornment: 'ETB ' }}
                     />
                   ) : (
-                    <Typography>${selectedTask.estimatedCost?.toFixed(2) || '0.00'}</Typography>
+                    <Typography>ETB {selectedTask.estimatedCost?.toFixed(2) || '0.00'}</Typography>
                   )}
                 </Box>
                 <Box>
@@ -1091,7 +1116,7 @@ const MaintenanceDashboard: React.FC = () => {
               {selectedTask.actualCost && (
                 <Box sx={{ mt: 2 }}>
                   <Typography variant="subtitle2" color="text.secondary">Actual Cost</Typography>
-                  <Typography>${selectedTask.actualCost.toFixed(2)}</Typography>
+                  <Typography>ETB {selectedTask.actualCost.toFixed(2)}</Typography>
                 </Box>
               )}
             </Box>
@@ -1105,7 +1130,7 @@ const MaintenanceDashboard: React.FC = () => {
             </>
           ) : (
             <>
-              {selectedTask && currentUserRole === 'OPERATIONS_SUPERVISOR' && (
+              {selectedTask && currentUserRole === 'OPERATIONAL_ADMIN' && (
                 <Button 
                   onClick={() => {
                     setTaskDetailOpen(false);

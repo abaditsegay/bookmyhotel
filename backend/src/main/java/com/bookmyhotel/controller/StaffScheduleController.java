@@ -13,7 +13,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -40,7 +39,6 @@ import jakarta.validation.Valid;
  */
 @RestController
 @RequestMapping("/api/staff-schedules")
-@CrossOrigin(origins = "*")
 public class StaffScheduleController {
 
     private static final Logger logger = LoggerFactory.getLogger(StaffScheduleController.class);
@@ -86,7 +84,7 @@ public class StaffScheduleController {
      * Staff)
      */
     @PatchMapping("/{scheduleId}/status")
-    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONTDESK', 'OPERATIONS_SUPERVISOR', 'HOUSEKEEPING')")
+    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONTDESK', 'OPERATIONAL_ADMIN', 'HOUSEKEEPING')")
     public ResponseEntity<StaffScheduleResponse> updateScheduleStatus(
             @PathVariable Long scheduleId,
             @Valid @RequestBody ScheduleStatusUpdateRequest request) {
@@ -113,7 +111,7 @@ public class StaffScheduleController {
      * Supervisor)
      */
     @GetMapping
-    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONTDESK', 'OPERATIONS_SUPERVISOR')")
+    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONTDESK', 'OPERATIONAL_ADMIN')")
     public ResponseEntity<List<StaffScheduleResponse>> getSchedules(
             @RequestParam(required = false) Long hotelId,
             @RequestParam(required = false) Department department,
@@ -135,7 +133,7 @@ public class StaffScheduleController {
      * Supervisor)
      */
     @GetMapping("/staff")
-    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONTDESK', 'OPERATIONS_SUPERVISOR')")
+    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONTDESK', 'OPERATIONAL_ADMIN')")
     public ResponseEntity<List<StaffMemberResponse>> getAllStaff(Authentication auth) {
         logger.info("🔍 GET /staff endpoint called by user: {}", auth.getName());
 
@@ -149,7 +147,7 @@ public class StaffScheduleController {
      * Get schedule by ID
      */
     @GetMapping("/{scheduleId}")
-    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONTDESK', 'OPERATIONS_SUPERVISOR', 'HOUSEKEEPING')")
+    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONTDESK', 'OPERATIONAL_ADMIN', 'HOUSEKEEPING')")
     public ResponseEntity<StaffScheduleResponse> getScheduleById(@PathVariable Long scheduleId) {
         StaffScheduleResponse response = staffScheduleService.getScheduleById(scheduleId);
         return ResponseEntity.ok(response);
@@ -159,7 +157,7 @@ public class StaffScheduleController {
      * Get schedules by hotel and date range
      */
     @GetMapping("/hotel/{hotelId}")
-    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONTDESK', 'OPERATIONS_SUPERVISOR')")
+    @PreAuthorize("@hotelSecurity.canAccessHotel(#hotelId)")
     public ResponseEntity<List<StaffScheduleResponse>> getSchedulesByHotelAndDateRange(
             @PathVariable Long hotelId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
@@ -174,7 +172,7 @@ public class StaffScheduleController {
      * Get schedules by staff and date range
      */
     @GetMapping("/staff/{staffId}")
-    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONTDESK', 'OPERATIONS_SUPERVISOR')")
+    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONTDESK', 'OPERATIONAL_ADMIN')")
     public ResponseEntity<List<StaffScheduleResponse>> getSchedulesByStaffAndDateRange(
             @PathVariable Long staffId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
@@ -189,7 +187,7 @@ public class StaffScheduleController {
      * Get schedules by department and date range
      */
     @GetMapping("/hotel/{hotelId}/department/{department}")
-    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONTDESK', 'OPERATIONS_SUPERVISOR')")
+    @PreAuthorize("@hotelSecurity.canAccessHotel(#hotelId)")
     public ResponseEntity<List<StaffScheduleResponse>> getSchedulesByDepartmentAndDateRange(
             @PathVariable Long hotelId,
             @PathVariable Department department,
@@ -205,7 +203,7 @@ public class StaffScheduleController {
      * Get schedules for a specific date
      */
     @GetMapping("/hotel/{hotelId}/date/{date}")
-    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONTDESK', 'OPERATIONS_SUPERVISOR')")
+    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONTDESK', 'OPERATIONAL_ADMIN')")
     public ResponseEntity<List<StaffScheduleResponse>> getSchedulesByDate(
             @PathVariable Long hotelId,
             @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
@@ -218,7 +216,7 @@ public class StaffScheduleController {
      * Get my today's schedule (for staff members)
      */
     @GetMapping("/my-schedule/today")
-    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONTDESK', 'OPERATIONS_SUPERVISOR', 'HOUSEKEEPING')")
+    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONTDESK', 'OPERATIONAL_ADMIN', 'HOUSEKEEPING')")
     public ResponseEntity<List<StaffScheduleResponse>> getMyTodaySchedule(Authentication auth) {
         String staffEmail = auth.getName();
         List<StaffScheduleResponse> schedules = staffScheduleService.getMyTodaySchedule(staffEmail);
@@ -229,7 +227,7 @@ public class StaffScheduleController {
      * Get my upcoming schedules (for staff members)
      */
     @GetMapping("/my-schedule/upcoming")
-    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONTDESK', 'OPERATIONS_SUPERVISOR', 'HOUSEKEEPING')")
+    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONTDESK', 'OPERATIONAL_ADMIN', 'HOUSEKEEPING')")
     public ResponseEntity<List<StaffScheduleResponse>> getMyUpcomingSchedules(Authentication auth) {
         String staffEmail = auth.getName();
         List<StaffScheduleResponse> schedules = staffScheduleService.getMyUpcomingSchedules(staffEmail);
@@ -240,7 +238,7 @@ public class StaffScheduleController {
      * Get schedules with pagination
      */
     @GetMapping("/hotel/{hotelId}/paginated")
-    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONTDESK', 'OPERATIONS_SUPERVISOR')")
+    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONTDESK', 'OPERATIONAL_ADMIN')")
     public ResponseEntity<Page<StaffScheduleResponse>> getSchedulesWithPagination(
             @PathVariable Long hotelId,
             @RequestParam(defaultValue = "0") int page,
@@ -255,7 +253,7 @@ public class StaffScheduleController {
      * Get schedule statistics by department
      */
     @GetMapping("/hotel/{hotelId}/stats/department")
-    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONTDESK', 'OPERATIONS_SUPERVISOR')")
+    @PreAuthorize("hasAnyRole('HOTEL_ADMIN', 'FRONTDESK', 'OPERATIONAL_ADMIN')")
     public ResponseEntity<Map<Department, Long>> getScheduleStatsByDepartment(
             @PathVariable Long hotelId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,

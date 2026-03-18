@@ -1,5 +1,7 @@
 package com.bookmyhotel.service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
@@ -15,6 +17,7 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
 import com.bookmyhotel.dto.BookingResponse;
+import com.bookmyhotel.dto.TaxBreakdown;
 
 /**
  * Email service using OAuth2 Microsoft Graph API
@@ -28,6 +31,7 @@ public class EmailService {
     private final MicrosoftGraphEmailService microsoftGraphEmailService;
     private final TemplateEngine templateEngine;
     private final BookingTokenService bookingTokenService;
+    private final TaxCalculationService taxCalculationService;
 
     @Value("${app.email.from}")
     private String fromEmail;
@@ -38,23 +42,25 @@ public class EmailService {
     @Value("${app.url:http://localhost:3000}")
     private String appUrl;
 
-    // OAuth2 configuration values
-    @Value("${microsoft.graph.client-id}")
+    // OAuth2 configuration values - with defaults to avoid startup errors
+    @Value("${microsoft.graph.client-id:}")
     private String oauthClientId;
 
-    @Value("${microsoft.graph.tenant-id}")
+    @Value("${microsoft.graph.tenant-id:}")
     private String oauthTenantId;
 
-    @Value("${microsoft.graph.client-secret}")
+    @Value("${microsoft.graph.client-secret:}")
     private String oauthClientSecret;
 
     @Autowired
     public EmailService(MicrosoftGraphEmailService microsoftGraphEmailService,
             @Qualifier("emailTemplateEngine") TemplateEngine templateEngine,
-            BookingTokenService bookingTokenService) {
+            BookingTokenService bookingTokenService,
+            TaxCalculationService taxCalculationService) {
         this.microsoftGraphEmailService = microsoftGraphEmailService;
         this.templateEngine = templateEngine;
         this.bookingTokenService = bookingTokenService;
+        this.taxCalculationService = taxCalculationService;
     }
 
     /**
@@ -134,6 +140,7 @@ public class EmailService {
 
         try {
             Map<String, Object> templateData = new HashMap<>();
+            templateData.put("email", email);
             templateData.put("firstName", firstName);
             templateData.put("hotelName", hotelName);
             templateData.put("tempPassword", tempPassword);
@@ -258,6 +265,54 @@ public class EmailService {
         long nights = ChronoUnit.DAYS.between(booking.getCheckInDate(), booking.getCheckOutDate());
         templateData.put("nights", nights);
 
+        // Calculate tax breakdown if hotel ID is available
+        if (booking.getHotelId() != null) {
+            try {
+                // Calculate subtotal (price per night * nights)
+                BigDecimal subtotal = booking.getPricePerNight().multiply(BigDecimal.valueOf(nights));
+
+                TaxBreakdown taxes = taxCalculationService.calculateTaxes(booking.getHotelId(), subtotal);
+
+                BigDecimal vatAmount = taxes.getVatAmount();
+                BigDecimal serviceTaxAmount = taxes.getServiceTaxAmount();
+                BigDecimal cityTaxAmount = taxes.getCityTaxAmount();
+
+                BigDecimal vatRate = calculateRate(vatAmount, subtotal);
+                BigDecimal serviceTaxRate = calculateRate(serviceTaxAmount, subtotal);
+                BigDecimal cityTaxRate = calculateRate(cityTaxAmount, subtotal);
+
+                BigDecimal totalWithTax = subtotal.add(taxes.getTotalTax()).setScale(2, RoundingMode.HALF_UP);
+
+                // Add to template data
+                templateData.put("subtotal", subtotal);
+                templateData.put("vatRate", vatRate);
+                templateData.put("vatRatePercentage",
+                        vatRate.multiply(new BigDecimal("100")).setScale(2, RoundingMode.HALF_UP));
+                templateData.put("vatAmount", vatAmount);
+                templateData.put("serviceTaxRate", serviceTaxRate);
+                templateData.put("serviceTaxRatePercentage",
+                        serviceTaxRate.multiply(new BigDecimal("100")).setScale(2, RoundingMode.HALF_UP));
+                templateData.put("serviceTaxAmount", serviceTaxAmount);
+                templateData.put("cityTaxRate", cityTaxRate);
+                templateData.put("cityTaxRatePercentage",
+                        cityTaxRate.multiply(new BigDecimal("100")).setScale(2, RoundingMode.HALF_UP));
+                templateData.put("cityTaxAmount", cityTaxAmount);
+                templateData.put("totalWithTax", totalWithTax);
+                templateData.put("hasTaxBreakdown", true);
+
+                logger.debug(
+                        "Tax breakdown calculated for hotel {}: subtotal={}, VAT={}%, service tax={}%, city tax={}%",
+                        booking.getHotelId(), subtotal, vatRate.multiply(new BigDecimal("100")),
+                        serviceTaxRate.multiply(new BigDecimal("100")),
+                        cityTaxRate.multiply(new BigDecimal("100")));
+            } catch (Exception e) {
+                logger.warn("Failed to calculate tax breakdown for hotel {}: {}", booking.getHotelId(), e.getMessage());
+                templateData.put("hasTaxBreakdown", false);
+            }
+        } else {
+            templateData.put("hasTaxBreakdown", false);
+        }
+
         return templateData;
     }
 
@@ -275,5 +330,94 @@ public class EmailService {
      */
     public boolean isOAuth2Configured() {
         return !oauthClientId.isEmpty() && !oauthTenantId.isEmpty() && !oauthClientSecret.isEmpty();
+    }
+
+    /**
+     * Send booking authentication email for management access
+     */
+    public void sendBookingAuthenticationEmail(BookingResponse booking, String managementToken, String action) {
+        // Check if Microsoft Graph is configured
+        if (!microsoftGraphEmailService.isConfigured()) {
+            logger.warn(
+                    "Microsoft Graph OAuth2 is not configured. Using development mode for booking authentication email to: {}",
+                    booking.getGuestEmail());
+
+            // In development mode, log the token URL instead of sending email
+            String managementUrl = appUrl + "/guest-booking-management?token=" + managementToken;
+
+            logger.info("=== DEVELOPMENT MODE EMAIL ===");
+            logger.info("To: {}", booking.getGuestEmail());
+            logger.info("Subject: Booking Management Authentication - {} ({})", booking.getHotelName(),
+                    booking.getConfirmationNumber());
+            logger.info("Management URL: {}", managementUrl);
+            logger.info("Action: {}", getActionText(action));
+            logger.info("==============================");
+
+            return; // Return successfully without sending actual email
+        }
+
+        try {
+            logger.info("Sending booking authentication email to: {} for action: {} via Microsoft Graph OAuth2",
+                    booking.getGuestEmail(), action);
+
+            // Prepare email data
+            Map<String, Object> templateData = prepareBookingEmailData(booking, false);
+            templateData.put("managementToken", managementToken);
+            templateData.put("action", action);
+            templateData.put("actionText", getActionText(action));
+
+            // Add individual booking fields for direct template access
+            templateData.put("confirmationNumber", booking.getConfirmationNumber());
+            templateData.put("hotelName", booking.getHotelName());
+            templateData.put("guestName", booking.getGuestName());
+            templateData.put("guestEmail", booking.getGuestEmail());
+            templateData.put("roomType", booking.getRoomType());
+            templateData.put("totalAmount", booking.getTotalAmount());
+            templateData.put("checkInDate", booking.getCheckInDate());
+            templateData.put("checkOutDate", booking.getCheckOutDate());
+
+            // Create management URL with token
+            String managementUrl = appUrl + "/guest-booking-management?token=" + managementToken;
+            templateData.put("managementUrl", managementUrl);
+
+            // Generate email content using a new template
+            String htmlContent = templateEngine.process("booking-authentication", createContext(templateData));
+            String subject = String.format("Booking Management Authentication - %s (%s)",
+                    booking.getHotelName(), booking.getConfirmationNumber());
+
+            // Send email via Microsoft Graph
+            microsoftGraphEmailService.sendEmail(booking.getGuestEmail(), subject, htmlContent);
+
+        } catch (IllegalStateException e) {
+            // Re-throw IllegalStateException to be handled by controller
+            throw e;
+        } catch (Exception e) {
+            logger.error("Failed to send booking authentication email via Microsoft Graph", e);
+            throw new RuntimeException("Failed to send booking authentication email", e);
+        }
+    }
+
+    /**
+     * Get action text for email template
+     */
+    private String getActionText(String action) {
+        switch (action) {
+            case "modify":
+                return "modify your booking";
+            case "cancel":
+                return "cancel your booking";
+            default:
+                return "manage your booking";
+        }
+    }
+
+    private BigDecimal calculateRate(BigDecimal amount, BigDecimal subtotal) {
+        if (subtotal == null || subtotal.compareTo(BigDecimal.ZERO) <= 0) {
+            return BigDecimal.ZERO;
+        }
+        if (amount == null) {
+            return BigDecimal.ZERO;
+        }
+        return amount.divide(subtotal, 4, RoundingMode.HALF_UP);
     }
 }

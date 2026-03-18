@@ -284,7 +284,9 @@ public class RoomChargeService {
             request.setReservationId(shopOrder.getReservation().getId());
             request.setShopOrderId(shopOrder.getId());
             request.setDescription("Shop Purchase - Order #" + shopOrder.getOrderNumber());
-            request.setAmount(shopOrder.getTotalAmount());
+            BigDecimal baseAmount = shopOrder.getTotalAmount() != null ? shopOrder.getTotalAmount() : BigDecimal.ZERO;
+            BigDecimal taxAmount = shopOrder.getTaxAmount() != null ? shopOrder.getTaxAmount() : BigDecimal.ZERO;
+            request.setAmount(baseAmount.add(taxAmount));
             request.setChargeType(RoomChargeType.SHOP_PURCHASE);
             request.setNotes("Automatically created from shop order");
 

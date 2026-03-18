@@ -1,7 +1,6 @@
 // Admin API service for user and hotel management
 
 import { API_CONFIG } from '../config/apiConfig';
-import TokenManager from '../utils/tokenManager';
 
 const API_BASE_URL = API_CONFIG.BASE_URL;
 
@@ -42,7 +41,7 @@ class AdminApiService {
         // Fallback to text if JSON parsing fails
         errorText = await response.text();
       }
-      console.error(`API Error Details: ${response.status} ${response.statusText}`, errorText);
+      // console.error(`API Error Details: ${response.status} ${response.statusText}`, errorText);
       throw new Error(`API Error: ${response.status} ${response.statusText} - ${errorText}`);
     }
 
@@ -63,6 +62,14 @@ class AdminApiService {
     return this.fetchApi<PagedResponse<UserManagementResponse>>(`/admin/users/search?searchTerm=${encodeURIComponent(searchTerm)}&page=${page}&size=${size}`);
   }
 
+  async getUsersByRole(role: string, page: number = 0, size: number = 10): Promise<PagedResponse<UserManagementResponse>> {
+    return this.fetchApi<PagedResponse<UserManagementResponse>>(`/admin/users/role/${role}/paginated?page=${page}&size=${size}`);
+  }
+
+  async getUsersByStatus(isActive: boolean, page: number = 0, size: number = 10): Promise<PagedResponse<UserManagementResponse>> {
+    return this.fetchApi<PagedResponse<UserManagementResponse>>(`/admin/users/status/${isActive}?page=${page}&size=${size}`);
+  }
+
   async getUserById(id: number): Promise<UserManagementResponse> {
     return this.fetchApi<UserManagementResponse>(`/admin/users/${id}`);
   }
@@ -74,9 +81,10 @@ class AdminApiService {
     });
   }
 
-  async toggleUserStatus(id: number): Promise<UserManagementResponse> {
+  async toggleUserStatus(id: number, reason: string): Promise<UserManagementResponse> {
     return this.fetchApi<UserManagementResponse>(`/admin/users/${id}/toggle-status`, {
       method: 'POST',
+      body: JSON.stringify({ reason }),
     });
   }
 
@@ -98,8 +106,8 @@ class AdminApiService {
     });
   }
 
-  async resetUserPassword(id: number, newPassword: string): Promise<void> {
-    return this.fetchApi<void>(`/admin/users/${id}/reset-password?newPassword=${encodeURIComponent(newPassword)}`, {
+  async resetUserPassword(id: number): Promise<void> {
+    return this.fetchApi<void>(`/admin/users/${id}/reset-password`, {
       method: 'POST',
     });
   }
@@ -164,9 +172,17 @@ class AdminApiService {
     });
   }
 
-  async toggleHotelStatus(hotelId: number): Promise<HotelDTO> {
+  async toggleHotelStatus(hotelId: number, reason: string): Promise<HotelDTO> {
     return this.fetchApi<HotelDTO>(`/admin/hotels/${hotelId}/toggle-status`, {
       method: 'POST',
+      body: JSON.stringify({ reason }),
+    });
+  }
+
+  async toggleHotelPublicListing(hotelId: number, reason: string): Promise<HotelDTO> {
+    return this.fetchApi<HotelDTO>(`/admin/hotels/${hotelId}/toggle-public-listing`, {
+      method: 'POST',
+      body: JSON.stringify({ reason }),
     });
   }
 
@@ -296,6 +312,28 @@ class AdminApiService {
   async searchHotelRegistrations(searchTerm: string, page: number = 0, size: number = 10): Promise<PagedResponse<HotelRegistrationResponse>> {
     return this.fetchApi<PagedResponse<HotelRegistrationResponse>>(`/admin/hotel-registrations/search?searchTerm=${encodeURIComponent(searchTerm)}&page=${page}&size=${size}`);
   }
+
+  // Audit Log Methods
+  async getAuditLogs(params: AuditLogParams): Promise<PagedResponse<SystemAuditLogDto>> {
+    const query = new URLSearchParams();
+    if (params.action) query.set('action', params.action);
+    if (params.entityType) query.set('entityType', params.entityType);
+    if (params.userEmail) query.set('userEmail', params.userEmail);
+    if (params.from) query.set('from', params.from);
+    if (params.to) query.set('to', params.to);
+    query.set('page', String(params.page ?? 0));
+    query.set('size', String(params.size ?? 20));
+    query.set('sort', params.sort ?? 'performedAt,desc');
+    return this.fetchApi<PagedResponse<SystemAuditLogDto>>(`/admin/audit/logs?${query.toString()}`);
+  }
+
+  async getAuditLogById(id: number): Promise<SystemAuditLogDto> {
+    return this.fetchApi<SystemAuditLogDto>(`/admin/audit/logs/${id}`);
+  }
+
+  async getAuditStats(): Promise<AuditStatsResponse> {
+    return this.fetchApi<AuditStatsResponse>('/admin/audit/stats');
+  }
 }
 
 // Type definitions for API responses
@@ -372,6 +410,7 @@ export interface HotelDTO {
   totalRooms?: number;
   availableRooms?: number;
   isActive?: boolean;
+  isPubliclyListed?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -492,7 +531,7 @@ export interface HotelRegistrationResponse {
 
 export interface ApproveRegistrationRequest {
   comments?: string;
-  tenantId: string;
+  tenantId?: string;
 }
 
 export interface RejectRegistrationRequest {
@@ -510,6 +549,44 @@ export interface HotelRegistrationStatistics {
   underReviewRegistrations: number;
   approvedRegistrations: number;
   rejectedRegistrations: number;
+}
+
+export interface SystemAuditLogDto {
+  id: number;
+  entityType: string;
+  entityId: number | null;
+  action: string;
+  description: string | null;
+  oldValues: string | null;
+  newValues: string | null;
+  performedByUserId: number | null;
+  performedByUserName: string | null;
+  performedByUserEmail: string | null;
+  performedByUserRole: string | null;
+  ipAddress: string | null;
+  userAgent: string | null;
+  requestPath: string | null;
+  requestMethod: string | null;
+  responseStatus: number | null;
+  performedAt: string;
+  success: boolean;
+  errorMessage: string | null;
+}
+
+export interface AuditLogParams {
+  action?: string;
+  entityType?: string;
+  userEmail?: string;
+  from?: string;
+  to?: string;
+  page?: number;
+  size?: number;
+  sort?: string;
+}
+
+export interface AuditStatsResponse {
+  totalToday: number;
+  failedToday: number;
 }
 
 export const adminApiService = new AdminApiService();

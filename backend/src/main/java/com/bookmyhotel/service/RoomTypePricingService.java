@@ -1,6 +1,7 @@
 package com.bookmyhotel.service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.bookmyhotel.config.CacheConfig;
 import com.bookmyhotel.dto.RoomTypePricingDTO;
 import com.bookmyhotel.entity.Hotel;
+import com.bookmyhotel.entity.HotelPricingConfig;
 import com.bookmyhotel.entity.Room;
 import com.bookmyhotel.entity.RoomType;
 import com.bookmyhotel.entity.RoomTypePricing;
@@ -41,6 +43,9 @@ public class RoomTypePricingService {
     @Autowired
     private RoomRepository roomRepository;
 
+    @Autowired
+    private HotelPricingConfigService hotelPricingConfigService;
+
     /**
      * Get all room type pricing for a hotel admin's hotel
      */
@@ -61,7 +66,7 @@ public class RoomTypePricingService {
     /**
      * Create or update room type pricing
      */
-    @CacheEvict(value = {CacheConfig.ROOMS_BY_HOTEL_CACHE, CacheConfig.AVAILABLE_ROOMS_CACHE}, allEntries = true)
+    @CacheEvict(value = { CacheConfig.ROOMS_BY_HOTEL_CACHE, CacheConfig.AVAILABLE_ROOMS_CACHE }, allEntries = true)
     public RoomTypePricingDTO saveRoomTypePricing(RoomTypePricingDTO dto, String adminEmail) {
         User admin = getUserByEmail(adminEmail);
         Hotel hotel = admin.getHotel();
@@ -79,12 +84,13 @@ public class RoomTypePricingService {
         pricing.setHotel(hotel);
         pricing.setRoomType(dto.getRoomType());
         pricing.setBasePricePerNight(dto.getBasePricePerNight());
-        pricing.setWeekendPrice(dto.getWeekendPrice());
-        pricing.setHolidayPrice(dto.getHolidayPrice());
-        pricing.setPeakSeasonPrice(dto.getPeakSeasonPrice());
         pricing.setIsActive(dto.getIsActive() != null ? dto.getIsActive() : true);
         pricing.setCurrency(dto.getCurrency() != null ? dto.getCurrency() : "ETB");
         pricing.setDescription(dto.getDescription());
+
+        // Calculate pricing with hotel-specific multipliers instead of using hardcoded
+        // values
+        calculatePricingWithMultipliers(hotel.getId(), dto.getBasePricePerNight(), pricing);
 
         if (pricing.getId() == null) {
             pricing.setCreatedAt(LocalDateTime.now());
@@ -92,17 +98,17 @@ public class RoomTypePricingService {
         pricing.setUpdatedAt(LocalDateTime.now());
 
         RoomTypePricing saved = roomTypePricingRepository.save(pricing);
-        
+
         // Update all existing rooms of this type with the new price
         updateExistingRoomPrices(hotel, dto.getRoomType(), dto.getBasePricePerNight());
-        
+
         return convertToDTO(saved);
     }
 
     /**
      * Delete room type pricing
      */
-    @CacheEvict(value = {CacheConfig.ROOMS_BY_HOTEL_CACHE, CacheConfig.AVAILABLE_ROOMS_CACHE}, allEntries = true)
+    @CacheEvict(value = { CacheConfig.ROOMS_BY_HOTEL_CACHE, CacheConfig.AVAILABLE_ROOMS_CACHE }, allEntries = true)
     public void deleteRoomTypePricing(Long pricingId, String adminEmail) {
         User admin = getUserByEmail(adminEmail);
         Hotel hotel = admin.getHotel();
@@ -167,8 +173,12 @@ public class RoomTypePricingService {
             if (!roomTypePricingRepository.existsByHotelAndRoomType(hotel, roomType)) {
                 RoomTypePricing pricing = new RoomTypePricing(hotel, roomType, defaultPrices[i]);
                 pricing.setDescription("Default pricing for " + roomType.name().toLowerCase() + " rooms");
+
+                // Calculate pricing with hotel-specific multipliers
+                calculatePricingWithMultipliers(hotel.getId(), defaultPrices[i], pricing);
+
                 roomTypePricingRepository.save(pricing);
-                
+
                 // Update existing rooms of this type with the default price
                 updateExistingRoomPrices(hotel, roomType, defaultPrices[i]);
             }
@@ -190,6 +200,39 @@ public class RoomTypePricingService {
     public RoomTypePricing getRoomTypePricing(Long hotelId, RoomType roomType) {
         return roomTypePricingRepository.findByHotelIdAndRoomType(hotelId, roomType)
                 .orElse(null);
+    }
+
+    /**
+     * Calculate pricing with hotel-specific multipliers
+     * 
+     * @param hotelId           the hotel ID
+     * @param basePricePerNight the base price per night
+     * @param pricing           the pricing entity to update
+     */
+    private void calculatePricingWithMultipliers(Long hotelId, BigDecimal basePricePerNight, RoomTypePricing pricing) {
+        HotelPricingConfig config = hotelPricingConfigService.getOrCreateActiveConfiguration(hotelId);
+
+        if (config != null) {
+            // Calculate weekend price
+            BigDecimal weekendPrice = basePricePerNight.multiply(config.getWeekendMultiplier())
+                    .setScale(2, RoundingMode.HALF_UP);
+            pricing.setWeekendPrice(weekendPrice);
+
+            // Calculate holiday price
+            BigDecimal holidayPrice = basePricePerNight.multiply(config.getHolidayMultiplier())
+                    .setScale(2, RoundingMode.HALF_UP);
+            pricing.setHolidayPrice(holidayPrice);
+
+            // Calculate peak season price
+            BigDecimal peakSeasonPrice = basePricePerNight.multiply(config.getPeakSeasonMultiplier())
+                    .setScale(2, RoundingMode.HALF_UP);
+            pricing.setPeakSeasonPrice(peakSeasonPrice);
+        } else {
+            // Fallback to base price if no configuration
+            pricing.setWeekendPrice(basePricePerNight);
+            pricing.setHolidayPrice(basePricePerNight);
+            pricing.setPeakSeasonPrice(basePricePerNight);
+        }
     }
 
     /**
@@ -217,12 +260,12 @@ public class RoomTypePricingService {
     private void updateExistingRoomPrices(Hotel hotel, RoomType roomType, BigDecimal newPrice) {
         // Find all rooms of this type in the hotel
         List<Room> roomsToUpdate = roomRepository.findByHotelIdAndRoomType(hotel.getId(), roomType);
-        
+
         // Update the price for each room
         for (Room room : roomsToUpdate) {
             room.setPricePerNight(newPrice);
         }
-        
+
         // Save all updated rooms
         if (!roomsToUpdate.isEmpty()) {
             roomRepository.saveAll(roomsToUpdate);

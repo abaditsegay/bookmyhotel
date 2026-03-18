@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { API_CONFIG } from '../config/apiConfig';
 import {
   Box,
   Card,
@@ -16,7 +17,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  TextField,
   FormControl,
   InputLabel,
   Select,
@@ -30,10 +30,10 @@ import {
   Divider,
   CircularProgress
 } from '@mui/material';
+import PremiumTextField from './common/PremiumTextField';
 import {
   Add as AddIcon,
   Edit as EditIcon,
-  Delete as DeleteIcon,
   Info as InfoIcon
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
@@ -43,30 +43,66 @@ import roomTypePricingService, {
 } from '../services/roomTypePricingApi';
 import { ROOM_TYPES } from '../constants/roomTypes';
 
+// Interface for backend pricing multipliers
+interface PricingMultipliers {
+  weekendMultiplier: number;
+  holidayMultiplier: number;
+  peakSeasonMultiplier: number;
+  currencyCode: string;
+}
+
 interface RoomTypePricingProps {
   onPricingUpdate?: () => void;
 }
 
 const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) => {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const [pricingList, setPricingList] = useState<RoomTypePricingResponse[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingPricing, setEditingPricing] = useState<RoomTypePricingResponse | null>(null);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [selectedPricing, setSelectedPricing] = useState<RoomTypePricingResponse | null>(null);
+  const [pricingMultipliers, setPricingMultipliers] = useState<PricingMultipliers>({
+    weekendMultiplier: 1.0,
+    holidayMultiplier: 1.0,
+    peakSeasonMultiplier: 1.0,
+    currencyCode: 'ETB'
+  });
 
   const [formData, setFormData] = useState<RoomTypePricingRequest>({
     roomType: 'SINGLE',
     basePricePerNight: 100,
-    weekendMultiplier: 1.2,
-    holidayMultiplier: 1.5,
-    peakSeasonMultiplier: 1.3,
+    weekendMultiplier: 1.0,
+    holidayMultiplier: 1.0,
+    peakSeasonMultiplier: 1.0,
     isActive: true,
     currency: 'ETB',
     description: ''
   });
+
+  // Function to fetch pricing multipliers from backend
+  const fetchPricingMultipliers = useCallback(async (hotelId: string) => {
+    if (!token || !hotelId) return;
+
+    try {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/hotel-admin/pricing-config/hotel/${hotelId}/multipliers`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const multipliers: PricingMultipliers = await response.json();
+        setPricingMultipliers(multipliers);
+        // console.log('🎯 Fetched pricing multipliers:', multipliers);
+      } else {
+        // console.warn('Failed to fetch pricing multipliers, using defaults');
+      }
+    } catch (error) {
+      // console.error('Error fetching pricing multipliers:', error);
+    }
+  }, [token]);
 
   const loadPricing = useCallback(async () => {
     if (!token) return;
@@ -81,7 +117,7 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
         setError(response.message || 'Failed to load pricing');
       }
     } catch (err) {
-      console.error('Error loading pricing:', err);
+      // console.error('Error loading pricing:', err);
       setError('Failed to load pricing');
     } finally {
       setLoading(false);
@@ -92,7 +128,12 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
     loadPricing();
   }, [loadPricing]);
 
-  const handleOpenDialog = (pricing?: RoomTypePricingResponse) => {
+  const handleOpenDialog = useCallback(async (pricing?: RoomTypePricingResponse) => {
+    // Fetch current pricing multipliers from backend
+    if (user?.hotelId) {
+      await fetchPricingMultipliers(user.hotelId.toString());
+    }
+
     if (pricing) {
       setEditingPricing(pricing);
       setFormData({
@@ -114,16 +155,26 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
       setFormData({
         roomType: availableType?.value || 'SINGLE',
         basePricePerNight: 100,
-        weekendMultiplier: 1.2,
-        holidayMultiplier: 1.5,
-        peakSeasonMultiplier: 1.3,
+        weekendMultiplier: pricingMultipliers.weekendMultiplier,
+        holidayMultiplier: pricingMultipliers.holidayMultiplier,
+        peakSeasonMultiplier: pricingMultipliers.peakSeasonMultiplier,
         isActive: true,
-        currency: 'ETB',
+        currency: pricingMultipliers.currencyCode,
         description: ''
       });
     }
     setDialogOpen(true);
-  };
+  }, [pricingList, user?.hotelId, fetchPricingMultipliers, pricingMultipliers]);
+
+  // Listen for custom event to open dialog
+  useEffect(() => {
+    const handleAddPricingEvent = () => {
+      handleOpenDialog();
+    };
+
+    window.addEventListener('addPricing', handleAddPricingEvent);
+    return () => window.removeEventListener('addPricing', handleAddPricingEvent);
+  }, [handleOpenDialog]);
 
   const handleCloseDialog = () => {
     setDialogOpen(false);
@@ -137,14 +188,23 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
       setLoading(true);
       let response;
       
+      // Use backend multipliers for submission
+      const submissionData = {
+        ...formData,
+        weekendMultiplier: pricingMultipliers.weekendMultiplier,
+        holidayMultiplier: pricingMultipliers.holidayMultiplier,
+        peakSeasonMultiplier: pricingMultipliers.peakSeasonMultiplier,
+        currency: pricingMultipliers.currencyCode
+      };
+      
       if (editingPricing) {
         response = await roomTypePricingService.updateRoomTypePricing(
           token, 
           editingPricing.id, 
-          formData
+          submissionData
         );
       } else {
-        response = await roomTypePricingService.saveRoomTypePricing(token, formData);
+        response = await roomTypePricingService.saveRoomTypePricing(token, submissionData);
       }
 
       if (response.success) {
@@ -158,34 +218,8 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
         setError(response.message || 'Failed to save pricing');
       }
     } catch (err) {
-      console.error('Error saving pricing:', err);
+      // console.error('Error saving pricing:', err);
       setError('Failed to save pricing');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDelete = async () => {
-    if (!token || !selectedPricing) return;
-
-    try {
-      setLoading(true);
-      const response = await roomTypePricingService.deleteRoomTypePricing(token, selectedPricing.id);
-      
-      if (response.success) {
-        setDeleteDialogOpen(false);
-        setSelectedPricing(null);
-        await loadPricing();
-        if (onPricingUpdate) {
-          onPricingUpdate();
-        }
-        setError(null);
-      } else {
-        setError(response.message || 'Failed to delete pricing');
-      }
-    } catch (err) {
-      console.error('Error deleting pricing:', err);
-      setError('Failed to delete pricing');
     } finally {
       setLoading(false);
     }
@@ -208,7 +242,7 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
         setError(response.message || 'Failed to initialize default pricing');
       }
     } catch (err) {
-      console.error('Error initializing defaults:', err);
+      // console.error('Error initializing defaults:', err);
       setError('Failed to initialize default pricing');
     } finally {
       setLoading(false);
@@ -241,9 +275,12 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
   return (
     <Box>
       {/* Header */}
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mb: 3 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Typography variant="h5" component="h2">
+          Room Type Pricing
+        </Typography>
         <Box sx={{ display: 'flex', gap: 1 }}>
-          {pricingList.length === 0 && (
+          {pricingList.length === 0 ? (
             <Button
               variant="outlined"
               onClick={handleInitializeDefaults}
@@ -252,16 +289,16 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
             >
               Initialize Defaults
             </Button>
+          ) : (
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => handleOpenDialog()}
+              startIcon={<AddIcon />}
+            >
+              Add Pricing
+            </Button>
           )}
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<AddIcon />}
-            onClick={() => handleOpenDialog()}
-            disabled={loading}
-          >
-            Add Pricing
-          </Button>
         </Box>
       </Box>
 
@@ -275,9 +312,6 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
       {/* Info Card */}
       <Card sx={{ mb: 3 }}>
         <CardContent>
-          <Typography variant="h6" gutterBottom>
-            Pricing Information
-          </Typography>
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6} md={3}>
               <Typography variant="body2">
@@ -331,7 +365,21 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
             <TableContainer component={Paper} variant="outlined">
               <Table>
                 <TableHead>
-                  <TableRow>
+                  <TableRow
+                    sx={{
+                      background: 'linear-gradient(135deg, #f5f5f5 0%, #fafafa 50%, #f5f5f5 100%)',
+                      borderBottom: '2px solid #E8B86D',
+                      '& .MuiTableCell-head': {
+                        color: '#B8860B',
+                        fontWeight: 700,
+                        fontSize: '0.95rem',
+                        letterSpacing: '0.5px',
+                        textTransform: 'uppercase',
+                        border: 'none',
+                        padding: '20px 16px',
+                      }
+                    }}
+                  >
                     <TableCell>Room Type</TableCell>
                     <TableCell>Base Price</TableCell>
                     <TableCell>Weekend Price</TableCell>
@@ -406,20 +454,6 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
                               <EditIcon fontSize="small" />
                             </Button>
                           </Tooltip>
-                          <Tooltip title="Delete Pricing">
-                            <Button
-                              size="small"
-                              variant="outlined"
-                              color="error"
-                              onClick={() => {
-                                setSelectedPricing(pricing);
-                                setDeleteDialogOpen(true);
-                              }}
-                              disabled={loading}
-                            >
-                              <DeleteIcon fontSize="small" />
-                            </Button>
-                          </Tooltip>
                         </Box>
                       </TableCell>
                     </TableRow>
@@ -439,7 +473,32 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
         <DialogContent>
           <Grid container spacing={3} sx={{ mt: 1 }}>
             <Grid item xs={12} md={6}>
-              <FormControl fullWidth required>
+              <FormControl fullWidth required
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    backgroundColor: '#fafafa',
+                    borderLeft: '2px solid #E8B86D',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      backgroundColor: 'rgba(232, 184, 109, 0.04)',
+                      '& fieldset': {
+                        borderColor: '#E8B86D',
+                      },
+                    },
+                    '&.Mui-focused': {
+                      backgroundColor: '#fffef8',
+                      '& fieldset': {
+                        borderColor: '#E8B86D',
+                        borderWidth: '2px',
+                      },
+                    },
+                  },
+                  '& .MuiInputLabel-root.Mui-focused': {
+                    color: '#B8860B',
+                    fontWeight: 600,
+                  },
+                }}
+              >
                 <InputLabel>Room Type</InputLabel>
                 <Select
                   value={formData.roomType}
@@ -460,7 +519,7 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
               </FormControl>
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Base Price per Night"
                 type="number"
@@ -475,49 +534,43 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
               />
             </Grid>
             <Grid item xs={12} md={4}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Weekend Multiplier"
-                type="number"
-                value={formData.weekendMultiplier}
-                onChange={(e) => setFormData({ 
-                  ...formData, 
-                  weekendMultiplier: e.target.value === '' ? undefined : (parseFloat(e.target.value) || undefined)
-                })}
-                inputProps={{ min: 0.1, step: 0.1 }}
-                helperText="1.2 = 20% increase"
+                value={pricingMultipliers.weekendMultiplier.toFixed(1)}
+                InputProps={{
+                  readOnly: true,
+                }}
+                helperText="From hotel pricing configuration"
+                disabled
               />
             </Grid>
             <Grid item xs={12} md={4}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Holiday Multiplier"
-                type="number"
-                value={formData.holidayMultiplier}
-                onChange={(e) => setFormData({ 
-                  ...formData, 
-                  holidayMultiplier: e.target.value === '' ? undefined : (parseFloat(e.target.value) || undefined)
-                })}
-                inputProps={{ min: 0.1, step: 0.1 }}
-                helperText="1.5 = 50% increase"
+                value={pricingMultipliers.holidayMultiplier.toFixed(1)}
+                InputProps={{
+                  readOnly: true,
+                }}
+                helperText="From hotel pricing configuration"
+                disabled
               />
             </Grid>
             <Grid item xs={12} md={4}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Peak Season Multiplier"
-                type="number"
-                value={formData.peakSeasonMultiplier}
-                onChange={(e) => setFormData({ 
-                  ...formData, 
-                  peakSeasonMultiplier: e.target.value === '' ? undefined : (parseFloat(e.target.value) || undefined)
-                })}
-                inputProps={{ min: 0.1, step: 0.1 }}
-                helperText="1.3 = 30% increase"
+                value={pricingMultipliers.peakSeasonMultiplier.toFixed(1)}
+                InputProps={{
+                  readOnly: true,
+                }}
+                helperText="From hotel pricing configuration"
+                disabled
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Currency"
                 value={formData.currency}
@@ -537,7 +590,7 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
               />
             </Grid>
             <Grid item xs={12}>
-              <TextField
+              <PremiumTextField
                 fullWidth
                 label="Description"
                 multiline
@@ -569,7 +622,7 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
                   Weekend Price
                 </Typography>
                 <Typography variant="h6">
-                  {formatCurrency(formData.basePricePerNight * (formData.weekendMultiplier || 1))}
+                  {formatCurrency(formData.basePricePerNight * pricingMultipliers.weekendMultiplier)}
                 </Typography>
               </Grid>
               <Grid item xs={6} md={3}>
@@ -577,7 +630,7 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
                   Holiday Price
                 </Typography>
                 <Typography variant="h6">
-                  {formatCurrency(formData.basePricePerNight * (formData.holidayMultiplier || 1))}
+                  {formatCurrency(formData.basePricePerNight * pricingMultipliers.holidayMultiplier)}
                 </Typography>
               </Grid>
               <Grid item xs={6} md={3}>
@@ -585,7 +638,7 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
                   Peak Season Price
                 </Typography>
                 <Typography variant="h6">
-                  {formatCurrency(formData.basePricePerNight * (formData.peakSeasonMultiplier || 1))}
+                  {formatCurrency(formData.basePricePerNight * pricingMultipliers.peakSeasonMultiplier)}
                 </Typography>
               </Grid>
             </Grid>
@@ -603,30 +656,6 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
         </DialogActions>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
-        <DialogTitle>Confirm Delete</DialogTitle>
-        <DialogContent>
-          <Typography>
-            Are you sure you want to delete the pricing for{' '}
-            {selectedPricing && getRoomTypeLabel(selectedPricing.roomType)}?
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-            This action cannot be undone. Existing rooms will keep their current prices.
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
-          <Button 
-            onClick={handleDelete} 
-            color="error" 
-            variant="contained"
-            disabled={loading}
-          >
-            {loading ? <CircularProgress size={20} /> : 'Delete'}
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Box>
   );
 };

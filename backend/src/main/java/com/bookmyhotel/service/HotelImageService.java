@@ -1,0 +1,516 @@
+package com.bookmyhotel.service;
+
+import com.bookmyhotel.config.AwsS3Config;
+import com.bookmyhotel.entity.Hotel;
+import com.bookmyhotel.entity.HotelImage;
+import com.bookmyhotel.entity.Room;
+import com.bookmyhotel.entity.RoomType;
+import com.bookmyhotel.enums.ImageCategory;
+import com.bookmyhotel.repository.HotelImageRepository;
+import com.bookmyhotel.repository.HotelRepository;
+import com.bookmyhotel.repository.RoomRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.*;
+
+import jakarta.annotation.PostConstruct;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * Service for managing hotel and room type images in AWS S3
+ * Handles upload, deletion, and retrieval of images with multi-tenant support
+ */
+@Service
+@Transactional
+public class HotelImageService {
+
+    private static final Logger logger = LoggerFactory.getLogger(HotelImageService.class);
+
+    private final S3Client s3Client;
+    private final AwsS3Config awsS3Config;
+    private final HotelImageRepository hotelImageRepository;
+    private final HotelRepository hotelRepository;
+    private final RoomRepository roomRepository;
+
+    @Value("${image.upload.base-directory:/opt/bookmyhotel/uploads/images}")
+    private String baseUploadDirectory;
+
+    @Value("${image.upload.base-url:http://localhost:8080/uploads/images}")
+    private String baseImageUrl;
+
+    // Supported image formats
+    private static final String[] ALLOWED_EXTENSIONS = { "jpg", "jpeg", "png", "webp" };
+    private static final String[] ALLOWED_CONTENT_TYPES = {
+            "image/jpeg", "image/jpg", "image/png", "image/webp"
+    };
+
+    // Image size limits
+    private static final long MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+    private static final int MAX_WIDTH = 2048;
+    private static final int MAX_HEIGHT = 2048;
+
+    @Autowired
+    public HotelImageService(S3Client s3Client, AwsS3Config awsS3Config,
+            HotelImageRepository hotelImageRepository, HotelRepository hotelRepository,
+            RoomRepository roomRepository) {
+        this.s3Client = s3Client;
+        this.awsS3Config = awsS3Config;
+        this.hotelImageRepository = hotelImageRepository;
+        this.hotelRepository = hotelRepository;
+        this.roomRepository = roomRepository;
+    }
+
+    @PostConstruct
+    public void init() {
+        // Log configuration after injection is complete
+        logger.info("📂 Image upload directory: {}", baseUploadDirectory);
+        logger.info("🌐 Image base URL: {}", baseImageUrl);
+    }
+
+    /**
+     * Upload a hotel image (not associated with a room type)
+     */
+    public HotelImage uploadHotelImage(String tenantId, Long hotelId,
+            ImageCategory imageCategory, MultipartFile file,
+            String altText, Integer displayOrder) throws IOException {
+
+        validateImageCategory(imageCategory, true);
+        validateFile(file);
+
+        // Check if hotel already has a hero image - if so, deactivate the existing one
+        if (imageCategory.isHeroImage()) {
+            Optional<HotelImage> existingHeroImage = hotelImageRepository
+                    .findByTenantIdAndHotelIdAndImageCategoryAndIsActiveTrue(
+                            tenantId, hotelId, imageCategory);
+            if (existingHeroImage.isPresent()) {
+                logger.debug("Found existing hero image for hotel {}, deactivating it", hotelId);
+                // Deactivate existing hero image
+                HotelImage heroImage = existingHeroImage.get();
+                heroImage.setIsActive(false);
+                hotelImageRepository.save(heroImage);
+            }
+        }
+
+        // Get hotel name for folder structure
+        Hotel hotel = hotelRepository.findById(hotelId)
+                .orElseThrow(() -> new RuntimeException("Hotel not found: " + hotelId));
+        String key = generateFileKey(hotel.getName(), null, file.getOriginalFilename());
+        String imageUrl = uploadToLocalFilesystem(key, file);
+
+        // Get image dimensions
+        BufferedImage bufferedImage = ImageIO.read(file.getInputStream());
+        Integer width = bufferedImage != null ? bufferedImage.getWidth() : null;
+        Integer height = bufferedImage != null ? bufferedImage.getHeight() : null;
+
+        // Set display order if not provided
+        if (displayOrder == null) {
+            displayOrder = hotelImageRepository.getNextDisplayOrder(tenantId, hotelId, null, imageCategory);
+        }
+
+        HotelImage hotelImage = new HotelImage();
+        hotelImage.setTenantId(tenantId);
+        hotelImage.setHotelId(hotelId);
+        hotelImage.setImageCategory(imageCategory);
+        hotelImage.setFileName(file.getOriginalFilename());
+        hotelImage.setFilePath(imageUrl);
+        hotelImage.setDisplayOrder(displayOrder);
+        hotelImage.setAltText(altText);
+        hotelImage.setFileSize(file.getSize());
+        hotelImage.setMimeType(file.getContentType());
+        hotelImage.setWidth(width);
+        hotelImage.setHeight(height);
+        hotelImage.setIsActive(true);
+
+        return hotelImageRepository.save(hotelImage);
+    }
+
+    /**
+     * Upload a room type image
+     */
+    public HotelImage uploadRoomTypeImage(String tenantId, Long hotelId, Long roomTypeId,
+            ImageCategory imageCategory, MultipartFile file,
+            String altText, Integer displayOrder) throws IOException {
+
+        validateImageCategory(imageCategory, false);
+        validateFile(file);
+
+        // Check if room type already has a hero image - if so, deactivate the existing
+        // one
+        if (imageCategory.isHeroImage()) {
+            Optional<HotelImage> existingHeroImage = hotelImageRepository
+                    .findByTenantIdAndHotelIdAndRoomTypeIdAndImageCategoryAndIsActiveTrue(
+                            tenantId, hotelId, roomTypeId, imageCategory);
+            if (existingHeroImage.isPresent()) {
+                logger.debug("Found existing hero image for room type {} in hotel {}, deactivating it",
+                        roomTypeId, hotelId);
+                // Deactivate existing hero image
+                HotelImage heroImage = existingHeroImage.get();
+                heroImage.setIsActive(false);
+                hotelImageRepository.save(heroImage);
+            }
+        }
+
+        // Get the room type from the room type ID (which is roomType.ordinal() + 1)
+        RoomType roomType = null;
+        if (roomTypeId != null) {
+            logger.debug("HotelImageService.uploadRoomTypeImage: roomTypeId={}", roomTypeId);
+            int ordinal = (int) (roomTypeId - 1); // Convert back from ordinal + 1
+            logger.debug("Calculated ordinal: {}", ordinal);
+            RoomType[] roomTypes = RoomType.values();
+            if (ordinal >= 0 && ordinal < roomTypes.length) {
+                roomType = roomTypes[ordinal];
+                logger.debug("Resolved roomType: {}", roomType);
+            } else {
+                logger.warn("Invalid ordinal for room type: {}", ordinal);
+            }
+        }
+
+        // Get hotel name for folder structure
+        Hotel hotel = hotelRepository.findById(hotelId)
+                .orElseThrow(() -> new RuntimeException("Hotel not found: " + hotelId));
+        String key = generateFileKey(hotel.getName(), roomType, file.getOriginalFilename());
+        String imageUrl = uploadToLocalFilesystem(key, file);
+
+        // Get image dimensions
+        BufferedImage bufferedImage = ImageIO.read(file.getInputStream());
+        Integer width = bufferedImage != null ? bufferedImage.getWidth() : null;
+        Integer height = bufferedImage != null ? bufferedImage.getHeight() : null;
+
+        // Set display order if not provided
+        if (displayOrder == null) {
+            displayOrder = hotelImageRepository.getNextDisplayOrder(tenantId, hotelId, roomTypeId, imageCategory);
+        }
+
+        HotelImage hotelImage = new HotelImage();
+        hotelImage.setTenantId(tenantId);
+        hotelImage.setHotelId(hotelId);
+        hotelImage.setRoomTypeId(roomTypeId);
+        hotelImage.setImageCategory(imageCategory);
+        hotelImage.setFileName(file.getOriginalFilename());
+        hotelImage.setFilePath(imageUrl);
+        hotelImage.setDisplayOrder(displayOrder);
+        hotelImage.setAltText(altText);
+        hotelImage.setFileSize(file.getSize());
+        hotelImage.setMimeType(file.getContentType());
+        hotelImage.setWidth(width);
+        hotelImage.setHeight(height);
+        hotelImage.setIsActive(true);
+
+        return hotelImageRepository.save(hotelImage);
+    }
+
+    /**
+     * Get all active images for a hotel
+     */
+    @Transactional(readOnly = true)
+    public List<HotelImage> getHotelImages(String tenantId, Long hotelId) {
+        return hotelImageRepository.findByTenantIdAndHotelIdAndRoomTypeIdIsNullAndIsActiveTrueOrderByDisplayOrderAsc(
+                tenantId, hotelId);
+    }
+
+    /**
+     * Get all active images for a room type
+     */
+    @Transactional(readOnly = true)
+    public List<HotelImage> getRoomTypeImages(String tenantId, Long hotelId, Long roomTypeId) {
+        return hotelImageRepository.findByTenantIdAndHotelIdAndRoomTypeIdAndIsActiveTrueOrderByDisplayOrderAsc(
+                tenantId, hotelId, roomTypeId);
+    }
+
+    /**
+     * Get hero image for hotel
+     */
+    @Transactional(readOnly = true)
+    public Optional<HotelImage> getHotelHeroImage(String tenantId, Long hotelId) {
+        return hotelImageRepository.findByTenantIdAndHotelIdAndImageCategoryAndIsActiveTrue(
+                tenantId, hotelId, ImageCategory.HOTEL_HERO);
+    }
+
+    /**
+     * Get hero image for room type
+     */
+    @Transactional(readOnly = true)
+    public Optional<HotelImage> getRoomTypeHeroImage(String tenantId, Long hotelId, Long roomTypeId) {
+        return hotelImageRepository.findByTenantIdAndHotelIdAndRoomTypeIdAndImageCategoryAndIsActiveTrue(
+                tenantId, hotelId, roomTypeId, ImageCategory.ROOM_TYPE_HERO);
+    }
+
+    /**
+     * Delete an image (soft delete)
+     */
+    public void deleteImage(String tenantId, Long imageId) {
+        Optional<HotelImage> imageOptional = hotelImageRepository.findById(imageId);
+        if (imageOptional.isPresent()) {
+            HotelImage image = imageOptional.get();
+            if (!image.getTenantId().equals(tenantId)) {
+                throw new RuntimeException("Access denied: Image does not belong to this tenant");
+            }
+            image.setIsActive(false);
+            hotelImageRepository.save(image);
+        }
+    }
+
+    /**
+     * Clean up duplicate inactive images for a room type
+     */
+    @Transactional
+    public void cleanupDuplicateRoomTypeImages(String tenantId, Long hotelId, Long roomTypeId) {
+        // Find all images for this room type (active and inactive)
+        List<HotelImage> allImages = hotelImageRepository.findByTenantIdAndHotelIdAndRoomTypeIdOrderByCreatedAtDesc(
+                tenantId, hotelId, roomTypeId);
+
+        if (allImages.size() <= 1) {
+            return; // No duplicates to clean up
+        }
+
+        // Keep the most recent active image, remove others
+        boolean foundActive = false;
+        for (HotelImage image : allImages) {
+            if (image.getIsActive() && !foundActive) {
+                foundActive = true;
+                logger.debug("Keeping active image: {} (ID: {})", image.getFileName(), image.getId());
+            } else {
+                logger.debug("Removing duplicate image: {} (ID: {})", image.getFileName(), image.getId());
+                hotelImageRepository.delete(image); // Hard delete old duplicates
+            }
+        }
+    }
+
+    /**
+     * Update image display order
+     */
+    public void updateDisplayOrder(String tenantId, Long imageId, Integer newDisplayOrder) {
+        Optional<HotelImage> imageOpt = hotelImageRepository.findById(imageId);
+        if (imageOpt.isPresent()) {
+            HotelImage image = imageOpt.get();
+
+            // Verify tenant access
+            if (!image.getTenantId().equals(tenantId)) {
+                throw new IllegalAccessError("Access denied to image");
+            }
+
+            image.setDisplayOrder(newDisplayOrder);
+            hotelImageRepository.save(image);
+        }
+    }
+
+    /**
+     * Update image alt text
+     */
+    public void updateAltText(String tenantId, Long imageId, String newAltText) {
+        Optional<HotelImage> imageOpt = hotelImageRepository.findById(imageId);
+        if (imageOpt.isPresent()) {
+            HotelImage image = imageOpt.get();
+
+            // Verify tenant access
+            if (!image.getTenantId().equals(tenantId)) {
+                throw new IllegalAccessError("Access denied to image");
+            }
+
+            image.setAltText(newAltText);
+            hotelImageRepository.save(image);
+        }
+    }
+
+    /**
+     * Get all active images for a hotel (public access - searches across all
+     * tenants)
+     */
+    @Transactional(readOnly = true)
+    public List<HotelImage> getHotelImagesPublic(Long hotelId) {
+        return hotelImageRepository.findByHotelIdAndRoomTypeIdIsNullAndIsActiveTrueOrderByDisplayOrderAsc(hotelId);
+    }
+
+    /**
+     * Get hero image for hotel (public access - searches across all tenants)
+     */
+    @Transactional(readOnly = true)
+    public Optional<HotelImage> getHotelHeroImagePublic(Long hotelId) {
+        return hotelImageRepository.findByHotelIdAndImageCategoryAndIsActiveTrue(hotelId, ImageCategory.HOTEL_HERO);
+    }
+
+    // Private helper methods
+
+    private void validateImageCategory(ImageCategory category, boolean isHotelImage) {
+        if (isHotelImage && !category.isHotelImage()) {
+            throw new IllegalArgumentException("Invalid image category for hotel image");
+        }
+        if (!isHotelImage && !category.isRoomTypeImage()) {
+            throw new IllegalArgumentException("Invalid image category for room type image");
+        }
+    }
+
+    private void validateFile(MultipartFile file) throws IOException {
+        if (file.isEmpty()) {
+            throw new IllegalArgumentException("File cannot be empty");
+        }
+
+        // Check file size
+        if (file.getSize() > MAX_FILE_SIZE) {
+            throw new IllegalArgumentException(
+                    "File size exceeds maximum limit of " + (MAX_FILE_SIZE / 1024 / 1024) + "MB");
+        }
+
+        // Check file extension
+        String originalFilename = file.getOriginalFilename();
+        if (originalFilename == null) {
+            throw new IllegalArgumentException("File must have a valid name");
+        }
+
+        String extension = getFileExtension(originalFilename).toLowerCase();
+        boolean validExtension = false;
+        for (String allowedExt : ALLOWED_EXTENSIONS) {
+            if (allowedExt.equals(extension)) {
+                validExtension = true;
+                break;
+            }
+        }
+
+        if (!validExtension) {
+            throw new IllegalArgumentException("File extension not allowed. Allowed extensions: " +
+                    String.join(", ", ALLOWED_EXTENSIONS));
+        }
+
+        // Check MIME type
+        String contentType = file.getContentType();
+        boolean validContentType = false;
+        if (contentType != null) {
+            for (String allowedType : ALLOWED_CONTENT_TYPES) {
+                if (allowedType.equals(contentType)) {
+                    validContentType = true;
+                    break;
+                }
+            }
+        }
+
+        if (!validContentType) {
+            throw new IllegalArgumentException("Invalid file type. Allowed types: " +
+                    String.join(", ", ALLOWED_CONTENT_TYPES));
+        }
+
+        // Validate image dimensions
+        try {
+            BufferedImage bufferedImage = ImageIO.read(file.getInputStream());
+            if (bufferedImage != null) {
+                if (bufferedImage.getWidth() > MAX_WIDTH || bufferedImage.getHeight() > MAX_HEIGHT) {
+                    throw new IllegalArgumentException(
+                            String.format("Image dimensions exceed maximum allowed size of %dx%d pixels",
+                                    MAX_WIDTH, MAX_HEIGHT));
+                }
+            }
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Unable to read image file", e);
+        }
+    }
+
+    /**
+     * Generate file key using hotel name folder structure
+     * Format: hotelName/main.jpg or hotelName/standard.jpg
+     */
+    private String generateFileKey(String hotelName, RoomType roomType, String originalFilename) {
+        // Sanitize hotel name for filesystem (remove special chars, spaces to hyphens)
+        String sanitizedHotelName = hotelName.toLowerCase()
+                .replaceAll("[^a-z0-9\\s-]", "")
+                .replaceAll("\\s+", "-");
+
+        String extension = getFileExtension(originalFilename);
+        String filename;
+
+        if (roomType != null) {
+            // Room type image: hotelName/standard.jpg, hotelName/deluxe.jpg
+            filename = roomType.toString().toLowerCase() + "." + extension;
+            logger.debug("📁 Room type image: {}/{}", sanitizedHotelName, filename);
+        } else {
+            // Hotel main image: hotelName/main.jpg
+            filename = "main." + extension;
+            logger.debug("📁 Hotel main image: {}/{}", sanitizedHotelName, filename);
+        }
+
+        String finalKey = sanitizedHotelName + "/" + filename;
+        logger.debug("✅ Generated file key: {}", finalKey);
+        return finalKey;
+    }
+
+    private String uploadToLocalFilesystem(String key, MultipartFile file) throws IOException {
+        try {
+            // Create full file path: /opt/bookmyhotel/uploads/images/{key}
+            Path filePath = Paths.get(baseUploadDirectory, key);
+
+            // Create directories if they don't exist
+            Files.createDirectories(filePath.getParent());
+
+            // Save file to filesystem
+            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+            logger.info("✅ File uploaded to local filesystem: {}", filePath);
+
+            // Return URL path: /uploads/images/{key}
+            return baseImageUrl + "/" + key;
+        } catch (Exception e) {
+            throw new IOException("Failed to upload file to local filesystem", e);
+        }
+    }
+
+    private void deleteFromLocalFilesystem(String key) {
+        try {
+            Path filePath = Paths.get(baseUploadDirectory, key);
+            if (Files.exists(filePath)) {
+                Files.delete(filePath);
+                logger.info("✅ File deleted from local filesystem: {}", filePath);
+            } else {
+                logger.warn("⚠️ File not found for deletion: {}", filePath);
+            }
+        } catch (Exception e) {
+            // Log error but don't throw exception
+            logger.error("Failed to delete file from local filesystem: {}", e.getMessage(), e);
+        }
+    }
+
+    private String getFileExtension(String filename) {
+        if (filename == null || filename.isEmpty()) {
+            return "";
+        }
+        int lastDotIndex = filename.lastIndexOf('.');
+        if (lastDotIndex == -1 || lastDotIndex == filename.length() - 1) {
+            return "";
+        }
+        return filename.substring(lastDotIndex + 1);
+    }
+
+    private String extractKeyFromUrl(String imageUrl) {
+        // Extract key from local filesystem URL or S3 URL
+        // Local: http://localhost:8080/uploads/images/{key}
+        // S3: https://bucket.s3.region.amazonaws.com/{key}
+
+        if (imageUrl.contains("/uploads/images/")) {
+            // Local filesystem URL
+            int index = imageUrl.indexOf("/uploads/images/");
+            return imageUrl.substring(index + "/uploads/images/".length());
+        } else {
+            // Legacy S3 URL
+            String bucketUrl = String.format("https://%s.s3.%s.amazonaws.com/",
+                    awsS3Config.getBucketName(), awsS3Config.getAwsRegion());
+            if (imageUrl.startsWith(bucketUrl)) {
+                return imageUrl.substring(bucketUrl.length());
+            }
+        }
+        return imageUrl; // Return as-is if format is unexpected
+    }
+}

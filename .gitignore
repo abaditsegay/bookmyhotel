@@ -112,6 +112,9 @@ jspm_packages/
 oauth2-credentials.env
 setup-oauth2.sh
 start-backend-with-oauth2.sh
+
+# GitHub Actions deployment secrets (contains SSH keys / passwords — never commit)
+deployment/aws/github-actions.env
 *.pem
 *.p12
 *.pfx

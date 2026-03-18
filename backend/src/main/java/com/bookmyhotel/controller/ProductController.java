@@ -1,6 +1,8 @@
 package com.bookmyhotel.controller;
 
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -24,7 +26,7 @@ import jakarta.validation.Valid;
  */
 @RestController
 @RequestMapping("/api/hotels/{hotelId}/shop/products")
-@PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('FRONTDESK') or hasRole('SYSTEM_ADMIN')")
+@PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('FRONTDESK') or hasRole('SUPER_ADMIN')")
 public class ProductController {
 
     @Autowired
@@ -35,7 +37,7 @@ public class ProductController {
      * POST /api/hotels/{hotelId}/shop/products
      */
     @PostMapping
-    @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('SYSTEM_ADMIN')")
+    @PreAuthorize("hasRole('SUPER_ADMIN') or @hotelSecurity.canAccessHotel(#hotelId)")
     public ResponseEntity<ProductResponse> createProduct(
             @PathVariable Long hotelId,
             @Valid @RequestBody ProductRequest request) {
@@ -49,7 +51,7 @@ public class ProductController {
      * PUT /api/hotels/{hotelId}/shop/products/{productId}
      */
     @PutMapping("/{productId}")
-    @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('SYSTEM_ADMIN')")
+    @PreAuthorize("hasRole('SUPER_ADMIN') or @hotelSecurity.canAccessHotel(#hotelId)")
     public ResponseEntity<ProductResponse> updateProduct(
             @PathVariable Long hotelId,
             @PathVariable Long productId,
@@ -141,7 +143,7 @@ public class ProductController {
      * PATCH /api/hotels/{hotelId}/shop/products/{productId}/stock
      */
     @PatchMapping("/{productId}/stock")
-    @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('FRONTDESK') or hasRole('SYSTEM_ADMIN')")
+    @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('FRONTDESK') or hasRole('SUPER_ADMIN')")
     public ResponseEntity<ProductResponse> updateStock(
             @PathVariable Long hotelId,
             @PathVariable Long productId,
@@ -156,7 +158,7 @@ public class ProductController {
      * PATCH /api/hotels/{hotelId}/shop/products/{productId}/toggle-active
      */
     @PatchMapping("/{productId}/toggle-active")
-    @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('FRONTDESK') or hasRole('SYSTEM_ADMIN')")
+    @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('FRONTDESK') or hasRole('SUPER_ADMIN')")
     public ResponseEntity<ProductResponse> toggleActiveStatus(
             @PathVariable Long hotelId,
             @PathVariable Long productId) {
@@ -170,7 +172,7 @@ public class ProductController {
      * PATCH /api/hotels/{hotelId}/shop/products/{productId}/toggle-available
      */
     @PatchMapping("/{productId}/toggle-available")
-    @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('FRONTDESK') or hasRole('SYSTEM_ADMIN')")
+    @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('FRONTDESK') or hasRole('SUPER_ADMIN')")
     public ResponseEntity<ProductResponse> toggleAvailableStatus(
             @PathVariable Long hotelId,
             @PathVariable Long productId) {
@@ -184,7 +186,7 @@ public class ProductController {
      * DELETE /api/hotels/{hotelId}/shop/products/{productId}
      */
     @DeleteMapping("/{productId}")
-    @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('SYSTEM_ADMIN')")
+    @PreAuthorize("hasRole('SUPER_ADMIN') or @hotelSecurity.canAccessHotel(#hotelId)")
     public ResponseEntity<Void> deleteProduct(
             @PathVariable Long hotelId,
             @PathVariable Long productId) {
@@ -233,5 +235,18 @@ public class ProductController {
     @GetMapping("/categories")
     public ResponseEntity<ProductCategory[]> getProductCategories() {
         return ResponseEntity.ok(ProductCategory.values());
+    }
+
+    /**
+     * Debug endpoint to check raw product data
+     * GET /api/hotels/{hotelId}/shop/products/debug
+     */
+    @GetMapping("/debug")
+    @PreAuthorize("hasRole('HOTEL_ADMIN') or hasRole('SUPER_ADMIN')")
+    public ResponseEntity<Map<String, Object>> debugProducts(@PathVariable Long hotelId) {
+        Map<String, Object> debug = new HashMap<>();
+        debug.put("hotelId", hotelId);
+        debug.put("products", productService.getProducts(hotelId, PageRequest.of(0, 100)));
+        return ResponseEntity.ok(debug);
     }
 }

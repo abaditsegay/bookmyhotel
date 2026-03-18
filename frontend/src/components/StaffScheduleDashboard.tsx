@@ -22,6 +22,9 @@ import {
   People as UsersIcon
 } from '@mui/icons-material';
 import axiosInstance from '../utils/axiosConfig';
+import { useTranslation } from 'react-i18next';
+import { formatDateForDisplay } from '../utils/dateUtils';
+import { formatEthiopianTime } from '../utils/ethiopianCalendar';
 
 interface StaffSchedule {
   id: number;
@@ -50,6 +53,7 @@ interface ScheduleStats {
 }
 
 const StaffScheduleDashboard: React.FC = () => {
+  const { t } = useTranslation();
   const [schedules, setSchedules] = useState<StaffSchedule[]>([]);
   const [stats, setStats] = useState<ScheduleStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -77,7 +81,7 @@ const StaffScheduleDashboard: React.FC = () => {
       setSchedules(schedulesResponse.data);
       setStats(statsResponse.data);
     } catch (error) {
-      console.error('Error fetching schedule data:', error);
+      // console.error('Error fetching schedule data:', error);
       setError('Failed to load schedule data');
     } finally {
       setLoading(false);
@@ -119,7 +123,7 @@ const StaffScheduleDashboard: React.FC = () => {
   const getDateRange = () => {
     const start = getStartDate();
     const end = getEndDate();
-    return `${new Date(start).toLocaleDateString()} - ${new Date(end).toLocaleDateString()}`;
+    return `${formatDateForDisplay(start)} - ${formatDateForDisplay(end)}`;
   };
 
   const getDaysInRange = () => {
@@ -143,7 +147,7 @@ const StaffScheduleDashboard: React.FC = () => {
     switch (status) {
       case 'SCHEDULED': return 'default';
       case 'CONFIRMED': return 'primary';
-      case 'COMPLETED': return 'success';
+      case 'COMPLETED': return 'primary';
       case 'CANCELLED': return 'error';
       case 'NO_SHOW': return 'warning';
       default: return 'default';
@@ -153,21 +157,18 @@ const StaffScheduleDashboard: React.FC = () => {
   const getDepartmentChipColor = (department: string) => {
     const colors: Record<string, 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning'> = {
       'FRONTDESK': 'primary',
-      'HOUSEKEEPING': 'success',
+      'HOUSEKEEPING': 'info',
       'MAINTENANCE': 'warning',
       'SECURITY': 'error',
       'RESTAURANT': 'info',
-      'CONCIERGE': 'secondary',
+      'OPERATIONAL_ADMIN': 'secondary',
       'MANAGEMENT': 'secondary'
     };
     return colors[department] || 'secondary';
   };
 
   const formatTime = (time: string) => {
-    return new Date(`2000-01-01T${time}`).toLocaleTimeString([], { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    });
+    return formatEthiopianTime(new Date(`2000-01-01T${time}`));
   };
 
   if (loading) {
@@ -267,7 +268,7 @@ const StaffScheduleDashboard: React.FC = () => {
           </Grid>
           <Grid item xs={12} sm={6} md={2}>
             <Paper sx={{ p: 2, textAlign: 'center' }}>
-              <Typography variant="h6" color="success.main">
+              <Typography variant="h6" color="primary.main">
                 {stats.completedCount}
               </Typography>
               <Typography variant="caption" color="text.secondary">
@@ -376,7 +377,7 @@ const StaffScheduleDashboard: React.FC = () => {
                                 </Typography>
                               </Box>
                               <Typography variant="caption" color="text.secondary">
-                                {schedule.shiftType.replace('_', ' ')}
+                                {t(`staff.management.shiftTypes.${schedule.shiftType}`, schedule.shiftType.replace('_', ' '))}
                               </Typography>
                               {schedule.notes && (
                                 <Typography 

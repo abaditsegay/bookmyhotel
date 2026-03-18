@@ -117,6 +117,11 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
        boolean existsByHotelAndRoomNumber(Hotel hotel, String roomNumber);
 
        /**
+        * Check if room number exists for a hotel (alternate parameter order)
+        */
+       boolean existsByRoomNumberAndHotel(String roomNumber, Hotel hotel);
+
+       /**
         * Count rooms by hotel
         */
        long countByHotel(Hotel hotel);
@@ -306,4 +311,39 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
         */
        @Query("SELECT r FROM Room r ORDER BY r.hotel.id ASC, r.roomNumber ASC")
        List<Room> findAllByOrderByHotelIdAscRoomNumberAsc();
+
+       /**
+        * Find all rooms with reservations eagerly loaded, ordered by hotel ID and room
+        * number
+        */
+       @Query("SELECT DISTINCT r FROM Room r LEFT JOIN FETCH r.reservations ORDER BY r.hotel.id ASC, r.roomNumber ASC")
+       List<Room> findAllWithReservationsByOrderByHotelIdAscRoomNumberAsc();
+
+       /**
+        * Find rooms by hotel ID with reservations eagerly loaded, ordered by room
+        * number
+        */
+       @Query("SELECT DISTINCT r FROM Room r LEFT JOIN FETCH r.reservations WHERE r.hotel.id = :hotelId ORDER BY r.roomNumber")
+       List<Room> findByHotelIdWithReservationsOrderByRoomNumber(@Param("hotelId") Long hotelId);
+
+       /**
+        * Find room by room number and hotel ID
+        */
+       @Query("SELECT r FROM Room r WHERE r.roomNumber = :roomNumber AND r.hotel.id = :hotelId")
+       Optional<Room> findByRoomNumberAndHotelId(@Param("roomNumber") String roomNumber,
+                     @Param("hotelId") Long hotelId);
+
+       /**
+        * Find rooms that need maintenance after checkout
+        * Used by automated room status service
+        */
+       @Query("SELECT DISTINCT r FROM Room r " +
+                     "INNER JOIN r.reservations res " +
+                     "WHERE res.status = 'CHECKED_OUT' " +
+                     "AND res.actualCheckOutTime BETWEEN :startTime AND :endTime " +
+                     "AND r.status != 'MAINTENANCE' " +
+                     "AND r.status != 'OUT_OF_ORDER'")
+       List<Room> findRoomsNeedingMaintenanceAfterCheckout(
+                     @Param("startTime") java.time.LocalDateTime startTime,
+                     @Param("endTime") java.time.LocalDateTime endTime);
 }

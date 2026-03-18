@@ -10,7 +10,6 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -28,118 +27,156 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
-    @Value("#{'${app.cors.allowed-origins:http://localhost:3000,https://yourdomain.com}'.split(',')}")
-    private List<String> allowedOrigins;
+        @Value("#{'${app.cors.allowed-origins:http://localhost:3000,https://yourdomain.com}'.split(',')}")
+        private List<String> allowedOrigins;
 
-    @Bean
-    public JwtAuthenticationFilter jwtAuthenticationFilter() {
-        return new JwtAuthenticationFilter();
-    }
+        @Bean
+        public JwtAuthenticationFilter jwtAuthenticationFilter() {
+                return new JwtAuthenticationFilter();
+        }
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .csrf(csrf -> csrf.disable())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        @Bean
+        public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+                http
+                                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                                .csrf(csrf -> csrf.disable())
+                                .sessionManagement(session -> session
+                                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-                // Security Headers
-                .headers(headers -> headers
-                        .frameOptions(frameOptions -> frameOptions.deny())
-                        .contentTypeOptions(contentTypeOptions -> {
-                            // Enable X-Content-Type-Options: nosniff
-                        })
-                        .httpStrictTransportSecurity(hstsConfig -> hstsConfig
-                                .maxAgeInSeconds(31536000)
-                                .includeSubDomains(true))
-                        .referrerPolicy(referrerPolicy -> referrerPolicy
-                                .policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN)))
+                                // Security Headers
+                                .headers(headers -> headers
+                                                .frameOptions(frameOptions -> frameOptions.deny())
+                                                .contentTypeOptions(contentTypeOptions -> {
+                                                        // Enable X-Content-Type-Options: nosniff
+                                                })
+                                                .httpStrictTransportSecurity(hstsConfig -> hstsConfig
+                                                                .maxAgeInSeconds(31536000)
+                                                                .includeSubDomains(true))
+                                                .referrerPolicy(referrerPolicy -> referrerPolicy
+                                                                .policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
+                                                .contentSecurityPolicy(csp -> csp
+                                                                .policyDirectives("default-src 'self'; " +
+                                                                                "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com; "
+                                                                                +
+                                                                                "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+                                                                                +
+                                                                                "font-src 'self' https://fonts.gstatic.com; "
+                                                                                +
+                                                                                "img-src 'self' data: https: blob:; " +
+                                                                                "connect-src 'self' https: wss: ws: http://localhost:* http://127.0.0.1:*; "
+                                                                                +
+                                                                                "worker-src 'self' blob:; " +
+                                                                                "child-src 'self'; " +
+                                                                                "object-src 'none'; " +
+                                                                                "base-uri 'self'; " +
+                                                                                "form-action 'self'; " +
+                                                                                "frame-ancestors 'none'")))
 
-                // Authorization rules
-                .authorizeHttpRequests(auth -> auth
-                        // Public endpoints
-                        .requestMatchers(
-                                "/api/auth/login",
-                                "/api/auth/register",
-                                "/api/public/**",
-                                "/api/hotels/search",
-                                "/api/hotels/{id}",
-                                "/api/hotels/{id}/rooms",
-                                "/api/hotels/*/availability",
-                                "/api/hotels/random",
-                                "/api/hotels",
-                                "/api/bookings",
-                                "/api/bookings/room-type",
-                                "/api/bookings/search",
-                                "/api/bookings/cancel",
-                                "/api/bookings/modify",
-                                "/api/bookings/{id}/email",
-                                "/api/bookings/{id}/pdf",
-                                "/api/booking/guest/**",
-                                "/api/booking-management/**",
-                                "/actuator/health",
-                                "/error")
-                        .permitAll()
+                                // Authorization rules
+                                .authorizeHttpRequests(auth -> auth
+                                                // Public endpoints
+                                                .requestMatchers(
+                                                                "/api/auth/login",
+                                                                "/api/auth/register",
+                                                                "/api/auth/forgot-password",
+                                                                "/api/auth/validate-reset-token",
+                                                                "/api/auth/reset-password",
+                                                                "/api/public/**",
+                                                                "/api/hotels/search",
+                                                                "/api/hotels/{id}",
+                                                                "/api/hotels/{id}/rooms",
+                                                                "/api/hotels/{id}/tax-rate",
+                                                                "/api/hotels/*/availability",
+                                                                "/api/hotels/random",
+                                                                "/api/hotels",
+                                                                "/api/bookings",
+                                                                "/api/bookings/room-type",
+                                                                "/api/bookings/search",
+                                                                "/api/bookings/search/**",
+                                                                "/api/bookings/authenticate",
+                                                                "/api/bookings/cancel",
+                                                                "/api/bookings/modify",
+                                                                "/api/bookings/{id}/email",
+                                                                "/api/bookings/{id}/pdf",
+                                                                "/api/booking/guest/**",
+                                                                "/api/booking-management/**",
+                                                                "/api/front-desk/bookings/search/**",
+                                                                "/actuator/health",
+                                                                "/actuator/metrics",
+                                                                "/actuator/**",
+                                                                "/swagger-ui/**",
+                                                                "/swagger-ui.html",
+                                                                "/v3/api-docs/**",
+                                                                "/v3/api-docs.yaml",
+                                                                "/error")
+                                                .permitAll()
 
-                        // Auth endpoints that require authentication
-                        .requestMatchers("/api/auth/logout").authenticated()
+                                                // Auth endpoints that require authentication
+                                                .requestMatchers("/api/auth/logout").authenticated()
 
-                        // Admin endpoints
-                        .requestMatchers("/api/admin/**").hasAnyRole("ADMIN", "SYSTEM_ADMIN")
+                                                // Admin endpoints (SUPER_ADMIN and ADMIN are both global admins)
+                                                .requestMatchers("/api/admin/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
 
-                        // Hotel admin endpoints
-                        .requestMatchers("/api/hotel-admin/**").hasAnyRole("HOTEL_ADMIN", "ADMIN")
+                                                // Hotel admin endpoints
+                                                .requestMatchers("/api/hotel-admin/**")
+                                                .hasAnyRole("HOTEL_ADMIN", "ADMIN", "SUPER_ADMIN")
 
-                        // Supervisor endpoints
-                        .requestMatchers("/api/supervisor/**")
-                        .hasAnyRole("OPERATIONS_SUPERVISOR", "HOTEL_ADMIN", "ADMIN")
+                                                // Operational admin / supervisor endpoints
+                                                .requestMatchers("/api/supervisor/**")
+                                                .hasAnyRole("OPERATIONAL_ADMIN", "HOTEL_ADMIN", "ADMIN", "SUPER_ADMIN")
 
-                        // User endpoints (authenticated users only)
-                        .requestMatchers("/api/users/**").authenticated()
+                                                // User endpoints (authenticated users only)
+                                                .requestMatchers("/api/users/**").authenticated()
 
-                        // All other requests require authentication
-                        .anyRequest().authenticated())
+                                                // Booking endpoints for authenticated users
+                                                .requestMatchers("/api/bookings/user/**").authenticated()
+                                                .requestMatchers("/api/bookings/{reservationId}/modify").authenticated()
+                                                .requestMatchers("/api/bookings/{reservationId}/cancel").authenticated()
 
-                // JWT Authentication Filter
-                .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+                                                // Hotel management endpoints (authenticated hotel staff)
+                                                .requestMatchers("/managemyhotel/api/**").authenticated()
 
-        return http.build();
-    }
+                                                // All other requests require authentication
+                                                .anyRequest().authenticated())
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
+                                // JWT Authentication Filter
+                                .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 
-        // Production-ready CORS configuration - Use allowedOriginPatterns for
-        // flexibility with credentials
-        configuration.setAllowedOriginPatterns(allowedOrigins);
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"));
-        configuration.setAllowedHeaders(Arrays.asList(
-                "Authorization",
-                "Content-Type",
-                "X-Tenant-ID",
-                "X-Requested-With",
-                "Accept",
-                "Origin",
-                "Cache-Control",
-                "Pragma",
-                "Expires"));
-        configuration.setAllowCredentials(true);
-        configuration.setExposedHeaders(Arrays.asList("Authorization", "X-Tenant-ID", "Content-Type"));
-        configuration.setMaxAge(3600L); // Cache preflight for 1 hour
+                return http.build();
+        }
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
-    }
+        @Bean
+        public CorsConfigurationSource corsConfigurationSource() {
+                CorsConfiguration configuration = new CorsConfiguration();
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+                // Production-ready CORS configuration - Use allowedOriginPatterns for
+                // flexibility with credentials
+                configuration.setAllowedOriginPatterns(allowedOrigins);
+                configuration.setAllowedMethods(
+                                Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"));
+                configuration.setAllowedHeaders(Arrays.asList(
+                                "Authorization",
+                                "Content-Type",
+                                "X-Tenant-ID",
+                                "X-Hotel-ID",
+                                "X-Requested-With",
+                                "Accept",
+                                "Origin",
+                                "Cache-Control",
+                                "Pragma",
+                                "Expires"));
+                configuration.setAllowCredentials(true);
+                configuration.setExposedHeaders(
+                                Arrays.asList("Authorization", "X-Tenant-ID", "X-Hotel-ID", "Content-Type"));
+                configuration.setMaxAge(3600L); // Cache preflight for 1 hour
 
-    @Bean
-    public UserDetailsService userDetailsService() {
-        return new com.bookmyhotel.service.CustomUserDetailsService();
-    }
+                UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+                source.registerCorsConfiguration("/**", configuration);
+                return source;
+        }
+
+        @Bean
+        public PasswordEncoder passwordEncoder() {
+                return new BCryptPasswordEncoder();
+        }
 }

@@ -8,7 +8,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,20 +19,26 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bookmyhotel.dto.admin.CreateUserRequest;
+import com.bookmyhotel.dto.admin.ToggleStatusRequest;
 import com.bookmyhotel.dto.admin.UpdateUserRequest;
 import com.bookmyhotel.dto.admin.UserManagementResponse;
 import com.bookmyhotel.entity.UserRole;
 import com.bookmyhotel.service.UserManagementService;
 
 import jakarta.validation.Valid;
+import com.bookmyhotel.annotation.Auditable;
 
 /**
- * Admin controller for user management
+ * Admin controller for user management.
+ *
+ * Class-level guard: accessible to SUPER_ADMIN and ADMIN.
+ * Service-layer creator-permission checks provide the fine-grained enforcement
+ * (e.g. ADMIN cannot create SUPER_ADMIN, HOTEL_ADMIN cannot reach this
+ * controller).
  */
 @RestController
 @RequestMapping("/api/admin/users")
-@PreAuthorize("hasRole('SYSTEM_ADMIN') or hasRole('ADMIN')")
-@CrossOrigin(origins = "*", maxAge = 3600)
+@PreAuthorize("hasRole('SUPER_ADMIN') or hasRole('ADMIN')")
 public class UserManagementAdminController {
 
     @Autowired
@@ -76,6 +81,34 @@ public class UserManagementAdminController {
     }
 
     /**
+     * Get users by role with pagination
+     */
+    @GetMapping("/role/{role}/paginated")
+    public ResponseEntity<Page<UserManagementResponse>> getUsersByRolePaginated(
+            @PathVariable UserRole role,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<UserManagementResponse> users = userManagementService.getUsersByRolePaginated(role, pageable);
+        return ResponseEntity.ok(users);
+    }
+
+    /**
+     * Get users by status (active/inactive) with pagination
+     */
+    @GetMapping("/status/{isActive}")
+    public ResponseEntity<Page<UserManagementResponse>> getUsersByStatus(
+            @PathVariable boolean isActive,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<UserManagementResponse> users = userManagementService.getUsersByStatus(isActive, pageable);
+        return ResponseEntity.ok(users);
+    }
+
+    /**
      * Get users by tenant
      */
     @GetMapping("/tenant/{tenantId}")
@@ -101,6 +134,7 @@ public class UserManagementAdminController {
     /**
      * Create a new user
      */
+    @Auditable(action = "CREATE", entityType = "USER", description = "Admin created a new user")
     @PostMapping
     public ResponseEntity<UserManagementResponse> createUser(@Valid @RequestBody CreateUserRequest request) {
         UserManagementResponse user = userManagementService.createUser(request);
@@ -110,6 +144,7 @@ public class UserManagementAdminController {
     /**
      * Update user
      */
+    @Auditable(action = "UPDATE", entityType = "USER", description = "Admin updated a user")
     @PutMapping("/{id}")
     public ResponseEntity<UserManagementResponse> updateUser(
             @PathVariable Long id,
@@ -122,15 +157,19 @@ public class UserManagementAdminController {
     /**
      * Toggle user active status
      */
+    @Auditable(action = "TOGGLE_STATUS", entityType = "USER", description = "Admin toggled user active status")
     @PostMapping("/{id}/toggle-status")
-    public ResponseEntity<UserManagementResponse> toggleUserStatus(@PathVariable Long id) {
-        UserManagementResponse user = userManagementService.toggleUserStatus(id);
+    public ResponseEntity<UserManagementResponse> toggleUserStatus(
+            @PathVariable Long id,
+            @Valid @RequestBody ToggleStatusRequest request) {
+        UserManagementResponse user = userManagementService.toggleUserStatus(id, request.getReason());
         return ResponseEntity.ok(user);
     }
 
     /**
      * Add role to user
      */
+    @Auditable(action = "ADD_ROLE", entityType = "USER", description = "Admin added role to user")
     @PostMapping("/{id}/roles/{role}")
     public ResponseEntity<UserManagementResponse> addRoleToUser(
             @PathVariable Long id,
@@ -143,6 +182,7 @@ public class UserManagementAdminController {
     /**
      * Remove role from user
      */
+    @Auditable(action = "REMOVE_ROLE", entityType = "USER", description = "Admin removed role from user")
     @DeleteMapping("/{id}/roles/{role}")
     public ResponseEntity<UserManagementResponse> removeRoleFromUser(
             @PathVariable Long id,
@@ -155,6 +195,7 @@ public class UserManagementAdminController {
     /**
      * Delete user
      */
+    @Auditable(action = "DELETE", entityType = "USER", description = "Admin deleted a user")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         userManagementService.deleteUser(id);
@@ -162,14 +203,12 @@ public class UserManagementAdminController {
     }
 
     /**
-     * Reset user password
+     * Reset user password - generates random password and emails it to the user
      */
+    @Auditable(action = "RESET_PASSWORD", entityType = "USER", description = "Admin reset user password")
     @PostMapping("/{id}/reset-password")
-    public ResponseEntity<Void> resetUserPassword(
-            @PathVariable Long id,
-            @RequestParam String newPassword) {
-
-        userManagementService.resetUserPassword(id, newPassword);
+    public ResponseEntity<Void> resetUserPassword(@PathVariable Long id) {
+        userManagementService.resetUserPassword(id);
         return ResponseEntity.ok().build();
     }
 

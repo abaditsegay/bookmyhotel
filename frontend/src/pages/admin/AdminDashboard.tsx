@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { COLORS, addAlpha, getGradient } from '../../theme/themeColors';
 import {
   Typography,
   Button,
@@ -15,18 +16,15 @@ import {
   TableRow,
   IconButton,
   Tooltip,
-  TextField,
   InputAdornment,
   TablePagination,
-  FormControl,
-  InputLabel,
-  Select,
   MenuItem,
   CircularProgress,
 } from '@mui/material';
 import {
   Hotel,
   People,
+  History,
   Add as AddIcon,
   PersonAdd as PersonAddIcon,
   Visibility as ViewIcon,
@@ -36,6 +34,9 @@ import {
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { adminApiService, UserManagementResponse, HotelDTO, PagedResponse } from '../../services/adminApi';
+import AuditLogTab from './AuditLogTab';
+import PremiumTextField from '../../components/common/PremiumTextField';
+import PremiumSelect from '../../components/common/PremiumSelect';
 
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -46,7 +47,7 @@ const AdminDashboard: React.FC = () => {
   const getInitialTab = () => {
     const tabParam = searchParams.get('tab');
     const tab = tabParam ? parseInt(tabParam, 10) : 0;
-    return isNaN(tab) || tab < 0 || tab > 1 ? 0 : tab; // Only 2 tabs (0-1)
+    return isNaN(tab) || tab < 0 || tab > 2 ? 0 : tab; // 3 tabs (0-2)
   };
   
   const [currentTab, setCurrentTab] = useState(() => getInitialTab());
@@ -100,7 +101,7 @@ const AdminDashboard: React.FC = () => {
     } catch (error) {
       setHotelError('Failed to load hotels');
       setHotels([]);
-      console.error('Error loading hotels:', error);
+      // console.error('Error loading hotels:', error);
     } finally {
       setHotelLoading(false);
     }
@@ -128,7 +129,7 @@ const AdminDashboard: React.FC = () => {
     } catch (error) {
       setUserError('Failed to load users');
       setUsers([]);
-      console.error('Error loading users:', error);
+      // console.error('Error loading users:', error);
     } finally {
       setUserLoading(false);
     }
@@ -148,9 +149,9 @@ const AdminDashboard: React.FC = () => {
   // Sync tab state with URL parameter changes (for browser back/forward navigation)
   useEffect(() => {
     const currentTabFromUrl = getInitialTab();
-    console.log('AdminDashboard useEffect - currentTab:', currentTab, 'currentTabFromUrl:', currentTabFromUrl);
+    // console.log('AdminDashboard useEffect - currentTab:', currentTab, 'currentTabFromUrl:', currentTabFromUrl);
     if (currentTabFromUrl !== currentTab) {
-      console.log('AdminDashboard useEffect - updating tab from', currentTab, 'to', currentTabFromUrl);
+      // console.log('AdminDashboard useEffect - updating tab from', currentTab, 'to', currentTabFromUrl);
       setCurrentTab(currentTabFromUrl);
     }
   }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -187,9 +188,9 @@ const AdminDashboard: React.FC = () => {
   // Search handlers
   // Filter and paginate hotels
   const filteredHotels = hotels.filter(hotel => {
-    const matchesSearch = hotel.name.toLowerCase().includes(hotelSearchTerm.toLowerCase()) ||
-                         hotel.address.toLowerCase().includes(hotelSearchTerm.toLowerCase()) ||
-                         hotel.city.toLowerCase().includes(hotelSearchTerm.toLowerCase());
+    const matchesSearch = (hotel.name?.toLowerCase().includes(hotelSearchTerm.toLowerCase()) || false) ||
+                         (hotel.address?.toLowerCase().includes(hotelSearchTerm.toLowerCase()) || false) ||
+                         (hotel.city?.toLowerCase().includes(hotelSearchTerm.toLowerCase()) || false);
     // Note: HotelDTO doesn't have status field, so we'll show all hotels for now
     return matchesSearch;
   });
@@ -219,8 +220,19 @@ const AdminDashboard: React.FC = () => {
 
   return (
     <Box sx={{ width: '100%', p: 3 }}>
+      {/* Page Header */}
+      <Box sx={{ mb: 3 }}>
+        <Typography variant="h4" component="h1" sx={{ 
+          color: COLORS.PRIMARY,
+          fontWeight: 600,
+          letterSpacing: '0.5px'
+        }}>
+          System Administration
+        </Typography>
+      </Box>
+      
       {/* Main Management Tabs */}
-      <Paper sx={{ width: '100%', mb: 4 }}>
+      <Box sx={{ width: '100%', mb: 4, borderBottom: 1, borderColor: 'divider' }}>
         <Tabs
           value={currentTab}
           onChange={handleTabChange}
@@ -248,6 +260,12 @@ const AdminDashboard: React.FC = () => {
             id="tab-1"
             aria-controls="tabpanel-1"
           />
+          <Tab
+            icon={<History />}
+            label="Audit Log"
+            id="tab-2"
+            aria-controls="tabpanel-2"
+          />
         </Tabs>
 
         {/* Hotel Management Tab */}
@@ -267,7 +285,7 @@ const AdminDashboard: React.FC = () => {
 
             {/* Search and Filter Controls */}
             <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
-              <TextField
+              <PremiumTextField
                 size="small"
                 placeholder="Search hotels..."
                 value={hotelSearchTerm}
@@ -281,33 +299,55 @@ const AdminDashboard: React.FC = () => {
                 }}
                 sx={{ minWidth: 250 }}
               />
-              <FormControl size="small" sx={{ minWidth: 150 }}>
-                <InputLabel>Status</InputLabel>
-                <Select
-                  value={hotelStatusFilter}
-                  onChange={(e) => setHotelStatusFilter(e.target.value)}
-                  label="Status"
-                >
-                  <MenuItem value="">All Status</MenuItem>
-                  <MenuItem value="Active">Active</MenuItem>
-                  <MenuItem value="Pending">Pending</MenuItem>
-                  <MenuItem value="Inactive">Inactive</MenuItem>
-                </Select>
-              </FormControl>
+              <PremiumSelect
+                label="Status"
+                value={hotelStatusFilter}
+                onChange={(e) => setHotelStatusFilter(e.target.value)}
+                fullWidth={false}
+                sx={{ minWidth: 150 }}
+              >
+                <MenuItem value="">All Status</MenuItem>
+                <MenuItem value="Active">Active</MenuItem>
+                <MenuItem value="Pending">Pending</MenuItem>
+                <MenuItem value="Inactive">Inactive</MenuItem>
+              </PremiumSelect>
             </Box>
 
             {/* Hotels Table */}
-            <TableContainer component={Paper} sx={{ mt: 2 }}>
+            <TableContainer sx={{ mt: 2 }}>
               <Table aria-label="hotels table">
                 <TableHead>
-                  <TableRow sx={{ backgroundColor: 'grey.50' }}>
-                    <TableCell sx={{ fontWeight: 'bold' }}>Hotel Name</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold' }}>Location</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold' }}>Status</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold' }}>Rooms</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold' }}>Rating</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold' }}>Registered</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold' }}>Actions</TableCell>
+                  <TableRow 
+                    sx={{
+                      background: getGradient('slate'),
+                      '& .MuiTableCell-head': {
+                        color: COLORS.WHITE,
+                        fontWeight: 600,
+                        fontSize: '0.95rem',
+                        letterSpacing: '0.5px',
+                        border: 'none',
+                        padding: '20px 16px',
+                        position: 'relative',
+                        textShadow: `0 1px 2px ${addAlpha(COLORS.BLACK, 0.1)}`,
+                        '&::after': {
+                          content: '""',
+                          position: 'absolute',
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          height: '3px',
+                          background: getGradient('white')
+                        }
+                      }
+                    }}
+                  >
+                    <TableCell>Hotel Name</TableCell>
+                    <TableCell>Location</TableCell>
+                    <TableCell>Status</TableCell>
+                    <TableCell>Rooms</TableCell>
+                    <TableCell>Rating</TableCell>
+                    <TableCell>Registered</TableCell>
+                    <TableCell>Actions</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -353,8 +393,10 @@ const AdminDashboard: React.FC = () => {
                         <Chip
                           label="Active"
                           size="small"
-                          color="success"
-                          variant="filled"
+                          sx={{ 
+                            backgroundColor: COLORS.PRIMARY,
+                            color: COLORS.WHITE
+                          }}
                         />
                       </TableCell>
                       <TableCell>
@@ -423,7 +465,7 @@ const AdminDashboard: React.FC = () => {
 
             {/* Search and Filter Controls */}
             <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
-              <TextField
+              <PremiumTextField
                 size="small"
                 placeholder="Search users..."
                 value={userSearchTerm}
@@ -437,47 +479,69 @@ const AdminDashboard: React.FC = () => {
                 }}
                 sx={{ minWidth: 250 }}
               />
-              <FormControl size="small" sx={{ minWidth: 150 }}>
-                <InputLabel>Role</InputLabel>
-                <Select
-                  value={userRoleFilter}
-                  onChange={(e) => setUserRoleFilter(e.target.value)}
-                  label="Role"
-                >
-                  <MenuItem value="">All Roles</MenuItem>
-                  <MenuItem value="ADMIN">Admin</MenuItem>
-                  <MenuItem value="HOTEL_MANAGER">Hotel Manager</MenuItem>
-                  <MenuItem value="HOTEL_STAFF">Hotel Staff</MenuItem>
-                  <MenuItem value="GUEST">Guest</MenuItem>
-                </Select>
-              </FormControl>
-              <FormControl size="small" sx={{ minWidth: 150 }}>
-                <InputLabel>Status</InputLabel>
-                <Select
-                  value={userStatusFilter}
-                  onChange={(e) => setUserStatusFilter(e.target.value)}
-                  label="Status"
-                >
-                  <MenuItem value="">All Status</MenuItem>
-                  <MenuItem value="Active">Active</MenuItem>
-                  <MenuItem value="Pending">Pending</MenuItem>
-                  <MenuItem value="Inactive">Inactive</MenuItem>
-                </Select>
-              </FormControl>
+              <PremiumSelect
+                label="Role"
+                value={userRoleFilter}
+                onChange={(e) => setUserRoleFilter(e.target.value)}
+                fullWidth={false}
+                sx={{ minWidth: 150 }}
+              >
+                <MenuItem value="">All Roles</MenuItem>
+                <MenuItem value="ADMIN">Admin</MenuItem>
+                <MenuItem value="HOTEL_ADMIN">Hotel Admin</MenuItem>
+                <MenuItem value="HOTEL_STAFF">Hotel Staff</MenuItem>
+                <MenuItem value="GUEST">Guest</MenuItem>
+              </PremiumSelect>
+              <PremiumSelect
+                label="Status"
+                value={userStatusFilter}
+                onChange={(e) => setUserStatusFilter(e.target.value)}
+                fullWidth={false}
+                sx={{ minWidth: 150 }}
+              >
+                <MenuItem value="">All Status</MenuItem>
+                <MenuItem value="Active">Active</MenuItem>
+                <MenuItem value="Pending">Pending</MenuItem>
+                <MenuItem value="Inactive">Inactive</MenuItem>
+              </PremiumSelect>
             </Box>
 
             {/* Users Table */}
-            <TableContainer component={Paper} sx={{ mt: 2 }}>
+            <TableContainer sx={{ mt: 2 }}>
               <Table aria-label="users table">
                 <TableHead>
-                  <TableRow sx={{ backgroundColor: 'grey.50' }}>
-                    <TableCell sx={{ fontWeight: 'bold' }}>User Name</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold' }}>Email</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold' }}>Role</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold' }}>Status</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold' }}>Last Login</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold' }}>Created</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold' }}>Actions</TableCell>
+                  <TableRow 
+                    sx={{
+                      background: getGradient('slate'),
+                      '& .MuiTableCell-head': {
+                        color: COLORS.WHITE,
+                        fontWeight: 600,
+                        fontSize: '0.95rem',
+                        letterSpacing: '0.5px',
+                        textTransform: 'uppercase',
+                        border: 'none',
+                        padding: '20px 16px',
+                        position: 'relative',
+                        textShadow: `0 1px 2px ${addAlpha(COLORS.BLACK, 0.1)}`,
+                        '&::after': {
+                          content: '""',
+                          position: 'absolute',
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          height: '3px',
+                          background: getGradient('white')
+                        }
+                      }
+                    }}
+                  >
+                    <TableCell>User Name</TableCell>
+                    <TableCell>Email</TableCell>
+                    <TableCell>Role</TableCell>
+                    <TableCell>Status</TableCell>
+                    <TableCell>Last Login</TableCell>
+                    <TableCell>Created</TableCell>
+                    <TableCell>Actions</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -523,7 +587,7 @@ const AdminDashboard: React.FC = () => {
                           color={
                             user.roles.includes('ADMIN') 
                               ? 'error' 
-                              : user.roles.includes('HOTEL_MANAGER')
+                              : user.roles.includes('HOTEL_ADMIN')
                                 ? 'info'
                                 : 'default'
                           }
@@ -581,7 +645,14 @@ const AdminDashboard: React.FC = () => {
             </TableContainer>
           </Box>
         )}
-      </Paper>
+
+        {/* Audit Log Tab */}
+        {currentTab === 2 && (
+          <Box sx={{ p: 3 }}>
+            <AuditLogTab />
+          </Box>
+        )}
+      </Box>
 
       {/* Footer */}
       <Box sx={{ mt: 6, pt: 4, borderTop: 1, borderColor: 'divider', textAlign: 'center' }}>

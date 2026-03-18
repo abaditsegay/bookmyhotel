@@ -278,10 +278,6 @@
                 <td th:text="${nights}"></td>
             </tr>
             <tr>
-                <td>Original Total Amount</td>
-                <td th:text="'ETB ' + ${booking.totalAmount}"></td>
-            </tr>
-            <tr>
                 <td>Status</td>
                 <td class="cancelled-status">CANCELLED</td>
             </tr>
@@ -295,10 +291,39 @@
             </tr>
         </table>
 
+        <!-- Original Pricing Breakdown -->
+        <h3 style="margin-top: 30px; color: #333;">Original Pricing</h3>
+        <table th:if="${hasTaxBreakdown}">
+            <tr>
+                <td>Subtotal</td>
+                <td th:text="'ETB ' + ${#numbers.formatDecimal(subtotal, 1, 'COMMA', 2, 'POINT')}"></td>
+            </tr>
+            <tr>
+                <td>VAT (<span th:text="${#numbers.formatDecimal(vatRatePercentage, 1, 2)}"></span>%)</td>
+                <td th:text="'ETB ' + ${#numbers.formatDecimal(vatAmount, 1, 'COMMA', 2, 'POINT')}"></td>
+            </tr>
+            <tr>
+                <td>Service Tax (<span th:text="${#numbers.formatDecimal(serviceTaxRatePercentage, 1, 2)}"></span>%)</td>
+                <td th:text="'ETB ' + ${#numbers.formatDecimal(serviceTaxAmount, 1, 'COMMA', 2, 'POINT')}"></td>
+            </tr>
+            <tr>
+                <td><strong>Original Total Amount</strong></td>
+                <td><strong th:text="'ETB ' + ${#numbers.formatDecimal(totalWithTax, 1, 'COMMA', 2, 'POINT')}"></strong></td>
+            </tr>
+        </table>
+
+        <!-- Fallback for bookings without tax breakdown -->
+        <table th:unless="${hasTaxBreakdown}">
+            <tr>
+                <td>Original Total Amount</td>
+                <td th:text="'ETB ' + ${#numbers.formatDecimal((totalWithTax != null ? totalWithTax : booking.totalAmount), 1, 'COMMA', 2, 'POINT')}"></td>
+            </tr>
+        </table>
+
         <!-- Refund Information -->
         <div class="refund-section" th:if="${refundAmount != null and refundAmount > 0}">
             <h4>Refund Information</h4>
-            <p><strong>Refund Amount:</strong> <span class="refund-amount">ETB <span th:text="${refundAmount}"></span></span></p>
+            <p><strong>Refund Amount:</strong> <span class="refund-amount">ETB <span th:text="${#numbers.formatDecimal(refundAmount, 1, 'COMMA', 2, 'POINT')}"></span></span></p>
             <p><strong>Processing Time:</strong> 3-5 business days</p>
             <p>You will receive a separate confirmation once processed.</p>
         </div>

@@ -4,7 +4,10 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import com.bookmyhotel.entity.converter.PaymentMethodConverter;
+
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -31,7 +34,12 @@ import jakarta.validation.constraints.Positive;
         @Index(name = "idx_reservation_assigned_room", columnList = "assigned_room_id"),
         @Index(name = "idx_reservation_guest", columnList = "guest_id"),
         @Index(name = "idx_reservation_dates", columnList = "check_in_date, check_out_date"),
-        @Index(name = "idx_reservation_status", columnList = "status")
+        @Index(name = "idx_reservation_status", columnList = "status"),
+        // Performance optimization indexes
+        @Index(name = "idx_confirmation_number", columnList = "confirmation_number", unique = true),
+        @Index(name = "idx_payment_reference", columnList = "payment_reference"),
+        @Index(name = "idx_hotel_status_checkin", columnList = "hotel_id, status, check_in_date"),
+        @Index(name = "idx_guest_email_status", columnList = "guest_email, status")
 })
 public class Reservation extends HotelScopedEntity {
 
@@ -47,6 +55,17 @@ public class Reservation extends HotelScopedEntity {
     @Column(name = "check_out_date", nullable = false)
     private LocalDate checkOutDate;
 
+    /**
+     * Total amount for the reservation (SUBTOTAL ONLY - does NOT include taxes)
+     * This represents: (base_price_per_night × seasonal_multiplier) ×
+     * number_of_nights
+     * Taxes are calculated separately at checkout based on hotel pricing
+     * configuration.
+     * 
+     * IMPORTANT: This field stores the subtotal amount. Taxes are added during
+     * checkout
+     * and displayed on receipts, but are NOT stored in this field.
+     */
     @NotNull(message = "Total amount is required")
     @Positive(message = "Total amount must be positive")
     @Column(name = "total_amount", nullable = false, precision = 10, scale = 2)
@@ -60,11 +79,19 @@ public class Reservation extends HotelScopedEntity {
     @Column(name = "special_requests", length = 500)
     private String specialRequests;
 
-    @Column(name = "payment_intent_id", length = 100)
+    @Column(name = "payment_intent_id")
     private String paymentIntentId;
 
-    @Column(name = "payment_method", length = 100)
-    private String paymentMethod;
+    @Column(name = "payment_reference")
+    private String paymentReference;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_status", length = 20)
+    private PaymentStatus paymentStatus = PaymentStatus.PENDING;
+
+    @Convert(converter = PaymentMethodConverter.class)
+    @Column(name = "payment_method")
+    private PaymentMethod paymentMethod;
 
     @Column(name = "confirmation_number", length = 20, unique = true)
     private String confirmationNumber;
@@ -198,11 +225,39 @@ public class Reservation extends HotelScopedEntity {
     }
 
     public String getPaymentMethod() {
-        return paymentMethod;
+        return paymentMethod != null ? paymentMethod.name() : null;
     }
 
     public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = PaymentMethod.fromString(paymentMethod);
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
+    }
+
+    public String getPaymentReference() {
+        return paymentReference;
+    }
+
+    public void setPaymentReference(String paymentReference) {
+        this.paymentReference = paymentReference;
+    }
+
+    public PaymentStatus getPaymentStatus() {
+        return paymentStatus;
+    }
+
+    public void setPaymentStatus(PaymentStatus paymentStatus) {
+        this.paymentStatus = paymentStatus;
+    }
+
+    public String getPaymentStatusString() {
+        return paymentStatus != null ? paymentStatus.name() : PaymentStatus.PENDING.name();
+    }
+
+    public void setPaymentStatusFromString(String paymentStatus) {
+        this.paymentStatus = PaymentStatus.fromString(paymentStatus);
     }
 
     public RoomType getRoomType() {

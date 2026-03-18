@@ -14,7 +14,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -34,6 +33,7 @@ import com.bookmyhotel.entity.HousekeepingTaskStatus;
 import com.bookmyhotel.entity.MaintenanceTask;
 import com.bookmyhotel.entity.TaskStatus;
 import com.bookmyhotel.entity.User;
+import com.bookmyhotel.entity.UserRole;
 import com.bookmyhotel.repository.HousekeepingStaffRepository;
 import com.bookmyhotel.repository.HousekeepingTaskRepository;
 import com.bookmyhotel.repository.MaintenanceTaskRepository;
@@ -44,7 +44,6 @@ import com.bookmyhotel.service.UserManagementService;
 
 @RestController
 @RequestMapping("/api/staff")
-@CrossOrigin(origins = "*")
 public class StaffController {
 
     @Autowired
@@ -70,7 +69,7 @@ public class StaffController {
 
     // Get current staff profile
     @GetMapping("/profile")
-    @PreAuthorize("hasAnyRole('HOUSEKEEPING', 'MAINTENANCE', 'STAFF', 'OPERATIONS_SUPERVISOR')")
+    @PreAuthorize("hasAnyRole('HOUSEKEEPING', 'MAINTENANCE', 'STAFF', 'OPERATIONAL_ADMIN')")
     public ResponseEntity<?> getCurrentUserProfile(Authentication authentication) {
         try {
             String username = authentication.getName();
@@ -113,7 +112,7 @@ public class StaffController {
 
     // Housekeeping Staff Endpoints
     @GetMapping("/housekeeping/my-tasks")
-    @PreAuthorize("hasAnyRole('HOUSEKEEPING', 'STAFF', 'OPERATIONS_SUPERVISOR')")
+    @PreAuthorize("hasAnyRole('HOUSEKEEPING', 'STAFF', 'OPERATIONAL_ADMIN')")
     public ResponseEntity<?> getMyHousekeepingTasks(
             Authentication authentication,
             @RequestParam(defaultValue = "0") int page,
@@ -128,17 +127,10 @@ public class StaffController {
 
             User user = userOpt.get();
 
-            // Get housekeeping staff record
-            Long hotelId = hotelService.getHotelIdByTenantId(user.getTenantId());
-            Optional<HousekeepingStaff> staffOpt = housekeepingService.findStaffByEmailAndHotel(user.getEmail(),
-                    hotelId);
-            if (!staffOpt.isPresent()) {
-                return ResponseEntity.badRequest().body("Housekeeping staff record not found");
-            }
-
+            // Get tasks assigned directly to this user (no need for HousekeepingStaff
+            // record)
             Pageable pageable = PageRequest.of(page, size);
-            Page<HousekeepingTask> tasks = housekeepingTaskRepository.findByAssignedStaffId(staffOpt.get().getId(),
-                    pageable);
+            Page<HousekeepingTask> tasks = housekeepingTaskRepository.findByAssignedUserId(user.getId(), pageable);
 
             // Convert to DTOs to avoid JSON serialization issues
             Page<HousekeepingTaskDTO> taskDTOs = tasks.map(this::convertToDTO);
@@ -150,7 +142,7 @@ public class StaffController {
     }
 
     @PutMapping("/housekeeping/tasks/{taskId}/status")
-    @PreAuthorize("hasAnyRole('HOUSEKEEPING', 'STAFF', 'OPERATIONS_SUPERVISOR')")
+    @PreAuthorize("hasAnyRole('HOUSEKEEPING', 'STAFF', 'OPERATIONAL_ADMIN')")
     public ResponseEntity<?> updateHousekeepingTaskStatus(
             @PathVariable Long taskId,
             @RequestBody TaskUpdateRequest updateRequest,
@@ -163,15 +155,25 @@ public class StaffController {
             }
             User user = userOpt.get();
 
-            Optional<HousekeepingTask> taskOpt = housekeepingTaskRepository.findById(taskId);
+            Optional<HousekeepingTask> taskOpt = housekeepingTaskRepository.findByIdWithUserAndHotel(taskId);
             if (!taskOpt.isPresent()) {
                 return ResponseEntity.badRequest().body("Task not found");
             }
 
             HousekeepingTask task = taskOpt.get();
 
-            // Verify the task is assigned to this user (match by email)
-            if (task.getAssignedStaff() == null || !task.getAssignedStaff().getEmail().equals(user.getEmail())) {
+            // Check if user has management role or if the task is assigned to them
+            boolean isManagementRole = user.getRoles().stream()
+                    .anyMatch(role -> role == UserRole.HOTEL_ADMIN ||
+                            role == UserRole.OPERATIONAL_ADMIN ||
+                            role == UserRole.FRONTDESK);
+
+            boolean isTaskAssignedToUser = task.getAssignedUser() != null &&
+                    task.getAssignedUser().getEmail().equals(user.getEmail());
+
+            // Allow management roles to update any task, or regular staff to update only
+            // their assigned tasks
+            if (!isManagementRole && !isTaskAssignedToUser) {
                 return ResponseEntity.badRequest().body("Task not assigned to you");
             }
 
@@ -200,7 +202,7 @@ public class StaffController {
     }
 
     @PutMapping("/housekeeping/tasks/{taskId}/start")
-    @PreAuthorize("hasAnyRole('HOUSEKEEPING', 'STAFF', 'OPERATIONS_SUPERVISOR')")
+    @PreAuthorize("hasAnyRole('HOUSEKEEPING', 'STAFF', 'OPERATIONAL_ADMIN')")
     public ResponseEntity<?> startHousekeepingTask(@PathVariable Long taskId, Authentication authentication) {
         try {
             String username = authentication.getName();
@@ -210,7 +212,7 @@ public class StaffController {
             }
             User user = userOpt.get();
 
-            Optional<HousekeepingTask> taskOpt = housekeepingTaskRepository.findById(taskId);
+            Optional<HousekeepingTask> taskOpt = housekeepingTaskRepository.findByIdWithUserAndHotel(taskId);
             if (!taskOpt.isPresent()) {
                 return ResponseEntity.badRequest().body("Task not found");
             }
@@ -218,7 +220,7 @@ public class StaffController {
             HousekeepingTask task = taskOpt.get();
 
             // Verify the task is assigned to this user (match by email)
-            if (task.getAssignedStaff() == null || !task.getAssignedStaff().getEmail().equals(user.getEmail())) {
+            if (task.getAssignedUser() == null || !task.getAssignedUser().getEmail().equals(user.getEmail())) {
                 return ResponseEntity.badRequest().body("Task not assigned to you");
             }
 
@@ -233,7 +235,7 @@ public class StaffController {
     }
 
     @PutMapping("/housekeeping/tasks/{taskId}/complete")
-    @PreAuthorize("hasAnyRole('HOUSEKEEPING', 'STAFF', 'OPERATIONS_SUPERVISOR')")
+    @PreAuthorize("hasAnyRole('HOUSEKEEPING', 'STAFF', 'OPERATIONAL_ADMIN')")
     public ResponseEntity<?> completeHousekeepingTask(
             @PathVariable Long taskId,
             @RequestBody(required = false) Map<String, String> request,
@@ -246,7 +248,7 @@ public class StaffController {
             }
             User user = userOpt.get();
 
-            Optional<HousekeepingTask> taskOpt = housekeepingTaskRepository.findById(taskId);
+            Optional<HousekeepingTask> taskOpt = housekeepingTaskRepository.findByIdWithUserAndHotel(taskId);
             if (!taskOpt.isPresent()) {
                 return ResponseEntity.badRequest().body("Task not found");
             }
@@ -254,7 +256,7 @@ public class StaffController {
             HousekeepingTask task = taskOpt.get();
 
             // Verify the task is assigned to this user (match by email)
-            if (task.getAssignedStaff() == null || !task.getAssignedStaff().getEmail().equals(user.getEmail())) {
+            if (task.getAssignedUser() == null || !task.getAssignedUser().getEmail().equals(user.getEmail())) {
                 return ResponseEntity.badRequest().body("Task not assigned to you");
             }
 
@@ -503,7 +505,7 @@ public class StaffController {
 
     // Common Stats Endpoints
     @GetMapping("/housekeeping/stats")
-    @PreAuthorize("hasAnyRole('HOUSEKEEPING', 'STAFF', 'OPERATIONS_SUPERVISOR')")
+    @PreAuthorize("hasAnyRole('HOUSEKEEPING', 'STAFF', 'OPERATIONAL_ADMIN')")
     public ResponseEntity<?> getHousekeepingStats(Authentication authentication) {
         try {
             String username = authentication.getName();
@@ -512,23 +514,18 @@ public class StaffController {
                 return ResponseEntity.badRequest().body("User not found");
             }
             User user = userOpt.get();
-            Long hotelId = hotelService.getHotelIdByTenantId(user.getTenantId());
 
-            Optional<HousekeepingStaff> staffOpt = housekeepingService.findStaffByEmailAndHotel(user.getEmail(),
-                    hotelId);
-            if (!staffOpt.isPresent()) {
-                return ResponseEntity.badRequest().body("Housekeeping staff record not found");
-            }
-
-            Long staffId = staffOpt.get().getId();
+            // Get stats for tasks assigned directly to this user (no need for
+            // HousekeepingStaff record)
+            Long userId = user.getId();
 
             Map<String, Object> stats = new HashMap<>();
-            stats.put("totalTasks", housekeepingTaskRepository.countByAssignedStaffId(staffId));
-            stats.put("pendingTasks", housekeepingTaskRepository.countByAssignedStaffIdAndStatus(staffId,
+            stats.put("totalTasks", housekeepingTaskRepository.countByAssignedUserId(userId));
+            stats.put("pendingTasks", housekeepingTaskRepository.countByAssignedUserIdAndStatus(userId,
                     HousekeepingTaskStatus.PENDING));
-            stats.put("inProgressTasks", housekeepingTaskRepository.countByAssignedStaffIdAndStatus(staffId,
+            stats.put("inProgressTasks", housekeepingTaskRepository.countByAssignedUserIdAndStatus(userId,
                     HousekeepingTaskStatus.IN_PROGRESS));
-            stats.put("completedTasks", housekeepingTaskRepository.countByAssignedStaffIdAndStatus(staffId,
+            stats.put("completedTasks", housekeepingTaskRepository.countByAssignedUserIdAndStatus(userId,
                     HousekeepingTaskStatus.COMPLETED));
 
             return ResponseEntity.ok(stats);
@@ -597,15 +594,12 @@ public class StaffController {
         dto.setQualityScore(task.getQualityScore());
         dto.setInspectorNotes(task.getInspectorNotes());
 
-        // Extract room and hotel details safely
-        if (task.getRoom() != null) {
-            dto.setRoomId(task.getRoom().getId());
-            dto.setRoomNumber(task.getRoom().getRoomNumber());
-            dto.setRoomType(task.getRoom().getRoomType() != null ? task.getRoom().getRoomType().toString() : null);
+        // Set room number directly from task
+        dto.setRoomNumber(task.getRoomNumber());
 
-            if (task.getRoom().getHotel() != null) {
-                dto.setHotelName(task.getRoom().getHotel().getName());
-            }
+        // Set hotel details from task's hotel relationship
+        if (task.getHotel() != null) {
+            dto.setHotelName(task.getHotel().getName());
         }
 
         return dto;

@@ -5,7 +5,7 @@ package com.bookmyhotel.entity;
  */
 public enum ReservationStatus {
     PENDING,
-    CONFIRMED,
+    BOOKED,
     CANCELLED,
     CHECKED_IN,
     CHECKED_OUT,

@@ -5,6 +5,8 @@ import com.bookmyhotel.enums.*;
 import com.bookmyhotel.service.HousekeepingService;
 import com.bookmyhotel.service.HotelService;
 import com.bookmyhotel.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -25,9 +27,10 @@ import java.util.ArrayList;
  */
 @RestController
 @RequestMapping("/api/supervisor")
-@CrossOrigin(origins = "*", maxAge = 3600)
-@PreAuthorize("hasRole('OPERATIONS_SUPERVISOR')")
+@PreAuthorize("hasRole('OPERATIONAL_ADMIN')")
 public class SupervisorController {
+
+    private static final Logger logger = LoggerFactory.getLogger(SupervisorController.class);
 
     @Autowired
     private HousekeepingService housekeepingService;
@@ -122,15 +125,8 @@ public class SupervisorController {
                     taskMap.put("priority", task.getPriority() != null ? task.getPriority().toString() : "NORMAL");
                     taskMap.put("description", task.getDescription() != null ? task.getDescription() : "");
 
-                    // Safely get room number
-                    String roomNumber = "Unknown";
-                    try {
-                        if (task.getRoom() != null && task.getRoom().getRoomNumber() != null) {
-                            roomNumber = task.getRoom().getRoomNumber();
-                        }
-                    } catch (Exception roomError) {
-                        // Ignore room access errors
-                    }
+                    // Get room number directly from task
+                    String roomNumber = task.getRoomNumber() != null ? task.getRoomNumber() : "General Area";
                     taskMap.put("roomNumber", roomNumber);
 
                     String completedAt = null;
@@ -155,7 +151,7 @@ public class SupervisorController {
 
             return ResponseEntity.ok(dashboard);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Operation failed", e);
             return ResponseEntity.status(500).body(Map.of("error", "An unexpected error occurred: " + e.getMessage()));
         }
     }
@@ -164,7 +160,7 @@ public class SupervisorController {
      * Get recent activity for dashboard
      */
     @GetMapping("/dashboard/recent-activity")
-    @PreAuthorize("hasRole('OPERATIONS_SUPERVISOR')")
+    @PreAuthorize("hasRole('OPERATIONAL_ADMIN')")
     public ResponseEntity<?> getRecentActivity() {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -203,24 +199,17 @@ public class SupervisorController {
                 taskMap.put("description", task.getDescription() != null ? task.getDescription() : "");
                 taskMap.put("completedAt", task.getCompletedAt() != null ? task.getCompletedAt().toString() : null);
 
-                // Safely get room number
-                String roomNumber = "Unknown";
-                try {
-                    if (task.getRoom() != null && task.getRoom().getRoomNumber() != null) {
-                        roomNumber = task.getRoom().getRoomNumber();
-                    }
-                } catch (Exception e) {
-                    // Ignore room access errors
-                }
+                // Get room number directly from task
+                String roomNumber = task.getRoomNumber() != null ? task.getRoomNumber() : "General Area";
                 taskMap.put("roomNumber", roomNumber);
 
                 // Safely get assigned staff info
-                if (task.getAssignedStaff() != null) {
+                if (task.getAssignedUser() != null) {
                     taskMap.put("assignedStaffName",
-                            (task.getAssignedStaff().getFirstName() != null ? task.getAssignedStaff().getFirstName()
+                            (task.getAssignedUser().getFirstName() != null ? task.getAssignedUser().getFirstName()
                                     : "") + " " +
-                                    (task.getAssignedStaff().getLastName() != null
-                                            ? task.getAssignedStaff().getLastName()
+                                    (task.getAssignedUser().getLastName() != null
+                                            ? task.getAssignedUser().getLastName()
                                             : ""));
                 } else {
                     taskMap.put("assignedStaffName", "Unassigned");
@@ -241,24 +230,17 @@ public class SupervisorController {
                 taskMap.put("description", task.getDescription() != null ? task.getDescription() : "");
                 taskMap.put("startedAt", task.getStartedAt() != null ? task.getStartedAt().toString() : null);
 
-                // Safely get room number
-                String roomNumber = "Unknown";
-                try {
-                    if (task.getRoom() != null && task.getRoom().getRoomNumber() != null) {
-                        roomNumber = task.getRoom().getRoomNumber();
-                    }
-                } catch (Exception e) {
-                    // Ignore room access errors
-                }
+                // Get room number directly from task
+                String roomNumber = task.getRoomNumber() != null ? task.getRoomNumber() : "General Area";
                 taskMap.put("roomNumber", roomNumber);
 
                 // Safely get assigned staff info
-                if (task.getAssignedStaff() != null) {
+                if (task.getAssignedUser() != null) {
                     taskMap.put("assignedStaffName",
-                            (task.getAssignedStaff().getFirstName() != null ? task.getAssignedStaff().getFirstName()
+                            (task.getAssignedUser().getFirstName() != null ? task.getAssignedUser().getFirstName()
                                     : "") + " " +
-                                    (task.getAssignedStaff().getLastName() != null
-                                            ? task.getAssignedStaff().getLastName()
+                                    (task.getAssignedUser().getLastName() != null
+                                            ? task.getAssignedUser().getLastName()
                                             : ""));
                 } else {
                     taskMap.put("assignedStaffName", "Unassigned");
@@ -273,7 +255,7 @@ public class SupervisorController {
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Operation failed", e);
             return ResponseEntity.status(500).body(Map.of("error", "An unexpected error occurred: " + e.getMessage()));
         }
     }
@@ -299,7 +281,7 @@ public class SupervisorController {
             List<Map<String, Object>> maintenanceStaff = new ArrayList<>();
 
             // 1. Get staff from users table (created by hotel admin)
-            List<UserRole> staffRoles = Arrays.asList(UserRole.OPERATIONS_SUPERVISOR, UserRole.HOUSEKEEPING,
+            List<UserRole> staffRoles = Arrays.asList(UserRole.OPERATIONAL_ADMIN, UserRole.HOUSEKEEPING,
                     UserRole.MAINTENANCE);
 
             List<User> allUsers = new ArrayList<>();
@@ -330,8 +312,8 @@ public class SupervisorController {
                 if (user.getRoles() != null && !user.getRoles().isEmpty()) {
                     // Find the staff role (prioritize OPERATIONS_SUPERVISOR, then HOUSEKEEPING,
                     // then MAINTENANCE)
-                    if (user.getRoles().contains(UserRole.OPERATIONS_SUPERVISOR)) {
-                        primaryRole = UserRole.OPERATIONS_SUPERVISOR;
+                    if (user.getRoles().contains(UserRole.OPERATIONAL_ADMIN)) {
+                        primaryRole = UserRole.OPERATIONAL_ADMIN;
                     } else if (user.getRoles().contains(UserRole.HOUSEKEEPING)) {
                         primaryRole = UserRole.HOUSEKEEPING;
                     } else if (user.getRoles().contains(UserRole.MAINTENANCE)) {
@@ -345,7 +327,7 @@ public class SupervisorController {
                     staffMap.put("role", primaryRole.toString());
 
                     switch (primaryRole) {
-                        case OPERATIONS_SUPERVISOR:
+                        case OPERATIONAL_ADMIN:
                             operationsSupervisorStaff.add(staffMap);
                             break;
                         case HOUSEKEEPING:
@@ -385,8 +367,9 @@ public class SupervisorController {
                 }
             } catch (Exception housekeepingError) {
                 // Log but don't fail if housekeeping_staff table has issues
-                System.err.println(
-                        "Warning: Could not fetch from housekeeping_staff table: " + housekeepingError.getMessage());
+                // System.err.println(
+                // "Warning: Could not fetch from housekeeping_staff table: " +
+                // housekeepingError.getMessage());
             }
 
             return ResponseEntity.ok(Map.of(
@@ -394,7 +377,7 @@ public class SupervisorController {
                     "housekeeping", housekeepingStaff,
                     "maintenance", maintenanceStaff));
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Operation failed", e);
             return ResponseEntity.status(500).body(Map.of("error", "An unexpected error occurred: " + e.getMessage()));
         }
     }
@@ -403,7 +386,7 @@ public class SupervisorController {
      * Get tasks list - simplified version
      */
     @GetMapping("/tasks")
-    @PreAuthorize("hasRole('OPERATIONS_SUPERVISOR')")
+    @PreAuthorize("hasRole('OPERATIONAL_ADMIN')")
     public ResponseEntity<?> getTasks(@RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         try {
@@ -458,26 +441,19 @@ public class SupervisorController {
                         taskMap.put("completedAt",
                                 task.getCompletedAt() != null ? task.getCompletedAt().toString() : null);
 
-                        // Safely get room number
-                        String roomNumber = "Unknown";
-                        try {
-                            if (task.getRoom() != null && task.getRoom().getRoomNumber() != null) {
-                                roomNumber = task.getRoom().getRoomNumber();
-                            }
-                        } catch (Exception e) {
-                            // Ignore room access errors
-                        }
+                        // Get room number directly from task
+                        String roomNumber = task.getRoomNumber() != null ? task.getRoomNumber() : "General Area";
                         taskMap.put("roomNumber", roomNumber);
 
                         // Safely get assigned staff info
-                        if (task.getAssignedStaff() != null) {
-                            taskMap.put("assignedStaffId", task.getAssignedStaff().getId());
+                        if (task.getAssignedUser() != null) {
+                            taskMap.put("assignedStaffId", task.getAssignedUser().getId());
                             taskMap.put("assignedStaffName",
-                                    (task.getAssignedStaff().getFirstName() != null
-                                            ? task.getAssignedStaff().getFirstName()
+                                    (task.getAssignedUser().getFirstName() != null
+                                            ? task.getAssignedUser().getFirstName()
                                             : "") + " " +
-                                            (task.getAssignedStaff().getLastName() != null
-                                                    ? task.getAssignedStaff().getLastName()
+                                            (task.getAssignedUser().getLastName() != null
+                                                    ? task.getAssignedUser().getLastName()
                                                     : ""));
                         } else {
                             taskMap.put("assignedStaffId", null);
@@ -501,7 +477,7 @@ public class SupervisorController {
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Operation failed", e);
             return ResponseEntity.status(500).body(Map.of("error", "An unexpected error occurred: " + e.getMessage()));
         }
     }
@@ -510,7 +486,7 @@ public class SupervisorController {
      * Get maintenance requests - simplified version
      */
     @GetMapping("/maintenance")
-    @PreAuthorize("hasRole('OPERATIONS_SUPERVISOR')")
+    @PreAuthorize("hasRole('OPERATIONAL_ADMIN')")
     public ResponseEntity<?> getMaintenance(@RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         try {
@@ -558,9 +534,9 @@ public class SupervisorController {
              * 
              * // Add assigned staff info if available
              * try {
-             * if (request.getAssignedStaff() != null) {
-             * requestMap.put("assignedStaffName", request.getAssignedStaff().getFirstName()
-             * + " " + request.getAssignedStaff().getLastName());
+             * if (request.getAssignedUser() != null) {
+             * requestMap.put("assignedStaffName", request.getAssignedUser().getFirstName()
+             * + " " + request.getAssignedUser().getLastName());
              * }
              * } catch (Exception staffError) {
              * // Ignore staff access errors
@@ -579,7 +555,7 @@ public class SupervisorController {
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Operation failed", e);
             return ResponseEntity.status(500).body(Map.of("error", "An unexpected error occurred: " + e.getMessage()));
         }
     }
@@ -588,7 +564,7 @@ public class SupervisorController {
      * Create new maintenance request
      */
     @PostMapping("/maintenance")
-    @PreAuthorize("hasRole('OPERATIONS_SUPERVISOR')")
+    @PreAuthorize("hasRole('OPERATIONAL_ADMIN')")
     public ResponseEntity<?> createMaintenanceRequest(@RequestBody CreateMaintenanceRequest request) {
         try {
             String tenantId = getCurrentUserTenantId();
@@ -638,7 +614,7 @@ public class SupervisorController {
              * return ResponseEntity.ok(responseMap);
              */
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Operation failed", e);
             return ResponseEntity.status(500)
                     .body(Map.of("error", "Error creating maintenance request: " + e.getMessage()));
         }
@@ -648,7 +624,7 @@ public class SupervisorController {
      * Create new housekeeping task
      */
     @PostMapping("/tasks/housekeeping")
-    @PreAuthorize("hasRole('OPERATIONS_SUPERVISOR') or hasRole('HOTEL_ADMIN')")
+    @PreAuthorize("hasRole('OPERATIONAL_ADMIN') or hasRole('HOTEL_ADMIN')")
     public ResponseEntity<?> createHousekeepingTask(@RequestBody CreateTaskRequest request) {
         try {
             String tenantId = getCurrentUserTenantId();
@@ -675,8 +651,8 @@ public class SupervisorController {
 
             HousekeepingTask task;
 
-            // Handle special case for "Other" areas (roomId = 999)
-            if (request.getRoomId() == 999) {
+            // Handle special case for "Other" areas (roomId = null)
+            if (request.getRoomId() == null) {
                 // For "Other" areas, we'll create a task without a specific room
                 Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
                 task = housekeepingService.createTaskWithoutRoom(
@@ -708,20 +684,13 @@ public class SupervisorController {
             taskMap.put("estimatedDuration", task.getEstimatedDurationMinutes());
             taskMap.put("createdAt", task.getCreatedAt().toString());
 
-            // Safely get room number
-            String roomNumber = "Unknown";
-            try {
-                if (task.getRoom() != null && task.getRoom().getRoomNumber() != null) {
-                    roomNumber = task.getRoom().getRoomNumber();
-                }
-            } catch (Exception e) {
-                // Ignore room access errors
-            }
+            // Get room number directly from task
+            String roomNumber = task.getRoomNumber() != null ? task.getRoomNumber() : "General Area";
             taskMap.put("roomNumber", roomNumber);
 
             return ResponseEntity.ok(taskMap);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Operation failed", e);
             return ResponseEntity.status(500).body(Map.of("error", "An unexpected error occurred: " + e.getMessage()));
         }
     }
@@ -782,7 +751,7 @@ public class SupervisorController {
      * Get tasks assigned to a specific staff member
      */
     @GetMapping("/staff/{staffId}/tasks")
-    @PreAuthorize("hasRole('OPERATIONS_SUPERVISOR')")
+    @PreAuthorize("hasRole('OPERATIONAL_ADMIN')")
     public ResponseEntity<?> getStaffTasks(@PathVariable Long staffId,
             @RequestParam(defaultValue = "ALL") String timeFilter,
             @RequestParam(defaultValue = "0") int page,
@@ -828,15 +797,8 @@ public class SupervisorController {
                 taskMap.put("startedAt", task.getStartedAt() != null ? task.getStartedAt().toString() : null);
                 taskMap.put("completedAt", task.getCompletedAt() != null ? task.getCompletedAt().toString() : null);
 
-                // Safely get room number
-                String roomNumber = "Unknown";
-                try {
-                    if (task.getRoom() != null && task.getRoom().getRoomNumber() != null) {
-                        roomNumber = task.getRoom().getRoomNumber();
-                    }
-                } catch (Exception e) {
-                    // Ignore room access errors
-                }
+                // Get room number directly from task
+                String roomNumber = task.getRoomNumber() != null ? task.getRoomNumber() : "General Area";
                 taskMap.put("roomNumber", roomNumber);
 
                 tasksData.add(taskMap);
@@ -850,7 +812,7 @@ public class SupervisorController {
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Operation failed", e);
             return ResponseEntity.status(500).body(Map.of("error", "An unexpected error occurred: " + e.getMessage()));
         }
     }
@@ -859,7 +821,7 @@ public class SupervisorController {
      * Get staff performance summary
      */
     @GetMapping("/staff/{staffId}/performance")
-    @PreAuthorize("hasRole('OPERATIONS_SUPERVISOR')")
+    @PreAuthorize("hasRole('OPERATIONAL_ADMIN')")
     public ResponseEntity<?> getStaffPerformance(@PathVariable Long staffId) {
         try {
             String tenantId = getCurrentUserTenantId();
@@ -910,7 +872,7 @@ public class SupervisorController {
 
             return ResponseEntity.ok(performance);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Operation failed", e);
             return ResponseEntity.status(500).body(Map.of("error", "An unexpected error occurred: " + e.getMessage()));
         }
     }
@@ -919,7 +881,7 @@ public class SupervisorController {
      * Assign housekeeping task to staff member
      */
     @PutMapping("/tasks/housekeeping/{taskId}/assign/{staffId}")
-    @PreAuthorize("hasRole('OPERATIONS_SUPERVISOR')")
+    @PreAuthorize("hasRole('OPERATIONAL_ADMIN')")
     public ResponseEntity<?> assignHousekeepingTask(@PathVariable Long taskId, @PathVariable Long staffId) {
         try {
             String tenantId = getCurrentUserTenantId();
@@ -945,32 +907,25 @@ public class SupervisorController {
             taskMap.put("assignedAt",
                     assignedTask.getAssignedAt() != null ? assignedTask.getAssignedAt().toString() : null);
 
-            // Safely get room number
-            String roomNumber = "Unknown";
-            try {
-                if (assignedTask.getRoom() != null && assignedTask.getRoom().getRoomNumber() != null) {
-                    roomNumber = assignedTask.getRoom().getRoomNumber();
-                }
-            } catch (Exception e) {
-                // Ignore room access errors
-            }
+            // Get room number directly from task
+            String roomNumber = assignedTask.getRoomNumber() != null ? assignedTask.getRoomNumber() : "General Area";
             taskMap.put("roomNumber", roomNumber);
 
             // Add assigned staff info
-            if (assignedTask.getAssignedStaff() != null) {
-                taskMap.put("assignedStaffId", assignedTask.getAssignedStaff().getId());
+            if (assignedTask.getAssignedUser() != null) {
+                taskMap.put("assignedStaffId", assignedTask.getAssignedUser().getId());
                 taskMap.put("assignedStaffName",
-                        (assignedTask.getAssignedStaff().getFirstName() != null
-                                ? assignedTask.getAssignedStaff().getFirstName()
+                        (assignedTask.getAssignedUser().getFirstName() != null
+                                ? assignedTask.getAssignedUser().getFirstName()
                                 : "") + " " +
-                                (assignedTask.getAssignedStaff().getLastName() != null
-                                        ? assignedTask.getAssignedStaff().getLastName()
+                                (assignedTask.getAssignedUser().getLastName() != null
+                                        ? assignedTask.getAssignedUser().getLastName()
                                         : ""));
             }
 
             return ResponseEntity.ok(taskMap);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Operation failed", e);
             return ResponseEntity.status(500).body(Map.of("error", "Failed to assign task: " + e.getMessage()));
         }
     }
@@ -979,7 +934,7 @@ public class SupervisorController {
      * Assign maintenance request to staff member
      */
     @PutMapping("/maintenance/{requestId}/assign/{staffId}")
-    @PreAuthorize("hasRole('OPERATIONS_SUPERVISOR')")
+    @PreAuthorize("hasRole('OPERATIONAL_ADMIN')")
     public ResponseEntity<?> assignMaintenanceRequest(@PathVariable Long requestId, @PathVariable Long staffId) {
         try {
             String tenantId = getCurrentUserTenantId();
@@ -1020,20 +975,20 @@ public class SupervisorController {
              * requestMap.put("roomNumber", roomNumber);
              * 
              * // Add assigned staff info
-             * if (assignedRequest.getAssignedStaff() != null) {
+             * if (assignedRequest.getAssignedUser() != null) {
              * requestMap.put("assignedStaffId",
-             * assignedRequest.getAssignedStaff().getId());
+             * assignedRequest.getAssignedUser().getId());
              * requestMap.put("assignedStaffName",
-             * (assignedRequest.getAssignedStaff().getFirstName() != null ?
-             * assignedRequest.getAssignedStaff().getFirstName() : "") + " " +
-             * (assignedRequest.getAssignedStaff().getLastName() != null ?
-             * assignedRequest.getAssignedStaff().getLastName() : ""));
+             * (assignedRequest.getAssignedUser().getFirstName() != null ?
+             * assignedRequest.getAssignedUser().getFirstName() : "") + " " +
+             * (assignedRequest.getAssignedUser().getLastName() != null ?
+             * assignedRequest.getAssignedUser().getLastName() : ""));
              * }
              * 
              * return ResponseEntity.ok(requestMap);
              */
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Operation failed", e);
             return ResponseEntity.status(500)
                     .body(Map.of("error", "Failed to assign maintenance request: " + e.getMessage()));
         }
@@ -1043,7 +998,7 @@ public class SupervisorController {
      * Auto-assign housekeeping task to available staff
      */
     @PutMapping("/tasks/housekeeping/{taskId}/auto-assign")
-    @PreAuthorize("hasRole('OPERATIONS_SUPERVISOR')")
+    @PreAuthorize("hasRole('OPERATIONAL_ADMIN')")
     public ResponseEntity<?> autoAssignHousekeepingTask(@PathVariable Long taskId) {
         try {
             String tenantId = getCurrentUserTenantId();
@@ -1067,32 +1022,25 @@ public class SupervisorController {
             taskMap.put("assignedAt",
                     assignedTask.getAssignedAt() != null ? assignedTask.getAssignedAt().toString() : null);
 
-            // Safely get room number
-            String roomNumber = "Unknown";
-            try {
-                if (assignedTask.getRoom() != null && assignedTask.getRoom().getRoomNumber() != null) {
-                    roomNumber = assignedTask.getRoom().getRoomNumber();
-                }
-            } catch (Exception e) {
-                // Ignore room access errors
-            }
+            // Get room number directly from task
+            String roomNumber = assignedTask.getRoomNumber() != null ? assignedTask.getRoomNumber() : "General Area";
             taskMap.put("roomNumber", roomNumber);
 
             // Add assigned staff info
-            if (assignedTask.getAssignedStaff() != null) {
-                taskMap.put("assignedStaffId", assignedTask.getAssignedStaff().getId());
+            if (assignedTask.getAssignedUser() != null) {
+                taskMap.put("assignedStaffId", assignedTask.getAssignedUser().getId());
                 taskMap.put("assignedStaffName",
-                        (assignedTask.getAssignedStaff().getFirstName() != null
-                                ? assignedTask.getAssignedStaff().getFirstName()
+                        (assignedTask.getAssignedUser().getFirstName() != null
+                                ? assignedTask.getAssignedUser().getFirstName()
                                 : "") + " " +
-                                (assignedTask.getAssignedStaff().getLastName() != null
-                                        ? assignedTask.getAssignedStaff().getLastName()
+                                (assignedTask.getAssignedUser().getLastName() != null
+                                        ? assignedTask.getAssignedUser().getLastName()
                                         : ""));
             }
 
             return ResponseEntity.ok(taskMap);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Operation failed", e);
             return ResponseEntity.status(500).body(Map.of("error", "Failed to auto-assign task: " + e.getMessage()));
         }
     }

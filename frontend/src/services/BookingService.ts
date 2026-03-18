@@ -1,5 +1,6 @@
 import { BookingResponse } from '../types/booking';
 import { API_CONFIG } from '../config/apiConfig';
+import { formatEthiopianDate, formatEthiopianDateTime } from '../utils/ethiopianCalendar';
 
 const API_BASE_URL = API_CONFIG.BASE_URL;
 
@@ -21,7 +22,7 @@ export class BookingService {
 
       return await response.json();
     } catch (error) {
-      console.error('Error fetching user bookings:', error);
+      // console.error('Error fetching user bookings:', error);
       throw error;
     }
   }
@@ -44,7 +45,7 @@ export class BookingService {
 
       return await response.json();
     } catch (error) {
-      console.error('Error cancelling booking:', error);
+      // console.error('Error cancelling booking:', error);
       throw error;
     }
   }
@@ -72,7 +73,7 @@ export class BookingService {
 
       return await response.json();
     } catch (error) {
-      console.error('Error modifying booking:', error);
+      // console.error('Error modifying booking:', error);
       throw error;
     }
   }
@@ -85,33 +86,52 @@ export class BookingService {
   }
 
   static formatDate(dateString: string): string {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
+    if (!dateString) return '';
+    // Handle date strings without creating timezone issues
+    // Parse as local date to avoid timezone conversion
+    const [year, month, day] = dateString.split('T')[0].split('-');
+    const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+    
+    return formatEthiopianDate(date);
   }
 
   static formatDateTime(dateTimeString: string): string {
-    return new Date(dateTimeString).toLocaleString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    if (!dateTimeString) return '';
+    return formatEthiopianDateTime(new Date(dateTimeString));
   }
 
   static calculateStayDuration(checkIn: string, checkOut: string): number {
-    const checkInDate = new Date(checkIn);
-    const checkOutDate = new Date(checkOut);
+    // Parse as local dates to avoid timezone issues
+    const [year1, month1, day1] = checkIn.split('T')[0].split('-');
+    const [year2, month2, day2] = checkOut.split('T')[0].split('-');
+    const checkInDate = new Date(parseInt(year1), parseInt(month1) - 1, parseInt(day1));
+    const checkOutDate = new Date(parseInt(year2), parseInt(month2) - 1, parseInt(day2));
     const diffTime = Math.abs(checkOutDate.getTime() - checkInDate.getTime());
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   }
 
+  static getStatusDisplayLabel(status: string): string {
+    switch (status.toUpperCase()) {
+      case 'BOOKED':
+        return 'BOOKED';
+      case 'CHECKED_IN':
+        return 'CHECKED IN';
+      case 'CHECKED_OUT':
+        return 'CHECKED OUT';
+      case 'CANCELLED':
+        return 'CANCELLED';
+      case 'PENDING':
+        return 'PENDING';
+      case 'NO_SHOW':
+        return 'NO SHOW';
+      default:
+        return status.replace('_', ' ');
+    }
+  }
+
   static getStatusColor(status: string): 'primary' | 'success' | 'warning' | 'error' | 'default' {
     switch (status.toUpperCase()) {
-      case 'CONFIRMED':
+      case 'BOOKED':
         return 'primary';
       case 'PENDING':
         return 'warning';

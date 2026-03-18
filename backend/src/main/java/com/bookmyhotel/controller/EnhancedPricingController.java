@@ -21,7 +21,6 @@ import java.util.*;
  */
 @RestController
 @RequestMapping("/api/pricing")
-@CrossOrigin(origins = "*")
 public class EnhancedPricingController {
     
     private static final Logger logger = LoggerFactory.getLogger(EnhancedPricingController.class);

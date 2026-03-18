@@ -13,19 +13,19 @@ import org.springframework.stereotype.Service;
 @Service
 public class PasswordSecurityService {
 
-    @Value("${security.password.min-length:8}")
+    @Value("${security.password.min-length:6}")
     private int minLength;
 
-    @Value("${security.password.require-uppercase:true}")
+    @Value("${security.password.require-uppercase:false}")
     private boolean requireUppercase;
 
-    @Value("${security.password.require-lowercase:true}")
+    @Value("${security.password.require-lowercase:false}")
     private boolean requireLowercase;
 
-    @Value("${security.password.require-digits:true}")
+    @Value("${security.password.require-digits:false}")
     private boolean requireDigits;
 
-    @Value("${security.password.require-special-chars:true}")
+    @Value("${security.password.require-special-chars:false}")
     private boolean requireSpecialChars;
 
     @Value("${security.password.max-length:128}")
@@ -94,27 +94,28 @@ public class PasswordSecurityService {
             isValid = false;
         }
 
-        // Check against common weak passwords
-        String lowerPassword = password.toLowerCase();
-        for (String weakPassword : COMMON_WEAK_PASSWORDS) {
-            if (lowerPassword.contains(weakPassword)) {
-                errors.add("Password contains common weak patterns and is not secure");
-                isValid = false;
-                break;
-            }
-        }
+        // Check against common weak passwords - DISABLED for less restrictive policy
+        // String lowerPassword = password.toLowerCase();
+        // for (String weakPassword : COMMON_WEAK_PASSWORDS) {
+        // if (lowerPassword.contains(weakPassword)) {
+        // errors.add("Password contains common weak patterns and is not secure");
+        // isValid = false;
+        // break;
+        // }
+        // }
 
-        // Check for repeating characters (more than 3 consecutive same characters)
-        if (hasRepeatingCharacters(password, 4)) {
-            errors.add("Password cannot have more than 3 consecutive identical characters");
-            isValid = false;
-        }
+        // Check for repeating characters - DISABLED for less restrictive policy
+        // if (hasRepeatingCharacters(password, 4)) {
+        // errors.add("Password cannot have more than 3 consecutive identical
+        // characters");
+        // isValid = false;
+        // }
 
-        // Check for sequential patterns
-        if (hasSequentialPattern(password)) {
-            errors.add("Password cannot contain sequential patterns (like 123, abc)");
-            isValid = false;
-        }
+        // Check for sequential patterns - DISABLED for less restrictive policy
+        // if (hasSequentialPattern(password)) {
+        // errors.add("Password cannot contain sequential patterns (like 123, abc)");
+        // isValid = false;
+        // }
 
         return new PasswordValidationResult(isValid, errors);
     }

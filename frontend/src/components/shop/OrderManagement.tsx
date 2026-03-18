@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Button,
@@ -33,20 +33,35 @@ import {
 } from '@mui/material';
 import {
   Visibility as ViewIcon,
-  Payment as PaymentIcon
+  Payment as PaymentIcon,
+  Download as DownloadIcon
 } from '@mui/icons-material';
 import { format } from 'date-fns';
 import { useAuth } from '../../contexts/AuthContext';
 import { shopApiService } from '../../services/shopApi';
+import { formatCurrencyWithDecimals } from '../../utils/currencyUtils';
 import { ShopOrder, ShopOrderStatus, DeliveryType, ShopOrderUtils } from '../../types/shop';
+import { TableRowSkeleton } from '../common/SkeletonLoaders';
+import { NoOrders } from '../common/EmptyState';
+import { useDebounce } from '../../hooks/useDebounce';
+import { useTableSort } from '../../hooks/useTableSort';
+import { SortableTableCell } from '../common/SortableTableCell';
+import { useCsvExport } from '../../hooks/useCsvExport';
+import { useSnackbar } from 'notistack';
+import { useTranslation } from 'react-i18next';
+import { getPremiumTableHeadSx } from './premiumStyles';
 
 const OrderManagement: React.FC = () => {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
+  const { t } = useTranslation();
+  const { enqueueSnackbar } = useSnackbar();
+  const { exportToCsv } = useCsvExport({ filename: 'orders' });
   const [orders, setOrders] = useState<ShopOrder[]>([]);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [viewOrderDialog, setViewOrderDialog] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<ShopOrder | null>(null);
@@ -54,11 +69,54 @@ const OrderManagement: React.FC = () => {
   // Get hotel ID from authenticated user
   const hotelId = user?.hotelId ? parseInt(user.hotelId) : null;
 
+  // Filter orders based on search term and status
+  const filteredOrders = orders.filter(order => {
+    const matchesSearch = order.orderNumber.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+                         ShopOrderUtils.getDisplayCustomerName(order).toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+                         (order.roomNumber && order.roomNumber.toLowerCase().includes(debouncedSearchTerm.toLowerCase()));
+    const matchesStatus = statusFilter === 'ALL' || order.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
+
+  // Apply sorting to filtered orders
+  const { sortedItems: sortedOrders, requestSort, getSortDirection } = useTableSort(
+    filteredOrders,
+    'createdAt',
+    'desc'
+  );
+
+  const loadOrders = useCallback(async () => {
+    if (!hotelId) {
+      // console.error('Cannot load orders: No hotel ID available');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      
+      // Configure shop API service with authentication
+      if (token) {
+        shopApiService.setToken(token);
+      }
+      if (user?.tenantId) {
+        shopApiService.setTenantId(user.tenantId);
+      }
+      
+      const data = await shopApiService.getOrders(hotelId);
+      setOrders(data.content);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load orders');
+    } finally {
+      setLoading(false);
+    }
+  }, [hotelId, token, user?.tenantId]);
+
   useEffect(() => {
     if (hotelId) {
       loadOrders();
     }
-  }, [hotelId]);
+  }, [hotelId, loadOrders]);
 
   // Early return if no hotel ID is available (after all hooks)
   if (!hotelId) {
@@ -74,27 +132,9 @@ const OrderManagement: React.FC = () => {
     );
   }
 
-  const loadOrders = async () => {
-    if (!hotelId) {
-      console.error('Cannot load orders: No hotel ID available');
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const data = await shopApiService.getOrders(hotelId);
-      setOrders(data.content);
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load orders');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleToggleOrderStatus = async (orderId: number) => {
     if (!hotelId) {
-      console.error('Cannot toggle order status: No hotel ID available');
+      // console.error('Cannot toggle order status: No hotel ID available');
       return;
     }
 
@@ -106,18 +146,43 @@ const OrderManagement: React.FC = () => {
     }
   };
 
+  const handleExportToCsv = () => {
+    if (sortedOrders.length === 0) {
+      enqueueSnackbar(t('shop.orders.noDataToExport'), { variant: 'info' });
+      return;
+    }
+
+    const headers = [
+      t('shop.orders.table.orderNumber'),
+      t('shop.orders.table.customerName'),
+      t('shop.orders.table.totalAmount'),
+      t('shop.orders.table.status'),
+      t('shop.orders.table.paymentMethod'),
+      t('shop.orders.table.deliveryType'),
+      t('shop.orders.table.createdAt'),
+      t('shop.orders.table.items')
+    ];
+
+    exportToCsv(sortedOrders, headers, (order) => [
+      order.orderNumber,
+      order.customerName || t('common.notAvailable'),
+      formatCurrencyWithDecimals(order.totalAmount),
+      order.status, // PENDING or PAID
+      order.paymentMethod || t('common.notAvailable'),
+      order.deliveryType === DeliveryType.ROOM_DELIVERY 
+        ? t('shop.orders.deliveryTypes.roomDelivery') 
+        : t('shop.orders.deliveryTypes.pickup'),
+      format(new Date(order.createdAt), 'yyyy-MM-dd HH:mm'),
+      order.items.map(item => `${item.productName} (x${item.quantity})`).join('; ')
+    ]);
+
+    enqueueSnackbar(t('shop.orders.exportSuccess'), { variant: 'success' });
+  };
+
   const openViewDialog = (order: ShopOrder) => {
     setSelectedOrder(order);
     setViewOrderDialog(true);
   };
-
-  const filteredOrders = orders.filter(order => {
-    const matchesSearch = order.orderNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         ShopOrderUtils.getDisplayCustomerName(order).toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (order.roomNumber && order.roomNumber.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesStatus = statusFilter === 'ALL' || order.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
 
   const getStatusColor = (status: ShopOrderStatus) => {
     switch (status) {
@@ -137,7 +202,7 @@ const OrderManagement: React.FC = () => {
       <Card sx={{ mb: 3 }}>
         <CardContent>
           <Grid container spacing={2} alignItems="center">
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12} md={5}>
               <TextField
                 fullWidth
                 label="Search Orders"
@@ -164,10 +229,21 @@ const OrderManagement: React.FC = () => {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={12} md={3}>
+            <Grid item xs={12} md={2}>
               <Typography variant="body2" color="text.secondary">
                 {filteredOrders.length} of {orders.length} orders
               </Typography>
+            </Grid>
+            <Grid item xs={12} md={2}>
+              <Button
+                variant="outlined"
+                startIcon={<DownloadIcon />}
+                onClick={handleExportToCsv}
+                disabled={sortedOrders.length === 0}
+                fullWidth
+              >
+                {t('common.exportCsv')}
+              </Button>
             </Grid>
           </Grid>
         </CardContent>
@@ -184,18 +260,55 @@ const OrderManagement: React.FC = () => {
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
-            <TableRow>
-              <TableCell>Order Details</TableCell>
+            <TableRow sx={getPremiumTableHeadSx()}>
+              <SortableTableCell
+                label="Order Details"
+                sortKey="orderNumber"
+                active={getSortDirection('orderNumber') !== undefined}
+                direction={getSortDirection('orderNumber')}
+                onSort={() => requestSort('orderNumber')}
+              />
               <TableCell>Customer</TableCell>
-              <TableCell>Total</TableCell>
+              <SortableTableCell
+                label="Total"
+                sortKey="totalAmount"
+                active={getSortDirection('totalAmount') !== undefined}
+                direction={getSortDirection('totalAmount')}
+                onSort={() => requestSort('totalAmount')}
+              />
               <TableCell>Payment Method</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Date</TableCell>
+              <SortableTableCell
+                label="Status"
+                sortKey="status"
+                active={getSortDirection('status') !== undefined}
+                direction={getSortDirection('status')}
+                onSort={() => requestSort('status')}
+              />
+              <SortableTableCell
+                label="Date"
+                sortKey="createdAt"
+                active={getSortDirection('createdAt') !== undefined}
+                direction={getSortDirection('createdAt')}
+                onSort={() => requestSort('createdAt')}
+              />
               <TableCell align="center">Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredOrders.map((order) => (
+            {loading ? (
+              // Show skeleton loaders while loading
+              Array.from({ length: 5 }).map((_, index) => (
+                <TableRowSkeleton key={index} columns={7} />
+              ))
+            ) : sortedOrders.length === 0 ? (
+              // Show empty state when no orders
+              <TableRow>
+                <TableCell colSpan={7}>
+                  <NoOrders />
+                </TableCell>
+              </TableRow>
+            ) : (
+              sortedOrders.map((order) => (
               <TableRow key={order.id}>
                 <TableCell>
                   <Box>
@@ -227,7 +340,7 @@ const OrderManagement: React.FC = () => {
                 </TableCell>
                 <TableCell>
                   <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>
-                    ETB {order.totalAmount?.toFixed(0)}
+                    {formatCurrencyWithDecimals(order.totalAmount || 0)}
                   </Typography>
                 </TableCell>
                 <TableCell>
@@ -267,7 +380,8 @@ const OrderManagement: React.FC = () => {
                   </Tooltip>
                 </TableCell>
               </TableRow>
-            ))}
+            ))
+            )}
           </TableBody>
         </Table>
       </TableContainer>
@@ -343,13 +457,13 @@ const OrderManagement: React.FC = () => {
                               primary={
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                                   <span>{item.productName}</span>
-                                  <span>ETB {(item.unitPrice * item.quantity)?.toFixed(0)}</span>
+                                  <span>{formatCurrencyWithDecimals((item.unitPrice * item.quantity) || 0)}</span>
                                 </Box>
                               }
                               secondary={
                                 <Box>
                                   <Box component="span" sx={{ display: 'block', lineHeight: 1.43 }}>
-                                    Quantity: {item.quantity} × ETB {item.unitPrice?.toFixed(0)}
+                                    Quantity: {item.quantity} × {formatCurrencyWithDecimals(item.unitPrice || 0)}
                                   </Box>
                                   <Box component="span" sx={{ display: 'block', fontSize: '0.75rem', lineHeight: 1.66 }}>
                                     SKU: {item.productSku}
@@ -371,7 +485,7 @@ const OrderManagement: React.FC = () => {
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <Typography variant="h6">Total:</Typography>
                       <Typography variant="h6" color="primary">
-                        ETB {selectedOrder.totalAmount?.toFixed(0)}
+                        {formatCurrencyWithDecimals(selectedOrder.totalAmount || 0)}
                       </Typography>
                     </Box>
                   </CardContent>

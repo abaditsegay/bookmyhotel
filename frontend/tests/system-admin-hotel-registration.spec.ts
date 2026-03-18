@@ -62,6 +62,8 @@ class HotelRegistrationPage {
     city: string;
     country: string;
     phone: string;
+    mobilePaymentPhone: string;
+    mobilePaymentPhone2: string;
     contactEmail: string;
     licenseNumber: string;
     taxId: string;
@@ -101,7 +103,7 @@ class HotelRegistrationPage {
     await this.page.waitForSelector('div[role="dialog"]', { state: 'visible' });
     await this.highlightElement('div[role="dialog"]', '#0066ff', 1000);
     
-    // Step 3: Fill all 15 fields sequentially using a more robust approach
+    // Step 3: Fill all 17 fields sequentially using a more robust approach
     const fieldData = [
       { value: hotelData.name, label: 'Hotel Name' },
       { value: hotelData.contactPerson, label: 'Contact Person' },
@@ -109,8 +111,10 @@ class HotelRegistrationPage {
       { value: hotelData.address, label: 'Address' },
       { value: hotelData.city, label: 'City' },
       { value: hotelData.country, label: 'Country' },
-      { value: hotelData.phone, label: 'Phone' },
       { value: hotelData.contactEmail, label: 'Contact Email' },
+      { value: hotelData.phone, label: 'Phone (Communication)' },
+      { value: hotelData.mobilePaymentPhone, label: 'Mobile Payment Phone' },
+      { value: hotelData.mobilePaymentPhone2, label: 'Mobile Payment Phone 2' },
       { value: hotelData.licenseNumber, label: 'License Number' },
       { value: hotelData.taxId, label: 'Tax ID' },
       { value: hotelData.websiteUrl, label: 'Website URL' },
@@ -125,7 +129,7 @@ class HotelRegistrationPage {
     
     console.log(`Found ${allFields.length} editable form fields total`);
     
-    // Map all 15 fields with their data
+    // Map all 17 fields with their data
     const fieldMappings = [
       { data: hotelData.name, label: 'Hotel Name' },
       { data: hotelData.contactPerson, label: 'Contact Person' },
@@ -133,8 +137,10 @@ class HotelRegistrationPage {
       { data: hotelData.address, label: 'Address' },
       { data: hotelData.city, label: 'City' },
       { data: hotelData.country, label: 'Country' },
-      { data: hotelData.phone, label: 'Phone' },
       { data: hotelData.contactEmail, label: 'Contact Email' },
+      { data: hotelData.phone, label: 'Phone (Communication)' },
+      { data: hotelData.mobilePaymentPhone, label: 'Mobile Payment Phone' },
+      { data: hotelData.mobilePaymentPhone2, label: 'Mobile Payment Phone 2' },
       { data: hotelData.licenseNumber, label: 'License Number' },
       { data: hotelData.taxId, label: 'Tax ID' },
       { data: hotelData.websiteUrl, label: 'Website URL' },
@@ -189,7 +195,7 @@ class HotelRegistrationPage {
       }
     }
     
-    console.log(`✅ Successfully filled ${filledCount} out of 15 fields with sequential highlighting`);
+    console.log(`✅ Successfully filled ${filledCount} out of 17 fields with sequential highlighting`);
     
     // Step 4: Wait before submit and ensure all field highlighting is complete
     console.log(`🔄 Waiting for all field operations to complete...`);
@@ -340,7 +346,7 @@ class HotelRegistrationPage {
     // Step 5: Show completion status
     console.log(`✅ Hotel registration form demonstration completed!`);
     console.log(`✅ Successfully demonstrated sequential highlighting for hotel registration`);
-    console.log(`✅ Filled ${filledCount} out of 15 fields with sequential highlighting`);
+    console.log(`✅ Filled ${filledCount} out of 17 fields with sequential highlighting`);
     console.log(`🎉 Hotel registration test completed successfully!`);
     
     // Clean up highlights - handle page closure gracefully
@@ -422,7 +428,7 @@ test.describe('System Admin - Hotel Registration', () => {
     await page.fill('[data-testid="email-input"]', 'admin@bookmyhotel.com');
     
     await hotelPage.highlightElement('[data-testid="password-input"]', '#ff6600', 600);
-    await page.fill('[data-testid="password-input"]', 'password123');
+    await page.fill('[data-testid="password-input"]', 'admin123');
     
     // Highlight and click login
     await hotelPage.highlightElement('[data-testid="login-button"]', '#ff6600', 800);
@@ -435,14 +441,25 @@ test.describe('System Admin - Hotel Registration', () => {
     await page.waitForLoadState('networkidle');
     
     // Verify we're logged in as system admin
-    await expect(page.locator('[data-testid="user-role"]')).toContainText(/SYSTEM_ADMIN|System Administrator/i);
+    await expect(page.locator('[data-testid="user-role"]')).toContainText('System Admin', { timeout: 10000 });
     
-    // Navigate to hotel management
-    await page.waitForSelector('[data-testid="stats-card-manage-hotels"]', { state: 'visible' });
-    await hotelPage.highlightElement('[data-testid="stats-card-manage-hotels"]', '#0066ff', 2000);
+    // Navigate to hotel management - use button text
+    await page.waitForSelector('button:has-text("Manage Hotels")', { state: 'visible', timeout: 30000 });
     
-    // Click on the Manage Hotels card
-    await page.click('[data-testid="stats-card-manage-hotels"]');
+    // Highlight the hotel management card using XPath
+    await page.evaluate(() => {
+      const buttons = Array.from(document.querySelectorAll('button'));
+      const manageHotelsButton = buttons.find(btn => btn.textContent?.includes('Manage Hotels'));
+      if (manageHotelsButton && manageHotelsButton.parentElement) {
+        const card = manageHotelsButton.parentElement;
+        card.style.border = '3px solid #0066ff';
+        card.style.boxShadow = '0 0 10px #0066ff';
+      }
+    });
+    await page.waitForTimeout(2000);
+    
+    // Click on the Manage Hotels button
+    await page.locator('button:has-text("Manage Hotels")').first().click();
     await page.waitForTimeout(1000);
     
     // Remove highlights after navigation
@@ -497,24 +514,27 @@ test.describe('System Admin - Hotel Registration', () => {
     // Set reasonable timeout for form interaction
     page.setDefaultTimeout(10000);
     
-    // Test data for hotel registration
+    // Test data for hotel registration with proper Ethiopian formats
     const timestamp = Date.now();
+    const randomSuffix = Math.floor(Math.random() * 1000);
     const hotelData = {
-      name: `Test Hotel ${timestamp}`,
-      contactPerson: 'John Manager',
-      description: 'A premium test hotel for automated testing purposes',
-      address: '123 Test Street',
-      city: 'Test City',
-      country: 'Test Country',
-      phone: '1234567890',  // Simple 10-digit format
-      contactEmail: `contact${timestamp}@testhotel.com`,  // Unique email
-      licenseNumber: `LIC${timestamp}`,  // Unique license number
-      taxId: `TAX${timestamp}`,  // Unique tax ID
-      websiteUrl: `https://testhotel${timestamp}.com`,  // Unique website
-      facilityAmenities: 'WiFi, Pool, Gym, Restaurant, Spa, Conference Room',
-      numberOfRooms: '50',
-      checkInTime: '15:00',  // 24-hour format
-      checkOutTime: '11:00'  // 24-hour format
+      name: `Grand Palace Hotel ${timestamp}`,
+      contactPerson: 'John Anderson',
+      description: 'A luxury 5-star hotel offering world-class amenities, exceptional service, and elegant accommodations in the heart of the city.',
+      address: '123 Grand Boulevard, Downtown District',
+      city: 'Addis Ababa',
+      country: 'Ethiopia',
+      phone: `0911${randomSuffix}${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`,  // Ethiopian format: 09XXXXXXXX (10 digits) - Communication
+      mobilePaymentPhone: `0912${randomSuffix}${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`,  // Ethiopian mobile payment format: 09XXXXXXXX
+      mobilePaymentPhone2: `0913${randomSuffix}${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`,  // Optional secondary mobile payment
+      contactEmail: `contact@grandpalace${randomSuffix}.com`,  // Standard business email format
+      licenseNumber: `HTL-LIC-2026-${timestamp}`,  // Professional license format
+      taxId: `TIN-${timestamp}`,  // Tax Identification Number format
+      websiteUrl: `https://grandpalace${randomSuffix}.com`,  // Professional domain
+      facilityAmenities: 'Free WiFi, Swimming Pool, Fitness Center, Restaurant, Bar, Spa & Wellness, Business Center, Conference Rooms, 24/7 Room Service, Parking',
+      numberOfRooms: '150',  // Realistic number for a grand hotel
+      checkInTime: '14:00',  // Standard check-in time (2 PM)
+      checkOutTime: '12:00'  // Standard check-out time (12 PM)
     };    // Add the new hotel with DOM highlighting demonstration
     await hotelPage.registerNewHotel(hotelData);
     
@@ -528,6 +548,6 @@ test.describe('System Admin - Hotel Registration', () => {
     }
     
     // Skip screenshot since page may be closed after form submission
-    console.log(`🎉 Hotel registration test completed successfully with all 15 fields filled and submitted!`);
+    console.log(`🎉 Hotel registration test completed successfully with all 17 fields filled and submitted!`);
   });
 });

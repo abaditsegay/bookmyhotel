@@ -55,6 +55,7 @@ export const API_ENDPOINTS = {
     SEARCH: '/bookings/search',
     CANCEL: '/bookings/cancel',
     MODIFY: '/bookings/modify',
+    WALK_IN: '/front-desk/walk-in-booking',
   },
   
   // Rooms

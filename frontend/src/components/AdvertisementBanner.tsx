@@ -18,7 +18,9 @@ import {
 } from '@mui/icons-material';
 import { hotelApiService } from '../services/hotelApi';
 import { HotelSearchResult } from '../types/hotel';
+import { formatCurrencyWithDecimals } from '../utils/currencyUtils';
 import { useAuth } from '../contexts/AuthContext';
+import { COLORS, addAlpha } from '../theme/themeColors';
 
 interface AdvertisementBannerProps {
   maxAds?: number;
@@ -84,7 +86,7 @@ export default function AdvertisementBanner({ maxAds = 5 }: AdvertisementBannerP
         setHotels(fallbackHotels.slice(0, maxAds));
       }
     } catch (err) {
-      console.warn('Failed to fetch random hotels from API, using fallback:', err);
+      // console.warn('Failed to fetch random hotels from API, using fallback:', err);
       setError('Using sample hotels');
       setHotels(fallbackHotels.slice(0, maxAds));
     } finally {
@@ -113,7 +115,7 @@ export default function AdvertisementBanner({ maxAds = 5 }: AdvertisementBannerP
   }, [fetchHotels]);
 
   // Hide advertisement banner for operations users
-  const isOperationsUser = user?.role === 'OPERATIONS_SUPERVISOR' || 
+  const isOperationsUser = user?.role === 'OPERATIONAL_ADMIN' || 
                            user?.role === 'HOUSEKEEPING' || 
                            user?.role === 'MAINTENANCE';
 
@@ -202,8 +204,8 @@ export default function AdvertisementBanner({ maxAds = 5 }: AdvertisementBannerP
                     position: 'absolute',
                     top: 8,
                     left: 8,
-                    backgroundColor: 'rgba(0,0,0,0.7)',
-                    color: 'white',
+                    backgroundColor: addAlpha(COLORS.BLACK, 0.7),
+                    color: COLORS.WHITE,
                     fontSize: '0.7rem'
                   }}
                 />
@@ -248,11 +250,11 @@ export default function AdvertisementBanner({ maxAds = 5 }: AdvertisementBannerP
                 {/* Price Section */}
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                   <Typography variant="h6" color="primary" sx={{ fontWeight: 'bold' }}>
-                    ETB {hotel.minPrice?.toFixed(0)}
+                    {formatCurrencyWithDecimals(hotel.minPrice || 0)}
                   </Typography>
                   {hotel.maxPrice > hotel.minPrice && (
                     <Typography variant="body2" color="text.secondary">
-                      - ETB {hotel.maxPrice?.toFixed(0)}
+                      - {formatCurrencyWithDecimals(hotel.maxPrice || 0)}
                     </Typography>
                   )}
                   <Typography variant="caption" color="success.main" sx={{ fontWeight: 'bold' }}>

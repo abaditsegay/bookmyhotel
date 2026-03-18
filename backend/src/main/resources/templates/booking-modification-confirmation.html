@@ -273,9 +273,36 @@
                 <td>Number of Nights</td>
                 <td th:text="${nights}"></td>
             </tr>
+        </table>
+
+        <!-- Pricing Summary with Tax Breakdown -->
+        <table th:if="${hasTaxBreakdown}">
+            <tr>
+                <th colspan="2" class="section-title">Pricing Summary</th>
+            </tr>
+            <tr>
+                <td>Subtotal</td>
+                <td th:text="'ETB ' + ${#numbers.formatDecimal(subtotal, 1, 'COMMA', 2, 'POINT')}"></td>
+            </tr>
+            <tr>
+                <td th:text="'VAT (' + ${#numbers.formatDecimal(vatRatePercentage, 1, 2)} + '%)'">VAT</td>
+                <td th:text="'ETB ' + ${#numbers.formatDecimal(vatAmount, 1, 'COMMA', 2, 'POINT')}"></td>
+            </tr>
+            <tr>
+                <td th:text="'Service Tax (' + ${#numbers.formatDecimal(serviceTaxRatePercentage, 1, 2)} + '%)'">Service Tax</td>
+                <td th:text="'ETB ' + ${#numbers.formatDecimal(serviceTaxAmount, 1, 'COMMA', 2, 'POINT')}"></td>
+            </tr>
+            <tr class="total-row">
+                <td><strong>Total Amount</strong></td>
+                <td><strong th:text="'ETB ' + ${#numbers.formatDecimal(totalWithTax, 1, 'COMMA', 2, 'POINT')}"></strong></td>
+            </tr>
+        </table>
+
+        <!-- Fallback for bookings without tax breakdown -->
+        <table th:unless="${hasTaxBreakdown}">
             <tr>
                 <td>Total Amount</td>
-                <td th:text="'ETB ' + ${booking.totalAmount}"></td>
+                <td th:text="'ETB ' + ${#numbers.formatDecimal((totalWithTax != null ? totalWithTax : booking.totalAmount), 1, 'COMMA', 2, 'POINT')}"></td>
             </tr>
         </table>
 
@@ -297,7 +324,7 @@
         <div class="financial-section" th:if="${additionalCharges != null and additionalCharges > 0}">
             <div class="additional-charges">
                 <h4 class="financial-header">💳 Additional Payment Required</h4>
-                <p class="amount charge-amount">Amount: $<span th:text="${additionalCharges}"></span></p>
+                <p class="amount charge-amount">Amount: ETB <span th:text="${#numbers.formatDecimal(additionalCharges, 1, 'COMMA', 2, 'POINT')}"></span></p>
                 <p>This amount will be charged to your original payment method within 24 hours.</p>
             </div>
         </div>
@@ -305,7 +332,7 @@
         <div class="financial-section" th:if="${refundAmount != null and refundAmount > 0}">
             <div class="refund-info">
                 <h4 class="financial-header">💰 Refund Processing</h4>
-                <p class="amount refund-amount">Amount: $<span th:text="${refundAmount}"></span></p>
+                <p class="amount refund-amount">Amount: ETB <span th:text="${#numbers.formatDecimal(refundAmount, 1, 'COMMA', 2, 'POINT')}"></span></p>
                 <p>The refund will be processed to your original payment method within 3-5 business days.</p>
             </div>
         </div>
@@ -337,7 +364,7 @@
         </div>
 
         <div class="footer">
-            <p><strong>Thank you for choosing <span th:text="${appName}"></span>!</strong></p>
+            <p><strong>Thank you for choosing <span th:text="${booking.hotelName}"></span>!</strong></p>
             <p>Your booking modification has been processed successfully.</p>
             <p>This is an automated email. Please do not reply.</p>
         </div>

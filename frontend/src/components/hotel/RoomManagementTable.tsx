@@ -35,6 +35,7 @@ import {
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { hotelAdminApi } from '../../services/hotelAdminApi';
+import { formatCurrencyWithDecimals } from '../../utils/currencyUtils';
 
 // Hotel admin specific room response interface (matching FrontDesk)
 interface RoomResponse {
@@ -110,7 +111,7 @@ const RoomManagementTable: React.FC<RoomManagementTableProps> = ({ onRoomUpdate 
         setError(result.message || 'Failed to load rooms');
       }
     } catch (error) {
-      console.error('Failed to load rooms:', error);
+      // console.error('Failed to load rooms:', error);
       setError('Failed to load rooms');
     } finally {
       setLoading(false);
@@ -178,7 +179,7 @@ const RoomManagementTable: React.FC<RoomManagementTableProps> = ({ onRoomUpdate 
         setError(result.message || 'Failed to update room status');
       }
     } catch (error) {
-      console.error('Failed to update room status:', error);
+      // console.error('Failed to update room status:', error);
       setError('Failed to update room status');
     } finally {
       setStatusUpdating(false);
@@ -210,7 +211,7 @@ const RoomManagementTable: React.FC<RoomManagementTableProps> = ({ onRoomUpdate 
         setError(result.message || 'Failed to toggle room availability');
       }
     } catch (error) {
-      console.error('Failed to toggle room availability:', error);
+      // console.error('Failed to toggle room availability:', error);
       setError('Failed to toggle room availability');
     } finally {
       setAvailabilityUpdating(prev => ({ ...prev, [room.id]: false }));
@@ -324,7 +325,7 @@ const RoomManagementTable: React.FC<RoomManagementTableProps> = ({ onRoomUpdate 
                     )}
                   </TableCell>
                   <TableCell>{room.capacity} guests</TableCell>
-                  <TableCell>ETB {room.pricePerNight?.toFixed(0)}</TableCell>
+                  <TableCell>{formatCurrencyWithDecimals(room.pricePerNight || 0)}</TableCell>
                   <TableCell>
                     <FormControlLabel
                       control={

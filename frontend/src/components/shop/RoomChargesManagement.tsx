@@ -31,7 +31,6 @@ import {
 } from '@mui/material';
 import {
   Add as AddIcon,
-  Delete as DeleteIcon,
   Payment as PaymentIcon,
   Receipt as ReceiptIcon,
   Search as SearchIcon,
@@ -40,6 +39,7 @@ import {
 import { format } from 'date-fns';
 import { roomChargeApiService } from '../../services/roomChargeApi';
 import { RoomCharge, RoomChargeCreateRequest, RoomChargeType } from '../../types/shop';
+import { getPremiumTableHeadSx } from './premiumStyles';
 
 interface RoomChargesProps {
   hotelId: number;
@@ -57,9 +57,7 @@ const RoomChargesManagement: React.FC<RoomChargesProps> = ({ hotelId }) => {
   // Dialog states
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedCharge, setSelectedCharge] = useState<RoomCharge | null>(null);
-  const [chargeToDelete, setChargeToDelete] = useState<RoomCharge | null>(null);
   const [paymentReference, setPaymentReference] = useState('');
   
   // Form state for creating new charges
@@ -94,7 +92,7 @@ const RoomChargesManagement: React.FC<RoomChargesProps> = ({ hotelId }) => {
       setTotalElements(response.totalElements);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load room charges');
-      console.error('Failed to load room charges:', err);
+      // console.error('Failed to load room charges:', err);
     } finally {
       setLoading(false);
     }
@@ -137,24 +135,6 @@ const RoomChargesManagement: React.FC<RoomChargesProps> = ({ hotelId }) => {
       loadRoomCharges();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to mark charge as unpaid');
-    }
-  };
-
-  const handleDeleteCharge = async (charge: RoomCharge) => {
-    setChargeToDelete(charge);
-    setDeleteDialogOpen(true);
-  };
-
-  const confirmDeleteCharge = async () => {
-    if (!chargeToDelete) return;
-    
-    try {
-      await roomChargeApiService.deleteRoomCharge(chargeToDelete.id);
-      setDeleteDialogOpen(false);
-      setChargeToDelete(null);
-      loadRoomCharges();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete room charge');
     }
   };
 
@@ -312,7 +292,7 @@ const RoomChargesManagement: React.FC<RoomChargesProps> = ({ hotelId }) => {
           <TableContainer component={Paper}>
             <Table>
               <TableHead>
-                <TableRow>
+                <TableRow sx={getPremiumTableHeadSx()}>
                   <TableCell>Date</TableCell>
                   <TableCell>Guest</TableCell>
                   <TableCell>Room</TableCell>
@@ -395,15 +375,6 @@ const RoomChargesManagement: React.FC<RoomChargesProps> = ({ hotelId }) => {
                             </IconButton>
                           </Tooltip>
                         )}
-                        <Tooltip title="Delete">
-                          <IconButton
-                            size="small"
-                            color="error"
-                            onClick={() => handleDeleteCharge(charge)}
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        </Tooltip>
                       </Box>
                     </TableCell>
                   </TableRow>
@@ -538,40 +509,6 @@ const RoomChargesManagement: React.FC<RoomChargesProps> = ({ hotelId }) => {
         </DialogActions>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Delete Room Charge</DialogTitle>
-        <DialogContent>
-          {chargeToDelete && (
-            <Box sx={{ mt: 2 }}>
-              <Typography variant="body1" gutterBottom>
-                Are you sure you want to delete this room charge?
-              </Typography>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
-                <strong>Guest:</strong> {chargeToDelete.guestName || 'N/A'}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
-                <strong>Room:</strong> {chargeToDelete.roomNumber || 'N/A'}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
-                <strong>Description:</strong> {chargeToDelete.description}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
-                <strong>Amount:</strong> {formatCurrency(chargeToDelete.amount)}
-              </Typography>
-              <Typography variant="body2" color="error" sx={{ mt: 2 }}>
-                This action cannot be undone.
-              </Typography>
-            </Box>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
-          <Button onClick={confirmDeleteCharge} variant="contained" color="error">
-            Delete
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Box>
   );
 };

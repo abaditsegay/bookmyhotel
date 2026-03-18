@@ -20,10 +20,15 @@ class OperationsSupervisorApiService {
     endpoint: string,
     options: RequestInit = {}
   ): Promise<T> {
-    const headers: HeadersInit = {
+    const headers: Record<string, string> = {
       ...TokenManager.getAuthHeaders(),
-      ...options.headers,
+      ...(options.headers as Record<string, string>),
     };
+
+    // Add Content-Type header for requests with body
+    if (options.body && !headers['Content-Type'] && !headers['content-type']) {
+      headers['Content-Type'] = 'application/json';
+    }
 
     try {
       const response = await fetch(`${API_BASE_URL}/supervisor${endpoint}`, {
@@ -38,7 +43,7 @@ class OperationsSupervisorApiService {
 
       return await response.json();
     } catch (error) {
-      console.error(`API request failed: /supervisor${endpoint}`, error);
+      // console.error(`API request failed: /supervisor${endpoint}`, error);
       throw error;
     }
   }
@@ -85,9 +90,10 @@ class OperationsSupervisorApiService {
     });
   }
 
-  async assignHousekeepingTask(taskId: number, staffId: number): Promise<void> {
-    return this.fetchApi<void>(`/tasks/housekeeping/${taskId}/assign/${staffId}`, {
-      method: 'PUT',
+  async assignHousekeepingTask(taskId: number, staffId: number): Promise<HousekeepingTask> {
+    return this.fetchApi<HousekeepingTask>(`/tasks/housekeeping/${taskId}/assign`, {
+      method: 'POST',
+      body: JSON.stringify({ staffId }),
     });
   }
 

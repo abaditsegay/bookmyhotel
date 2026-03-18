@@ -52,12 +52,19 @@
     "cancel": "Cancel",
     "confirm": "Confirm",
     "save": "Save",
+    "add": "Add",
     "close": "Close",
+    "delete": "Delete",
     "yes": "Yes",
     "no": "No",
     "next": "Next",
     "previous": "Previous",
-    "submit": "Submit"
+    "submit": "Submit",
+    "refresh": "Refresh",
+    "rowsPerPage": "Rows per page:",
+    "displayedRows": "{{from}}-{{to}} of {{count}}",
+    "notAvailable": "N/A",
+    "units": "units"
   },
   "navigation": {
     "home": "Home",
@@ -71,5 +78,268 @@
     "english": "English",
     "amharic": "አማርኛ",
     "changeLanguage": "Change Language"
+  },
+  "shop": {
+    "dashboard": {
+      "tabs": {
+        "newOrder": "New Order",
+        "products": "Products",
+        "orders": "Orders"
+      },
+      "stats": {
+        "totalProducts": "Total Products",
+        "activeProducts": "Active",
+        "totalOrders": "Total Orders",
+        "revenue": "Revenue"
+      }
+    },
+    "lowStock": {
+      "title": "Low Stock Products",
+      "threshold": "Threshold",
+      "searchPlaceholder": "Search products by name, SKU, or category...",
+      "noProducts": "No low stock products found",
+      "noSearchResults": "No products match your search criteria"
+    },
+    "products": {
+      "addProduct": "Add Product",
+      "searchPlaceholder": "Search products...",
+      "categories": {
+        "all": "All Categories"
+      },
+      "table": {
+        "name": "Name",
+        "price": "Price",
+        "stock": "Stock",
+        "currentStock": "Current Stock",
+        "minimumStock": "Min Stock",
+        "reorderSuggestion": "Reorder Qty",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "form": {
+        "category": "Category",
+        "sku": "SKU",
+        "name": "Product Name",
+        "description": "Description",
+        "price": "Price",
+        "costPrice": "Cost Price",
+        "weight": "Weight",
+        "weightGrams": "Weight (grams)",
+        "imageUrl": "Image URL",
+        "stock": "Stock",
+        "stockQuantity": "Stock Quantity",
+        "minimumStock": "Minimum Stock",
+        "minimumStockLevel": "Minimum Stock Level",
+        "maximumStock": "Maximum Stock",
+        "maximumStockLevel": "Maximum Stock Level",
+        "availability": "Available",
+        "active": "Active",
+        "notes": "Notes"
+      },
+      "status": {
+        "outOfStock": "Out of Stock",
+        "lowStock": "Low Stock",
+        "inStock": "In Stock",
+        "available": "Available",
+        "unavailable": "Unavailable",
+        "stockStatus": "Stock Status"
+      },
+      "editProduct": "Edit Product",
+      "deleteProduct": "Delete Product",
+      "viewDetails": "View Product Details",
+      "confirmDelete": "Are you sure you want to delete this product?"
+    },
+    "orders": {
+      "status": {
+        "pending": "Pending"
+      }
+    }
+  },
+  "booking": {
+    "find": {
+      "title": "Enter Your Booking Details",
+      "subtitle": "Both fields are required to find your booking",
+      "fields": {
+        "confirmationNumber": "Reference Number",
+        "email": "Email Address",
+        "confirmationNumberPlaceholder": "Enter confirmation number",
+        "emailPlaceholder": "Enter email address"
+      },
+      "buttons": {
+        "search": "Find Booking",
+        "searching": "Searching..."
+      },
+      "results": {
+        "found": "Booking Found!",
+        "notFound": "Booking not found. Please check your details.",
+        "error": "Error finding booking. Please try again."
+      }
+    },
+    "manage": {
+      "title": "Manage Your Booking",
+      "confirmationLabel": "Confirmation",
+      "sendingEmail": "Sending Email...",
+      "modifyBooking": "Modify Booking",
+      "cancelBooking": "Cancel Booking",
+      "bookingDetails": "Booking Details",
+      "stayDetails": "Stay Details",
+      "checkIn": "Check-in",
+      "checkOut": "Check-out", 
+      "duration": "Duration",
+      "totalAmount": "Total Amount",
+      "hotelAndRoom": "Hotel & Room Type",
+      "hotel": "Hotel",
+      "roomType": "Room Type",
+      "roomAssignment": "Room Assignment",
+      "roomAssignmentNote": "Room will be assigned at check-in",
+      "rate": "Rate",
+      "guestInformation": "Guest Information",
+      "name": "Name",
+      "email": "Email",
+      "numberOfGuests": "Number of Guests",
+      "paymentInformation": "Payment Information",
+      "paymentStatus": "Payment Status",
+      "paymentReference": "Payment Reference",
+      "modifyDialogTitle": "Modify Your Booking",
+      "guestName": "Guest Name",
+      "guestNameHelp": "Update the primary guest name for this booking",
+      "emailAddress": "Email Address",
+      "emailHelp": "Update your email address if needed for confirmations",
+      "checkInDate": "Check-in Date",
+      "checkOutDate": "Check-out Date",
+      "numberOfGuestsHelp": "Update the number of guests for your booking",
+      "selectRoomType": "Select Room Type",
+      "reasonForModification": "Reason for Modification",
+      "reasonHelp": "Optional: Help us understand why you're making changes",
+      "cancel": "Cancel",
+      "modifying": "Modifying...",
+      "modifyBookingAction": "Modify Booking",
+      "cancelDialogTitle": "Cancel Your Booking",
+      "cancellationPolicy": "Cancellation Policy",
+      "cancellationPolicyDetails": "• More than 7 days before check-in: 100% refund\n• 3-7 days before: 50% refund\n• 1-2 days before: 25% refund\n• Same day: No refund",
+      "reasonForCancellation": "Reason for Cancellation",
+      "cancellationReasonHelp": "Optional: Help us understand why you're cancelling",
+      "keepBooking": "Keep Booking",
+      "cancelling": "Cancelling...",
+      "cancelBookingAction": "Cancel Booking"
+    },
+    "summary": {
+      "title": "Booking Summary",
+      "hotel": "Hotel",
+      "roomType": "Room Type",
+      "checkIn": "Check-in",
+      "checkOut": "Check-out",
+      "guests": "Guests",
+      "guest": "guest",
+      "guestsPlural": "guests",
+      "nights": "Nights",
+      "night": "night",
+      "nightsPlural": "nights",
+      "pricePerNight": "{{price}} × {{nights}} nights",
+      "taxesAndFees": "Taxes & fees",
+      "total": "Total",
+      "cancellationPolicy": "Free cancellation until 24 hours before check-in"
+    },
+    "paymentStatus": {
+      "completed": "COMPLETED",
+      "pending": "PENDING", 
+      "processing": "PROCESSING",
+      "failed": "FAILED"
+    }
+  },
+  "bookingConfirmation": {
+    "summary": {
+      "bookedOn": "Booked on:",
+      "duration": "Duration:",
+      "nightSingle": "night",
+      "nightPlural": "nights"
+    }
+  },
+  "categoryNames": {
+    "BEVERAGES": "Beverages",
+    "SNACKS": "Snacks",
+    "CULTURAL_CLOTHING": "Cultural Clothing",
+    "SOUVENIRS": "Souvenirs",
+    "TOILETRIES": "Toiletries",
+    "OTHER": "Other"
+  },
+  "walkInBooking": {
+    "title": "Walk-In Booking",
+    "subtitle": "Create a booking for a walk-in guest",
+    "steps": {
+      "guestInformation": "Guest Information",
+      "roomSelection": "Room Selection",
+      "confirmation": "Confirmation"
+    },
+    "guestInformation": {
+      "title": "Guest Information",
+      "description": "Enter the guest's personal details",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "email": "Email Address",
+      "phone": "Phone Number"
+    },
+    "stayDetails": {
+      "title": "Stay Details",
+      "description": "Select check-in and check-out dates",
+      "checkInDate": "Check-in Date",
+      "checkOutDate": "Check-out Date",
+      "numberOfGuests": "Number of Guests"
+    },
+    "roomSelection": {
+      "title": "Room Selection",
+      "description": "Select a room for {{checkIn}} to {{checkOut}}",
+      "loadingRooms": "Loading available rooms...",
+      "noRoomsAvailable": "No rooms available for the selected dates ({{checkIn}} - {{checkOut}})",
+      "roomNumber": "Room",
+      "capacity": "Capacity",
+      "capacityText": "{{count}} guest",
+      "capacityTextPlural": "{{count}} guests",
+      "perNightShort": "/night",
+      "specialRequests": "Special Requests",
+      "specialRequestsPlaceholder": "Any special requests or notes for this booking..."
+    },
+    "confirmation": {
+      "bookingConfirmationTitle": "Booking Confirmation",
+      "reviewDetails": "Please review the booking details before confirming",
+      "guestInformation": "Guest Information",
+      "fullName": "Full Name",
+      "emailAddress": "Email Address",
+      "phoneNumber": "Phone Number",
+      "stayDetails": "Stay Details",
+      "room": "Room",
+      "checkInCheckOut": "Check-in / Check-out",
+      "guests": "Guests",
+      "guest": "guest",
+      "guestPlural": "guests",
+      "specialRequests": "Special Requests",
+      "pricingSummary": "Pricing Summary",
+      "subtotal": "Subtotal",
+      "perNight": "/night",
+      "night": "night",
+      "nightPlural": "nights",
+      "vat": "VAT",
+      "serviceTax": "Service Tax",
+      "totalAmount": "Total Amount",
+      "paymentNote": "Payment will be collected at the front desk"
+    },
+    "validationErrors": {
+      "fillAllFields": "Please fill in all required guest information fields",
+      "invalidEmail": "Please enter a valid email address",
+      "selectRoom": "Please select a room"
+    },
+    "messages": {
+      "failedToLoadHotelPermissions": "Failed to load hotel permissions",
+      "failedToLoadHotel": "Failed to load hotel information",
+      "failedToLoadRooms": "Failed to load available rooms",
+      "creatingBooking": "Creating booking..."
+    },
+    "actions": {
+      "cancel": "Cancel",
+      "back": "Back",
+      "next": "Next",
+      "loadingRooms": "Loading Rooms...",
+      "confirm": "Confirm Booking"
+    }
   }
 }
