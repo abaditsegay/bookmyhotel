@@ -207,6 +207,8 @@ jobs:
         run: npm run build
         env:
           CI: false  # treat warnings as warnings, not errors
+          REACT_APP_API_URL: https://bookmystay.shegersolutions.com/managemyhotel/api
+          REACT_APP_SERVER_URL: https://bookmystay.shegersolutions.com/managemyhotel
 
       - name: Set up SSH key
         run: |
