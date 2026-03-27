@@ -7,6 +7,13 @@ export interface BookingResponse {
   totalAmount: number;
   paymentStatus: string;
   paymentIntentId?: string;
+  paymentReference?: string;
+  paymentType?: string;
+  paymentProvider?: string;
+  paymentUrl?: string;
+  paymentQrCode?: string;
+  paymentInstructions?: string;
+  paymentExpiresAt?: string;
   createdAt: string;
   
   // Hotel and room details

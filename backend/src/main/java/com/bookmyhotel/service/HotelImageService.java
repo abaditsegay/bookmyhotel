@@ -346,6 +346,17 @@ public class HotelImageService {
         return hotelImageRepository.findByHotelIdAndImageCategoryAndIsActiveTrue(hotelId, ImageCategory.HOTEL_HERO);
     }
 
+    /**
+     * Get hero image for room type without tenant filtering for public pages.
+     */
+    @Transactional(readOnly = true)
+    public Optional<HotelImage> getRoomTypeHeroImagePublic(Long hotelId, Long roomTypeId) {
+        return hotelImageRepository.findByHotelIdAndRoomTypeIdAndImageCategoryAndIsActiveTrue(
+                hotelId,
+                roomTypeId,
+                ImageCategory.ROOM_TYPE_HERO);
+    }
+
     // Private helper methods
 
     private void validateImageCategory(ImageCategory category, boolean isHotelImage) {

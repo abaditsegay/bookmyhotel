@@ -139,6 +139,81 @@ sudo systemctl daemon-reload
 sudo systemctl enable bookmyhotel-backend.service
 EOF
 
+# Step 5.5: Apply required schema patches before restart
+print_status "Applying database schema patches (safe, idempotent)..."
+ssh $SSH_OPTS $LIGHTSAIL_USER@$LIGHTSAIL_IP << EOF
+set -e
+CONFIG_FILE="/opt/bookmyhotel/config/application-${CONFIG_ENV}.properties"
+
+if [ ! -f "\$CONFIG_FILE" ]; then
+    echo "❌ Config file not found: \$CONFIG_FILE"
+    exit 1
+fi
+
+DB_URL=\$(grep '^spring.datasource.url=' "\$CONFIG_FILE" | cut -d'=' -f2-)
+DB_USER=\$(grep '^spring.datasource.username=' "\$CONFIG_FILE" | cut -d'=' -f2-)
+DB_PASS=\$(grep '^spring.datasource.password=' "\$CONFIG_FILE" | cut -d'=' -f2-)
+
+if [ -z "\$DB_URL" ] || [ -z "\$DB_USER" ] || [ -z "\$DB_PASS" ]; then
+    echo "❌ Could not parse datasource properties from \$CONFIG_FILE"
+    exit 1
+fi
+
+if ! command -v mysql >/dev/null 2>&1; then
+    echo "Installing mysql client..."
+    sudo apt-get update -y >/dev/null
+    sudo apt-get install -y mysql-client >/dev/null
+fi
+
+DB_URL_NO_PREFIX=\$(echo "\$DB_URL" | sed -E 's#^jdbc:mysql://##')
+DB_URL_NO_PARAMS=\$(echo "\$DB_URL_NO_PREFIX" | sed -E 's/\?.*$//')
+DB_HOST_PORT=\$(echo "\$DB_URL_NO_PARAMS" | cut -d'/' -f1)
+DB_NAME=\$(echo "\$DB_URL_NO_PARAMS" | cut -d'/' -f2)
+DB_HOST=\$(echo "\$DB_HOST_PORT" | cut -d':' -f1)
+DB_PORT=\$(echo "\$DB_HOST_PORT" | cut -s -d':' -f2)
+DB_PORT=\${DB_PORT:-3306}
+
+mysql -h "\$DB_HOST" -P "\$DB_PORT" -u "\$DB_USER" -p"\$DB_PASS" "\$DB_NAME" <<'SQL'
+CREATE TABLE IF NOT EXISTS payment_callback_events (
+        id BIGINT AUTO_INCREMENT PRIMARY KEY,
+        provider VARCHAR(32) NOT NULL,
+        transaction_id VARCHAR(128) NOT NULL,
+        provider_transaction_id VARCHAR(128),
+        event_id VARCHAR(128),
+        callback_status VARCHAR(32) NOT NULL,
+        idempotency_key VARCHAR(64) NOT NULL,
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uk_payment_callback_idempotency (idempotency_key),
+        INDEX idx_payment_callback_transaction (transaction_id),
+        INDEX idx_payment_callback_provider (provider),
+        INDEX idx_payment_callback_created_at (created_at)
+);
+
+    CREATE TABLE IF NOT EXISTS system_settings (
+        id BIGINT AUTO_INCREMENT PRIMARY KEY,
+        setting_key VARCHAR(100) NOT NULL,
+        setting_value VARCHAR(255) NOT NULL,
+        description VARCHAR(500),
+        updated_by VARCHAR(255),
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        UNIQUE KEY uk_system_settings_key (setting_key)
+    );
+
+    INSERT INTO system_settings (setting_key, setting_value, description, updated_by)
+    VALUES (
+        'payment.gateway.mode',
+        'MOCK',
+        'Controls whether booking checkout uses mock payment processing or live Ethiopian wallet gateways.',
+        'deployment-script'
+    )
+    ON DUPLICATE KEY UPDATE
+        description = VALUES(description);
+SQL
+
+echo "✅ Database schema patch applied successfully"
+EOF
+
 # Step 6: Start the service
 print_status "Starting backend service..."
 ssh $SSH_OPTS $LIGHTSAIL_USER@$LIGHTSAIL_IP << 'EOF'

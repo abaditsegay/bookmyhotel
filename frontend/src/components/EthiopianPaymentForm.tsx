@@ -26,6 +26,7 @@ import {
 } from '@mui/icons-material';
 import TokenManager from '../utils/tokenManager';
 import { COLORS } from '../theme/themeColors';
+import { buildApiUrl } from '../config/apiConfig';
 
 interface EthiopianPaymentFormProps {
   amount: number;
@@ -58,7 +59,7 @@ export const EthiopianPaymentForm: React.FC<EthiopianPaymentFormProps> = ({
   instructions,
   errorMessage
 }) => {
-  const [selectedProvider, setSelectedProvider] = useState<string>('telebirr');
+  const [selectedProvider, setSelectedProvider] = useState<'MBIRR' | 'TELEBIRR'>('TELEBIRR');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [loading, setLoading] = useState(false);
   const [paymentResponse, setPaymentResponse] = useState<PaymentResponse | null>(null);
@@ -126,9 +127,9 @@ export const EthiopianPaymentForm: React.FC<EthiopianPaymentFormProps> = ({
         returnUrl: window.location.origin + '/booking-confirmation/' + bookingReference
       };
 
-      const endpoint = selectedProvider === 'MBIRR' 
-        ? '/api/payments/ethiopian/mbirr/initiate'
-        : '/api/payments/ethiopian/telebirr/initiate';
+      const endpoint = selectedProvider === 'MBIRR'
+        ? buildApiUrl('/payments/ethiopian/mbirr/initiate')
+        : buildApiUrl('/payments/ethiopian/telebirr/initiate');
 
       const response = await fetch(endpoint, {
         method: 'POST',

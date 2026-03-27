@@ -16,6 +16,11 @@ public class HotelSearchResult {
     private String country;
     private String phone;
     private String email;
+    private String websiteUrl;
+    private String facilityAmenities;
+    private Integer numberOfRooms;
+    private String checkInTime;
+    private String checkOutTime;
     private String mobilePaymentPhone;
     private String mobilePaymentPhone2;
     private List<AvailableRoomDto> availableRooms; // Keep for backward compatibility
@@ -100,6 +105,46 @@ public class HotelSearchResult {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getWebsiteUrl() {
+        return websiteUrl;
+    }
+
+    public void setWebsiteUrl(String websiteUrl) {
+        this.websiteUrl = websiteUrl;
+    }
+
+    public String getFacilityAmenities() {
+        return facilityAmenities;
+    }
+
+    public void setFacilityAmenities(String facilityAmenities) {
+        this.facilityAmenities = facilityAmenities;
+    }
+
+    public Integer getNumberOfRooms() {
+        return numberOfRooms;
+    }
+
+    public void setNumberOfRooms(Integer numberOfRooms) {
+        this.numberOfRooms = numberOfRooms;
+    }
+
+    public String getCheckInTime() {
+        return checkInTime;
+    }
+
+    public void setCheckInTime(String checkInTime) {
+        this.checkInTime = checkInTime;
+    }
+
+    public String getCheckOutTime() {
+        return checkOutTime;
+    }
+
+    public void setCheckOutTime(String checkOutTime) {
+        this.checkOutTime = checkOutTime;
     }
 
     public String getMobilePaymentPhone() {

@@ -19,6 +19,11 @@ public class BookingResponse {
     private String paymentIntentId;
     private String paymentReference;
     private String paymentType;
+    private String paymentProvider;
+    private String paymentUrl;
+    private String paymentQrCode;
+    private String paymentInstructions;
+    private LocalDateTime paymentExpiresAt;
     private LocalDateTime createdAt;
 
     // Hotel and room details
@@ -234,5 +239,45 @@ public class BookingResponse {
 
     public void setPaymentType(String paymentType) {
         this.paymentType = paymentType;
+    }
+
+    public String getPaymentProvider() {
+        return paymentProvider;
+    }
+
+    public void setPaymentProvider(String paymentProvider) {
+        this.paymentProvider = paymentProvider;
+    }
+
+    public String getPaymentUrl() {
+        return paymentUrl;
+    }
+
+    public void setPaymentUrl(String paymentUrl) {
+        this.paymentUrl = paymentUrl;
+    }
+
+    public String getPaymentQrCode() {
+        return paymentQrCode;
+    }
+
+    public void setPaymentQrCode(String paymentQrCode) {
+        this.paymentQrCode = paymentQrCode;
+    }
+
+    public String getPaymentInstructions() {
+        return paymentInstructions;
+    }
+
+    public void setPaymentInstructions(String paymentInstructions) {
+        this.paymentInstructions = paymentInstructions;
+    }
+
+    public LocalDateTime getPaymentExpiresAt() {
+        return paymentExpiresAt;
+    }
+
+    public void setPaymentExpiresAt(LocalDateTime paymentExpiresAt) {
+        this.paymentExpiresAt = paymentExpiresAt;
     }
 }

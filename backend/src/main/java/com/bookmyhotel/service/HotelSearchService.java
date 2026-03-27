@@ -115,8 +115,8 @@ public class HotelSearchService {
                 roomTypeEnum);
 
         return availableRooms.stream()
-                .filter(room -> isRoomInPriceRange(room, request, request.getCheckInDate(), request.getCheckOutDate()))
-                .map(room -> convertToAvailableRoomDto(room, request.getCheckInDate(), request.getCheckOutDate()))
+            .filter(room -> isRoomInPriceRange(room, request))
+            .map(this::convertToAvailableRoomDto)
                 .collect(Collectors.toList());
     }
 
@@ -173,14 +173,14 @@ public class HotelSearchService {
         }
 
         // Calculate dynamic pricing using RoomTypePricing configurations
-        BigDecimal dynamicPrice = calculateDynamicPricing(hotelId, roomType, request.getCheckInDate(), sampleRoom);
+        BigDecimal dynamicPrice = calculateDynamicPricing(hotelId, roomType, sampleRoom);
 
         RoomTypeAvailabilityDto dto = new RoomTypeAvailabilityDto(
                 roomType,
                 (int) availableCount,
                 (int) totalCount,
                 dynamicPrice,
-                sampleRoom != null ? sampleRoom.getCapacity() : 1);
+            sampleRoom != null && sampleRoom.getCapacity() != null ? sampleRoom.getCapacity() : 1);
 
         // Set description separately
         if (sampleRoom != null) {
@@ -191,11 +191,9 @@ public class HotelSearchService {
         try {
             // Convert RoomType enum to roomTypeId (ordinal + 1)
             Long roomTypeId = (long) (roomType.ordinal() + 1);
-            // Get tenant from TenantContext (assuming it's available)
-            String tenantId = "development"; // TODO: Get from TenantContext
-
-            Optional<com.bookmyhotel.entity.HotelImage> heroImage = hotelImageService.getRoomTypeHeroImage(tenantId,
-                    hotelId, roomTypeId);
+            Optional<com.bookmyhotel.entity.HotelImage> heroImage = hotelImageService.getRoomTypeHeroImagePublic(
+                hotelId,
+                roomTypeId);
 
             if (heroImage.isPresent()) {
                 dto.setImageUrl(heroImage.get().getFilePath());
@@ -225,6 +223,11 @@ public class HotelSearchService {
         result.setCountry(hotel.getCountry());
         result.setPhone(hotel.getPhone());
         result.setEmail(hotel.getEmail());
+        result.setWebsiteUrl(hotel.getWebsiteUrl());
+        result.setFacilityAmenities(hotel.getFacilityAmenities());
+        result.setNumberOfRooms(hotel.getNumberOfRooms());
+        result.setCheckInTime(hotel.getCheckInTime());
+        result.setCheckOutTime(hotel.getCheckOutTime());
         result.setMobilePaymentPhone(hotel.getMobilePaymentPhone());
         result.setMobilePaymentPhone2(hotel.getMobilePaymentPhone2());
 
@@ -275,16 +278,14 @@ public class HotelSearchService {
     /**
      * Convert Room entity to AvailableRoomDto with dynamic pricing
      */
-    private HotelSearchResult.AvailableRoomDto convertToAvailableRoomDto(Room room, LocalDate checkInDate,
-            LocalDate checkOutDate) {
+    private HotelSearchResult.AvailableRoomDto convertToAvailableRoomDto(Room room) {
         HotelSearchResult.AvailableRoomDto dto = new HotelSearchResult.AvailableRoomDto();
         dto.setId(room.getId());
         dto.setRoomNumber(room.getRoomNumber());
         dto.setRoomType(room.getRoomType().name());
 
         // Calculate dynamic pricing using RoomTypePricing configurations
-        BigDecimal dynamicPrice = calculateDynamicPricing(room.getHotel().getId(), room.getRoomType(), checkInDate,
-                room);
+        BigDecimal dynamicPrice = calculateDynamicPricing(room.getHotel().getId(), room.getRoomType(), room);
         dto.setPricePerNight(dynamicPrice);
 
         dto.setCapacity(room.getCapacity());
@@ -295,8 +296,8 @@ public class HotelSearchService {
     /**
      * Check if room is within price range using dynamic pricing
      */
-    private boolean isRoomInPriceRange(Room room, HotelSearchRequest request, LocalDate checkIn, LocalDate checkOut) {
-        BigDecimal price = calculateDynamicPricing(room.getHotel().getId(), room.getRoomType(), checkIn, room);
+    private boolean isRoomInPriceRange(Room room, HotelSearchRequest request) {
+        BigDecimal price = calculateDynamicPricing(room.getHotel().getId(), room.getRoomType(), room);
 
         if (request.getMinPrice() != null && price.compareTo(BigDecimal.valueOf(request.getMinPrice())) < 0) {
             return false;
@@ -329,8 +330,7 @@ public class HotelSearchService {
     /**
      * Calculate dynamic pricing using RoomTypePricing configurations
      */
-    private BigDecimal calculateDynamicPricing(Long hotelId, RoomType roomType, LocalDate checkInDate,
-            Room fallbackRoom) {
+    private BigDecimal calculateDynamicPricing(Long hotelId, RoomType roomType, Room fallbackRoom) {
         try {
             // Try to get the configured pricing for this room type
             RoomTypePricing pricingConfig = roomTypePricingService.getRoomTypePricing(hotelId, roomType);

@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.HashMap;
@@ -24,6 +26,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.bookmyhotel.config.CacheConfig;
@@ -34,6 +37,7 @@ import com.bookmyhotel.dto.BookingRequest;
 import com.bookmyhotel.dto.BookingResponse;
 import com.bookmyhotel.dto.RoomTypeBookingRequest;
 import com.bookmyhotel.dto.payment.PaymentInitiationRequest;
+import com.bookmyhotel.dto.payment.PaymentInitiationResponse;
 import com.bookmyhotel.entity.BookingNotification;
 import com.bookmyhotel.entity.GuestInfo;
 import com.bookmyhotel.entity.Hotel;
@@ -64,6 +68,7 @@ import com.stripe.param.PaymentIntentCreateParams;
 public class BookingService {
 
     private static final Logger logger = LoggerFactory.getLogger(BookingService.class);
+    private static final ZoneId ETHIOPIA_ZONE = ZoneId.of("Africa/Addis_Ababa");
 
     @Autowired
     private ReservationRepository reservationRepository;
@@ -73,6 +78,9 @@ public class BookingService {
 
     @Autowired
     private RoomCacheService roomCacheService;
+
+    @Autowired
+    private SystemSettingsService systemSettingsService;
 
     @Autowired
     private UserRepository userRepository;
@@ -126,10 +134,15 @@ public class BookingService {
     /**
      * Create a new booking by room type using BookingRequest (new approach)
      */
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public BookingResponse createBookingByRoomType(BookingRequest request, String userEmail) {
         try {
             // Validate booking request for room type booking
             validateBookingRequestForRoomType(request, userEmail == null);
+
+            // Serialize availability checks per hotel to reduce race conditions.
+            Hotel hotel = hotelRepository.findByIdForUpdate(request.getHotelId())
+                    .orElseThrow(() -> new BookingException("Hotel not found with ID: " + request.getHotelId()));
 
             // Check room type availability WITHOUT assigning a specific room
             // This just verifies that rooms of this type exist and are available for the
@@ -145,10 +158,6 @@ public class BookingService {
                 throw new BookingException("No available rooms of type " +
                         request.getRoomType() + " for the selected dates");
             }
-
-            // Get hotel entity
-            Hotel hotel = hotelRepository.findById(request.getHotelId())
-                    .orElseThrow(() -> new BookingException("Hotel not found with ID: " + request.getHotelId()));
 
             // Get or create user (authenticated or guest)
             User user = null;
@@ -172,15 +181,19 @@ public class BookingService {
                 reservation = createReservationWithoutRoom(request, hotel, roomTypeEnum, user, totalAmount);
             }
 
+            PaymentInitiationResponse paymentInitiationResponse = null;
+
             // Process payment if payment method provided
             if (request.getPaymentMethodId() != null) {
                 if ("pay_at_frontdesk".equals(request.getPaymentMethodId())) {
                     // For pay at front desk, mark reservation as booked with payment pending
                     reservation.setStatus(ReservationStatus.BOOKED);
+                    reservation.setPaymentStatus(PaymentStatus.PENDING);
                     // No payment intent ID set, so payment status will be "PENDING"
                 } else if ("mock_payment_processed".equals(request.getPaymentMethodId())) {
                     // For mock payments already processed by frontend
                     reservation.setStatus(ReservationStatus.BOOKED);
+                    reservation.setPaymentStatus(PaymentStatus.COMPLETED);
                     // Use the transaction ID from the mock payment gateway
                     if (request.getTransactionId() != null) {
                         reservation.setPaymentIntentId(request.getTransactionId());
@@ -191,17 +204,22 @@ public class BookingService {
                         || "telebirr".equals(request.getPaymentMethodId())) {
                     // Handle Ethiopian mobile payments
                     try {
-                        String paymentIntentId = processEthiopianPayment(totalAmount, request.getPaymentMethodId(),
-                                request.getGuestPhone(), reservation);
-                        reservation.setPaymentIntentId(paymentIntentId);
-                        reservation.setStatus(ReservationStatus.BOOKED);
+                    ensureRealPaymentGatewayEnabled();
+                    paymentInitiationResponse = processEthiopianPayment(totalAmount, request.getPaymentMethodId(),
+                        resolvePaymentPhoneNumber(request.getMobileNumber(), request.getGuestPhone()),
+                        reservation);
+                    reservation.setPaymentIntentId(paymentInitiationResponse.getTransactionId());
+                    if (reservation.getPaymentReference() == null || reservation.getPaymentReference().isBlank()) {
+                        reservation.setPaymentReference(paymentInitiationResponse.getTransactionId());
+                    }
+                        reservation.setStatus(ReservationStatus.PENDING);
+                        reservation.setPaymentStatus(PaymentStatus.PROCESSING);
                     } catch (Exception e) {
-                        // If Ethiopian payment initiation fails, still confirm booking but mark payment
-                        // as failed
-                        reservation.setStatus(ReservationStatus.BOOKED);
-                        logger.warn("Ethiopian payment processing failed for reservation, but booking booked: {}",
+                        // Do not auto-confirm booking when payment initiation fails.
+                        reservation.setStatus(ReservationStatus.PENDING);
+                        reservation.setPaymentStatus(PaymentStatus.FAILED);
+                        logger.warn("Ethiopian payment processing failed for reservation: {}",
                                 e.getMessage());
-                        // Payment status will be determined by the absence of payment intent ID
                     }
                 } else {
                     // Handle other payment methods (e.g., credit card via Stripe)
@@ -209,17 +227,18 @@ public class BookingService {
                         String paymentIntentId = processPayment(totalAmount, request.getPaymentMethodId());
                         reservation.setPaymentIntentId(paymentIntentId);
                         reservation.setStatus(ReservationStatus.BOOKED);
+                        reservation.setPaymentStatus(PaymentStatus.COMPLETED);
                     } catch (StripeException e) {
-                        // Even if payment fails, confirm the booking but mark payment as failed
-                        reservation.setStatus(ReservationStatus.BOOKED);
-                        logger.warn("Payment processing failed for reservation, but booking booked: {}",
+                        reservation.setStatus(ReservationStatus.PENDING);
+                        reservation.setPaymentStatus(PaymentStatus.FAILED);
+                        logger.warn("Payment processing failed for reservation: {}",
                                 e.getMessage());
-                        // Payment status will be determined by the absence of payment intent ID
                     }
                 }
             } else {
                 // No payment method provided - still confirm the booking
                 reservation.setStatus(ReservationStatus.BOOKED);
+                reservation.setPaymentStatus(PaymentStatus.PENDING);
             }
 
             // Generate a temporary confirmation number before first save
@@ -237,7 +256,7 @@ public class BookingService {
             reservation = reservationRepository.save(reservation);
 
             // Convert to response DTO first (before email)
-            BookingResponse bookingResponse = convertToBookingResponse(reservation);
+            BookingResponse bookingResponse = convertToBookingResponse(reservation, paymentInitiationResponse);
 
             // Generate management URL for anonymous guests
             if (userEmail == null) {
@@ -270,10 +289,15 @@ public class BookingService {
     /**
      * Create a new booking using room type (new approach)
      */
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public BookingResponse createRoomTypeBooking(RoomTypeBookingRequest request, String userEmail) {
         try {
             // Validate booking request
             validateRoomTypeBookingRequest(request, userEmail == null);
+
+            // Serialize availability checks per hotel to reduce race conditions.
+            Hotel hotel = hotelRepository.findByIdForUpdate(request.getHotelId())
+                    .orElseThrow(() -> new BookingException("Hotel not found with ID: " + request.getHotelId()));
 
             // Check room type availability WITHOUT assigning a specific room
             RoomType roomTypeEnum = request.getRoomType();
@@ -287,10 +311,6 @@ public class BookingService {
                 throw new BookingException("No available rooms of type " +
                         request.getRoomType() + " for the selected dates");
             }
-
-            // Get hotel entity
-            Hotel hotel = hotelRepository.findById(request.getHotelId())
-                    .orElseThrow(() -> new BookingException("Hotel not found with ID: " + request.getHotelId()));
 
             // Get or create user (authenticated or guest)
             User user = null;
@@ -309,38 +329,62 @@ public class BookingService {
             Reservation reservation = createReservationFromRoomTypeByPricing(request, hotel, roomTypeEnum, user,
                     totalAmount);
 
+            PaymentInitiationResponse paymentInitiationResponse = null;
+
             // Process payment if payment method provided
             if (request.getPaymentMethodId() != null) {
                 if ("pay_at_frontdesk".equals(request.getPaymentMethodId())) {
                     // For pay at front desk, mark reservation as booked with payment pending
                     reservation.setStatus(ReservationStatus.BOOKED);
+                    reservation.setPaymentStatus(PaymentStatus.PENDING);
                     // No payment intent ID set, so payment status will be "PENDING"
                 } else if ("mock_payment_processed".equals(request.getPaymentMethodId())) {
                     // For mock payments already processed by frontend
                     reservation.setStatus(ReservationStatus.BOOKED);
+                    reservation.setPaymentStatus(PaymentStatus.COMPLETED);
                     // Use the transaction ID from the mock payment gateway
                     if (request.getTransactionId() != null) {
                         reservation.setPaymentIntentId(request.getTransactionId());
                     }
                     logger.info("Mock payment processed for reservation: {} with transaction ID: {}",
                             reservation.getId(), request.getTransactionId());
+                } else if ("mbirr".equals(request.getPaymentMethodId())
+                        || "telebirr".equals(request.getPaymentMethodId())) {
+                    try {
+                    ensureRealPaymentGatewayEnabled();
+                        paymentInitiationResponse = processEthiopianPayment(totalAmount, request.getPaymentMethodId(),
+                                resolvePaymentPhoneNumber(request.getMobileNumber(), request.getGuestPhone()),
+                                reservation);
+                        reservation.setPaymentIntentId(paymentInitiationResponse.getTransactionId());
+                        if (reservation.getPaymentReference() == null || reservation.getPaymentReference().isBlank()) {
+                            reservation.setPaymentReference(paymentInitiationResponse.getTransactionId());
+                        }
+                        reservation.setStatus(ReservationStatus.PENDING);
+                        reservation.setPaymentStatus(PaymentStatus.PROCESSING);
+                    } catch (Exception e) {
+                        reservation.setStatus(ReservationStatus.PENDING);
+                        reservation.setPaymentStatus(PaymentStatus.FAILED);
+                        logger.warn("Ethiopian payment processing failed for reservation: {}",
+                                e.getMessage());
+                    }
                 } else {
                     // Handle other payment methods (e.g., credit card via Stripe)
                     try {
                         String paymentIntentId = processPayment(totalAmount, request.getPaymentMethodId());
                         reservation.setPaymentIntentId(paymentIntentId);
                         reservation.setStatus(ReservationStatus.BOOKED);
+                        reservation.setPaymentStatus(PaymentStatus.COMPLETED);
                     } catch (StripeException e) {
-                        // Even if payment fails, confirm the booking but mark payment as failed
-                        reservation.setStatus(ReservationStatus.BOOKED);
-                        logger.warn("Payment processing failed for reservation, but booking booked: {}",
+                        reservation.setStatus(ReservationStatus.PENDING);
+                        reservation.setPaymentStatus(PaymentStatus.FAILED);
+                        logger.warn("Payment processing failed for reservation: {}",
                                 e.getMessage());
-                        // Payment status will be determined by the absence of payment intent ID
                     }
                 }
             } else {
                 // No payment method provided - still confirm the booking
                 reservation.setStatus(ReservationStatus.BOOKED);
+                reservation.setPaymentStatus(PaymentStatus.PENDING);
             }
 
             // Generate a temporary confirmation number before first save
@@ -358,7 +402,7 @@ public class BookingService {
             reservation = reservationRepository.save(reservation);
 
             // Convert to response DTO first (before email)
-            BookingResponse bookingResponse = convertToBookingResponse(reservation);
+            BookingResponse bookingResponse = convertToBookingResponse(reservation, paymentInitiationResponse);
 
             // Generate management URL for anonymous guests
             if (userEmail == null) {
@@ -522,7 +566,7 @@ public class BookingService {
             throw new BookingException("Check-in date must be before check-out date");
         }
 
-        if (request.getCheckInDate().isBefore(LocalDateTime.now().toLocalDate())) {
+        if (request.getCheckInDate().isBefore(todayInEthiopia())) {
             throw new BookingException("Check-in date cannot be in the past");
         }
 
@@ -549,7 +593,7 @@ public class BookingService {
             throw new BookingException("Check-in date must be before check-out date");
         }
 
-        if (request.getCheckInDate().isBefore(LocalDateTime.now().toLocalDate())) {
+        if (request.getCheckInDate().isBefore(todayInEthiopia())) {
             throw new BookingException("Check-in date cannot be in the past");
         }
 
@@ -705,7 +749,7 @@ public class BookingService {
             throw new BookingException("Check-in date must be before check-out date");
         }
 
-        if (request.getCheckInDate().isBefore(LocalDateTime.now().toLocalDate())) {
+        if (request.getCheckInDate().isBefore(todayInEthiopia())) {
             throw new BookingException("Check-in date cannot be in the past");
         }
 
@@ -873,7 +917,7 @@ public class BookingService {
             BigDecimal totalAmount) {
 
         // Validate that the specified room exists and is available
-        Room specificRoom = roomRepository.findById(request.getRoomId())
+        Room specificRoom = roomRepository.findByIdForUpdate(request.getRoomId())
                 .orElseThrow(() -> new BookingException("Room not found with ID: " + request.getRoomId()));
 
         // Verify room belongs to the same hotel
@@ -926,7 +970,7 @@ public class BookingService {
         // For walk-in customers with specific room assignment, set status to CHECKED_IN
         // and set actual check-in time
         reservation.setStatus(ReservationStatus.CHECKED_IN);
-        reservation.setActualCheckInTime(LocalDateTime.now());
+        reservation.setActualCheckInTime(LocalDateTime.now(ETHIOPIA_ZONE));
 
         // Handle payment method
         String paymentMethodId = request.getPaymentMethodId();
@@ -1076,6 +1120,11 @@ public class BookingService {
      * Convert Reservation to BookingResponse DTO
      */
     public BookingResponse convertToBookingResponse(Reservation reservation) {
+        return convertToBookingResponse(reservation, null);
+        }
+
+        public BookingResponse convertToBookingResponse(Reservation reservation,
+            PaymentInitiationResponse paymentInitiationResponse) {
         BookingResponse response = new BookingResponse();
         response.setReservationId(reservation.getId());
         response.setStatus(reservation.getStatus().name());
@@ -1154,6 +1203,23 @@ public class BookingService {
 
         // Payment type (method) - CASH, BANK, MOBILE, etc.
         response.setPaymentType(reservation.getPaymentMethod());
+
+        if (reservation.getPaymentMethod() != null) {
+            response.setPaymentProvider(reservation.getPaymentMethod().toUpperCase());
+        }
+
+        if (paymentInitiationResponse != null) {
+            response.setPaymentProvider(paymentInitiationResponse.getPaymentProvider());
+            response.setPaymentUrl(paymentInitiationResponse.getPaymentUrl());
+            response.setPaymentQrCode(paymentInitiationResponse.getQrCode());
+            response.setPaymentInstructions(paymentInitiationResponse.getInstructions());
+            response.setPaymentExpiresAt(paymentInitiationResponse.getExpiresAt());
+
+            if ((response.getPaymentReference() == null || response.getPaymentReference().isBlank())
+                    && paymentInitiationResponse.getTransactionId() != null) {
+                response.setPaymentReference(paymentInitiationResponse.getTransactionId());
+            }
+        }
 
         return response;
     }
@@ -1393,7 +1459,7 @@ public class BookingService {
             }
 
             // Check modification window (e.g., at least 24 hours before check-in)
-            if (reservation.getCheckInDate().isBefore(LocalDate.now().plusDays(1))) {
+            if (reservation.getCheckInDate().isBefore(todayInEthiopia().plusDays(1))) {
                 return new BookingModificationResponse(false,
                         "Modifications must be made at least 24 hours before check-in");
             }
@@ -1414,7 +1480,7 @@ public class BookingService {
                     return new BookingModificationResponse(false, "Check-out date must be after check-in date");
                 }
 
-                if (newCheckIn.isBefore(LocalDate.now())) {
+                if (newCheckIn.isBefore(todayInEthiopia())) {
                     return new BookingModificationResponse(false, "Check-in date cannot be in the past");
                 }
 
@@ -1846,7 +1912,7 @@ public class BookingService {
             }
 
             // Check modification window (e.g., at least 24 hours before check-in)
-            if (reservation.getCheckInDate().isBefore(LocalDate.now().plusDays(1))) {
+            if (reservation.getCheckInDate().isBefore(todayInEthiopia().plusDays(1))) {
                 return new BookingModificationResponse(false,
                         "Modifications must be made at least 24 hours before check-in");
             }
@@ -1867,7 +1933,7 @@ public class BookingService {
                     return new BookingModificationResponse(false, "Check-out date must be after check-in date");
                 }
 
-                if (newCheckIn.isBefore(LocalDate.now())) {
+                if (newCheckIn.isBefore(todayInEthiopia())) {
                     return new BookingModificationResponse(false, "Check-in date cannot be in the past");
                 }
 
@@ -2158,13 +2224,13 @@ public class BookingService {
         }
 
         // Check modification time limits (cannot modify within 24 hours of check-in)
-        LocalDate now = LocalDate.now();
         LocalDate checkInDate = reservation.getCheckInDate();
         if (request.getNewCheckInDate() != null) {
             checkInDate = request.getNewCheckInDate();
         }
 
-        long hoursUntilCheckIn = ChronoUnit.HOURS.between(LocalDateTime.now(), checkInDate.atStartOfDay());
+        long hoursUntilCheckIn = ChronoUnit.HOURS.between(ZonedDateTime.now(ETHIOPIA_ZONE),
+                checkInDate.atStartOfDay(ETHIOPIA_ZONE));
         if (hoursUntilCheckIn < 24) {
             return new BookingModificationResponse(false, "Cannot modify booking within 24 hours of check-in");
         }
@@ -2305,7 +2371,7 @@ public class BookingService {
             return BigDecimal.ZERO;
         }
 
-        LocalDate now = LocalDate.now();
+        LocalDate now = todayInEthiopia();
         LocalDate checkInDate = reservation.getCheckInDate();
         long daysUntilCheckIn = ChronoUnit.DAYS.between(now, checkInDate);
 
@@ -2358,6 +2424,10 @@ public class BookingService {
                 refundPercentage.multiply(new BigDecimal("100")), totalAmount);
 
         return refundAmount;
+    }
+
+    private LocalDate todayInEthiopia() {
+        return LocalDate.now(ETHIOPIA_ZONE);
     }
 
     /**
@@ -2488,7 +2558,8 @@ public class BookingService {
     /**
      * Process Ethiopian mobile payment (M-birr or Telebirr)
      */
-    private String processEthiopianPayment(BigDecimal amount, String paymentMethod, String phoneNumber,
+        private PaymentInitiationResponse processEthiopianPayment(BigDecimal amount, String paymentMethod,
+            String phoneNumber,
             Reservation reservation) {
         try {
             String bookingReference = "BK" + System.currentTimeMillis();
@@ -2504,14 +2575,14 @@ public class BookingService {
             if ("mbirr".equals(paymentMethod)) {
                 var response = ethiopianPaymentService.initiateMbirrPayment(paymentRequest);
                 if (response.isSuccess()) {
-                    return response.getTransactionId();
+                    return response;
                 } else {
                     throw new BookingException("M-birr payment initiation failed: " + response.getErrorMessage());
                 }
             } else if ("telebirr".equals(paymentMethod)) {
                 var response = ethiopianPaymentService.initiateTelebirrPayment(paymentRequest);
                 if (response.isSuccess()) {
-                    return response.getTransactionId();
+                    return response;
                 } else {
                     throw new BookingException("Telebirr payment initiation failed: " + response.getErrorMessage());
                 }
@@ -2521,6 +2592,20 @@ public class BookingService {
         } catch (Exception e) {
             logger.error("Failed to process Ethiopian payment for method {}: {}", paymentMethod, e.getMessage());
             throw new BookingException("Ethiopian payment processing failed: " + e.getMessage());
+        }
+    }
+
+    private String resolvePaymentPhoneNumber(String mobileNumber, String guestPhone) {
+        if (mobileNumber != null && !mobileNumber.isBlank()) {
+            return mobileNumber;
+        }
+
+        return guestPhone;
+    }
+
+    private void ensureRealPaymentGatewayEnabled() {
+        if (!systemSettingsService.isRealPaymentGatewayEnabled()) {
+            throw new BookingException("Live Ethiopian payment gateway is disabled for this environment");
         }
     }
 

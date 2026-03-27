@@ -21,6 +21,12 @@ export const API_CONFIG = {
   },
 } as const;
 
+export const PAYMENT_CONFIG = {
+  GATEWAY_MODE: (process.env.REACT_APP_PAYMENT_GATEWAY_MODE || 'mock').toLowerCase() as 'mock' | 'real',
+} as const;
+
+export const getDefaultPaymentGatewayMode = (): 'mock' | 'real' => PAYMENT_CONFIG.GATEWAY_MODE;
+
 /**
  * API Endpoints - centralized endpoint definitions
  * Use these constants instead of hardcoding endpoint paths

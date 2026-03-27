@@ -40,6 +40,11 @@ export interface HotelSearchResult {
   country: string;
   phone?: string;
   email?: string;
+  websiteUrl?: string;
+  facilityAmenities?: string;
+  numberOfRooms?: number;
+  checkInTime?: string;
+  checkOutTime?: string;
   availableRooms: AvailableRoom[]; // Keep for backward compatibility
   roomTypeAvailability?: RoomTypeAvailability[]; // New room type approach
   minPrice: number;
@@ -93,6 +98,12 @@ export interface BookingResponse {
   paymentStatus: string;
   paymentIntentId?: string;
   paymentReference?: string;
+  paymentType?: string;
+  paymentProvider?: string;
+  paymentUrl?: string;
+  paymentQrCode?: string;
+  paymentInstructions?: string;
+  paymentExpiresAt?: string;
   createdAt: string;
   hotelName: string;
   hotelAddress: string;

@@ -43,6 +43,8 @@ public class RoomTypeBookingRequest {
 
     private String guestPhone;
 
+    private String mobileNumber;
+
     // Constructors
     public RoomTypeBookingRequest() {
     }
@@ -151,5 +153,13 @@ public class RoomTypeBookingRequest {
 
     public void setPaymentReference(String paymentReference) {
         this.paymentReference = paymentReference;
+    }
+
+    public String getMobileNumber() {
+        return mobileNumber;
+    }
+
+    public void setMobileNumber(String mobileNumber) {
+        this.mobileNumber = mobileNumber;
     }
 }
