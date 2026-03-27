@@ -26,6 +26,7 @@ import {
   Snackbar,
   useTheme,
   useMediaQuery,
+  Link,
 } from '@mui/material';
 import {
   CheckCircle as CheckCircleIcon,
@@ -179,6 +180,12 @@ interface BookingData {
   paymentStatus: string;
   paymentReference?: string;
   paymentIntentId?: string;
+  paymentType?: string;
+  paymentProvider?: string;
+  paymentUrl?: string;
+  paymentQrCode?: string;
+  paymentInstructions?: string;
+  paymentExpiresAt?: string;
 }
 
 const BookingConfirmationPage: React.FC = () => {
@@ -365,6 +372,32 @@ const BookingConfirmationPage: React.FC = () => {
       case 'FORFEITED': return 'FORFEITED';
       default: return status;
     }
+  };
+
+  const isEthiopianPendingPayment = Boolean(
+    booking &&
+    booking.paymentStatus?.toUpperCase() === 'PROCESSING' &&
+    booking.paymentProvider &&
+    ['MBIRR', 'TELEBIRR'].includes(booking.paymentProvider.toUpperCase())
+  );
+
+  const formatPaymentExpiry = (dateTimeString?: string) => {
+    if (!dateTimeString) {
+      return null;
+    }
+
+    const date = new Date(dateTimeString);
+    if (Number.isNaN(date.getTime())) {
+      return null;
+    }
+
+    return date.toLocaleString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+    });
   };
 
   // Calculate price breakdown with taxes
@@ -941,6 +974,74 @@ const BookingConfirmationPage: React.FC = () => {
         </Box>
 
         <Divider sx={{ my: isMobile ? 2 : 3 }} />
+
+        {isEthiopianPendingPayment && booking && (
+          <Card
+            elevation={0}
+            sx={{
+              mb: isMobile ? 3 : 4,
+              border: `1px solid ${addAlpha(COLORS.PRIMARY, 0.16)}`,
+              backgroundColor: addAlpha(COLORS.PRIMARY, 0.03),
+            }}
+          >
+            <CardContent sx={{ p: isMobile ? 2 : 3 }}>
+              <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>
+                Complete your {booking.paymentProvider?.toUpperCase() === 'MBIRR' ? 'M-birr' : 'Telebirr'} payment
+              </Typography>
+              <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2 }}>
+                {booking.paymentInstructions || 'Your reservation is pending until the mobile wallet payment is completed.'}
+              </Typography>
+              {booking.paymentExpiresAt && formatPaymentExpiry(booking.paymentExpiresAt) && (
+                <Alert severity="warning" sx={{ mb: 2 }}>
+                  Complete payment before {formatPaymentExpiry(booking.paymentExpiresAt)}.
+                </Alert>
+              )}
+              {booking.paymentReference && (
+                <Typography variant="body2" sx={{ mb: 1 }}>
+                  Reference: <strong>{booking.paymentReference}</strong>
+                </Typography>
+              )}
+              {booking.paymentIntentId && booking.paymentIntentId !== booking.paymentReference && (
+                <Typography variant="body2" sx={{ mb: 2 }}>
+                  Transaction ID: <strong>{booking.paymentIntentId}</strong>
+                </Typography>
+              )}
+              {booking.paymentUrl && (
+                <Button
+                  variant="contained"
+                  color="primary"
+                  component={Link}
+                  href={booking.paymentUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  sx={{ mb: booking.paymentQrCode ? 2 : 0 }}
+                >
+                  Open payment page
+                </Button>
+              )}
+              {booking.paymentQrCode && (
+                <Box sx={{ mt: 1 }}>
+                  <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1 }}>
+                    Scan the QR code if your wallet app supports QR checkout.
+                  </Typography>
+                  <Box
+                    component="img"
+                    src={booking.paymentQrCode}
+                    alt={`${booking.paymentProvider} payment QR code`}
+                    sx={{
+                      width: isMobile ? 180 : 220,
+                      maxWidth: '100%',
+                      borderRadius: 2,
+                      border: `1px solid ${COLORS.CARD_BORDER}`,
+                      backgroundColor: COLORS.WHITE,
+                      p: 1,
+                    }}
+                  />
+                </Box>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Quick Info Grid */}
         <Grid container spacing={isMobile ? 2 : 3} sx={{ mb: isMobile ? 3 : 4 }}>

@@ -62,6 +62,28 @@ const getHotelImage = (hotel: HotelSearchResult): string => {
   return cityImages[hotel.city as keyof typeof cityImages] || cityImages['New York'];
 };
 
+const getAmenityHighlights = (facilityAmenities?: string): string[] => {
+  if (!facilityAmenities) {
+    return [];
+  }
+
+  return facilityAmenities
+    .split(/[\n,]/)
+    .map((amenity) => amenity.trim())
+    .filter(Boolean)
+    .slice(0, 6);
+};
+
+const normalizeWebsiteUrl = (websiteUrl?: string): string | null => {
+  if (!websiteUrl) {
+    return null;
+  }
+
+  return websiteUrl.startsWith('http://') || websiteUrl.startsWith('https://')
+    ? websiteUrl
+    : `https://${websiteUrl}`;
+};
+
 const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({ 
   hotel, 
   onBookRoom, 
@@ -84,6 +106,8 @@ const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({
   const totalAvailableCount = useRoomTypes ? 
     hotel.roomTypeAvailability?.reduce((sum, rt) => sum + rt.availableCount, 0) || 0 :
     hotel.availableRooms?.length || 0;
+  const amenityHighlights = getAmenityHighlights(hotel.facilityAmenities);
+  const websiteUrl = normalizeWebsiteUrl(hotel.websiteUrl);
 
   // Mock rating (in a real app, this would come from the backend)
   const hotelRating = 4.2 + (hotel.id % 10) / 10; // Generates ratings between 4.2-5.1
@@ -315,6 +339,57 @@ const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({
               </Box>
             )}
           </Stack>
+
+          {(hotel.checkInTime || hotel.checkOutTime || hotel.numberOfRooms || websiteUrl || amenityHighlights.length > 0) && (
+            <Box sx={{ mt: 2 }}>
+              <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" sx={{ mb: amenityHighlights.length > 0 || websiteUrl ? 1.5 : 0 }}>
+                {hotel.checkInTime && (
+                  <Chip size="small" label={`Check-in ${hotel.checkInTime}`} variant="outlined" />
+                )}
+                {hotel.checkOutTime && (
+                  <Chip size="small" label={`Check-out ${hotel.checkOutTime}`} variant="outlined" />
+                )}
+                {hotel.numberOfRooms && hotel.numberOfRooms > 0 && (
+                  <Chip size="small" label={`${hotel.numberOfRooms} rooms`} variant="outlined" />
+                )}
+              </Stack>
+
+              {websiteUrl && (
+                <Typography
+                  component="a"
+                  href={websiteUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  variant="body2"
+                  sx={{
+                    display: 'inline-block',
+                    mb: amenityHighlights.length > 0 ? 1.5 : 0,
+                    color: 'primary.main',
+                    textDecoration: 'none',
+                    fontWeight: 600,
+                    '&:hover': {
+                      textDecoration: 'underline',
+                    },
+                  }}
+                >
+                  Visit hotel website
+                </Typography>
+              )}
+
+              {amenityHighlights.length > 0 && (
+                <Box>
+                  <Typography variant="caption" sx={{ display: 'block', mb: 0.75, fontWeight: 700, color: 'text.secondary' }}>
+                    Guest amenities
+                  </Typography>
+                  <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
+                    {amenityHighlights.map((amenity) => (
+                      <Chip key={amenity} size="small" label={amenity} sx={{ bgcolor: addAlpha(COLORS.SECONDARY, 0.1) }} />
+                    ))}
+                  </Stack>
+                </Box>
+              )}
+            </Box>
+          )}
         </Box>
 
         <Divider sx={{ my: 2 }} />

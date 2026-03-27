@@ -50,11 +50,11 @@ import { formatCurrency } from '../utils/currencyUtils';
 import { PaymentMethod } from '../types/shop';
 import NumberStepper from '../components/common/NumberStepper';
 import BookingSummary from '../components/booking/BookingSummary';
-import { buildApiUrl } from '../config/apiConfig';
+import { buildApiUrl, getDefaultPaymentGatewayMode } from '../config/apiConfig';
 import { extractBookingErrorMessage } from '../utils/errorHandling';
 import PremiumTextField from '../components/common/PremiumTextField';
 import PremiumDatePicker from '../components/common/PremiumDatePicker';
-import { formatEthiopianPhone, normalizeEthiopianPhone } from '../utils/phoneUtils';
+import { formatEthiopianPhone } from '../utils/phoneUtils';
 
 interface BookingPageState {
   room?: AvailableRoom;
@@ -84,6 +84,9 @@ const BookingPage: React.FC = () => {
     });
   };
   const isBelowMd = useMediaQuery(theme.breakpoints.down('md'));
+  const [paymentGatewayMode, setPaymentGatewayMode] = useState<'mock' | 'real'>(getDefaultPaymentGatewayMode());
+  const isMockGatewayEnabled = paymentGatewayMode !== 'real';
+  const supportsRealEthiopianPayments = !isMockGatewayEnabled;
   
   // Get data from navigation state
   const bookingData = location.state as BookingPageState;
@@ -125,6 +128,7 @@ const BookingPage: React.FC = () => {
   // Hotel tax rates from backend
   const [hotelVatRate, setHotelVatRate] = useState<number>(0); // VAT rate
   const [hotelServiceTaxRate, setHotelServiceTaxRate] = useState<number>(0); // Service Tax rate
+  const [hotelCityTaxRate, setHotelCityTaxRate] = useState<number>(0); // City tax rate
 
   // Memoized change handlers to prevent input focus loss
   const handleFirstNameChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -214,6 +218,7 @@ const BookingPage: React.FC = () => {
             const data = await response.json();
             setHotelVatRate(data.vatRate || 0);
             setHotelServiceTaxRate(data.serviceTaxRate || 0);
+            setHotelCityTaxRate(data.cityTaxRate || 0);
           } else {
             // console.warn('Could not fetch tax rates for hotel:', bookingData.hotelId);
           }
@@ -225,6 +230,32 @@ const BookingPage: React.FC = () => {
     
     fetchHotelTaxRates();
   }, [bookingData?.hotelId]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const fetchPaymentGatewayMode = async () => {
+      try {
+        const response = await fetch(buildApiUrl('/public/system-settings/payment-gateway'));
+        if (!response.ok) {
+          return;
+        }
+
+        const data = await response.json();
+        if (!cancelled) {
+          setPaymentGatewayMode(data?.gatewayMode === 'real' ? 'real' : 'mock');
+        }
+      } catch (fetchError) {
+        // Non-critical fetch - keep env default fallback
+      }
+    };
+
+    fetchPaymentGatewayMode();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Redirect if no booking data
   useEffect(() => {
@@ -261,10 +292,15 @@ const BookingPage: React.FC = () => {
   const calculateTotalAmount = () => {
     if (!checkInDate || !checkOutDate || !roomData) return 0;
     const nights = differenceInDays(checkOutDate, checkInDate);
-    const subtotal = roomData.pricePerNight * nights;
+    return roomData.pricePerNight * nights;
+  };
+
+  const calculateEstimatedGrandTotal = () => {
+    const subtotal = calculateTotalAmount();
     const vatAmount = subtotal * hotelVatRate;
     const serviceTaxAmount = subtotal * hotelServiceTaxRate;
-    return subtotal + vatAmount + serviceTaxAmount;
+    const cityTaxAmount = subtotal * hotelCityTaxRate;
+    return subtotal + vatAmount + serviceTaxAmount + cityTaxAmount;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -351,10 +387,12 @@ const BookingPage: React.FC = () => {
     setLoading(true);
 
     try {
-      // Process payment through mock gateway first
+      const useRealEthiopianGateway = supportsRealEthiopianPayments && (paymentMethod === 'mbirr' || paymentMethod === 'telebirr');
+
+      // Process payment through mock gateway first when mock mode is enabled
       let paymentResult = null;
       
-      if (paymentMethod !== 'pay_at_frontdesk') {
+      if (paymentMethod !== 'pay_at_frontdesk' && !useRealEthiopianGateway) {
         const mockPaymentRequest: MockPaymentRequest = {
           amount: totalAmount,
           currency: 'ETB',
@@ -406,7 +444,11 @@ const BookingPage: React.FC = () => {
         checkOutDate: format(checkOutDate, 'yyyy-MM-dd'),
         guests: guests,
         specialRequests: specialRequests.trim() || undefined,
-        paymentMethodId: paymentMethod === 'pay_at_frontdesk' ? 'pay_at_frontdesk' : 'mock_payment_processed',
+        paymentMethodId: paymentMethod === 'pay_at_frontdesk'
+          ? 'pay_at_frontdesk'
+          : useRealEthiopianGateway
+            ? paymentMethod
+            : 'mock_payment_processed',
         // Include payment reference from mock gateway
         paymentReference: paymentResult?.paymentReference,
         transactionId: paymentResult?.transactionId,
@@ -722,7 +764,7 @@ const BookingPage: React.FC = () => {
                       borderRadius: 1,
                     }}>
                       <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1 }}>
-                        {t('booking.page.totalAmount')}
+                        Room subtotal
                       </Typography>
                       {nights > 0 ? (
                         <Box>
@@ -994,9 +1036,10 @@ const BookingPage: React.FC = () => {
                     checkOutDate={checkOutDate}
                     guests={guests}
                     nights={nights}
-                    totalAmount={totalAmount || 0}
+                    subtotalAmount={totalAmount || 0}
                     vatRate={hotelVatRate}
                     serviceTaxRate={hotelServiceTaxRate}
+                    cityTaxRate={hotelCityTaxRate}
                   />
                 </Grid>
               )}
@@ -1121,44 +1164,69 @@ const BookingPage: React.FC = () => {
                           />
                           <FormControlLabel
                             value="mbirr"
-                            control={<Radio size="small" disabled />}
+                            control={<Radio size="small" />}
                             label={
                               <Box 
                                 sx={{ 
                                   display: 'flex', 
-                                  alignItems: 'center',
+                                  flexDirection: 'column',
                                   py: 0.5,
-                                  opacity: 0.4,
-                                  color: 'text.disabled',
                                 }}
                               >
-                                <PhoneIcon sx={{ mr: 1, fontSize: 20 }} />
-                                🇪🇹 M-birr
+                                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                  <PhoneIcon sx={{ mr: 1, fontSize: 20 }} />
+                                  🇪🇹 M-birr
+                                </Box>
+                                <Typography 
+                                  variant="caption" 
+                                  sx={{ 
+                                    color: COLORS.PRIMARY,
+                                    fontWeight: 600,
+                                    fontSize: '0.75rem',
+                                    mt: 0.3,
+                                    ml: 3,
+                                  }}
+                                >
+                                  {isMockGatewayEnabled ? 'Mock checkout active for now' : 'Real wallet checkout enabled'}
+                                </Typography>
                               </Box>
                             }
                             sx={{ mr: isMobile ? 0 : 2 }}
-                            disabled
                           />
                           <FormControlLabel
                             value="telebirr"
-                            control={<Radio size="small" disabled />}
+                            control={<Radio size="small" />}
                             label={
                               <Box 
                                 sx={{ 
                                   display: 'flex', 
-                                  alignItems: 'center',
+                                  flexDirection: 'column',
                                   py: 0.5,
-                                  opacity: 0.4,
-                                  color: 'text.disabled',
                                 }}
                               >
-                                <PhoneIcon sx={{ mr: 1, fontSize: 20 }} />
-                                🇪🇹 Telebirr
+                                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                  <PhoneIcon sx={{ mr: 1, fontSize: 20 }} />
+                                  🇪🇹 Telebirr
+                                </Box>
+                                <Typography 
+                                  variant="caption" 
+                                  sx={{ 
+                                    color: COLORS.PRIMARY,
+                                    fontWeight: 600,
+                                    fontSize: '0.75rem',
+                                    mt: 0.3,
+                                    ml: 3,
+                                  }}
+                                >
+                                  {isMockGatewayEnabled ? 'Mock checkout active for now' : 'Real wallet checkout enabled'}
+                                </Typography>
                               </Box>
                             }
-                            disabled
                           />
                         </RadioGroup>
+                        <Typography variant="caption" sx={{ color: 'text.secondary', mt: 1, display: 'block' }}>
+                          Payment gateway mode: {paymentGatewayMode.toUpperCase()}
+                        </Typography>
                       </FormControl>
                     </Box>
 
@@ -1453,7 +1521,9 @@ const BookingPage: React.FC = () => {
                         
                         <Alert severity="info" sx={{ mb: 1.5, py: 0.5 }}>
                           <Typography variant="caption">
-                            You'll receive SMS instructions to complete payment.
+                            {isMockGatewayEnabled
+                              ? 'Mock checkout is enabled right now. You can validate the M-birr flow without hitting the live gateway.'
+                              : 'You will receive live M-birr payment instructions after confirming the booking.'}
                           </Typography>
                         </Alert>
                         
@@ -1505,7 +1575,9 @@ const BookingPage: React.FC = () => {
                         
                         <Alert severity="info" sx={{ mb: 1.5, py: 0.5 }}>
                           <Typography variant="caption">
-                            You'll receive SMS instructions to complete payment.
+                            {isMockGatewayEnabled
+                              ? 'Mock checkout is enabled right now. You can validate the Telebirr flow without hitting the live gateway.'
+                              : 'You will receive live Telebirr payment instructions after confirming the booking.'}
                           </Typography>
                         </Alert>
                         
@@ -1557,7 +1629,8 @@ const BookingPage: React.FC = () => {
                 textAlign: 'center',
               }}
             >
-              💡 Final price includes all taxes (VAT + Service Tax)
+              💡 Room subtotal is charged now. Taxes are estimated separately and settled at checkout.
+              {` Booking is created with ${formatCurrency(totalAmount || 0)} due now. Estimated taxes at checkout: ${formatCurrency(Math.max(calculateEstimatedGrandTotal() - totalAmount, 0))}.`}
             </Typography>
           </Box>
 
@@ -1624,9 +1697,10 @@ const BookingPage: React.FC = () => {
               checkOutDate={checkOutDate}
               guests={guests}
               nights={nights}
-              totalAmount={totalAmount || 0}
+              subtotalAmount={totalAmount || 0}
               vatRate={hotelVatRate}
               serviceTaxRate={hotelServiceTaxRate}
+              cityTaxRate={hotelCityTaxRate}
             />
           </Grid>
         </Grid>

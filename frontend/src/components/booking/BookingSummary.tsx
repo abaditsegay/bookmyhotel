@@ -26,9 +26,10 @@ interface BookingSummaryProps {
   checkOutDate: Date | null;
   guests: number;
   nights: number;
-  totalAmount: number;
+  subtotalAmount: number;
   vatRate?: number;
   serviceTaxRate?: number;
+  cityTaxRate?: number;
 }
 
 const BookingSummary: React.FC<BookingSummaryProps> = ({
@@ -38,9 +39,10 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
   checkOutDate,
   guests,
   nights,
-  totalAmount,
+  subtotalAmount,
   vatRate = 0,
   serviceTaxRate = 0,
+  cityTaxRate = 0,
 }) => {
   const { t } = useTranslation();
   const theme = useTheme();
@@ -56,10 +58,11 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
   };
 
   // Calculate pricing breakdown
-  const subtotal = (roomData.pricePerNight || 0) * nights;
+  const subtotal = subtotalAmount || (roomData.pricePerNight || 0) * nights;
   const vatAmount = subtotal * vatRate;
   const serviceTaxAmount = subtotal * serviceTaxRate;
-  const calculatedTotal = subtotal + vatAmount + serviceTaxAmount;
+  const cityTaxAmount = subtotal * cityTaxRate;
+  const estimatedTotal = subtotal + vatAmount + serviceTaxAmount + cityTaxAmount;
 
   return (
     <Box sx={{ position: { xs: 'relative', md: 'sticky' }, top: 24 }}>
@@ -321,6 +324,37 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
                 {formatCurrencyWithDecimals(serviceTaxAmount)}
               </Typography>
             </Box>
+            {cityTaxRate > 0 && (
+              <Box sx={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                mb: 1,
+                flexDirection: { xs: 'column', sm: 'row' },
+                gap: { xs: 0.5, sm: 0 },
+              }}>
+                <Typography 
+                  variant="body2"
+                  sx={{ 
+                    fontSize: { xs: '0.75rem', md: '0.8rem' },
+                    fontStyle: 'italic',
+                    color: 'text.secondary',
+                  }}
+                >
+                  City Tax ({(cityTaxRate * 100).toFixed(2)}%)
+                </Typography>
+                <Typography 
+                  variant="body2"
+                  sx={{ 
+                    fontSize: { xs: '0.75rem', md: '0.8rem' },
+                    fontWeight: 500,
+                    fontStyle: 'italic',
+                    color: 'text.secondary',
+                  }}
+                >
+                  {formatCurrencyWithDecimals(cityTaxAmount)}
+                </Typography>
+              </Box>
+            )}
           </Box>
 
           <Divider sx={{ my: { xs: 1.5, md: 2 } }} />
@@ -348,7 +382,7 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
                   fontSize: { xs: '1.1rem', md: '1.25rem' },
                 }}
               >
-                {t('booking.summary.total')}
+                Due now
               </Typography>
               <Typography 
                 variant={isMobile ? 'body1' : 'h6'} 
@@ -358,9 +392,12 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
                   fontSize: { xs: '1.2rem', md: '1.25rem' },
                 }}
               >
-                {formatCurrencyWithDecimals(calculatedTotal)}
+                {formatCurrencyWithDecimals(subtotal)}
               </Typography>
             </Box>
+            <Typography variant="caption" sx={{ display: 'block', mt: 0.75, color: 'text.secondary' }}>
+              Estimated stay total with taxes: {formatCurrencyWithDecimals(estimatedTotal)}
+            </Typography>
           </Box>
 
           <Alert 
@@ -375,7 +412,7 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
             }}
           >
             <Typography variant="caption" sx={{ display: 'block', mb: 0.5 }}>
-              <strong>Note:</strong> Taxes will be calculated and applied at checkout based on your final bill.
+              <strong>Note:</strong> The reservation is created with the room subtotal. Taxes shown here are estimates and are applied at checkout based on the final stay bill.
             </Typography>
           </Alert>
 

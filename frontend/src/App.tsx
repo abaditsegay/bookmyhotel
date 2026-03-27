@@ -63,6 +63,7 @@ const UserManagementAdmin = lazyWithRetry(() => import('./pages/admin/UserManage
 const UserRegistrationForm = lazyWithRetry(() => import('./pages/admin/UserRegistrationForm'));
 const UserViewEdit = lazyWithRetry(() => import('./pages/admin/UserViewEdit'));
 const HotelViewEdit = lazyWithRetry(() => import('./pages/admin/HotelViewEdit'));
+const SystemSettingsPage = lazyWithRetry(() => import('./pages/admin/SystemSettingsPage'));
 const HotelOnboarding = lazyWithRetry(() => import('./pages/HotelOnboarding'));
 
 // Hotel Admin pages
@@ -367,10 +368,7 @@ function App() {
         <Route path="/system/settings" element={
           <ProtectedRoute requiredRole="ADMIN">
             <AdminLayout>
-              <PlaceholderPage 
-                title="System Settings" 
-                message="Global system configuration coming soon!" 
-              />
+              <SystemSettingsPage />
             </AdminLayout>
           </ProtectedRoute>
         } />

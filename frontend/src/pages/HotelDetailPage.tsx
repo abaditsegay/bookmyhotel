@@ -12,6 +12,7 @@ import {
   Link,
   IconButton,
   Button,
+  Chip,
   Grid,
   CardMedia,
   useMediaQuery,
@@ -50,6 +51,18 @@ const HotelDetailPage: React.FC = () => {
   const [hotel, setHotel] = useState<HotelSearchResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const amenityHighlights = hotel?.facilityAmenities
+    ? hotel.facilityAmenities
+        .split(/[\n,]/)
+        .map((amenity) => amenity.trim())
+        .filter(Boolean)
+        .slice(0, 8)
+    : [];
+  const websiteUrl = hotel?.websiteUrl
+    ? (hotel.websiteUrl.startsWith('http://') || hotel.websiteUrl.startsWith('https://')
+        ? hotel.websiteUrl
+        : `https://${hotel.websiteUrl}`)
+    : null;
 
   // Get hotel images - uses uploaded S3 images if available, otherwise fallback to city-based defaults
   const getHotelImage = (imageType: 'hero' | 'gallery' = 'hero'): string => {
@@ -524,6 +537,42 @@ const HotelDetailPage: React.FC = () => {
                 <Typography variant="body2" color="text.secondary">
                   {hotel.email}
                 </Typography>
+              </Box>
+            )}
+          </Box>
+        )}
+
+        {(hotel.checkInTime || hotel.checkOutTime || hotel.numberOfRooms || websiteUrl || amenityHighlights.length > 0) && (
+          <Box sx={{ mt: 2.5 }}>
+            <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" sx={{ mb: amenityHighlights.length > 0 || websiteUrl ? 1.5 : 0 }}>
+              {hotel.checkInTime && <Chip size="small" label={`Check-in ${hotel.checkInTime}`} variant="outlined" />}
+              {hotel.checkOutTime && <Chip size="small" label={`Check-out ${hotel.checkOutTime}`} variant="outlined" />}
+              {hotel.numberOfRooms && hotel.numberOfRooms > 0 && (
+                <Chip size="small" label={`${hotel.numberOfRooms} rooms`} variant="outlined" />
+              )}
+            </Stack>
+
+            {websiteUrl && (
+              <Link
+                href={websiteUrl}
+                target="_blank"
+                rel="noreferrer"
+                sx={{ display: 'inline-block', mb: amenityHighlights.length > 0 ? 1.5 : 0, fontWeight: 600 }}
+              >
+                Visit hotel website
+              </Link>
+            )}
+
+            {amenityHighlights.length > 0 && (
+              <Box>
+                <Typography variant="body2" sx={{ fontWeight: 700, mb: 1, color: COLORS.PRIMARY }}>
+                  Guest amenities
+                </Typography>
+                <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
+                  {amenityHighlights.map((amenity) => (
+                    <Chip key={amenity} size="small" label={amenity} sx={{ bgcolor: addAlpha(COLORS.PRIMARY, 0.08) }} />
+                  ))}
+                </Stack>
               </Box>
             )}
           </Box>
