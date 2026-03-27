@@ -2,6 +2,7 @@ package com.bookmyhotel.service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -26,6 +27,7 @@ import com.bookmyhotel.repository.RoomRepository;
 public class AutoCheckoutService {
 
     private static final Logger logger = LoggerFactory.getLogger(AutoCheckoutService.class);
+    private static final ZoneId ETHIOPIA_ZONE = ZoneId.of("Africa/Addis_Ababa");
 
     @Autowired
     private ReservationRepository reservationRepository;
@@ -42,7 +44,7 @@ public class AutoCheckoutService {
     public void autoCheckoutExpiredReservations() {
         logger.info("Starting automatic checkout process for expired reservations");
 
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(ETHIOPIA_ZONE);
 
         try {
             // Find all CHECKED_IN reservations where checkout date has passed
@@ -56,7 +58,7 @@ public class AutoCheckoutService {
                 try {
                     // Update reservation status to checked out
                     reservation.setStatus(ReservationStatus.CHECKED_OUT);
-                    reservation.setActualCheckOutTime(LocalDateTime.now());
+                    reservation.setActualCheckOutTime(LocalDateTime.now(ETHIOPIA_ZONE));
 
                     // Add note indicating this was an automatic checkout
                     String autoCheckoutNote = "Automatically checked out - checkout date passed";
@@ -104,7 +106,7 @@ public class AutoCheckoutService {
     public int manualAutoCheckout() {
         logger.info("Manual auto-checkout triggered");
 
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(ETHIOPIA_ZONE);
         List<Reservation> expiredReservations = reservationRepository.findExpiredCheckedInReservations(today);
 
         int checkedOutCount = 0;
@@ -112,7 +114,7 @@ public class AutoCheckoutService {
         for (Reservation reservation : expiredReservations) {
             try {
                 reservation.setStatus(ReservationStatus.CHECKED_OUT);
-                reservation.setActualCheckOutTime(LocalDateTime.now());
+                reservation.setActualCheckOutTime(LocalDateTime.now(ETHIOPIA_ZONE));
 
                 String autoCheckoutNote = "Manually triggered automatic checkout - checkout date passed";
                 if (reservation.getSpecialRequests() != null) {

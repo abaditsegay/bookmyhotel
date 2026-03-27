@@ -156,28 +156,14 @@ public class BookingController {
             @RequestParam(required = false) String confirmationNumber,
             @RequestParam(required = false) String email,
             @RequestParam(required = false) String lastName) {
-
-        BookingResponse response;
-
-        // Primary search: confirmation number AND email (both required for enhanced
-        // security)
-        if (confirmationNumber != null && !confirmationNumber.trim().isEmpty() &&
-                email != null && !email.trim().isEmpty()) {
-            // Use public search with both confirmation number and email for verification
-            response = bookingService.findByConfirmationNumberAndEmailPublic(confirmationNumber.trim(), email.trim());
-        }
-        // Fallback search methods for backward compatibility
-        else if (confirmationNumber != null && !confirmationNumber.trim().isEmpty()) {
-            // Use public search to find bookings across all tenants
-            response = bookingService.findByConfirmationNumberPublic(confirmationNumber.trim());
-        } else if (email != null && lastName != null &&
-                !email.trim().isEmpty() && !lastName.trim().isEmpty()) {
-            // Use public search for email/lastName to find bookings across all tenants
-            response = bookingService.findByEmailAndLastNamePublic(email.trim(), lastName.trim());
-        } else {
+        if (confirmationNumber == null || confirmationNumber.trim().isEmpty()
+                || email == null || email.trim().isEmpty()) {
             return ResponseEntity.badRequest().build();
         }
 
+        BookingResponse response = bookingService.findByConfirmationNumberAndEmailPublic(
+                confirmationNumber.trim(),
+                email.trim());
         return ResponseEntity.ok(response);
     }
 

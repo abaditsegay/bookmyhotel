@@ -4,7 +4,10 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+import jakarta.persistence.LockModeType;
+
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -17,8 +20,13 @@ import com.bookmyhotel.entity.Hotel;
 @Repository
 public interface HotelRepository extends JpaRepository<Hotel, Long> {
 
+       @Lock(LockModeType.PESSIMISTIC_WRITE)
+       @Query("SELECT h FROM Hotel h WHERE h.id = :hotelId")
+       Optional<Hotel> findByIdForUpdate(@Param("hotelId") Long hotelId);
+
        /**
-        * Find hotels by location (city or country) — PUBLIC: only publicly-listed hotels.
+        * Find hotels by location (city or country) — PUBLIC: only publicly-listed
+        * hotels.
         */
        @Query("SELECT DISTINCT h FROM Hotel h WHERE " +
                      "h.isPubliclyListed = true " +
@@ -27,7 +35,8 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
        List<Hotel> findByLocation(@Param("location") String location);
 
        /**
-        * Find hotels with available rooms for given criteria — PUBLIC: only publicly-listed hotels.
+        * Find hotels with available rooms for given criteria — PUBLIC: only
+        * publicly-listed hotels.
         */
        @Query("SELECT DISTINCT h FROM Hotel h " +
                      "JOIN h.rooms r " +

@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.HashMap;
@@ -24,6 +26,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.bookmyhotel.config.CacheConfig;
@@ -64,6 +67,7 @@ import com.stripe.param.PaymentIntentCreateParams;
 public class BookingService {
 
     private static final Logger logger = LoggerFactory.getLogger(BookingService.class);
+    private static final ZoneId ETHIOPIA_ZONE = ZoneId.of("Africa/Addis_Ababa");
 
     @Autowired
     private ReservationRepository reservationRepository;
@@ -126,10 +130,15 @@ public class BookingService {
     /**
      * Create a new booking by room type using BookingRequest (new approach)
      */
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public BookingResponse createBookingByRoomType(BookingRequest request, String userEmail) {
         try {
             // Validate booking request for room type booking
             validateBookingRequestForRoomType(request, userEmail == null);
+
+            // Serialize availability checks per hotel to reduce race conditions.
+            Hotel hotel = hotelRepository.findByIdForUpdate(request.getHotelId())
+                    .orElseThrow(() -> new BookingException("Hotel not found with ID: " + request.getHotelId()));
 
             // Check room type availability WITHOUT assigning a specific room
             // This just verifies that rooms of this type exist and are available for the
@@ -145,10 +154,6 @@ public class BookingService {
                 throw new BookingException("No available rooms of type " +
                         request.getRoomType() + " for the selected dates");
             }
-
-            // Get hotel entity
-            Hotel hotel = hotelRepository.findById(request.getHotelId())
-                    .orElseThrow(() -> new BookingException("Hotel not found with ID: " + request.getHotelId()));
 
             // Get or create user (authenticated or guest)
             User user = null;
@@ -177,10 +182,12 @@ public class BookingService {
                 if ("pay_at_frontdesk".equals(request.getPaymentMethodId())) {
                     // For pay at front desk, mark reservation as booked with payment pending
                     reservation.setStatus(ReservationStatus.BOOKED);
+                    reservation.setPaymentStatus(PaymentStatus.PENDING);
                     // No payment intent ID set, so payment status will be "PENDING"
                 } else if ("mock_payment_processed".equals(request.getPaymentMethodId())) {
                     // For mock payments already processed by frontend
                     reservation.setStatus(ReservationStatus.BOOKED);
+                    reservation.setPaymentStatus(PaymentStatus.COMPLETED);
                     // Use the transaction ID from the mock payment gateway
                     if (request.getTransactionId() != null) {
                         reservation.setPaymentIntentId(request.getTransactionId());
@@ -194,14 +201,14 @@ public class BookingService {
                         String paymentIntentId = processEthiopianPayment(totalAmount, request.getPaymentMethodId(),
                                 request.getGuestPhone(), reservation);
                         reservation.setPaymentIntentId(paymentIntentId);
-                        reservation.setStatus(ReservationStatus.BOOKED);
+                        reservation.setStatus(ReservationStatus.PENDING);
+                        reservation.setPaymentStatus(PaymentStatus.PROCESSING);
                     } catch (Exception e) {
-                        // If Ethiopian payment initiation fails, still confirm booking but mark payment
-                        // as failed
-                        reservation.setStatus(ReservationStatus.BOOKED);
-                        logger.warn("Ethiopian payment processing failed for reservation, but booking booked: {}",
+                        // Do not auto-confirm booking when payment initiation fails.
+                        reservation.setStatus(ReservationStatus.PENDING);
+                        reservation.setPaymentStatus(PaymentStatus.FAILED);
+                        logger.warn("Ethiopian payment processing failed for reservation: {}",
                                 e.getMessage());
-                        // Payment status will be determined by the absence of payment intent ID
                     }
                 } else {
                     // Handle other payment methods (e.g., credit card via Stripe)
@@ -209,17 +216,18 @@ public class BookingService {
                         String paymentIntentId = processPayment(totalAmount, request.getPaymentMethodId());
                         reservation.setPaymentIntentId(paymentIntentId);
                         reservation.setStatus(ReservationStatus.BOOKED);
+                        reservation.setPaymentStatus(PaymentStatus.COMPLETED);
                     } catch (StripeException e) {
-                        // Even if payment fails, confirm the booking but mark payment as failed
-                        reservation.setStatus(ReservationStatus.BOOKED);
-                        logger.warn("Payment processing failed for reservation, but booking booked: {}",
+                        reservation.setStatus(ReservationStatus.PENDING);
+                        reservation.setPaymentStatus(PaymentStatus.FAILED);
+                        logger.warn("Payment processing failed for reservation: {}",
                                 e.getMessage());
-                        // Payment status will be determined by the absence of payment intent ID
                     }
                 }
             } else {
                 // No payment method provided - still confirm the booking
                 reservation.setStatus(ReservationStatus.BOOKED);
+                reservation.setPaymentStatus(PaymentStatus.PENDING);
             }
 
             // Generate a temporary confirmation number before first save
@@ -270,10 +278,15 @@ public class BookingService {
     /**
      * Create a new booking using room type (new approach)
      */
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public BookingResponse createRoomTypeBooking(RoomTypeBookingRequest request, String userEmail) {
         try {
             // Validate booking request
             validateRoomTypeBookingRequest(request, userEmail == null);
+
+            // Serialize availability checks per hotel to reduce race conditions.
+            Hotel hotel = hotelRepository.findByIdForUpdate(request.getHotelId())
+                    .orElseThrow(() -> new BookingException("Hotel not found with ID: " + request.getHotelId()));
 
             // Check room type availability WITHOUT assigning a specific room
             RoomType roomTypeEnum = request.getRoomType();
@@ -287,10 +300,6 @@ public class BookingService {
                 throw new BookingException("No available rooms of type " +
                         request.getRoomType() + " for the selected dates");
             }
-
-            // Get hotel entity
-            Hotel hotel = hotelRepository.findById(request.getHotelId())
-                    .orElseThrow(() -> new BookingException("Hotel not found with ID: " + request.getHotelId()));
 
             // Get or create user (authenticated or guest)
             User user = null;
@@ -314,10 +323,12 @@ public class BookingService {
                 if ("pay_at_frontdesk".equals(request.getPaymentMethodId())) {
                     // For pay at front desk, mark reservation as booked with payment pending
                     reservation.setStatus(ReservationStatus.BOOKED);
+                    reservation.setPaymentStatus(PaymentStatus.PENDING);
                     // No payment intent ID set, so payment status will be "PENDING"
                 } else if ("mock_payment_processed".equals(request.getPaymentMethodId())) {
                     // For mock payments already processed by frontend
                     reservation.setStatus(ReservationStatus.BOOKED);
+                    reservation.setPaymentStatus(PaymentStatus.COMPLETED);
                     // Use the transaction ID from the mock payment gateway
                     if (request.getTransactionId() != null) {
                         reservation.setPaymentIntentId(request.getTransactionId());
@@ -330,17 +341,18 @@ public class BookingService {
                         String paymentIntentId = processPayment(totalAmount, request.getPaymentMethodId());
                         reservation.setPaymentIntentId(paymentIntentId);
                         reservation.setStatus(ReservationStatus.BOOKED);
+                        reservation.setPaymentStatus(PaymentStatus.COMPLETED);
                     } catch (StripeException e) {
-                        // Even if payment fails, confirm the booking but mark payment as failed
-                        reservation.setStatus(ReservationStatus.BOOKED);
-                        logger.warn("Payment processing failed for reservation, but booking booked: {}",
+                        reservation.setStatus(ReservationStatus.PENDING);
+                        reservation.setPaymentStatus(PaymentStatus.FAILED);
+                        logger.warn("Payment processing failed for reservation: {}",
                                 e.getMessage());
-                        // Payment status will be determined by the absence of payment intent ID
                     }
                 }
             } else {
                 // No payment method provided - still confirm the booking
                 reservation.setStatus(ReservationStatus.BOOKED);
+                reservation.setPaymentStatus(PaymentStatus.PENDING);
             }
 
             // Generate a temporary confirmation number before first save
@@ -522,7 +534,7 @@ public class BookingService {
             throw new BookingException("Check-in date must be before check-out date");
         }
 
-        if (request.getCheckInDate().isBefore(LocalDateTime.now().toLocalDate())) {
+        if (request.getCheckInDate().isBefore(todayInEthiopia())) {
             throw new BookingException("Check-in date cannot be in the past");
         }
 
@@ -549,7 +561,7 @@ public class BookingService {
             throw new BookingException("Check-in date must be before check-out date");
         }
 
-        if (request.getCheckInDate().isBefore(LocalDateTime.now().toLocalDate())) {
+        if (request.getCheckInDate().isBefore(todayInEthiopia())) {
             throw new BookingException("Check-in date cannot be in the past");
         }
 
@@ -705,7 +717,7 @@ public class BookingService {
             throw new BookingException("Check-in date must be before check-out date");
         }
 
-        if (request.getCheckInDate().isBefore(LocalDateTime.now().toLocalDate())) {
+        if (request.getCheckInDate().isBefore(todayInEthiopia())) {
             throw new BookingException("Check-in date cannot be in the past");
         }
 
@@ -873,7 +885,7 @@ public class BookingService {
             BigDecimal totalAmount) {
 
         // Validate that the specified room exists and is available
-        Room specificRoom = roomRepository.findById(request.getRoomId())
+        Room specificRoom = roomRepository.findByIdForUpdate(request.getRoomId())
                 .orElseThrow(() -> new BookingException("Room not found with ID: " + request.getRoomId()));
 
         // Verify room belongs to the same hotel
@@ -926,7 +938,7 @@ public class BookingService {
         // For walk-in customers with specific room assignment, set status to CHECKED_IN
         // and set actual check-in time
         reservation.setStatus(ReservationStatus.CHECKED_IN);
-        reservation.setActualCheckInTime(LocalDateTime.now());
+        reservation.setActualCheckInTime(LocalDateTime.now(ETHIOPIA_ZONE));
 
         // Handle payment method
         String paymentMethodId = request.getPaymentMethodId();
@@ -1393,7 +1405,7 @@ public class BookingService {
             }
 
             // Check modification window (e.g., at least 24 hours before check-in)
-            if (reservation.getCheckInDate().isBefore(LocalDate.now().plusDays(1))) {
+            if (reservation.getCheckInDate().isBefore(todayInEthiopia().plusDays(1))) {
                 return new BookingModificationResponse(false,
                         "Modifications must be made at least 24 hours before check-in");
             }
@@ -1414,7 +1426,7 @@ public class BookingService {
                     return new BookingModificationResponse(false, "Check-out date must be after check-in date");
                 }
 
-                if (newCheckIn.isBefore(LocalDate.now())) {
+                if (newCheckIn.isBefore(todayInEthiopia())) {
                     return new BookingModificationResponse(false, "Check-in date cannot be in the past");
                 }
 
@@ -1846,7 +1858,7 @@ public class BookingService {
             }
 
             // Check modification window (e.g., at least 24 hours before check-in)
-            if (reservation.getCheckInDate().isBefore(LocalDate.now().plusDays(1))) {
+            if (reservation.getCheckInDate().isBefore(todayInEthiopia().plusDays(1))) {
                 return new BookingModificationResponse(false,
                         "Modifications must be made at least 24 hours before check-in");
             }
@@ -1867,7 +1879,7 @@ public class BookingService {
                     return new BookingModificationResponse(false, "Check-out date must be after check-in date");
                 }
 
-                if (newCheckIn.isBefore(LocalDate.now())) {
+                if (newCheckIn.isBefore(todayInEthiopia())) {
                     return new BookingModificationResponse(false, "Check-in date cannot be in the past");
                 }
 
@@ -2158,13 +2170,13 @@ public class BookingService {
         }
 
         // Check modification time limits (cannot modify within 24 hours of check-in)
-        LocalDate now = LocalDate.now();
         LocalDate checkInDate = reservation.getCheckInDate();
         if (request.getNewCheckInDate() != null) {
             checkInDate = request.getNewCheckInDate();
         }
 
-        long hoursUntilCheckIn = ChronoUnit.HOURS.between(LocalDateTime.now(), checkInDate.atStartOfDay());
+        long hoursUntilCheckIn = ChronoUnit.HOURS.between(ZonedDateTime.now(ETHIOPIA_ZONE),
+                checkInDate.atStartOfDay(ETHIOPIA_ZONE));
         if (hoursUntilCheckIn < 24) {
             return new BookingModificationResponse(false, "Cannot modify booking within 24 hours of check-in");
         }
@@ -2305,7 +2317,7 @@ public class BookingService {
             return BigDecimal.ZERO;
         }
 
-        LocalDate now = LocalDate.now();
+        LocalDate now = todayInEthiopia();
         LocalDate checkInDate = reservation.getCheckInDate();
         long daysUntilCheckIn = ChronoUnit.DAYS.between(now, checkInDate);
 
@@ -2358,6 +2370,10 @@ public class BookingService {
                 refundPercentage.multiply(new BigDecimal("100")), totalAmount);
 
         return refundAmount;
+    }
+
+    private LocalDate todayInEthiopia() {
+        return LocalDate.now(ETHIOPIA_ZONE);
     }
 
     /**

@@ -5,7 +5,10 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+import jakarta.persistence.LockModeType;
+
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -20,6 +23,10 @@ import com.bookmyhotel.entity.RoomType;
  */
 @Repository
 public interface RoomRepository extends JpaRepository<Room, Long> {
+
+       @Lock(LockModeType.PESSIMISTIC_WRITE)
+       @Query("SELECT r FROM Room r WHERE r.id = :roomId")
+       Optional<Room> findByIdForUpdate(@Param("roomId") Long roomId);
 
        /**
         * Find available rooms for a hotel within date range
@@ -257,14 +264,16 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
         * Check if there are available rooms of a specific type for given dates (room
         * type booking)
         */
-       @Query("SELECT COUNT(r) > 0 FROM Room r " +
-                     "WHERE r.hotel.id = :hotelId " +
-                     "AND r.roomType = :roomType " +
-                     "AND r.isAvailable = true " +
-                     "AND r.status = 'AVAILABLE' " +
-                     "AND r.id NOT IN (" +
-                     "  SELECT res.assignedRoom.id FROM Reservation res " +
-                     "  WHERE res.assignedRoom.id IS NOT NULL " +
+       @Query("SELECT (" +
+                     "  SELECT COUNT(r) FROM Room r " +
+                     "  WHERE r.hotel.id = :hotelId " +
+                     "  AND r.roomType = :roomType " +
+                     "  AND r.isAvailable = true " +
+                     "  AND r.status = 'AVAILABLE'" +
+                     ") > (" +
+                     "  SELECT COUNT(res) FROM Reservation res " +
+                     "  WHERE res.hotel.id = :hotelId " +
+                     "  AND res.roomType = :roomType " +
                      "  AND res.status NOT IN ('CANCELLED', 'NO_SHOW') " +
                      "  AND (res.checkInDate < :checkOutDate AND res.checkOutDate > :checkInDate)" +
                      ")")

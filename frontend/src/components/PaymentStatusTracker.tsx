@@ -22,6 +22,7 @@ import {
 import TokenManager from '../utils/tokenManager';
 import { StandardCard, StandardButton, StandardLoading, StandardError } from './common';
 import { COLORS, addAlpha } from '../theme/themeColors';
+import { buildApiUrl } from '../config/apiConfig';
 
 interface PaymentStatusProps {
   transactionId: string;
@@ -65,7 +66,8 @@ const PaymentStatusTracker: React.FC<PaymentStatusProps> = ({
   const fetchPaymentStatus = React.useCallback(async () => {
     try {
       setError('');
-      const response = await fetch(`/api/payments/ethiopian/status/${transactionId}`, {
+      const response = await fetch(buildApiUrl(`/payments/ethiopian/status/${provider}/${transactionId}`), {
+        method: 'POST',
         headers: {
           ...TokenManager.getAuthHeaders()
         }

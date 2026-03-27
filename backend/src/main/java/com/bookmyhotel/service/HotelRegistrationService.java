@@ -65,7 +65,8 @@ public class HotelRegistrationService {
 
     /**
      * Submit a new hotel registration.
-     * Atomically creates: HotelRegistration record + Hotel (inactive, pending approval)
+     * Atomically creates: HotelRegistration record + Hotel (inactive, pending
+     * approval)
      * + HOTEL_ADMIN user assigned to that hotel.
      */
     public HotelRegistrationSubmitResponse submitRegistration(HotelRegistrationRequest request) {
@@ -301,7 +302,8 @@ public class HotelRegistrationService {
 
     /**
      * Approve hotel registration.
-     * The hotel was already created (inactive) during submission — this activates it.
+     * The hotel was already created (inactive) during submission — this activates
+     * it.
      */
     public HotelRegistrationResponse approveRegistration(Long registrationId, ApproveRegistrationRequest request,
             Long reviewerId) {
@@ -313,8 +315,10 @@ public class HotelRegistrationService {
             throw new RuntimeException("Only pending or under review registrations can be approved");
         }
 
-        // Hotel was created atomically during submission — look it up, sync all registration
-        // fields (in case they were updated after initial submission), then activate it.
+        // Hotel was created atomically during submission — look it up, sync all
+        // registration
+        // fields (in case they were updated after initial submission), then activate
+        // it.
         final Long hotelId = registration.getApprovedHotelId();
         final Hotel hotel = hotelRepository.findById(hotelId)
                 .orElseThrow(() -> new RuntimeException("Hotel not found with id: " + hotelId));
@@ -338,7 +342,8 @@ public class HotelRegistrationService {
         hotel.setIsActive(true);
         hotelRepository.save(hotel);
 
-        // Retrieve or create the hotel admin user, and ensure they are linked to this hotel.
+        // Retrieve or create the hotel admin user, and ensure they are linked to this
+        // hotel.
         final String contactEmail = registration.getContactEmail();
         final HotelRegistration regSnapshot = registration;
         User hotelAdmin = userRepository.findByEmail(contactEmail).orElseGet(() -> {
@@ -455,7 +460,8 @@ public class HotelRegistrationService {
      * Create hotel from registration data.
      *
      * @param active whether the hotel should be active immediately.
-     *               Pass {@code false} on submission (pending approval); {@code true} is
+     *               Pass {@code false} on submission (pending approval);
+     *               {@code true} is
      *               reserved for direct/admin creation.
      */
     private Hotel createHotelFromRegistration(HotelRegistration registration, String tenantId, boolean active) {
