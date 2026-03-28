@@ -12,6 +12,8 @@ SSH_KEY="$HOME/.ssh/bookmyhotel-aws"
 CONFIG_ENV="${1:-prod}"  # Allow specifying prod or prod-new (default: prod)
 MEMORY_XMX="${2:-1g}"    # Configurable max memory (default: 1g)
 MEMORY_XMS="${3:-512m}"  # Configurable initial memory (default: 512m)
+UAT_SHARED_HOTEL_ID="${4:-${APP_UAT_SHARED_HOTEL_ID:-1}}"
+UAT_SHARED_HOTEL_NAME="${5:-${APP_UAT_SHARED_HOTEL_NAME:-Grand Plaza Hotel}}"
 APP_NAME="bookmyhotel"
 BACKEND_DIR="/opt/${APP_NAME}"
 SERVICE_NAME="${APP_NAME}-backend"
@@ -49,6 +51,8 @@ print_status "Deploying to: $LIGHTSAIL_IP"
 print_status "Using SSH key: $SSH_KEY"
 print_status "Configuration: application-${CONFIG_ENV}.properties"
 print_status "Memory settings: -Xmx${MEMORY_XMX} -Xms${MEMORY_XMS}"
+print_status "UAT shared hotel id: ${UAT_SHARED_HOTEL_ID:-<not set>}"
+print_status "UAT shared hotel name: ${UAT_SHARED_HOTEL_NAME}"
 
 # Step 1: Build the application locally
 print_status "Building Spring Boot application..."
@@ -104,6 +108,18 @@ else
     print_error "Configuration file not found: $CONFIG_FILE"
     exit 1
 fi
+
+print_status "Injecting shared UAT hotel settings into remote configuration..."
+ssh $SSH_OPTS $LIGHTSAIL_USER@$LIGHTSAIL_IP << EOF
+set -e
+CONFIG_FILE="/opt/bookmyhotel/config/application-${CONFIG_ENV}.properties"
+TMP_FILE="\${CONFIG_FILE}.tmp"
+
+grep -v '^app\.uat\.shared-hotel-id=' "\$CONFIG_FILE" | grep -v '^app\.uat\.shared-hotel-name=' > "\$TMP_FILE"
+printf '\napp.uat.shared-hotel-id=%s\n' '${UAT_SHARED_HOTEL_ID}' >> "\$TMP_FILE"
+printf 'app.uat.shared-hotel-name=%s\n' '${UAT_SHARED_HOTEL_NAME}' >> "\$TMP_FILE"
+mv "\$TMP_FILE" "\$CONFIG_FILE"
+EOF
 
 # Step 5: Create systemd service
 print_status "Creating systemd service..."
