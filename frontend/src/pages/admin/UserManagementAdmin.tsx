@@ -110,7 +110,7 @@ const UserManagementAdmin: React.FC = () => {
   const [loadingHotels, setLoadingHotels] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const allRoleOptions = ['SUPER_ADMIN', 'ADMIN', 'HOTEL_ADMIN', 'OPERATIONAL_ADMIN', 'FRONTDESK', 'HOUSEKEEPING', 'MAINTENANCE', 'CUSTOMER'];
+  const allRoleOptions = ['SUPER_ADMIN', 'ADMIN', 'HOTEL_ADMIN', 'OPERATIONAL_ADMIN', 'FRONTDESK', 'HOUSEKEEPING', 'MAINTENANCE', 'TESTER', 'CUSTOMER'];
 
   // Roles visible in the filter dropdown — ADMIN cannot see SUPER_ADMIN
   const callerRoleForFilter = currentUser?.role || (currentUser?.roles?.[0] ?? '');
@@ -121,8 +121,8 @@ const UserManagementAdmin: React.FC = () => {
   // Roles this user is permitted to assign when creating/editing users
   const creatableRoleOptions = (() => {
     const callerRole = currentUser?.role || (currentUser?.roles?.[0] ?? '');
-    if (callerRole === 'SUPER_ADMIN') return ['ADMIN', 'HOTEL_ADMIN'];
-    if (callerRole === 'ADMIN') return ['HOTEL_ADMIN'];
+    if (callerRole === 'SUPER_ADMIN') return ['ADMIN', 'HOTEL_ADMIN', 'TESTER'];
+    if (callerRole === 'ADMIN') return ['HOTEL_ADMIN', 'TESTER'];
     return roleOptions;
   })();
   const statusOptions = [
@@ -642,7 +642,7 @@ const UserManagementAdmin: React.FC = () => {
                 value={userForm.roles.length > 0 ? userForm.roles[0] : ''}
                 onChange={(e) => {
                   const selectedRole = e.target.value as string;
-                  const isHotelBoundRole = ['HOTEL_ADMIN', 'FRONTDESK', 'HOUSEKEEPING'].includes(selectedRole);
+                  const isHotelBoundRole = ['HOTEL_ADMIN', 'OPERATIONAL_ADMIN', 'FRONTDESK', 'HOUSEKEEPING', 'MAINTENANCE', 'TESTER'].includes(selectedRole);
                   setUserForm({ 
                     ...userForm, 
                     roles: [selectedRole],
@@ -661,7 +661,7 @@ const UserManagementAdmin: React.FC = () => {
             
             {/* Tenant Selection - Show for hotel-bound roles */}
             {(() => {
-              const shouldShow = (userForm.roles.includes('HOTEL_ADMIN') || userForm.roles.includes('FRONTDESK') || userForm.roles.includes('HOUSEKEEPING'));
+              const shouldShow = userForm.roles.some(role => ['HOTEL_ADMIN', 'OPERATIONAL_ADMIN', 'FRONTDESK', 'HOUSEKEEPING', 'MAINTENANCE', 'TESTER'].includes(role));
               return shouldShow;
             })() && (
               <Grid item xs={12} md={6}>
@@ -690,7 +690,7 @@ const UserManagementAdmin: React.FC = () => {
             )}
 
             {/* Hotel Selection - Show for hotel-bound roles when tenant is selected */}
-            {(userForm.roles.includes('HOTEL_ADMIN') || userForm.roles.includes('FRONTDESK') || userForm.roles.includes('HOUSEKEEPING')) && userForm.tenantId && (
+            {userForm.roles.some(role => ['HOTEL_ADMIN', 'OPERATIONAL_ADMIN', 'FRONTDESK', 'HOUSEKEEPING', 'MAINTENANCE', 'TESTER'].includes(role)) && userForm.tenantId && (
               <Grid item xs={12} md={6}>
                 <PremiumSelect
                   fullWidth

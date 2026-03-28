@@ -97,9 +97,11 @@ const UserRegistrationForm: React.FC = () => {
     if (callerRole === 'SUPER_ADMIN') return [
       { value: 'ADMIN', label: 'Administrator' },
       { value: 'HOTEL_ADMIN', label: 'Hotel Administrator' },
+      { value: 'TESTER', label: 'Tester' },
     ];
     if (callerRole === 'ADMIN') return [
       { value: 'HOTEL_ADMIN', label: 'Hotel Administrator' },
+      { value: 'TESTER', label: 'Tester' },
     ];
     return [
       { value: 'ADMIN', label: 'Administrator' },
@@ -108,6 +110,7 @@ const UserRegistrationForm: React.FC = () => {
       { value: 'FRONTDESK', label: 'Front Desk Agent' },
       { value: 'HOUSEKEEPING', label: 'Housekeeping' },
       { value: 'MAINTENANCE', label: 'Maintenance' },
+      { value: 'TESTER', label: 'Tester' },
       { value: 'CUSTOMER', label: 'Customer' },
     ];
   })();

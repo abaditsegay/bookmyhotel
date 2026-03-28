@@ -79,6 +79,7 @@ const HotelAdminBookingDetails = lazyWithRetry(() => import('./pages/hotel-admin
 // Front Desk pages
 const FrontDeskDashboard = lazyWithRetry(() => import('./pages/frontdesk/FrontDeskDashboard'));
 const FrontDeskUnifiedBookingDetails = lazyWithRetry(() => import('./pages/frontdesk/FrontDeskUnifiedBookingDetails'));
+const UatTestingPage = lazyWithRetry(() => import('./pages/UatTestingPage'));
 
 // Debug pages
 const RoleDashboardDebug = lazyWithRetry(() => import('./pages/RoleDashboardDebug'));
@@ -161,6 +162,10 @@ const RoleBasedRouter: React.FC = () => {
     if (user.roles.includes('FRONTDESK')) {
       return <Navigate to="/frontdesk/dashboard" replace />;
     }
+
+    if (user.roles.includes('TESTER')) {
+      return <Navigate to="/uat" replace />;
+    }
     
     if (user.roles.includes('OPERATIONAL_ADMIN')) {
       return <Navigate to="/operations/dashboard" replace />;
@@ -189,6 +194,10 @@ const RoleBasedRouter: React.FC = () => {
     
     if (user.role === 'FRONTDESK') {
       return <Navigate to="/frontdesk/dashboard" replace />;
+    }
+
+    if (user.role === 'TESTER') {
+      return <Navigate to="/uat" replace />;
     }
     
     if (user.role === 'OPERATIONAL_ADMIN') {
@@ -235,6 +244,7 @@ function App() {
                            location.pathname.startsWith('/admin') ||
                            location.pathname.startsWith('/system-dashboard') ||
                            location.pathname.startsWith('/system/') ||
+                           location.pathname.startsWith('/uat') ||
                            location.pathname.startsWith('/operations') ||
                            location.pathname.startsWith('/staff') ||
                            location.pathname.startsWith('/shop') ||
@@ -378,9 +388,21 @@ function App() {
             </AdminLayout>
           </ProtectedRoute>
         } />
+        <Route path="/system/uat" element={
+          <ProtectedRoute requiredRoles={['ADMIN', 'SUPER_ADMIN']}>
+            <AdminLayout>
+              <UatTestingPage />
+            </AdminLayout>
+          </ProtectedRoute>
+        } />
         <Route path="/my-bookings" element={
           <ProtectedRoute>
             <MyBookings />
+          </ProtectedRoute>
+        } />
+        <Route path="/uat" element={
+          <ProtectedRoute requiredRoles={['TESTER', 'ADMIN', 'SUPER_ADMIN']}>
+            <UatTestingPage />
           </ProtectedRoute>
         } />
         

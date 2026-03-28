@@ -30,7 +30,7 @@ import jakarta.validation.constraints.Size;
 
 /**
  * User entity for authentication and authorization
- * Supports both tenant-bound users (HOTEL_ADMIN, FRONTDESK, etc.)
+ * Supports both tenant-bound users (HOTEL_ADMIN, FRONTDESK, TESTER, etc.)
  * and system-wide users (SUPER_ADMIN, ADMIN, CUSTOMER, GUEST)
  * CUSTOMER: Registered users with accounts (can book across hotels)
  * GUEST: Anonymous users without accounts (temporary token-based access)
@@ -115,8 +115,8 @@ public class User extends BaseEntity implements UserDetails {
 
     /**
      * Determines if this user should be bound to a hotel
-     * SYSTEM_ADMIN, GUEST, and CUSTOMER users are system-wide (no hotel)
-     * All other roles (HOTEL_ADMIN, FRONTDESK, etc.) are hotel-bound
+    * SYSTEM_ADMIN, GUEST, and CUSTOMER users are system-wide (no hotel)
+    * All other roles (HOTEL_ADMIN, FRONTDESK, TESTER, etc.) are hotel-bound
      */
     public boolean isTenantBoundUser() {
         // Check if user has system-wide roles

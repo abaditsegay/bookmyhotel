@@ -14,6 +14,7 @@ package com.bookmyhotel.entity;
  * FRONTDESK - Front desk staff; no user creation
  * HOUSEKEEPING - Housekeeping staff; no user creation
  * MAINTENANCE - Maintenance staff; no user creation
+ * TESTER - UAT tester assigned to a single hotel; no user creation
  *
  * Public / customer roles (not hotel-tied, non-privileged):
  * CUSTOMER - Registered users with accounts
@@ -32,6 +33,7 @@ public enum UserRole {
     FRONTDESK,
     HOUSEKEEPING,
     MAINTENANCE,
+    TESTER,
 
     // Public / customer roles
     CUSTOMER,

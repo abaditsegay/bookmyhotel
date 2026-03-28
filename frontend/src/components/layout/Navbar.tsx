@@ -28,6 +28,7 @@ import {
   Search as SearchIcon,
   Store as StoreIcon,
   Notifications as NotificationsIcon,
+  FactCheck as FactCheckIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
@@ -172,6 +173,10 @@ const Navbar: React.FC = () => {
           { label: 'Shop', path: '/shop', icon: <StoreIcon /> },
         ];
         return [...baseItems, ...frontdeskItems];
+      }
+
+      if (user.role === 'TESTER') {
+        return [...baseItems, { label: 'UAT', path: '/uat', icon: <FactCheckIcon /> }];
       }
 
       // For operational admin, don't show operations dashboard link since it's their landing page

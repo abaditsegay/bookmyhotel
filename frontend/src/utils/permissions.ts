@@ -17,6 +17,7 @@ const CREATABLE_ROLES: Record<string, Role[]> = {
     Roles.FRONTDESK,
     Roles.HOUSEKEEPING,
     Roles.MAINTENANCE,
+    Roles.TESTER,
     Roles.CUSTOMER,
   ],
   [Roles.ADMIN]: [
@@ -25,6 +26,7 @@ const CREATABLE_ROLES: Record<string, Role[]> = {
     Roles.FRONTDESK,
     Roles.HOUSEKEEPING,
     Roles.MAINTENANCE,
+    Roles.TESTER,
     Roles.CUSTOMER,
   ],
   [Roles.HOTEL_ADMIN]: [
@@ -32,6 +34,7 @@ const CREATABLE_ROLES: Record<string, Role[]> = {
     Roles.FRONTDESK,
     Roles.HOUSEKEEPING,
     Roles.MAINTENANCE,
+    Roles.TESTER,
   ],
   [Roles.OPERATIONAL_ADMIN]: [
     Roles.HOUSEKEEPING,

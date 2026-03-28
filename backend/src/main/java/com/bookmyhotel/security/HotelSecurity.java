@@ -69,12 +69,13 @@ public class HotelSecurity {
         }
 
         // All other hotel-bound roles (FRONTDESK, HOUSEKEEPING, MAINTENANCE,
-        // OPERATIONAL_ADMIN) can only access their assigned hotel
+        // TESTER, OPERATIONAL_ADMIN) can only access their assigned hotel
         boolean isHotelBoundRole = authentication.getAuthorities().stream()
                 .anyMatch(auth -> "ROLE_OPERATIONAL_ADMIN".equals(auth.getAuthority())
                         || "ROLE_FRONTDESK".equals(auth.getAuthority())
                         || "ROLE_HOUSEKEEPING".equals(auth.getAuthority())
-                        || "ROLE_MAINTENANCE".equals(auth.getAuthority()));
+                || "ROLE_MAINTENANCE".equals(auth.getAuthority())
+                || "ROLE_TESTER".equals(auth.getAuthority()));
         if (isHotelBoundRole) {
             Object principal = authentication.getPrincipal();
             if (principal instanceof User) {

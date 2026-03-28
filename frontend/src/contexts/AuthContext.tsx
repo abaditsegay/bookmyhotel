@@ -13,7 +13,7 @@ interface User {
   firstName?: string;
   lastName?: string;
   phone?: string;
-  role: 'SUPER_ADMIN' | 'ADMIN' | 'HOTEL_ADMIN' | 'OPERATIONAL_ADMIN' | 'FRONTDESK' | 'HOUSEKEEPING' | 'MAINTENANCE' | 'CUSTOMER' | 'GUEST';
+  role: 'SUPER_ADMIN' | 'ADMIN' | 'HOTEL_ADMIN' | 'OPERATIONAL_ADMIN' | 'FRONTDESK' | 'HOUSEKEEPING' | 'MAINTENANCE' | 'TESTER' | 'CUSTOMER' | 'GUEST';
   roles: string[]; // Support multiple roles
   tenantId?: string | null; // null for system-wide users
   hotelId?: string;
@@ -161,10 +161,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
         return false;
       }
 
-      // Check if it's a hotel staff role (HOTEL_ADMIN or FRONTDESK)
+      // Check if it's a hotel staff role allowed to use cached hotel context
       const isHotelStaff = cachedSession.roles?.some(role => 
-        ['HOTEL_ADMIN', 'FRONTDESK'].includes(role)
-      ) || ['HOTEL_ADMIN', 'FRONTDESK'].includes(cachedSession.role);
+        ['HOTEL_ADMIN', 'FRONTDESK', 'TESTER'].includes(role)
+      ) || ['HOTEL_ADMIN', 'FRONTDESK', 'TESTER'].includes(cachedSession.role);
 
       if (!isHotelStaff) {
         return false;
@@ -308,7 +308,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
         
         // Cache room data immediately after successful login for hotel staff
         const userRoles = Array.isArray(loginData.roles) ? loginData.roles : [loginData.roles];
-        const isHotelStaff = userRoles.some((role: string) => ['HOTEL_ADMIN', 'FRONTDESK', 'HOUSEKEEPING', 'OPERATIONAL_ADMIN'].includes(role));
+        const isHotelStaff = userRoles.some((role: string) => ['HOTEL_ADMIN', 'FRONTDESK', 'HOUSEKEEPING', 'OPERATIONAL_ADMIN', 'TESTER'].includes(role));
         
         
         if (loginData.hotelId && isHotelStaff) {
@@ -544,6 +544,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
       
       if (normalizedRoles.includes('FRONTDESK')) {
         return '/frontdesk/dashboard';
+      }
+
+      if (normalizedRoles.includes('TESTER')) {
+        return '/uat';
       }
       
       if (normalizedRoles.includes('OPERATIONAL_ADMIN')) {
