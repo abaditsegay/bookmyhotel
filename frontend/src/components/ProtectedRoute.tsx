@@ -5,7 +5,7 @@ import { StandardLoading, ErrorBoundary } from './common';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requiredRole?: 'SUPER_ADMIN' | 'ADMIN' | 'HOTEL_ADMIN' | 'OPERATIONAL_ADMIN' | 'FRONTDESK' | 'HOUSEKEEPING' | 'MAINTENANCE' | 'GUEST';
+  requiredRole?: 'SUPER_ADMIN' | 'ADMIN' | 'HOTEL_ADMIN' | 'OPERATIONAL_ADMIN' | 'FRONTDESK' | 'HOUSEKEEPING' | 'MAINTENANCE' | 'TESTER' | 'GUEST';
   requiredRoles?: string[]; // Allow multiple roles
   /**
    * Custom redirect path when access is denied
@@ -80,6 +80,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     'FRONTDESK': 2,
     'HOUSEKEEPING': 2,
     'MAINTENANCE': 2,
+    'TESTER': 2,
     'OPERATIONAL_ADMIN': 3,
     'HOTEL_ADMIN': 4,
     'ADMIN': 5,

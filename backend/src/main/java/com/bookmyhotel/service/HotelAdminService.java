@@ -170,7 +170,7 @@ public class HotelAdminService {
         // Get all staff for this hotel
         List<User> allStaff = userRepository.findByHotelAndRolesContaining(hotel,
                 Arrays.asList(UserRole.FRONTDESK, UserRole.HOUSEKEEPING, UserRole.HOTEL_ADMIN,
-                        UserRole.OPERATIONAL_ADMIN, UserRole.MAINTENANCE));
+                UserRole.OPERATIONAL_ADMIN, UserRole.MAINTENANCE, UserRole.TESTER));
 
         // Apply filters
         List<User> filteredStaff = allStaff.stream()
@@ -260,13 +260,13 @@ public class HotelAdminService {
 
         // Validate allowed roles for hotel admin creation
         // HOTEL_ADMIN can create: OPERATIONAL_ADMIN, FRONTDESK, HOUSEKEEPING,
-        // MAINTENANCE
+        // MAINTENANCE, TESTER
         Set<UserRole> allowedRoles = Set.of(
                 UserRole.FRONTDESK, UserRole.HOUSEKEEPING,
-                UserRole.OPERATIONAL_ADMIN, UserRole.MAINTENANCE);
+            UserRole.OPERATIONAL_ADMIN, UserRole.MAINTENANCE, UserRole.TESTER);
         if (userDTO.getRoles() == null || !allowedRoles.containsAll(userDTO.getRoles())) {
             throw new RuntimeException(
-                    "Hotel admin can only create FRONTDESK, HOUSEKEEPING, OPERATIONAL_ADMIN, or MAINTENANCE users");
+                "Hotel admin can only create FRONTDESK, HOUSEKEEPING, OPERATIONAL_ADMIN, MAINTENANCE, or TESTER users");
         }
 
         // Create new user
@@ -316,7 +316,7 @@ public class HotelAdminService {
         if (userDTO.getRoles() != null) {
             Set<UserRole> allowedRoles = Set.of(
                     UserRole.FRONTDESK, UserRole.HOUSEKEEPING,
-                    UserRole.OPERATIONAL_ADMIN, UserRole.MAINTENANCE);
+                    UserRole.OPERATIONAL_ADMIN, UserRole.MAINTENANCE, UserRole.TESTER);
             if (allowedRoles.containsAll(userDTO.getRoles())) {
                 staff.setRoles(userDTO.getRoles());
             }
@@ -993,8 +993,8 @@ public class HotelAdminService {
         // Staff statistics - include all staff roles (excluding customers and guests)
         List<User> staff = userRepository.findByHotelAndRolesContaining(hotel,
                 Arrays.asList(UserRole.FRONTDESK, UserRole.HOUSEKEEPING, UserRole.HOTEL_ADMIN,
-                        UserRole.HOTEL_ADMIN, UserRole.ADMIN, UserRole.OPERATIONAL_ADMIN,
-                        UserRole.MAINTENANCE));
+                UserRole.HOTEL_ADMIN, UserRole.ADMIN, UserRole.OPERATIONAL_ADMIN,
+                UserRole.MAINTENANCE, UserRole.TESTER));
         stats.put("totalStaff", staff.size());
         stats.put("activeStaff", staff.stream().mapToInt(s -> s.getIsActive() ? 1 : 0).sum());
 
@@ -1113,7 +1113,7 @@ public class HotelAdminService {
         // Calculate staff statistics
         List<User> staff = userRepository.findByHotelAndRolesContaining(hotel,
                 Arrays.asList(UserRole.FRONTDESK, UserRole.HOUSEKEEPING, UserRole.HOTEL_ADMIN,
-                        UserRole.HOTEL_ADMIN, UserRole.ADMIN));
+                UserRole.HOTEL_ADMIN, UserRole.ADMIN, UserRole.TESTER));
         dto.setTotalStaff(staff.size());
         dto.setActiveStaff((int) staff.stream().mapToInt(s -> s.getIsActive() ? 1 : 0).sum());
 

@@ -41,7 +41,8 @@ public final class RolePermissions {
             UserRole.OPERATIONAL_ADMIN,
             UserRole.FRONTDESK,
             UserRole.HOUSEKEEPING,
-            UserRole.MAINTENANCE);
+            UserRole.MAINTENANCE,
+            UserRole.TESTER);
 
     // -----------------------------------------------------------------------
     // Creator permission matrix
@@ -51,9 +52,9 @@ public final class RolePermissions {
      * Maps each caller role to the set of roles it is allowed to create.
      *
      * <pre>
-     * SUPER_ADMIN    → ADMIN, HOTEL_ADMIN
-     * ADMIN          → HOTEL_ADMIN
-     * HOTEL_ADMIN    → OPERATIONAL_ADMIN, FRONTDESK, HOUSEKEEPING, MAINTENANCE
+    * SUPER_ADMIN    → ADMIN, HOTEL_ADMIN, TESTER
+    * ADMIN          → HOTEL_ADMIN, TESTER
+    * HOTEL_ADMIN    → OPERATIONAL_ADMIN, FRONTDESK, HOUSEKEEPING, MAINTENANCE, TESTER
      *                  (same hotel only — cannot create another HOTEL_ADMIN)
      * OPERATIONAL_ADMIN → HOUSEKEEPING, MAINTENANCE   (same hotel only)
      * Others         → (none)
@@ -64,25 +65,28 @@ public final class RolePermissions {
     static {
         CREATABLE_ROLES.put(UserRole.SUPER_ADMIN, EnumSet.of(
                 UserRole.ADMIN,
-                UserRole.HOTEL_ADMIN));
+            UserRole.HOTEL_ADMIN,
+            UserRole.TESTER));
 
         CREATABLE_ROLES.put(UserRole.ADMIN, EnumSet.of(
-                UserRole.HOTEL_ADMIN));
+            UserRole.HOTEL_ADMIN,
+            UserRole.TESTER));
 
         CREATABLE_ROLES.put(UserRole.HOTEL_ADMIN, EnumSet.of(
                 UserRole.OPERATIONAL_ADMIN,
                 UserRole.FRONTDESK,
                 UserRole.HOUSEKEEPING,
-                UserRole.MAINTENANCE));
+            UserRole.MAINTENANCE,
+            UserRole.TESTER));
 
         CREATABLE_ROLES.put(UserRole.OPERATIONAL_ADMIN, EnumSet.of(
                 UserRole.HOUSEKEEPING,
                 UserRole.MAINTENANCE));
 
-        // FRONTDESK, HOUSEKEEPING, MAINTENANCE, CUSTOMER, GUEST → no user creation
+        // FRONTDESK, HOUSEKEEPING, MAINTENANCE, TESTER, CUSTOMER, GUEST → no user creation
         for (UserRole noCreate : EnumSet.of(
                 UserRole.FRONTDESK, UserRole.HOUSEKEEPING,
-                UserRole.MAINTENANCE, UserRole.CUSTOMER, UserRole.GUEST)) {
+            UserRole.MAINTENANCE, UserRole.TESTER, UserRole.CUSTOMER, UserRole.GUEST)) {
             CREATABLE_ROLES.put(noCreate, EnumSet.noneOf(UserRole.class));
         }
     }
@@ -99,6 +103,7 @@ public final class RolePermissions {
         HIERARCHY.put(UserRole.MAINTENANCE, 2);
         HIERARCHY.put(UserRole.HOUSEKEEPING, 2);
         HIERARCHY.put(UserRole.FRONTDESK, 2);
+        HIERARCHY.put(UserRole.TESTER, 2);
         HIERARCHY.put(UserRole.OPERATIONAL_ADMIN, 3);
         HIERARCHY.put(UserRole.HOTEL_ADMIN, 4);
         HIERARCHY.put(UserRole.ADMIN, 5);

@@ -11,6 +11,7 @@ export const Roles = {
   FRONTDESK:          'FRONTDESK',          // Hotel-scoped: front desk agent
   HOUSEKEEPING:       'HOUSEKEEPING',       // Hotel-scoped: housekeeping staff
   MAINTENANCE:        'MAINTENANCE',        // Hotel-scoped: maintenance staff
+  TESTER:             'TESTER',             // Hotel-scoped: UAT tester
   CUSTOMER:           'CUSTOMER',           // Public: registered customer
   GUEST:              'GUEST',              // Public: anonymous / unregistered guest
 } as const;
@@ -32,6 +33,7 @@ export const HOTEL_SCOPED_ROLES: Role[] = [
   Roles.FRONTDESK,
   Roles.HOUSEKEEPING,
   Roles.MAINTENANCE,
+  Roles.TESTER,
 ];
 
 /**
@@ -44,6 +46,7 @@ export const ROLE_HIERARCHY: Record<string, number> = {
   [Roles.MAINTENANCE]:        2,
   [Roles.HOUSEKEEPING]:       2,
   [Roles.FRONTDESK]:          2,
+  [Roles.TESTER]:             2,
   [Roles.OPERATIONAL_ADMIN]:  3,
   [Roles.HOTEL_ADMIN]:        4,
   [Roles.ADMIN]:              5,
@@ -61,6 +64,7 @@ export const ROLE_DISPLAY_NAMES: Record<string, string> = {
   [Roles.FRONTDESK]:         'Front Desk Agent',
   [Roles.HOUSEKEEPING]:      'Housekeeping',
   [Roles.MAINTENANCE]:       'Maintenance',
+  [Roles.TESTER]:            'Tester',
   [Roles.CUSTOMER]:          'Customer',
   [Roles.GUEST]:             'Guest',
 };
@@ -76,6 +80,7 @@ export const ROLE_COLORS: Record<string, 'default' | 'primary' | 'secondary' | '
   [Roles.FRONTDESK]:         'info',
   [Roles.HOUSEKEEPING]:      'success',
   [Roles.MAINTENANCE]:       'warning',
+  [Roles.TESTER]:            'info',
   [Roles.CUSTOMER]:          'default',
   [Roles.GUEST]:             'default',
 };

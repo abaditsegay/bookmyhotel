@@ -19,6 +19,7 @@ import {
   People,
   BarChart as BarChartIcon,
   Settings,
+  FactCheck,
   Menu as MenuIcon,
   ChevronLeft as ChevronLeftIcon,
   AdminPanelSettings,
@@ -58,6 +59,11 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       label: t('admin.user.title', 'User Management'),
       icon: <People />,
       path: '/system/users',
+    },
+    {
+      label: 'UAT Testing',
+      icon: <FactCheck />,
+      path: '/system/uat',
     },
     {
       label: t('dashboard.system.analytics', 'Analytics'),
