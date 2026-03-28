@@ -204,14 +204,14 @@ public class BookingService {
                         || "telebirr".equals(request.getPaymentMethodId())) {
                     // Handle Ethiopian mobile payments
                     try {
-                    ensureRealPaymentGatewayEnabled();
-                    paymentInitiationResponse = processEthiopianPayment(totalAmount, request.getPaymentMethodId(),
-                        resolvePaymentPhoneNumber(request.getMobileNumber(), request.getGuestPhone()),
-                        reservation);
-                    reservation.setPaymentIntentId(paymentInitiationResponse.getTransactionId());
-                    if (reservation.getPaymentReference() == null || reservation.getPaymentReference().isBlank()) {
-                        reservation.setPaymentReference(paymentInitiationResponse.getTransactionId());
-                    }
+                        ensureRealPaymentGatewayEnabled();
+                        paymentInitiationResponse = processEthiopianPayment(totalAmount, request.getPaymentMethodId(),
+                                resolvePaymentPhoneNumber(request.getMobileNumber(), request.getGuestPhone()),
+                                reservation);
+                        reservation.setPaymentIntentId(paymentInitiationResponse.getTransactionId());
+                        if (reservation.getPaymentReference() == null || reservation.getPaymentReference().isBlank()) {
+                            reservation.setPaymentReference(paymentInitiationResponse.getTransactionId());
+                        }
                         reservation.setStatus(ReservationStatus.PENDING);
                         reservation.setPaymentStatus(PaymentStatus.PROCESSING);
                     } catch (Exception e) {
@@ -351,7 +351,7 @@ public class BookingService {
                 } else if ("mbirr".equals(request.getPaymentMethodId())
                         || "telebirr".equals(request.getPaymentMethodId())) {
                     try {
-                    ensureRealPaymentGatewayEnabled();
+                        ensureRealPaymentGatewayEnabled();
                         paymentInitiationResponse = processEthiopianPayment(totalAmount, request.getPaymentMethodId(),
                                 resolvePaymentPhoneNumber(request.getMobileNumber(), request.getGuestPhone()),
                                 reservation);
@@ -1121,9 +1121,9 @@ public class BookingService {
      */
     public BookingResponse convertToBookingResponse(Reservation reservation) {
         return convertToBookingResponse(reservation, null);
-        }
+    }
 
-        public BookingResponse convertToBookingResponse(Reservation reservation,
+    public BookingResponse convertToBookingResponse(Reservation reservation,
             PaymentInitiationResponse paymentInitiationResponse) {
         BookingResponse response = new BookingResponse();
         response.setReservationId(reservation.getId());
@@ -2558,7 +2558,7 @@ public class BookingService {
     /**
      * Process Ethiopian mobile payment (M-birr or Telebirr)
      */
-        private PaymentInitiationResponse processEthiopianPayment(BigDecimal amount, String paymentMethod,
+    private PaymentInitiationResponse processEthiopianPayment(BigDecimal amount, String paymentMethod,
             String phoneNumber,
             Reservation reservation) {
         try {

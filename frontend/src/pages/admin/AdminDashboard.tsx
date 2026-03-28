@@ -37,6 +37,7 @@ import { adminApiService, UserManagementResponse, HotelDTO, PagedResponse } from
 import AuditLogTab from './AuditLogTab';
 import PremiumTextField from '../../components/common/PremiumTextField';
 import PremiumSelect from '../../components/common/PremiumSelect';
+import { formatDateForDisplay } from '../../utils/dateUtils';
 
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -411,7 +412,7 @@ const AdminDashboard: React.FC = () => {
                       </TableCell>
                       <TableCell>
                         <Typography variant="body2" color="text.secondary">
-                          {hotel.createdAt ? new Date(hotel.createdAt).toLocaleDateString() : 'N/A'}
+                          {hotel.createdAt ? formatDateForDisplay(hotel.createdAt) : 'N/A'}
                         </Typography>
                       </TableCell>
                       <TableCell>
@@ -609,7 +610,7 @@ const AdminDashboard: React.FC = () => {
                       </TableCell>
                       <TableCell>
                         <Typography variant="body2" color="text.secondary">
-                          {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
+                          {user.createdAt ? formatDateForDisplay(user.createdAt) : 'N/A'}
                         </Typography>
                       </TableCell>
                       <TableCell>

@@ -5,6 +5,7 @@ import {
   ArrowBack as BackIcon,
   SearchOff as NotFoundIcon
 } from '@mui/icons-material';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { StandardError } from '../components/common';
 
@@ -13,6 +14,7 @@ import { StandardError } from '../components/common';
  * Displays when users navigate to non-existent routes
  */
 const NotFoundPage: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   const handleGoHome = () => {
@@ -45,8 +47,8 @@ const NotFoundPage: React.FC = () => {
       {/* Error Display using StandardError */}
       <StandardError
         error={true}
-        title="Page Not Found"
-        message="The page you're looking for doesn't exist or has been moved."
+        title={t('notFoundPage.title')}
+        message={t('notFoundPage.message')}
         severity="info"
         showRetry={false}
       />
@@ -68,7 +70,7 @@ const NotFoundPage: React.FC = () => {
             height: '44px'
           }}
         >
-          Go Home
+          {t('notFoundPage.goHome')}
         </Button>
 
         <Button
@@ -80,7 +82,7 @@ const NotFoundPage: React.FC = () => {
             height: '44px'
           }}
         >
-          Go Back
+          {t('common.back')}
         </Button>
       </Box>
 
@@ -91,7 +93,7 @@ const NotFoundPage: React.FC = () => {
         maxWidth: 500
       }}>
         <Typography variant="body2" color="text.secondary">
-          If you believe this is an error, please contact support or try navigating back to the home page.
+          {t('notFoundPage.helpText')}
         </Typography>
       </Box>
     </Container>

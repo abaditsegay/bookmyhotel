@@ -2,6 +2,7 @@ import React, { lazy, Suspense } from 'react';
 import { Typography, Box, CircularProgress } from '@mui/material';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { SnackbarProvider } from 'notistack';
+import { useTranslation } from 'react-i18next';
 import './i18n'; // Initialize i18n
 import EnhancedLayout from './components/layout/EnhancedLayout';
 import AdminLayout from './components/layout/AdminLayout';
@@ -92,23 +93,27 @@ const StaffScheduleDashboard = lazy(() => import('./components/StaffScheduleDash
 const ErrorBoundaryDemo = lazy(() => import('./components/demo').then(m => ({ default: m.ErrorBoundaryDemo })));
 
 // Loading fallback component
-const PageLoader: React.FC = () => (
-  <Box
-    sx={{
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      minHeight: '60vh',
-      flexDirection: 'column',
-      gap: 2,
-    }}
-  >
-    <CircularProgress size={60} />
-    <Typography variant="body1" color="text.secondary">
-      Loading...
-    </Typography>
-  </Box>
-);
+const PageLoader: React.FC = () => {
+  const { t } = useTranslation();
+
+  return (
+    <Box
+      sx={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: '60vh',
+        flexDirection: 'column',
+        gap: 2,
+      }}
+    >
+      <CircularProgress size={60} />
+      <Typography variant="body1" color="text.secondary">
+        {t('common.loading')}
+      </Typography>
+    </Box>
+  );
+};
 
 // Lazy load SystemModule for better performance
 const SystemModule = React.lazy(() => import('./modules/SystemModule'));
@@ -116,6 +121,7 @@ const SystemModule = React.lazy(() => import('./modules/SystemModule'));
 // Role-based Router Component - redirects based on user role
 const RoleBasedRouter: React.FC = () => {
   const { user, isAuthenticated, isInitializing } = useAuth();
+  const { t } = useTranslation();
   
   // Show loading state while authentication is being initialized
   if (isInitializing) {
@@ -130,7 +136,7 @@ const RoleBasedRouter: React.FC = () => {
           gap: 2 
         }}
       >
-        <Typography variant="h6">Loading...</Typography>
+        <Typography variant="h6">{t('common.loading')}</Typography>
       </Box>
     );
   }
@@ -335,7 +341,7 @@ function App() {
         <Route path="/system/*" element={
           <ProtectedRoute requiredRole="ADMIN">
             <AdminLayout>
-              <React.Suspense fallback={<div>Loading...</div>}>
+              <React.Suspense fallback={<PageLoader />}>
                 <SystemModule />
               </React.Suspense>
             </AdminLayout>

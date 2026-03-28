@@ -13,7 +13,7 @@ import {
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
-import { useCalendarStore } from '../../contexts/store';
+import { useCalendarStore, getCalendarType } from '../../contexts/store';
 import { gregorianToEthiopian, ethiopianToGregorian } from '../../utils/ethiopianCalendar';
 import { COLORS, addAlpha } from '../../theme/themeColors';
 
@@ -62,7 +62,7 @@ const CalendarWidget: React.FC = () => {
   const { user } = useAuth();
   const { t, i18n } = useTranslation();
   const { calendarType } = useCalendarStore();
-  const isEthiopian = calendarType === 'ethiopian';
+  const isEthiopian = getCalendarType(i18n.language, calendarType) === 'ethiopian';
   const lang = i18n.language === 'am' ? 'am' : 'en';
   const ethMonths = lang === 'am' ? ETH_MONTHS_AM : ETH_MONTHS_EN;
 

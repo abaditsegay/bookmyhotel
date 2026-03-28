@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Box, Typography, Button, SxProps, Theme } from '@mui/material';
 import {
   SearchOff as SearchOffIcon,
@@ -92,86 +93,114 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
  * Pre-configured empty state variants for common scenarios
  */
 
-export const NoSearchResults: React.FC<{ onReset?: () => void }> = ({ onReset }) => (
-  <EmptyState
-    icon={<SearchOffIcon sx={{ fontSize: 64 }} />}
-    title="No results found"
-    message="We couldn't find any matches for your search. Try adjusting your filters or search terms."
-    action={onReset ? {
-      label: 'Clear Filters',
-      onClick: onReset,
-      variant: 'outlined',
-    } : undefined}
-  />
-);
+export const NoSearchResults: React.FC<{ onReset?: () => void }> = ({ onReset }) => {
+  const { t } = useTranslation();
 
-export const NoBookings: React.FC<{ onCreate?: () => void }> = ({ onCreate }) => (
-  <EmptyState
-    icon={<EventBusyIcon sx={{ fontSize: 64 }} />}
-    title="No bookings yet"
-    message="You don't have any bookings. Start exploring hotels and make your first reservation!"
-    action={onCreate ? {
-      label: 'Search Hotels',
-      onClick: onCreate,
-    } : undefined}
-  />
-);
+  return (
+    <EmptyState
+      icon={<SearchOffIcon sx={{ fontSize: 64 }} />}
+      title={t('emptyStates.noSearchResults.title')}
+      message={t('emptyStates.noSearchResults.message')}
+      action={onReset ? {
+        label: t('emptyStates.noSearchResults.action'),
+        onClick: onReset,
+        variant: 'outlined',
+      } : undefined}
+    />
+  );
+};
 
-export const NoOrders: React.FC<{ onCreate?: () => void }> = ({ onCreate }) => (
-  <EmptyState
-    icon={<ShoppingCartIcon sx={{ fontSize: 64 }} />}
-    title="No orders yet"
-    message="There are no orders to display. Start creating orders to see them here."
-    action={onCreate ? {
-      label: 'Create Order',
-      onClick: onCreate,
-    } : undefined}
-  />
-);
+export const NoBookings: React.FC<{ onCreate?: () => void }> = ({ onCreate }) => {
+  const { t } = useTranslation();
 
-export const NoProducts: React.FC<{ onCreate?: () => void }> = ({ onCreate }) => (
-  <EmptyState
-    icon={<InboxIcon sx={{ fontSize: 64 }} />}
-    title="No products available"
-    message="No products have been added yet. Add products to start selling."
-    action={onCreate ? {
-      label: 'Add Product',
-      onClick: onCreate,
-    } : undefined}
-  />
-);
+  return (
+    <EmptyState
+      icon={<EventBusyIcon sx={{ fontSize: 64 }} />}
+      title={t('emptyStates.noBookings.title')}
+      message={t('emptyStates.noBookings.message')}
+      action={onCreate ? {
+        label: t('hotelSearch.form.searchButton'),
+        onClick: onCreate,
+      } : undefined}
+    />
+  );
+};
 
-export const NoHotels: React.FC<{ onRegister?: () => void }> = ({ onRegister }) => (
-  <EmptyState
-    icon={<HotelIcon sx={{ fontSize: 64 }} />}
-    title="No hotels found"
-    message="There are no hotels matching your criteria. Try expanding your search or check back later."
-    action={onRegister ? {
-      label: 'Register Your Hotel',
-      onClick: onRegister,
-      variant: 'outlined',
-    } : undefined}
-  />
-);
+export const NoOrders: React.FC<{ onCreate?: () => void }> = ({ onCreate }) => {
+  const { t } = useTranslation();
 
-export const NoReceipts: React.FC = () => (
-  <EmptyState
-    icon={<ReceiptIcon sx={{ fontSize: 64 }} />}
-    title="No receipts"
-    message="No receipts to display at this time."
-  />
-);
+  return (
+    <EmptyState
+      icon={<ShoppingCartIcon sx={{ fontSize: 64 }} />}
+      title={t('emptyStates.noOrders.title')}
+      message={t('emptyStates.noOrders.message')}
+      action={onCreate ? {
+        label: t('emptyStates.noOrders.action'),
+        onClick: onCreate,
+      } : undefined}
+    />
+  );
+};
+
+export const NoProducts: React.FC<{ onCreate?: () => void }> = ({ onCreate }) => {
+  const { t } = useTranslation();
+
+  return (
+    <EmptyState
+      icon={<InboxIcon sx={{ fontSize: 64 }} />}
+      title={t('emptyStates.noProducts.title')}
+      message={t('emptyStates.noProducts.message')}
+      action={onCreate ? {
+        label: t('emptyStates.noProducts.action'),
+        onClick: onCreate,
+      } : undefined}
+    />
+  );
+};
+
+export const NoHotels: React.FC<{ onRegister?: () => void }> = ({ onRegister }) => {
+  const { t } = useTranslation();
+
+  return (
+    <EmptyState
+      icon={<HotelIcon sx={{ fontSize: 64 }} />}
+      title={t('emptyStates.noHotels.title')}
+      message={t('emptyStates.noHotels.message')}
+      action={onRegister ? {
+        label: t('publicHotelRegistration.title'),
+        onClick: onRegister,
+        variant: 'outlined',
+      } : undefined}
+    />
+  );
+};
+
+export const NoReceipts: React.FC = () => {
+  const { t } = useTranslation();
+
+  return (
+    <EmptyState
+      icon={<ReceiptIcon sx={{ fontSize: 64 }} />}
+      title={t('emptyStates.noReceipts.title')}
+      message={t('emptyStates.noReceipts.message')}
+    />
+  );
+};
 
 export const NoData: React.FC<{ title?: string; message?: string }> = ({ 
-  title = "No data available", 
-  message = "There's nothing to display right now." 
-}) => (
-  <EmptyState
-    icon={<InfoIcon sx={{ fontSize: 64 }} />}
-    title={title}
-    message={message}
-  />
-);
+  title,
+  message,
+}) => {
+  const { t } = useTranslation();
+
+  return (
+    <EmptyState
+      icon={<InfoIcon sx={{ fontSize: 64 }} />}
+      title={title || t('emptyStates.noDataTitle')}
+      message={message || t('emptyStates.noDataMessage')}
+    />
+  );
+};
 
 // Export individual icon components for custom empty states
 export const EmptyStateIcons = {

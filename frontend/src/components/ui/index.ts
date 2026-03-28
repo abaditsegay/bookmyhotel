@@ -7,6 +7,8 @@ export { default as MuiCard } from './MuiCard';
 export { default as FormField } from './FormField';
 export { default as StatusChip } from './StatusChip';
 export { default as InfoField } from './InfoField';
+export { default as PageHeader } from './PageHeader';
+export { default as SurfaceCard } from './SurfaceCard';
 
 export {
   LoadingSpinner,

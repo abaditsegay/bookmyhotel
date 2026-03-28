@@ -524,8 +524,6 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
 
       {/* Tasks Table */}
       <Card sx={{
-        border: '1px solid',
-        borderColor: 'divider',
         borderRadius: 3,
         boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.08)}`
       }}>
@@ -619,8 +617,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
               p: 2.5,
               backgroundColor: COLORS.BG_LIGHT,
               borderRadius: 2,
-              border: '1px solid',
-              borderColor: 'divider'
+              boxShadow: `0 6px 16px ${addAlpha(COLORS.BLACK, 0.05)}`,
             }}>
               <Typography 
                 variant="body2" 
@@ -1538,11 +1535,9 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
             elevation={0}
             sx={{ 
               backgroundColor: COLORS.BG_LIGHT,
-              border: '1px solid',
-              borderColor: 'divider',
-              borderLeft: `4px solid ${COLORS.SECONDARY}`,
               borderRadius: 2,
-              p: 2.5
+              p: 2.5,
+              boxShadow: `0 8px 20px ${addAlpha(COLORS.SECONDARY, 0.08)}`,
             }}
           >
             <Typography variant="subtitle2" sx={{ fontWeight: 700, color: COLORS.TEXT_PRIMARY, mb: 2, textTransform: 'uppercase', fontSize: '0.75rem' }}>

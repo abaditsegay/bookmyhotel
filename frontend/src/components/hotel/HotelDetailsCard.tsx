@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Card,
   CardContent,
@@ -91,6 +92,7 @@ const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({
   defaultExpanded = false,
   horizontalLayout = false 
 }) => {
+  const { t } = useTranslation();
   const [expanded, setExpanded] = React.useState(defaultExpanded);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -108,6 +110,7 @@ const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({
     hotel.availableRooms?.length || 0;
   const amenityHighlights = getAmenityHighlights(hotel.facilityAmenities);
   const websiteUrl = normalizeWebsiteUrl(hotel.websiteUrl);
+  const compactAvailabilityCount = useRoomTypes ? totalAvailableCount : hotel.availableRooms?.length || 0;
 
   // Mock rating (in a real app, this would come from the backend)
   const hotelRating = 4.2 + (hotel.id % 10) / 10; // Generates ratings between 4.2-5.1
@@ -119,14 +122,12 @@ const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({
         mb: isMobile ? 2 : 3,
         borderRadius: 2,
         overflow: 'hidden',
-        border: `1px solid ${addAlpha(COLORS.BORDER_LIGHT, 0.3)}`,
         display: horizontalLayout && isLargeScreen ? 'flex' : 'block',
         flexDirection: horizontalLayout && isLargeScreen ? 'row' : 'column',
         transition: 'all 0.3s ease-in-out',
         '&:hover': {
           transform: 'translateY(-8px)',
           boxShadow: 6,
-          borderColor: 'primary.light',
         },
       }}
     >
@@ -192,8 +193,8 @@ const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({
                   </Box>
                   <Chip 
                     label={useRoomTypes ? 
-                      `${totalAvailableCount} available` : 
-                      `${hotel.availableRooms?.length || 0} available`
+                      t('hotelSearch.card.availableCompact', { count: compactAvailabilityCount }) : 
+                      t('hotelSearch.card.availableCompact', { count: compactAvailabilityCount })
                     } 
                     color="success" 
                     variant="outlined"
@@ -227,13 +228,13 @@ const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({
                 }}
               >
                 <Typography variant="h5" color="success.main" sx={{ fontWeight: 'bold' }}>
-                  From {formatCurrencyWithDecimals(hotel.minPrice || 0)}
+                  {t('hotelSearch.detail.fromPrice')} {formatCurrencyWithDecimals(hotel.minPrice || 0)}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  per night
+                  {t('hotelSearch.detail.perNight')}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
-                  Up to {formatCurrencyWithDecimals(hotel.maxPrice || 0)}
+                  {t('hotelSearch.detail.upToPrice')} {formatCurrencyWithDecimals(hotel.maxPrice || 0)}
                 </Typography>
               </Box>
             </Stack>
@@ -262,8 +263,8 @@ const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({
                   </Box>
                   <Chip 
                     label={useRoomTypes ? 
-                      `${totalAvailableCount} rooms available` : 
-                      `${hotel.availableRooms?.length || 0} rooms available`
+                      t('hotelSearch.card.availableRooms', { count: totalAvailableCount }) : 
+                      t('hotelSearch.card.availableRooms', { count: hotel.availableRooms?.length || 0 })
                     } 
                     color="success" 
                     variant="outlined"
@@ -281,13 +282,13 @@ const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({
               
               <Box sx={{ textAlign: 'right', ml: 2 }}>
                 <Typography variant="h5" color="success.main" sx={{ fontWeight: 'bold' }}>
-                  From {formatCurrencyWithDecimals(hotel.minPrice || 0)}
+                  {t('hotelSearch.detail.fromPrice')} {formatCurrencyWithDecimals(hotel.minPrice || 0)}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  per night
+                  {t('hotelSearch.detail.perNight')}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
-                  Up to {formatCurrencyWithDecimals(hotel.maxPrice || 0)}
+                  {t('hotelSearch.detail.upToPrice')} {formatCurrencyWithDecimals(hotel.maxPrice || 0)}
                 </Typography>
               </Box>
             </Box>
@@ -344,13 +345,13 @@ const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({
             <Box sx={{ mt: 2 }}>
               <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" sx={{ mb: amenityHighlights.length > 0 || websiteUrl ? 1.5 : 0 }}>
                 {hotel.checkInTime && (
-                  <Chip size="small" label={`Check-in ${hotel.checkInTime}`} variant="outlined" />
+                  <Chip size="small" label={`${t('hotelSearch.detail.checkIn')} ${hotel.checkInTime}`} variant="outlined" />
                 )}
                 {hotel.checkOutTime && (
-                  <Chip size="small" label={`Check-out ${hotel.checkOutTime}`} variant="outlined" />
+                  <Chip size="small" label={`${t('hotelSearch.detail.checkOut')} ${hotel.checkOutTime}`} variant="outlined" />
                 )}
                 {hotel.numberOfRooms && hotel.numberOfRooms > 0 && (
-                  <Chip size="small" label={`${hotel.numberOfRooms} rooms`} variant="outlined" />
+                  <Chip size="small" label={t('hotelSearch.detail.roomsCount', { count: hotel.numberOfRooms })} variant="outlined" />
                 )}
               </Stack>
 
@@ -372,14 +373,14 @@ const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({
                     },
                   }}
                 >
-                  Visit hotel website
+                  {t('hotelSearch.detail.visitWebsite')}
                 </Typography>
               )}
 
               {amenityHighlights.length > 0 && (
                 <Box>
                   <Typography variant="caption" sx={{ display: 'block', mb: 0.75, fontWeight: 700, color: 'text.secondary' }}>
-                    Guest amenities
+                    {t('hotelSearch.detail.guestAmenities')}
                   </Typography>
                   <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
                     {amenityHighlights.map((amenity) => (
@@ -411,8 +412,8 @@ const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({
             }}
           >
             {useRoomTypes ? 
-              `Room Types (${hotel.roomTypeAvailability?.length || 0})` :
-              `Rooms (${hotel.availableRooms?.length || 0})`
+              t('hotelSearch.card.roomTypesCount', { count: hotel.roomTypeAvailability?.length || 0 }) :
+              t('hotelSearch.card.roomsCount', { count: hotel.availableRooms?.length || 0 })
             }
           </Typography>
           <Button
@@ -423,7 +424,7 @@ const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({
             fullWidth={isMobile}
             sx={{ minWidth: isMobile ? '100%' : 'auto' }}
           >
-            {expanded ? 'Hide Rooms' : 'Show All Rooms'}
+            {expanded ? t('hotelSearch.card.hideRooms') : t('hotelSearch.card.showAllRooms')}
           </Button>
         </Box>
 
@@ -475,10 +476,9 @@ const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({
                   fullWidth={isMobile}
                   sx={{ py: isMobile ? 1.5 : undefined }}
                 >
-                  View {useRoomTypes ? 
-                    (hotel.roomTypeAvailability!.length - (isMobile ? 1 : 2)) : 
-                    (hotel.availableRooms!.length - (isMobile ? 1 : 2))
-                  } more {useRoomTypes ? 'room types' : 'rooms'}
+                  {useRoomTypes
+                    ? t('hotelSearch.card.viewMoreRoomTypes', { count: hotel.roomTypeAvailability!.length - (isMobile ? 1 : 2) })
+                    : t('hotelSearch.card.viewMoreRooms', { count: hotel.availableRooms!.length - (isMobile ? 1 : 2) })}
                 </Button>
               </Box>
             )}
@@ -532,10 +532,10 @@ const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({
         {!hasAvailableRooms && (
           <Box sx={{ textAlign: 'center', py: 4 }}>
             <Typography variant="h6" color="text.secondary" gutterBottom>
-              No rooms available
+              {t('hotelSearch.detail.noRoomsAvailableTitle')}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Try adjusting your search dates or criteria
+              {t('hotelSearch.detail.noRoomsAvailableHint')}
             </Typography>
           </Box>
         )}

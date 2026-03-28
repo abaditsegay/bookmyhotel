@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Box, CircularProgress, LinearProgress, Skeleton, Typography } from '@mui/material';
 import { styled, keyframes } from '@mui/material/styles';
 import { COLORS, addAlpha } from '../../theme/themeColors';
@@ -254,9 +255,11 @@ export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
  */
 export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
   open,
-  message = 'Loading...',
+  message,
   backdrop = true,
 }) => {
+  const { t } = useTranslation();
+
   if (!open) return null;
 
   return (
@@ -287,7 +290,7 @@ export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
       >
         <CircularProgress size={48} />
         <Typography variant="h6" sx={{ mt: 2 }}>
-          {message}
+          {message || t('common.loading')}
         </Typography>
       </Box>
     </Box>

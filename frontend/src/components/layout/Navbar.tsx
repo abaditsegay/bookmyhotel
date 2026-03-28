@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   AppBar,
   Toolbar,
@@ -27,8 +28,6 @@ import {
   Search as SearchIcon,
   Store as StoreIcon,
   Notifications as NotificationsIcon,
-  Home as HomeIcon,
-  Apartment as ApartmentIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
@@ -39,6 +38,7 @@ import LanguageSelector from '../common/LanguageSelector';
 import { COLORS, addAlpha } from '../../theme/themeColors';
 
 const Navbar: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const theme = useTheme();
@@ -332,10 +332,7 @@ const Navbar: React.FC = () => {
         {!user && (
           <>
             <ListItem onClick={() => handleNavigation('/')} sx={{ cursor: 'pointer' }}>
-              <ListItemIcon>
-                <HomeIcon />
-              </ListItemIcon>
-              <ListItemText primary="Home" />
+              <ListItemText primary={t('navigation.home')} />
             </ListItem>
             <ListItem onClick={() => {
               toggleMobileDrawer();
@@ -348,16 +345,10 @@ const Navbar: React.FC = () => {
                 }, 500);
               }
             }} sx={{ cursor: 'pointer' }}>
-              <ListItemIcon>
-                <ApartmentIcon />
-              </ListItemIcon>
-              <ListItemText primary="Hotel Registration" />
+              <ListItemText primary={t('navigation.hotelRegistration')} />
             </ListItem>
             <ListItem onClick={() => handleNavigation('/find-booking')} sx={{ cursor: 'pointer' }}>
-              <ListItemIcon>
-                <BusinessIcon />
-              </ListItemIcon>
-              <ListItemText primary="My Reservation" />
+              <ListItemText primary={t('navigation.myReservation')} />
             </ListItem>
           </>
         )}
@@ -367,10 +358,7 @@ const Navbar: React.FC = () => {
           <Divider />
           <List>
             <ListItem onClick={handleLogout} sx={{ cursor: 'pointer' }}>
-              <ListItemIcon>
-                <LogoutIcon />
-              </ListItemIcon>
-              <ListItemText primary="Logout" />
+              <ListItemText primary={t('navigation.logout')} />
             </ListItem>
           </List>
         </>
@@ -398,7 +386,7 @@ const Navbar: React.FC = () => {
     >
       <MenuItem onClick={() => handleNavigation('/profile')} aria-label="Go to profile page">
         <PersonIcon sx={{ mr: 1 }} aria-hidden="true" />
-        Profile
+        {t('navigation.profile')}
       </MenuItem>
       {user?.role === 'CUSTOMER' && (
         <>
@@ -415,7 +403,7 @@ const Navbar: React.FC = () => {
       <Divider />
       <MenuItem onClick={handleLogout} aria-label="Logout from account">
         <LogoutIcon sx={{ mr: 1 }} aria-hidden="true" />
-        Logout
+        {t('navigation.logout')}
       </MenuItem>
     </Menu>
   );
@@ -622,7 +610,6 @@ const Navbar: React.FC = () => {
                     <Button
                       color="inherit"
                       onClick={() => handleNavigation('/')}
-                      startIcon={<HomeIcon />}
                       sx={{
                         borderRadius: 2,
                         fontSize: '0.8rem',
@@ -631,7 +618,7 @@ const Navbar: React.FC = () => {
                         '&:hover': { backgroundColor: getHoverBackground() },
                       }}
                     >
-                      Home
+                      {t('navigation.home')}
                     </Button>
                     <Button
                       color="inherit"
@@ -645,7 +632,6 @@ const Navbar: React.FC = () => {
                           }, 500);
                         }
                       }}
-                      startIcon={<ApartmentIcon />}
                       sx={{
                         borderRadius: 2,
                         fontSize: '0.8rem',
@@ -654,7 +640,7 @@ const Navbar: React.FC = () => {
                         '&:hover': { backgroundColor: getHoverBackground() },
                       }}
                     >
-                      Hotel Registration
+                      {t('navigation.hotelRegistration')}
                     </Button>
                     <Button
                       color="inherit"
@@ -667,7 +653,7 @@ const Navbar: React.FC = () => {
                         '&:hover': { backgroundColor: 'action.hover' },
                       }}
                     >
-                      My Reservation
+                      {t('navigation.myReservation')}
                     </Button>
                   </>
                 )}
@@ -682,7 +668,7 @@ const Navbar: React.FC = () => {
                     '&:hover': { backgroundColor: getHoverBackground() },
                   }}
                 >
-                  Login
+                  {t('navigation.login')}
                 </Button>
               </>
             )}

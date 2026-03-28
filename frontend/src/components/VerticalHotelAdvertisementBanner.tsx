@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Box,
   Card,
@@ -23,12 +24,11 @@ interface VerticalHotelAdvertisementBannerProps {
   maxHotels?: number;
 }
 
-// Fallback hotel data
-const fallbackHotels: HotelSearchResult[] = [
+const getFallbackHotels = (t: (key: string) => string): HotelSearchResult[] => [
   {
     id: 1,
-    name: 'Luxury Spa Resort',
-    description: 'Experience ultimate relaxation with our premium spa packages.',
+    name: t('hotelBanner.fallback.resort.name'),
+    description: t('hotelBanner.fallback.resort.description'),
     address: '123 Ocean Drive',
     city: 'Malibu',
     country: 'USA',
@@ -39,8 +39,8 @@ const fallbackHotels: HotelSearchResult[] = [
   },
   {
     id: 2,
-    name: 'Business Hotel Downtown',
-    description: 'Modern amenities perfect for business travelers.',
+    name: t('hotelBanner.fallback.business.name'),
+    description: t('hotelBanner.fallback.business.description'),
     address: '456 Business Blvd',
     city: 'New York',
     country: 'USA',
@@ -51,8 +51,8 @@ const fallbackHotels: HotelSearchResult[] = [
   },
   {
     id: 3,
-    name: 'Mountain View Lodge',
-    description: 'Escape to nature with breathtaking mountain views.',
+    name: t('hotelBanner.fallback.mountain.name'),
+    description: t('hotelBanner.fallback.mountain.description'),
     address: '789 Mountain Trail',
     city: 'Aspen',
     country: 'USA',
@@ -64,6 +64,7 @@ const fallbackHotels: HotelSearchResult[] = [
 ];
 
 export default function VerticalHotelAdvertisementBanner({ maxHotels = 3 }: VerticalHotelAdvertisementBannerProps) {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [hotels, setHotels] = useState<HotelSearchResult[]>([]);
@@ -81,16 +82,16 @@ export default function VerticalHotelAdvertisementBanner({ maxHotels = 3 }: Vert
         setHotels(randomHotels.slice(0, maxHotels));
       } else {
         // Use fallback hotels if no API hotels available
-        setHotels(fallbackHotels.slice(0, maxHotels));
+        setHotels(getFallbackHotels(t).slice(0, maxHotels));
       }
     } catch (err) {
       // console.warn('Failed to fetch random hotels from API, using fallback:', err);
-      setError('Using sample hotels');
-      setHotels(fallbackHotels.slice(0, maxHotels));
+      setError(t('hotelBanner.usingSampleHotels'));
+      setHotels(getFallbackHotels(t).slice(0, maxHotels));
     } finally {
       setLoading(false);
     }
-  }, [maxHotels]);
+  }, [maxHotels, t]);
 
   // Handle hotel click
   const handleHotelClick = (hotel: HotelSearchResult) => {
@@ -261,12 +262,12 @@ export default function VerticalHotelAdvertisementBanner({ maxHotels = 3 }: Vert
                     ${hotel.minPrice}
                   </Typography>
                   <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
-                    per night
+                    {t('hotelSearch.detail.perNight')}
                   </Typography>
                 </Box>
                 {hotel.maxPrice && hotel.maxPrice > hotel.minPrice && (
                   <Chip 
-                    label="Multiple" 
+                    label={t('hotelBanner.multipleRates')} 
                     size="small" 
                     variant="outlined" 
                     color="primary"
@@ -291,7 +292,7 @@ export default function VerticalHotelAdvertisementBanner({ maxHotels = 3 }: Vert
                   mt: 'auto' // Push button to bottom
                 }}
               >
-                View Details
+                {t('hotelBanner.viewDetails')}
               </Button>
             </CardContent>
           </Card>
@@ -301,7 +302,7 @@ export default function VerticalHotelAdvertisementBanner({ maxHotels = 3 }: Vert
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', px: 2, pb: 1 }}>
         <TimeIcon fontSize="small" color="action" sx={{ mr: 0.5 }} />
         <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem' }}>
-          Refreshes every 2 minutes
+          {t('hotelBanner.refreshesEveryTwoMinutes')}
         </Typography>
       </Box>
     </Box>

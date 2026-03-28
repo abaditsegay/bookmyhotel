@@ -35,7 +35,11 @@ export const enTranslations = {
       passwordsNoMatch: "Passwords do not match",
       registrationSuccess: "Registration successful! Redirecting...",
       loginFailed: "Login failed",
-      registrationFailed: "Registration failed"
+      registrationFailed: "Registration failed",
+      loading: "Loading...",
+      mobileSignInButton: "Mobile Sign In (Tap Here)",
+      manageReservationsPrefix: "Need to make a booking? You'll need to",
+      manageReservationsSuffix: "first to manage your reservations."
     },
     forgotPassword: {
       title: "Forgot Password",
@@ -931,6 +935,56 @@ export const enTranslations = {
           paymentReference: "Payment Reference"
         }
       },
+      searchPage: {
+        title: "Find Your Booking",
+        subtitle: "Search for your reservation using your confirmation number or email",
+        searchMethod: "Search Method",
+        methods: {
+          confirmation: "Confirmation Number",
+          emailAndLastName: "Email & Last Name"
+        },
+        fields: {
+          lastName: "Last Name"
+        },
+        placeholders: {
+          confirmationNumber: "Enter your booking confirmation number",
+          email: "Enter your email",
+          lastName: "Enter your last name"
+        },
+        buttons: {
+          searchBooking: "Search Booking",
+          showMoreDetails: "Show More Details",
+          hideDetails: "Hide Details"
+        },
+        sections: {
+          bookingInformation: "Booking Information"
+        },
+        labels: {
+          roomNumber: "Room {{roomNumber}}",
+          bookedOn: "Booked on:",
+          paymentId: "Payment ID:"
+        },
+        statuses: {
+          booked: "Booked",
+          checkedIn: "Checked In",
+          checkedOut: "Checked Out",
+          cancelled: "Cancelled",
+          pending: "Pending"
+        },
+        paymentStatuses: {
+          paid: "Paid",
+          pending: "Pending",
+          payAtFrontdesk: "Pay at Front Desk",
+          failed: "Failed",
+          refunded: "Refunded"
+        },
+        errors: {
+          enterConfirmationNumber: "Please enter a confirmation number",
+          enterEmailAndLastName: "Please enter both email and last name",
+          bookingNotFound: "Booking not found",
+          searchFailed: "Failed to search for booking. Please try again."
+        }
+      },
       help: {
         title: "Need Help?",
         description: "To find your booking, you'll need both your reference number and the email address used when making the booking. The reference number can be found in your booking confirmation email. If you can't find your booking, please contact the hotel directly."
@@ -984,11 +1038,125 @@ export const enTranslations = {
       cancelling: "Cancelling...",
       cancelBookingAction: "Cancel Booking"
     },
+    managementPage: {
+      loading: "Loading your booking...",
+      includingTaxes: "(including all taxes)",
+      cancelPrompt: "Are you sure you want to cancel this booking? This action cannot be undone.",
+      errors: {
+        failedToLoadBooking: "Failed to load booking",
+        invalidLink: "Invalid booking link. Please check your email for the correct link.",
+        failedToCancelBooking: "Failed to cancel booking",
+        notFound: "Booking not found. Please check your email for the correct link."
+      }
+    },
     paymentStatus: {
       completed: "COMPLETED",
       pending: "PENDING", 
       processing: "PROCESSING",
       failed: "FAILED"
+    },
+    myBookingsPage: {
+      subtitle: "Manage and track your hotel reservations",
+      loading: "Loading your bookings...",
+      browseHotels: "Browse Hotels",
+      contactSupport: "Contact Support",
+      modifyDeadlineTooltip: "Modifications must be made at least 24 hours before check-in",
+      specialRequests: "Special requests",
+      nightSingle: "night",
+      nightPlural: "nights",
+      cancelDialogPrompt: "Are you sure you want to cancel this booking?",
+      cancelIrreversible: "This action cannot be undone. Refund policies may apply.",
+      modifyDialogDescription: "Modify your booking details below. You can change dates, room type, or special requests.",
+      currentBooking: "Current Booking",
+      newCheckInDate: "New Check-in Date",
+      newCheckOutDate: "New Check-out Date",
+      currentValue: "Current: {{value}}",
+      specialRequestsPlaceholder: "Enter any special requests for your stay...",
+      none: "None",
+      statuses: {
+        booked: "Booked",
+        checkedin: "Checked In",
+        checkedout: "Checked Out",
+        cancelled: "Cancelled",
+        pending: "Pending",
+        noshow: "No Show"
+      },
+      paymentStatuses: {
+        paid: "Paid",
+        pending: "Pending",
+        failed: "Failed",
+        refunded: "Refunded",
+        payatfrontdesk: "Pay at Front Desk"
+      },
+      errors: {
+        loginRequired: "Please log in to view your bookings",
+        loadFailed: "Failed to load your bookings. Please try again later.",
+        cancelFailed: "Failed to cancel booking. Please try again or contact support.",
+        noChanges: "Please make at least one change to modify the booking.",
+        modifyFailed: "Failed to modify booking.",
+        modifyFailedWithSupport: "Failed to modify booking. Please try again or contact support."
+      }
+    },
+    guestManagementPage: {
+      cancelledNoticeTitle: "Booking Cancelled",
+      cancelledNoticeMessage: "This booking has been cancelled. If you need to make a new reservation, please visit our booking page. If you have questions about refunds, please contact the hotel directly.",
+      modifyDeadline: "Modifications must be made at least 24 hours before check-in.",
+      nightSingle: "night",
+      nightPlural: "nights",
+      priceSummary: "Price Summary",
+      priceUnavailable: "Price information is unavailable for this booking. Please contact support.",
+      pricePerNight: "Price per Night",
+      numberOfNights: "Number of Nights",
+      pricingUpdated: "PRICING UPDATED",
+      whatChanged: "What Changed:",
+      dates: "Dates",
+      roomTypeChangeDetected: "Room type change detected. Final pricing will be calculated by the server based on the new room type's rate.",
+      priceCalculationBreakdown: "Price Calculation Breakdown:",
+      originalBooking: "Original Booking",
+      modifiedBooking: "Modified Booking",
+      ratePerNight: "Rate/Night",
+      total: "Total",
+      calculation: "Calculation",
+      estimatedServerPrice: "* Estimated - server will calculate actual price",
+      originalTotal: "Original Total",
+      newTotal: "New Total",
+      additionalCost: "Additional Cost",
+      savings: "Savings",
+      noChange: "No Change",
+      pricingPersistHint: "This pricing update will persist until you close this dialog",
+      fetchingRoomPrice: "Fetching price for selected room type...",
+      makeNewBooking: "Make New Booking",
+      findAnotherBooking: "Find Another Booking",
+      statuses: {
+        booked: "Booked",
+        cancelled: "Cancelled",
+        checkedin: "Checked In",
+        checkedout: "Checked Out",
+        pending: "Pending"
+      },
+      paymentStatuses: {
+        completed: "COMPLETED",
+        processing: "PROCESSING",
+        pending: "PENDING",
+        failed: "FAILED"
+      },
+      messages: {
+        failedToLoadBooking: "Failed to load booking",
+        bookingNotFoundOrAccessDenied: "Booking not found or access denied",
+        showingCachedInformation: "Could not refresh booking data. Showing cached information.",
+        noBookingInformation: "No booking information available. Please search for your booking first.",
+        authenticationEmailSent: "Authentication email sent. Please check your email and click the link to {{action}}.",
+        authenticationEmailFailed: "Failed to send authentication email for {{action}}. Please try again.",
+        failedToModifyBooking: "Failed to modify booking",
+        bookingModifiedSuccessfully: "Booking modified successfully",
+        additionalCharges: "Additional charges: ETB {{amount}}",
+        refundAmount: "Refund amount: ETB {{amount}}",
+        newTotalAmount: "New total: ETB {{amount}}",
+        modifyUnexpectedError: "An error occurred while modifying the booking",
+        bookingCancelledSuccessfully: "Booking cancelled successfully",
+        failedToCancelBooking: "Failed to cancel booking",
+        cancelTryAgain: "Failed to cancel booking. Please try again."
+      }
     },
 
     guestBooking: "Guest Booking",
@@ -1087,7 +1255,27 @@ export const enTranslations = {
       
       // Ethiopian Phone Number (for mobile payments)
       ethiopianPhoneLabel: "Ethiopian Phone Number",
-      ethiopianPhonePlaceholder: "Enter Ethiopian phone number for mobile payment"
+      ethiopianPhonePlaceholder: "Enter Ethiopian phone number for mobile payment",
+
+      validation: {
+        guestsRequired: "Number of guests is required",
+        guestsMin: "At least 1 guest is required",
+        guestsMax: "Maximum {{count}} guests allowed",
+        guestNameRequired: "Guest name is required",
+        nameMinLength: "Name must be at least 2 characters",
+        nameMaxLength: "Name must be less than 100 characters",
+        namePattern: "Name can only contain letters and spaces",
+        emailRequired: "Email address is required",
+        validEmail: "Please enter a valid email address",
+        emailMaxLength: "Email must be less than 255 characters",
+        phoneRequired: "Phone number is required",
+        validPhone: "Please enter a valid phone number",
+        phoneMinLength: "Phone number must be at least 10 digits",
+        phoneMaxLength: "Phone number must be less than 15 digits",
+        specialRequestsMaxLength: "Special requests must be less than 500 characters",
+        fixValidationErrors: "Please fix the validation errors before submitting",
+        createBookingFailed: "Failed to create booking. Please try again."
+      }
     },
     
     details: {
@@ -1532,10 +1720,12 @@ export const enTranslations = {
   // Receipts & Billing
   receipts: {
     official: "Official Receipt",
+    receiptNumber: "Receipt #{{number}}",
     guestInformation: "Guest Information",
     fullName: "Full Name",
     email: "Email",
     phone: "Phone",
+    notAvailable: "N/A",
     confirmation: "Confirmation",
     guests: "Guests",
     
@@ -1545,6 +1735,38 @@ export const enTranslations = {
     checkOut: "Check-out",
     duration: "Duration",
     ratePerNight: "Rate per Night",
+    nightSingle: "night",
+    nightPlural: "nights",
+    roomAccommodation: "Room Accommodation",
+    additionalService: "Additional Service",
+    tax: "Tax",
+    thankYouHotel: "Thank you for choosing {{hotelName}}!",
+    generatedOn: "Generated on {{date}}",
+    generatedBy: "Generated by: {{name}}",
+    actions: {
+      printReceipt: "Print Receipt",
+      downloadPdf: "Download PDF",
+      emailReceipt: "Email Receipt",
+      close: "Close"
+    },
+    emailDialog: {
+      title: "Send Receipt via Email",
+      description: "Enter the email address where you want to send the receipt. The guest's email is pre-filled below.",
+      recipientLabel: "Recipient Email Address",
+      recipientPlaceholder: "guest@example.com",
+      recipientHelper: "You can modify the email address before sending",
+      bookingLabel: "Booking:",
+      cancel: "Cancel",
+      send: "Send Email",
+      sending: "Sending...",
+      success: "Receipt sent successfully to {{email}}",
+      errors: {
+        missingReservationInfo: "Unable to send email: missing reservation information",
+        invalidEmail: "Please enter a valid email address",
+        failedToSend: "Failed to send receipt",
+        unexpectedError: "An error occurred while sending the receipt"
+      }
+    },
     
     billing: {
       description: "DESCRIPTION",
@@ -1629,6 +1851,162 @@ export const enTranslations = {
     invalidDates: "Please check your dates."
   },
 
+  publicHotelRegistration: {
+    title: "Register Your Hotel",
+    form: {
+      title: "Hotel Information",
+      subtitle: "Provide basic details to get started. You can complete your hotel profile after logging in.",
+      fields: {
+        hotelName: "Hotel Name",
+        contactPerson: "Contact Person",
+        contactEmail: "Contact Email",
+        address: "Address",
+        city: "City",
+        country: "Country"
+      },
+      placeholders: {
+        hotelName: "Enter your hotel name",
+        contactPerson: "Enter contact person name",
+        contactEmail: "Enter contact email",
+        address: "Enter your hotel address",
+        city: "Enter city"
+      }
+    },
+    actions: {
+      cancel: "Cancel",
+      submit: "Submit Registration",
+      submitting: "Submitting...",
+      goToLogin: "Go to Login"
+    },
+    success: {
+      title: "Registration Successful!",
+      description: {
+        before: "Your hotel",
+        after: "has been registered successfully."
+      },
+      emailNotice: {
+        before: "An email with your temporary login credentials has been sent to",
+        after: "Please check your inbox and spam folder for the login details."
+      }
+    },
+    nextSteps: {
+      title: "What happens next?",
+      step1: "Check your email for temporary login credentials",
+      step2: "Log in to complete your hotel profile",
+      step3: "Our team will review and approve your registration",
+      step4: "Start managing your hotel on our platform"
+    },
+    messages: {
+      submitFailed: "Failed to submit hotel registration. Please try again."
+    }
+  },
+
+  hotelRegistrationStatus: {
+    title: "Check Registration Status",
+    subtitle: "Enter your email to check the status of your hotel registration",
+    emailPlaceholder: "Enter the email used for registration",
+    registrationId: "Registration ID: {{id}}",
+    actions: {
+      search: "Search"
+    },
+    fields: {
+      contactPerson: "Contact Person",
+      contactEmail: "Contact Email",
+      submitted: "Submitted",
+      reviewed: "Reviewed",
+      comments: "Comments"
+    },
+    statuses: {
+      approved: "APPROVED",
+      pending: "PENDING",
+      under_review: "UNDER REVIEW",
+      rejected: "REJECTED"
+    },
+    messages: {
+      pendingTitle: "Your registration is under review.",
+      pendingBody: "Our team typically reviews applications within 2-3 business days. You'll receive an email notification once the review is complete.",
+      approvedTitle: "Congratulations! Your hotel registration has been approved.",
+      approvedBody: "You should have received login credentials via email. If you haven't received them, please contact our support team.",
+      rejectedTitle: "Your registration was not approved.",
+      rejectedBody: "Please review the comments above and feel free to submit a new registration with the requested changes."
+    },
+    help: {
+      title: "Need Help?",
+      description: "If you can't find your registration or have questions about the process:",
+      tip1: "Make sure you're using the exact email address from your registration",
+      tip2: "Check your spam/junk folder for notification emails",
+      tip3: "Contact our support team at support@shegersolutions.com"
+    },
+    errors: {
+      enterEmail: "Please enter your email address",
+      notFound: "No hotel registration found for this email address",
+      checkFailed: "Failed to check registration status",
+      checkFailedRetry: "Failed to check registration status. Please try again."
+    }
+  },
+
+  hotelBanner: {
+    title: "Featured Hotels",
+    featuredBadge: "Featured",
+    usingSampleHotels: "Using sample hotels",
+    liveData: "Live Data",
+    multipleRates: "Multiple",
+    viewDetails: "View Details",
+    refreshesEveryTwoMinutes: "Refreshes every 2 minutes",
+    fallback: {
+      resort: {
+        name: "Luxury Spa Resort",
+        description: "Experience ultimate relaxation with our premium spa packages."
+      },
+      business: {
+        name: "Business Hotel Downtown",
+        description: "Modern amenities perfect for business travelers."
+      },
+      mountain: {
+        name: "Mountain View Lodge",
+        description: "Escape to nature with breathtaking mountain views."
+      }
+    }
+  },
+
+  emptyStates: {
+    noDataTitle: "No data available",
+    noDataMessage: "There is nothing to show right now.",
+    noSearchResults: {
+      title: "No results found",
+      message: "We couldn't find any matches for your search. Try adjusting your filters or search terms.",
+      action: "Clear Filters"
+    },
+    noBookings: {
+      title: "No bookings yet",
+      message: "You don't have any bookings. Start exploring hotels and make your first reservation!"
+    },
+    noOrders: {
+      title: "No orders yet",
+      message: "There are no orders to display. Start creating orders to see them here.",
+      action: "Create Order"
+    },
+    noProducts: {
+      title: "No products available",
+      message: "No products have been added yet. Add products to start selling.",
+      action: "Add Product"
+    },
+    noHotels: {
+      title: "No hotels found",
+      message: "There are no hotels matching your criteria. Try expanding your search or check back later."
+    },
+    noReceipts: {
+      title: "No receipts",
+      message: "No receipts to display at this time."
+    }
+  },
+  notFoundPage: {
+    title: "Page Not Found",
+    message: "The page you're looking for doesn't exist or has been moved.",
+    goHome: "Go Home",
+    helpText: "If you believe this is an error, please contact support or try navigating back to the home page."
+  },
+
   // Existing sections (shop, hotelSearch, etc.)
   hotelSearch: {
     title: "Find Your Perfect Stay",
@@ -1677,6 +2055,134 @@ export const enTranslations = {
       searchFailed: "Search failed. Please try again.",
       invalidDates: "Please check your dates.",
       networkError: "Network error. Please check your connection."
+    },
+    summary: {
+      in: "in",
+      from: "from",
+      to: "to",
+      for: "for",
+      guestSingle: "guest",
+      guestPlural: "guests"
+    },
+    results: {
+      title: "Search Results",
+      backToSearch: "Back to Search",
+      descriptionPrefix: "Hotels",
+      loadingDescription: "Loading search results...",
+      modifySearch: "Modify Search",
+      hotelsFoundSingle: "{{count}} hotel found",
+      hotelsFoundPlural: "{{count}} hotels found",
+      searching: "Searching for hotels...",
+      refreshError: "Unable to refresh hotel search results right now.",
+      refreshListError: "Unable to refresh hotel list right now.",
+      emptyTitle: "No Hotels Found",
+      emptyMessage: "We couldn't find any hotels matching your search criteria. Try adjusting your search dates, location, or filters to find more options.",
+      listEmptyMessage: "There are no hotels matching your criteria. Try broadening your search or changing the dates."
+    },
+    detail: {
+      hotelDetails: "Hotel Details",
+      backToSearchResults: "Back to Search Results",
+      loadingHotelDetails: "Loading hotel details...",
+      loadHotelError: "Unable to load hotel details right now.",
+      hotelNotFoundTitle: "Hotel not found",
+      hotelNotFoundMessage: "Please try searching again or browse other available hotels.",
+      searchHotels: "Search Hotels",
+      fromPrice: "From",
+      perNight: "per night",
+      upToPrice: "Up to",
+      checkIn: "Check-in",
+      checkOut: "Check-out",
+      roomsCount: "{{count}} rooms",
+      visitWebsite: "Visit hotel website",
+      guestAmenities: "Guest amenities",
+      showingAvailability: "Showing availability",
+      availableRoomTypes: "Available Room Types ({{count}})",
+      availableRooms: "Available Rooms ({{count}})",
+      noRoomsAvailableTitle: "No rooms available",
+      noRoomsAvailableMessage: "We couldn't find any available rooms for your selected dates.",
+      noRoomsAvailableHint: "Try adjusting your search dates or criteria.",
+      searchForAvailability: "Search for availability",
+      searchForAvailabilityDescription: "To see available rooms and make a booking, please use our hotel search."
+    },
+    card: {
+      availableCompact: "{{count}} available",
+      availableRooms: "{{count}} rooms available",
+      roomTypesCount: "Room Types ({{count}})",
+      roomsCount: "Rooms ({{count}})",
+      hideRooms: "Hide Rooms",
+      showAllRooms: "Show All Rooms",
+      viewMoreRoomTypes: "View {{count}} more room types",
+      viewMoreRooms: "View {{count}} more rooms"
+    },
+    listCard: {
+      noRoomsAvailable: "No rooms available",
+      availableLabel: "Available:",
+      priceRangeLabel: "Price range:",
+      viewHotelDetails: "View Hotel Details",
+      viewHotel: "View Hotel"
+    },
+    hotelCard: {
+      availableRoomsCount: "Available Rooms ({{count}})",
+      moreRoomsAvailable: "+{{count}} more rooms available",
+      noRoomsAvailableForDates: "No rooms available for selected dates",
+      unavailable: "Unavailable"
+    },
+    roomCard: {
+      roomNumber: "Room {{roomNumber}}",
+      upToGuests: "Up to {{count}} guests",
+      amenities: "Room Amenities",
+      moreAmenities: "+{{count}} more",
+      bookNow: "Book Now",
+      signInToBook: "Sign in to Book",
+      bookAsGuest: "Book as Guest"
+    },
+    roomTypeCard: {
+      availableCount: "{{count}} Available",
+      fullyBooked: "Fully Booked",
+      notAvailable: "Not Available"
+    },
+    roomTypes: {
+      single: "Single Room",
+      double: "Double Room",
+      standard: "Standard Room",
+      deluxe: "Deluxe Room",
+      suite: "Suite",
+      family: "Family Room",
+      accessible: "Accessible Room",
+      presidential: "Presidential Suite"
+    },
+    bedInfo: {
+      single: "1 bed",
+      double: "2 beds",
+      standard: "2 beds",
+      deluxe: "King bed",
+      suite: "Multiple rooms",
+      family: "Multiple beds",
+      accessible: "Accessible bed",
+      presidential: "Luxury suite"
+    },
+    amenities: {
+      freeWifi: "Free WiFi",
+      airConditioning: "Air Conditioning",
+      roomService: "Room Service",
+      workDesk: "Work Desk",
+      miniBar: "Mini Bar",
+      safe: "Safe",
+      extraSpace: "Extra Space",
+      multipleBeds: "Multiple Beds",
+      kidsWelcome: "Kids Welcome",
+      wheelchairAccessible: "Wheelchair Accessible",
+      rollInShower: "Roll-in Shower",
+      grabBars: "Grab Bars",
+      livingArea: "Living Area",
+      kitchenette: "Kitchenette",
+      balcony: "Balcony",
+      premiumBedding: "Premium Bedding",
+      cityView: "City View",
+      butlerService: "Butler Service",
+      privateTerrace: "Private Terrace",
+      jacuzzi: "Jacuzzi",
+      premiumAmenities: "Premium Amenities"
     }
   },
   walkInBooking: {
@@ -2254,6 +2760,7 @@ export const enTranslations = {
     // Error states
     errorNotFound: "Booking not found",
     errorDescription: "We couldn't find your booking information. Please check your confirmation number or try again.",
+    errorNoBookingInformation: "No booking information available",
     
     // Action buttons
     actions: {
@@ -2322,7 +2829,30 @@ export const enTranslations = {
       paid: "Paid",
       payAtFrontDesk: "Pay at Front Desk",
       failed: "Failed",
-      refunded: "Refunded"
+      refunded: "Refunded",
+      partiallyRefunded: "Partially Refunded",
+      forfeited: "Forfeited"
+    },
+
+    print: {
+      title: "Booking Confirmation",
+      confirmationNumber: "Confirmation Number: {{confirmationNumber}}",
+      footerThankYou: "Thank you for choosing {{hotelName}}!",
+      labels: {
+        guestName: "Guest Name:",
+        email: "Email:",
+        numberOfGuests: "Number of Guests:",
+        hotel: "Hotel:",
+        address: "Address:",
+        roomType: "Room Type:",
+        roomAssignment: "Room Assignment:",
+        checkIn: "Check-in:",
+        checkOut: "Check-out:",
+        nights: "Nights:",
+        ratePerNight: "Rate per night:",
+        status: "Status:",
+        paymentStatus: "Payment Status:"
+      }
     },
     
     // Important information
@@ -2373,6 +2903,9 @@ export const enTranslations = {
     home: "Home",
     hotels: "Hotels",
     bookings: "Bookings",
+    hotelRegistration: "Hotel Registration",
+    myReservation: "My Reservation",
+    login: "Login",
     profile: "Profile",
     logout: "Logout",
     dashboard: "Dashboard",

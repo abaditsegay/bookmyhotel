@@ -24,11 +24,8 @@ import {
   useTheme,
   useMediaQuery,
   alpha,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
 } from '@mui/material';
+import { useQuery } from '@tanstack/react-query';
 import {
   ArrowBack as ArrowBackIcon,
   CreditCard as CreditCardIcon,
@@ -50,11 +47,14 @@ import { formatCurrency } from '../utils/currencyUtils';
 import { PaymentMethod } from '../types/shop';
 import NumberStepper from '../components/common/NumberStepper';
 import BookingSummary from '../components/booking/BookingSummary';
+import { StandardError } from '../components/common';
 import { buildApiUrl, getDefaultPaymentGatewayMode } from '../config/apiConfig';
 import { extractBookingErrorMessage } from '../utils/errorHandling';
+import { createErrorFromResponse, getErrorSeverity, getErrorTitle } from '../utils/errorHandler';
 import PremiumTextField from '../components/common/PremiumTextField';
 import PremiumDatePicker from '../components/common/PremiumDatePicker';
 import { formatEthiopianPhone } from '../utils/phoneUtils';
+import { Hotel } from '../types/hotel';
 
 interface BookingPageState {
   room?: AvailableRoom;
@@ -121,14 +121,7 @@ const BookingPage: React.FC = () => {
   const [mobileTransferReference, setMobileTransferReference] = useState('');
   
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [errorDialogOpen, setErrorDialogOpen] = useState(false);
-  const [hotelData, setHotelData] = useState<any>(null);
-  
-  // Hotel tax rates from backend
-  const [hotelVatRate, setHotelVatRate] = useState<number>(0); // VAT rate
-  const [hotelServiceTaxRate, setHotelServiceTaxRate] = useState<number>(0); // Service Tax rate
-  const [hotelCityTaxRate, setHotelCityTaxRate] = useState<number>(0); // City tax rate
+  const [error, setError] = useState<unknown | null>(null);
 
   // Memoized change handlers to prevent input focus loss
   const handleFirstNameChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -186,50 +179,36 @@ const BookingPage: React.FC = () => {
     }
   }, [user]);
 
-  // Fetch hotel data for mobile payment phone numbers
-  useEffect(() => {
-    const fetchHotelData = async () => {
-      if (bookingData?.hotelId) {
-        try {
-          // Use public hotel API to get hotel details
-          const url = buildApiUrl(`/hotels/${bookingData.hotelId}`);
-          const response = await fetch(url);
-          
-          if (response.ok) {
-            const hotel = await response.json();
-            setHotelData(hotel);
-          }
-        } catch (error) {
-          // Non-critical fetch — silently ignore
-        }
+  const hotelDataQuery = useQuery<Hotel>({
+    queryKey: ['booking-hotel-details', bookingData?.hotelId],
+    enabled: Boolean(bookingData?.hotelId),
+    queryFn: async () => {
+      const response = await fetch(buildApiUrl(`/hotels/${bookingData?.hotelId}`));
+      if (!response.ok) {
+        throw await createErrorFromResponse(response, 'Unable to load hotel payment details right now.');
       }
-    };
-    
-    fetchHotelData();
-  }, [bookingData?.hotelId]);
+      return response.json();
+    },
+    retry: 1,
+  });
 
-  // Fetch hotel tax rates from backend
-  useEffect(() => {
-    const fetchHotelTaxRates = async () => {
-      if (bookingData?.hotelId) {
-        try {
-          const response = await fetch(buildApiUrl(`/hotels/${bookingData.hotelId}/tax-rate`));
-          if (response.ok) {
-            const data = await response.json();
-            setHotelVatRate(data.vatRate || 0);
-            setHotelServiceTaxRate(data.serviceTaxRate || 0);
-            setHotelCityTaxRate(data.cityTaxRate || 0);
-          } else {
-            // console.warn('Could not fetch tax rates for hotel:', bookingData.hotelId);
-          }
-        } catch (error) {
-          // console.error('Error fetching hotel tax rates:', error);
-        }
+  const hotelTaxQuery = useQuery<{ vatRate?: number; serviceTaxRate?: number; cityTaxRate?: number }>({
+    queryKey: ['booking-hotel-tax-rates', bookingData?.hotelId],
+    enabled: Boolean(bookingData?.hotelId),
+    queryFn: async () => {
+      const response = await fetch(buildApiUrl(`/hotels/${bookingData?.hotelId}/tax-rate`));
+      if (!response.ok) {
+        throw await createErrorFromResponse(response, 'Unable to load estimated hotel taxes right now.');
       }
-    };
-    
-    fetchHotelTaxRates();
-  }, [bookingData?.hotelId]);
+      return response.json();
+    },
+    retry: 1,
+  });
+
+  const hotelData = hotelDataQuery.data ?? null;
+  const hotelVatRate = hotelTaxQuery.data?.vatRate || 0;
+  const hotelServiceTaxRate = hotelTaxQuery.data?.serviceTaxRate || 0;
+  const hotelCityTaxRate = hotelTaxQuery.data?.cityTaxRate || 0;
 
   useEffect(() => {
     let cancelled = false;
@@ -305,7 +284,7 @@ const BookingPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError(null);
 
     if (!checkInDate || !checkOutDate) {
       setError(t('booking.page.fillAllRequiredFields'));
@@ -482,9 +461,7 @@ const BookingPage: React.FC = () => {
         }
       });
     } catch (err) {
-      const errorMessage = extractBookingErrorMessage(err);
-      setError(errorMessage);
-      setErrorDialogOpen(true);
+      setError(err);
     } finally {
       setLoading(false);
     }
@@ -678,11 +655,12 @@ const BookingPage: React.FC = () => {
         </Box>
 
         {/* Error Alert - still show inline for validation errors */}
-        {error && !errorDialogOpen && (
-          <Alert severity="error" sx={{ mb: 3 }}>
-            {error}
-          </Alert>
-        )}
+        <StandardError
+          error={Boolean(error)}
+          message={error ? extractBookingErrorMessage(error) : undefined}
+          title={error ? getErrorTitle(error) : undefined}
+          severity={error ? getErrorSeverity(error) : 'error'}
+        />
 
         {/* Main Content - Room Details, Form and Summary */}
         <Grid container spacing={isMobile ? 3 : 6}>
@@ -1372,6 +1350,16 @@ const BookingPage: React.FC = () => {
                             {t('booking.page.completeMobileTransfer')}
                           </Typography>
                         </Alert>
+
+                        <StandardError
+                          error={hotelDataQuery.isError}
+                          errorValue={hotelDataQuery.error}
+                          fallbackMessage="Unable to load the hotel's mobile transfer numbers right now. You can retry or choose another payment option."
+                          showRetry
+                          onRetry={() => {
+                            void hotelDataQuery.refetch();
+                          }}
+                        />
                         
                         {/* Hotel Mobile Number Display */}
                         <Box sx={{ 
@@ -1621,6 +1609,16 @@ const BookingPage: React.FC = () => {
               borderRadius: 1,
             }}
           >
+            <StandardError
+              error={hotelTaxQuery.isError}
+              errorValue={hotelTaxQuery.error}
+              severity="warning"
+              message="Estimated taxes are temporarily unavailable. Your room subtotal remains accurate, and final taxes will be confirmed at checkout."
+              showRetry
+              onRetry={() => {
+                void hotelTaxQuery.refetch();
+              }}
+            />
             <Typography
               variant="body2"
               sx={{
@@ -1705,45 +1703,6 @@ const BookingPage: React.FC = () => {
           </Grid>
         </Grid>
       </Container>
-
-      {/* Error Dialog */}
-      <Dialog
-        open={errorDialogOpen}
-        onClose={() => setErrorDialogOpen(false)}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle
-          sx={{
-            backgroundColor: (theme) => alpha(theme.palette.error.main, 0.1),
-            color: 'error.main',
-            fontWeight: 600,
-          }}
-        >
-          ⚠️ Booking Error
-        </DialogTitle>
-        <DialogContent sx={{ mt: 2 }}>
-          <Typography
-            variant="body1"
-            sx={{
-              color: 'text.primary',
-              lineHeight: 1.6,
-            }}
-          >
-            {error}
-          </Typography>
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 2 }}>
-          <Button
-            onClick={() => setErrorDialogOpen(false)}
-            variant="contained"
-            color="primary"
-            fullWidth
-          >
-            OK
-          </Button>
-        </DialogActions>
-      </Dialog>
     </LocalizationProvider>
   );
 };

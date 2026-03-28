@@ -54,6 +54,31 @@ const FindBookingPage: React.FC = () => {
   const [error, setError] = useState('');
   const [booking, setBooking] = useState<BookingResponse | null>(null);
 
+  const getBookingStatusLabel = (status?: string) => {
+    const normalizedStatus = status?.toLowerCase().replace(/[_\s]/g, '');
+    if (!normalizedStatus) {
+      return '';
+    }
+
+    const translated = t(`booking.guestManagementPage.statuses.${normalizedStatus}`);
+    return translated === `booking.guestManagementPage.statuses.${normalizedStatus}` ? status : translated;
+  };
+
+  const getPaymentStatusLabel = (status?: string) => {
+    const normalizedStatus = (status || 'PENDING').toLowerCase().replace(/[_\s]/g, '');
+    const translated = t(`booking.guestManagementPage.paymentStatuses.${normalizedStatus}`);
+    return translated === `booking.guestManagementPage.paymentStatuses.${normalizedStatus}` ? (status || 'PENDING') : translated;
+  };
+
+  const getTranslatedRoomTypeLabel = (roomType?: string) => {
+    if (!roomType) {
+      return '';
+    }
+
+    const translated = t(`hotelSearch.roomTypes.${roomType.toLowerCase()}`);
+    return translated === `hotelSearch.roomTypes.${roomType.toLowerCase()}` ? getRoomTypeLabel(roomType) : translated;
+  };
+
   // Memoized change handlers to prevent input focus loss
   const handleConfirmationNumberChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setConfirmationNumber(e.target.value);
@@ -296,7 +321,7 @@ const FindBookingPage: React.FC = () => {
                     {t('booking.find.found.labels.roomType')}
                   </Typography>
                   <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                    {getRoomTypeLabel(booking.roomType)}
+                    {getTranslatedRoomTypeLabel(booking.roomType)}
                   </Typography>
                 </Box>
                 
@@ -336,7 +361,7 @@ const FindBookingPage: React.FC = () => {
                     {t('booking.find.found.labels.status')}
                   </Typography>
                   <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                    {booking.status}
+                    {getBookingStatusLabel(booking.status)}
                   </Typography>
                 </Box>
 
@@ -359,7 +384,7 @@ const FindBookingPage: React.FC = () => {
                       color: getPaymentStatusColor(theme, booking.paymentStatus),
                     }}
                   >
-                    {booking.paymentStatus || 'PENDING'}
+                    {getPaymentStatusLabel(booking.paymentStatus)}
                   </Typography>
                 </Box>
 

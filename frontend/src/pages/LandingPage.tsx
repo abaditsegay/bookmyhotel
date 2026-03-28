@@ -122,7 +122,6 @@ const LandingPage: React.FC = () => {
           sx={{
             mb: isMobile ? 4 : 6,
             backgroundColor: theme.palette.background.paper,
-            border: `1px solid ${theme.palette.divider}`,
           }}
         >
           <Box sx={{ p: isMobile ? 2 : 3 }}>
@@ -160,7 +159,6 @@ const LandingPage: React.FC = () => {
                   sx={{
                     height: '100%',
                     textAlign: 'center',
-                    border: `1px solid ${theme.palette.divider}`,
                     transition: 'transform 0.2s, box-shadow 0.2s',
                     '&:hover': {
                       transform: 'translateY(-4px)',
@@ -269,7 +267,6 @@ const LandingPage: React.FC = () => {
               elevation={0}
               sx={{
                 height: '100%',
-                border: `1px solid ${theme.palette.divider}`,
                 background: theme.palette.mode === 'dark'
                   ? addAlpha(COLORS.SECONDARY, 0.08)
                   : addAlpha(COLORS.SECONDARY, 0.03),
@@ -292,7 +289,7 @@ const LandingPage: React.FC = () => {
                     mb: 2,
                     borderRadius: 2,
                     backgroundColor: theme.palette.background.paper,
-                    border: `1px solid ${theme.palette.divider}`,
+                    boxShadow: theme.shadows[1],
                   }}
                 >
                   <EmailIcon sx={{ fontSize: 28, color: 'primary.main', mr: 2 }} />
@@ -324,7 +321,7 @@ const LandingPage: React.FC = () => {
                     p: 2,
                     borderRadius: 2,
                     backgroundColor: theme.palette.background.paper,
-                    border: `1px solid ${theme.palette.divider}`,
+                    boxShadow: theme.shadows[1],
                   }}
                 >
                   <PhoneIcon sx={{ fontSize: 28, color: 'primary.main', mr: 2 }} />

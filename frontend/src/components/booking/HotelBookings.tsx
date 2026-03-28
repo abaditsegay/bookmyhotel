@@ -233,7 +233,7 @@ const HotelBookings: React.FC<HotelBookingsProps> = ({
 
   // Format date
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString();
+    return BookingService.formatDate(dateString);
   };
 
   // Format currency

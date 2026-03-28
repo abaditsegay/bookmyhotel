@@ -40,6 +40,7 @@ import { useAuthenticatedApi } from '../hooks/useAuthenticatedApi';
 import { useAuth } from '../contexts/AuthContext';
 import { buildApiUrl } from '../config/apiConfig';
 import { formatCurrencyWithDecimals } from '../utils/currencyUtils';
+import { formatDateForDisplay, formatDateLongForDisplay, formatDateTimeForDisplay } from '../utils/dateUtils';
 
 // Print-specific CSS styles
 const printStyles = `
@@ -246,10 +247,10 @@ const BookingConfirmationPage: React.FC = () => {
       // Only fetch booking data if not from search (to avoid auth issues for guests)
       fetchBookingData();
     } else {
-      setError('No booking information available');
+      setError(t('bookingConfirmation.errorNoBookingInformation'));
       setLoading(false);
     }
-  }, [reservationId, locationBooking, fromSearch, fetchBookingData]);
+  }, [reservationId, locationBooking, fromSearch, fetchBookingData, t]);
 
   // Fetch hotel tax rates when booking data is available
   useEffect(() => {
@@ -305,38 +306,15 @@ const BookingConfirmationPage: React.FC = () => {
   };
 
   const formatDate = (dateString: string) => {
-    // Parse as local date to avoid timezone conversion issues
-    const [year, month, day] = dateString.split('-').map(Number);
-    const date = new Date(year, month - 1, day); // Month is 0-indexed
-    return date.toLocaleDateString('en-US', {
-      weekday: 'short',
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
+    return formatDateForDisplay(dateString);
   };
 
   const formatDateLong = (dateString: string) => {
-    // Parse as local date to avoid timezone conversion issues
-    const [year, month, day] = dateString.split('-').map(Number);
-    const date = new Date(year, month - 1, day); // Month is 0-indexed
-    return date.toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+    return formatDateLongForDisplay(dateString);
   };
 
   const formatDateTimeLong = (dateTimeString: string) => {
-    // Handle datetime strings (ISO format like "2025-10-06T14:30:00")
-    const date = new Date(dateTimeString);
-    return date.toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+    return formatDateTimeForDisplay(dateTimeString);
   };
 
   const formatCurrency = (amount: number) => {
@@ -360,17 +338,37 @@ const BookingConfirmationPage: React.FC = () => {
 
   const formatPaymentStatus = (status: string) => {
     switch (status.toUpperCase()) {
-      case 'PAY_AT_FRONTDESK': return 'Pay at Front Desk';
+      case 'PAY_AT_FRONTDESK': return t('bookingConfirmation.status.payAtFrontDesk');
       case 'PAID':
       case 'COMPLETED': return t('booking.paymentStatus.completed');
       case 'PROCESSING': return t('booking.paymentStatus.processing');
       case 'PENDING': return t('booking.paymentStatus.pending');
       case 'FAILED': return t('booking.paymentStatus.failed');
-      case 'CANCELLED': return 'CANCELLED';
-      case 'REFUNDED': return 'REFUNDED';
-      case 'PARTIALLY_REFUNDED': return 'PARTIALLY REFUNDED';
-      case 'FORFEITED': return 'FORFEITED';
+      case 'CANCELLED': return t('bookingConfirmation.status.cancelled');
+      case 'REFUNDED': return t('bookingConfirmation.status.refunded');
+      case 'PARTIALLY_REFUNDED': return t('bookingConfirmation.status.partiallyRefunded');
+      case 'FORFEITED': return t('bookingConfirmation.status.forfeited');
       default: return status;
+    }
+  };
+
+  const formatBookingStatus = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'booked':
+      case 'confirmed':
+        return t('bookingConfirmation.status.confirmed');
+      case 'pending':
+        return t('bookingConfirmation.status.pending');
+      case 'cancelled':
+        return t('bookingConfirmation.status.cancelled');
+      case 'checked in':
+      case 'checked_in':
+        return t('bookingConfirmation.status.checkedIn');
+      case 'checked out':
+      case 'checked_out':
+        return t('bookingConfirmation.status.checkedOut');
+      default:
+        return status;
     }
   };
 
@@ -378,7 +376,7 @@ const BookingConfirmationPage: React.FC = () => {
     booking &&
     booking.paymentStatus?.toUpperCase() === 'PROCESSING' &&
     booking.paymentProvider &&
-    ['MBIRR', 'TELEBIRR'].includes(booking.paymentProvider.toUpperCase())
+    ['MBIRR', 'TELEBIRR'].indexOf(booking.paymentProvider.toUpperCase()) !== -1
   );
 
   const formatPaymentExpiry = (dateTimeString?: string) => {
@@ -386,18 +384,12 @@ const BookingConfirmationPage: React.FC = () => {
       return null;
     }
 
-    const date = new Date(dateTimeString);
-    if (Number.isNaN(date.getTime())) {
+    const formatted = formatDateTimeForDisplay(dateTimeString);
+    if (!formatted) {
       return null;
     }
 
-    return date.toLocaleString('en-US', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
-    });
+    return formatted;
   };
 
   // Calculate price breakdown with taxes
@@ -609,9 +601,9 @@ const BookingConfirmationPage: React.FC = () => {
       {/* Print Header */}
       <div className="print-header">
         <div className="print-app-name">{booking.hotelName}</div>
-        <div className="print-title">Booking Confirmation</div>
+        <div className="print-title">{t('bookingConfirmation.print.title')}</div>
         <div className="print-confirmation">
-          Confirmation Number: {booking.confirmationNumber}
+          {t('bookingConfirmation.print.confirmationNumber', { confirmationNumber: booking.confirmationNumber })}
         </div>
       </div>
 
@@ -619,71 +611,71 @@ const BookingConfirmationPage: React.FC = () => {
       <table className="print-table">
         <tbody>
           <tr>
-            <td className="label">Guest Name:</td>
+            <td className="label">{t('bookingConfirmation.print.labels.guestName')}</td>
             <td className="value">{booking.guestName}</td>
           </tr>
           <tr>
-            <td className="label">Email:</td>
+            <td className="label">{t('bookingConfirmation.print.labels.email')}</td>
             <td className="value">{booking.guestEmail}</td>
           </tr>
           <tr>
-            <td className="label">Number of Guests:</td>
+            <td className="label">{t('bookingConfirmation.print.labels.numberOfGuests')}</td>
             <td className="value">{booking.numberOfGuests || 1}</td>
           </tr>
           <tr>
-            <td className="label">Hotel:</td>
+            <td className="label">{t('bookingConfirmation.print.labels.hotel')}</td>
             <td className="value">{booking.hotelName}</td>
           </tr>
           <tr>
-            <td className="label">Address:</td>
+            <td className="label">{t('bookingConfirmation.print.labels.address')}</td>
             <td className="value">{booking.hotelAddress}</td>
           </tr>
           <tr>
-            <td className="label">Room Type:</td>
+            <td className="label">{t('bookingConfirmation.print.labels.roomType')}</td>
             <td className="value">{booking.roomType}</td>
           </tr>
           <tr>
-            <td className="label">Room Assignment:</td>
-            <td className="value">Room will be assigned at check-in</td>
+            <td className="label">{t('bookingConfirmation.print.labels.roomAssignment')}</td>
+            <td className="value">{t('bookingConfirmation.room.roomAssignmentMessage')}</td>
           </tr>
           <tr>
-            <td className="label">Check-in:</td>
+            <td className="label">{t('bookingConfirmation.print.labels.checkIn')}</td>
             <td className="value">{formatDateLong(booking.checkInDate)}</td>
           </tr>
           <tr>
-            <td className="label">Check-out:</td>
+            <td className="label">{t('bookingConfirmation.print.labels.checkOut')}</td>
             <td className="value">{formatDateLong(booking.checkOutDate)}</td>
           </tr>
           <tr>
-            <td className="label">Nights:</td>
+            <td className="label">{t('bookingConfirmation.print.labels.nights')}</td>
             <td className="value">{nights}</td>
           </tr>
           <tr>
-            <td className="label">Rate per night:</td>
+            <td className="label">{t('bookingConfirmation.print.labels.ratePerNight')}</td>
             <td className="value">{formatCurrency(booking.pricePerNight || 0)}</td>
           </tr>
           <tr>
-            <td className="label">Subtotal:</td>
+            <td className="label">{t('bookingConfirmation.pricing.subtotal')}:</td>
             <td className="value">{formatCurrencyWithDecimals(priceBreakdown.subtotal)}</td>
           </tr>
           <tr>
-            <td className="label">VAT ({(hotelVatRate * 100).toFixed(2)}%):</td>
+            <td className="label">{t('bookingConfirmation.pricing.vat')} ({(hotelVatRate * 100).toFixed(2)}%):</td>
             <td className="value">{formatCurrencyWithDecimals(priceBreakdown.vatAmount)}</td>
           </tr>
           <tr>
-            <td className="label">Service Tax ({(hotelServiceTaxRate * 100).toFixed(2)}%):</td>
+            <td className="label">{t('bookingConfirmation.pricing.serviceTax')} ({(hotelServiceTaxRate * 100).toFixed(2)}%):</td>
             <td className="value">{formatCurrencyWithDecimals(priceBreakdown.serviceTaxAmount)}</td>
           </tr>
           <tr>
-            <td className="label">Total Amount:</td>
+            <td className="label">{t('bookingConfirmation.pricing.totalAmount')}:</td>
             <td className="value"><strong>{formatCurrencyWithDecimals(priceBreakdown.total)}</strong></td>
           </tr>
           <tr>
-            <td className="label">Status:</td>
-            <td className="value">{booking.status}</td>
+            <td className="label">{t('bookingConfirmation.print.labels.status')}</td>
+            <td className="value">{formatBookingStatus(booking.status)}</td>
           </tr>
           <tr>
-            <td className="label">Payment Status:</td>
+            <td className="label">{t('bookingConfirmation.print.labels.paymentStatus')}</td>
             <td className="value">{formatPaymentStatus(booking.paymentStatus)}</td>
           </tr>
         </tbody>
@@ -691,17 +683,17 @@ const BookingConfirmationPage: React.FC = () => {
 
       {/* Important Information */}
       <div className="print-section">
-        <div className="print-section-title">Important Information:</div>
-        <div className="print-bullet">• Your specific room number will be assigned at check-in</div>
-        <div className="print-bullet">• Please bring a valid ID for check-in</div>
-        <div className="print-bullet">• Check-in time: 3:00 PM | Check-out time: 11:00 AM</div>
-        <div className="print-bullet">• For any changes or cancellations, please contact the hotel directly</div>
-        <div className="print-bullet">• Keep your reservation ID and confirmation number for reference</div>
+        <div className="print-section-title">{t('bookingConfirmation.importantInfo.title')}:</div>
+        <div className="print-bullet">• {t('bookingConfirmation.importantInfo.roomAssignment')}</div>
+        <div className="print-bullet">• {t('bookingConfirmation.importantInfo.bringId')}</div>
+        <div className="print-bullet">• {t('bookingConfirmation.importantInfo.checkInTime')}</div>
+        <div className="print-bullet">• {t('bookingConfirmation.importantInfo.changesContact')}</div>
+        <div className="print-bullet">• {t('bookingConfirmation.importantInfo.keepConfirmation')}</div>
       </div>
 
       {/* Footer */}
       <div className="print-footer">
-        Thank you for choosing {booking.hotelName}!
+        {t('bookingConfirmation.print.footerThankYou', { hotelName: booking.hotelName })}
       </div>
     </div>
   );
@@ -980,8 +972,8 @@ const BookingConfirmationPage: React.FC = () => {
             elevation={0}
             sx={{
               mb: isMobile ? 3 : 4,
-              border: `1px solid ${addAlpha(COLORS.PRIMARY, 0.16)}`,
               backgroundColor: addAlpha(COLORS.PRIMARY, 0.03),
+              boxShadow: `0 8px 24px ${addAlpha(COLORS.PRIMARY, 0.08)}`,
             }}
           >
             <CardContent sx={{ p: isMobile ? 2 : 3 }}>
@@ -1032,9 +1024,9 @@ const BookingConfirmationPage: React.FC = () => {
                       width: isMobile ? 180 : 220,
                       maxWidth: '100%',
                       borderRadius: 2,
-                      border: `1px solid ${COLORS.CARD_BORDER}`,
                       backgroundColor: COLORS.WHITE,
                       p: 1,
+                      boxShadow: `0 6px 18px ${addAlpha(COLORS.BLACK, 0.08)}`,
                     }}
                   />
                 </Box>
@@ -1049,11 +1041,9 @@ const BookingConfirmationPage: React.FC = () => {
             <Card 
               elevation={0}
               sx={{ 
-                border: `2px solid ${COLORS.CARD_BORDER}`,
                 borderRadius: 2,
                 transition: 'all 0.3s ease',
                 '&:hover': {
-                  borderColor: COLORS.PRIMARY,
                   transform: isMobile ? 'none' : 'translateY(-2px)',
                   boxShadow: isMobile ? 'none' : `0 8px 16px ${addAlpha(COLORS.PRIMARY, 0.1)}`
                 }
@@ -1094,11 +1084,9 @@ const BookingConfirmationPage: React.FC = () => {
             <Card 
               elevation={0}
               sx={{ 
-                border: `2px solid ${COLORS.CARD_BORDER}`,
                 borderRadius: 2,
                 transition: 'all 0.3s ease',
                 '&:hover': {
-                  borderColor: COLORS.PRIMARY,
                   transform: isMobile ? 'none' : 'translateY(-2px)',
                   boxShadow: isMobile ? 'none' : `0 8px 16px ${addAlpha(COLORS.PRIMARY, 0.1)}`
                 }
@@ -1139,11 +1127,9 @@ const BookingConfirmationPage: React.FC = () => {
             <Card 
               elevation={0}
               sx={{ 
-                border: `2px solid ${COLORS.CARD_BORDER}`,
                 borderRadius: 2,
                 transition: 'all 0.3s ease',
                 '&:hover': {
-                  borderColor: COLORS.PRIMARY,
                   transform: isMobile ? 'none' : 'translateY(-2px)',
                   boxShadow: isMobile ? 'none' : `0 8px 16px ${addAlpha(COLORS.PRIMARY, 0.1)}`
                 }
@@ -1183,7 +1169,6 @@ const BookingConfirmationPage: React.FC = () => {
             <Card 
               elevation={0}
               sx={{ 
-                border: `2px solid ${COLORS.SUCCESS}`,
                 borderRadius: 2,
                 transition: 'all 0.3s ease',
                 background: `linear-gradient(135deg, ${addAlpha(COLORS.SUCCESS, 0.1)} 0%, ${addAlpha(COLORS.SUCCESS, 0.05)} 100%)`,
@@ -1235,9 +1220,9 @@ const BookingConfirmationPage: React.FC = () => {
             <Box 
               sx={{ 
                 p: isMobile ? 2 : 3, 
-                border: `1px solid ${COLORS.BORDER_LIGHT}`, 
                 borderRadius: 2, 
                 height: '100%',
+                boxShadow: `0 6px 18px ${addAlpha(COLORS.BLACK, 0.05)}`,
               }}
             >
               <Typography 
@@ -1282,9 +1267,9 @@ const BookingConfirmationPage: React.FC = () => {
             <Box 
               sx={{ 
                 p: isMobile ? 2 : 3, 
-                border: `1px solid ${COLORS.BORDER_LIGHT}`, 
                 borderRadius: 2, 
                 height: '100%',
+                boxShadow: `0 6px 18px ${addAlpha(COLORS.BLACK, 0.05)}`,
               }}
             >
               <Typography 
@@ -1336,9 +1321,9 @@ const BookingConfirmationPage: React.FC = () => {
             <Box 
               sx={{ 
                 p: isMobile ? 2 : 3, 
-                border: `1px solid ${COLORS.BORDER_LIGHT}`, 
                 borderRadius: 2, 
                 height: '100%',
+                boxShadow: `0 6px 18px ${addAlpha(COLORS.BLACK, 0.05)}`,
               }}
             >
               <Typography 
@@ -1387,9 +1372,9 @@ const BookingConfirmationPage: React.FC = () => {
             <Box 
               sx={{ 
                 p: isMobile ? 2 : 3, 
-                border: `1px solid ${COLORS.BORDER_LIGHT}`, 
                 borderRadius: 2, 
                 height: '100%',
+                boxShadow: `0 6px 18px ${addAlpha(COLORS.BLACK, 0.05)}`,
               }}
             >
               <Typography 
@@ -1432,9 +1417,9 @@ const BookingConfirmationPage: React.FC = () => {
           sx={{ 
             mt: isMobile ? 3 : 4,
             p: isMobile ? 2 : 3, 
-            border: `2px solid ${COLORS.SUCCESS}`, 
             borderRadius: 2,
             background: `linear-gradient(135deg, ${addAlpha(COLORS.SUCCESS, 0.05)} 0%, ${addAlpha(COLORS.SUCCESS, 0.02)} 100%)`,
+            boxShadow: `0 10px 24px ${addAlpha(COLORS.SUCCESS, 0.12)}`,
           }}
         >
           <Typography 
@@ -1458,7 +1443,7 @@ const BookingConfirmationPage: React.FC = () => {
               }}
             >
               <Typography variant="body1">
-                {t('bookingConfirmation.pricing.subtotal')} ({formatCurrencyWithDecimals(booking.pricePerNight || 0)}/night × {nights} {nights !== 1 ? 'nights' : 'night'})
+                {t('bookingConfirmation.pricing.subtotal')} ({formatCurrencyWithDecimals(booking.pricePerNight || 0)}{t('bookingConfirmation.room.perNight')} × {nights} {nights !== 1 ? t('bookingConfirmation.summary.nightPlural') : t('bookingConfirmation.summary.nightSingle')})
               </Typography>
               <Typography variant="body1" sx={{ fontWeight: 500 }}>
                 {formatCurrencyWithDecimals(priceBreakdown.subtotal)}

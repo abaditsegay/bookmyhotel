@@ -23,11 +23,13 @@ import {
 } from '@mui/icons-material';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import PremiumDatePicker from '../../components/common/PremiumDatePicker';
 import PremiumTextField from '../../components/common/PremiumTextField';
 import PremiumSelect from '../../components/common/PremiumSelect';
 import { frontDeskApiService } from '../../services/frontDeskApi';
 import { ROOM_TYPES } from '../../constants/roomTypes';
 import { formatCurrency } from '../../utils/currencyUtils';
+import { formatDateForDisplay, formatDateForInput } from '../../utils/dateUtils';
 
 // Map BookingResponse from API to display format
 interface BookingData {
@@ -251,7 +253,29 @@ const FrontDeskBookingDetails: React.FC = () => {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString();
+    return formatDateForDisplay(dateString);
+  };
+
+  const parsePickerDate = (dateString: string | undefined) => {
+    if (!dateString) return null;
+
+    const normalized = formatDateForInput(dateString);
+    if (!normalized) return null;
+
+    const [year, month, day] = normalized.split('-').map(Number);
+    return new Date(year, month - 1, day);
+  };
+
+  const formatPickerValue = (date: Date | null) => {
+    if (!date) return '';
+
+    const year = date.getFullYear();
+    const monthNumber = date.getMonth() + 1;
+    const dayNumber = date.getDate();
+    const month = monthNumber < 10 ? `0${monthNumber}` : `${monthNumber}`;
+    const day = dayNumber < 10 ? `0${dayNumber}` : `${dayNumber}`;
+
+    return `${year}-${month}-${day}`;
   };
 
   const getStatusColor = (status: string) => {
@@ -553,25 +577,21 @@ const FrontDeskBookingDetails: React.FC = () => {
                 
                 <Grid container spacing={2}>
                   <Grid item xs={12} sm={6}>
-                    <PremiumTextField
-                      fullWidth
+                    <PremiumDatePicker
                       label="Check-in Date"
-                      value={currentBooking?.checkInDate || ''}
-                      type="date"
-                      onChange={(e) => handleFieldChange('checkInDate', e.target.value)}
+                      value={parsePickerDate(currentBooking?.checkInDate)}
+                      onChange={(value) => handleFieldChange('checkInDate', formatPickerValue(value))}
                       disabled={!isEditing}
-                      InputLabelProps={{ shrink: true }}
+                      slotProps={{ textField: { fullWidth: true, InputLabelProps: { shrink: true } } }}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    <PremiumTextField
-                      fullWidth
+                    <PremiumDatePicker
                       label="Check-out Date"
-                      value={currentBooking?.checkOutDate || ''}
-                      type="date"
-                      onChange={(e) => handleFieldChange('checkOutDate', e.target.value)}
+                      value={parsePickerDate(currentBooking?.checkOutDate)}
+                      onChange={(value) => handleFieldChange('checkOutDate', formatPickerValue(value))}
                       disabled={!isEditing}
-                      InputLabelProps={{ shrink: true }}
+                      slotProps={{ textField: { fullWidth: true, InputLabelProps: { shrink: true } } }}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>

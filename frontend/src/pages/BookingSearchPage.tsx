@@ -25,10 +25,13 @@ import {
   CalendarMonth as CalendarIcon,
   Person as PersonIcon,
 } from '@mui/icons-material';
+import { useTranslation } from 'react-i18next';
 import { bookingApiService, BookingSearchResponse } from '../services/bookingApi';
 import { formatCurrencyWithDecimals } from '../utils/currencyUtils';
+import { formatDateForDisplay } from '../utils/dateUtils';
 
 const BookingSearchPage: React.FC = () => {
+  const { t } = useTranslation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
@@ -43,12 +46,12 @@ const BookingSearchPage: React.FC = () => {
 
   const handleSearch = async () => {
     if (searchType === 'confirmation' && !confirmationNumber.trim()) {
-      setError('Please enter a confirmation number');
+      setError(t('booking.find.searchPage.errors.enterConfirmationNumber'));
       return;
     }
     
     if (searchType === 'email' && (!email.trim() || !lastName.trim())) {
-      setError('Please enter both email and last name');
+      setError(t('booking.find.searchPage.errors.enterEmailAndLastName'));
       return;
     }
 
@@ -68,13 +71,49 @@ const BookingSearchPage: React.FC = () => {
         setBooking(result.data);
         setExpandedDetails(false);
       } else {
-        setError(result.message || 'Booking not found');
+        setError(result.message || t('booking.find.searchPage.errors.bookingNotFound'));
       }
     } catch (err) {
-      setError('Failed to search for booking. Please try again.');
+      setError(t('booking.find.searchPage.errors.searchFailed'));
       // console.error('Booking search error:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const getBookingStatusLabel = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'booked':
+        return t('booking.find.searchPage.statuses.booked');
+      case 'checked in':
+      case 'checked_in':
+        return t('booking.find.searchPage.statuses.checkedIn');
+      case 'checked out':
+      case 'checked_out':
+        return t('booking.find.searchPage.statuses.checkedOut');
+      case 'cancelled':
+        return t('booking.find.searchPage.statuses.cancelled');
+      case 'pending':
+        return t('booking.find.searchPage.statuses.pending');
+      default:
+        return status;
+    }
+  };
+
+  const getPaymentStatusLabel = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'paid':
+        return t('booking.find.searchPage.paymentStatuses.paid');
+      case 'pending':
+        return t('booking.find.searchPage.paymentStatuses.pending');
+      case 'pay_at_frontdesk':
+        return t('booking.find.searchPage.paymentStatuses.payAtFrontdesk');
+      case 'failed':
+        return t('booking.find.searchPage.paymentStatuses.failed');
+      case 'refunded':
+        return t('booking.find.searchPage.paymentStatuses.refunded');
+      default:
+        return status;
     }
   };
 
@@ -101,12 +140,7 @@ const BookingSearchPage: React.FC = () => {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+    return formatDateForDisplay(dateString);
   };
 
   const calculateNights = (checkIn: string, checkOut: string) => {
@@ -124,13 +158,13 @@ const BookingSearchPage: React.FC = () => {
           component="h1" 
           gutterBottom
         >
-          Find Your Booking
+          {t('booking.find.searchPage.title')}
         </Typography>
         <Typography 
           variant={isMobile ? "body1" : "subtitle1"} 
           color="text.secondary"
         >
-          Search for your reservation using your confirmation number or email
+          {t('booking.find.searchPage.subtitle')}
         </Typography>
       </Box>
 
@@ -138,7 +172,7 @@ const BookingSearchPage: React.FC = () => {
       <Paper sx={{ p: { xs: 2, md: 3 }, mb: { xs: 2, md: 3 } }}>
         <Box sx={{ mb: { xs: 2, md: 3 } }}>
           <Typography variant="h6" gutterBottom>
-            Search Method
+            {t('booking.find.searchPage.searchMethod')}
           </Typography>
           <Box sx={{ 
             display: 'flex', 
@@ -152,7 +186,7 @@ const BookingSearchPage: React.FC = () => {
               fullWidth={isMobile}
               size={isMobile ? "medium" : "large"}
             >
-              Confirmation Number
+              {t('booking.find.searchPage.methods.confirmation')}
             </Button>
             <Button
               variant={searchType === 'email' ? 'contained' : 'outlined'}
@@ -160,7 +194,7 @@ const BookingSearchPage: React.FC = () => {
               fullWidth={isMobile}
               size={isMobile ? "medium" : "large"}
             >
-              Email & Last Name
+              {t('booking.find.searchPage.methods.emailAndLastName')}
             </Button>
           </Box>
         </Box>
@@ -168,10 +202,10 @@ const BookingSearchPage: React.FC = () => {
         {searchType === 'confirmation' ? (
           <TextField
             fullWidth
-            label="Confirmation Number"
+            label={t('booking.find.fields.confirmationNumber')}
             value={confirmationNumber}
             onChange={(e) => setConfirmationNumber(e.target.value)}
-            placeholder="Enter your booking confirmation number"
+            placeholder={t('booking.find.searchPage.placeholders.confirmationNumber')}
             variant="outlined"
             sx={{ mb: { xs: 2, md: 2 } }}
             size={isMobile ? "small" : "medium"}
@@ -181,11 +215,11 @@ const BookingSearchPage: React.FC = () => {
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
-                label="Email Address"
+                label={t('booking.find.fields.email')}
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
+                placeholder={t('booking.find.searchPage.placeholders.email')}
                 variant="outlined"
                 size={isMobile ? "small" : "medium"}
               />
@@ -193,10 +227,10 @@ const BookingSearchPage: React.FC = () => {
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
-                label="Last Name"
+                label={t('booking.find.searchPage.fields.lastName')}
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
-                placeholder="Enter your last name"
+                placeholder={t('booking.find.searchPage.placeholders.lastName')}
                 variant="outlined"
                 size={isMobile ? "small" : "medium"}
               />
@@ -219,7 +253,7 @@ const BookingSearchPage: React.FC = () => {
           disabled={loading}
           sx={{ py: { xs: 1.5, md: 2 } }}
         >
-          {loading ? 'Searching...' : 'Search Booking'}
+          {loading ? t('booking.find.buttons.searching') : t('booking.find.searchPage.buttons.searchBooking')}
         </Button>
       </Paper>
 
@@ -237,10 +271,10 @@ const BookingSearchPage: React.FC = () => {
             }}>
               <Box>
                 <Typography variant={isMobile ? "h6" : "h5"} gutterBottom>
-                  Booking Details
+                  {t('booking.manage.bookingDetails')}
                 </Typography>
                 <Typography variant={isMobile ? "caption" : "subtitle2"} color="text.secondary">
-                  Confirmation: {booking.confirmationNumber}
+                  {t('booking.find.found.confirmation', { confirmationNumber: booking.confirmationNumber })}
                 </Typography>
               </Box>
               <Box sx={{ 
@@ -251,13 +285,13 @@ const BookingSearchPage: React.FC = () => {
                 flexWrap: { xs: 'wrap', sm: 'nowrap' }
               }}>
                 <Chip
-                  label={booking.status}
+                  label={getBookingStatusLabel(booking.status)}
                   color={getStatusColor(booking.status) as any}
                   variant="filled"
                   size={isMobile ? "small" : "medium"}
                 />
                 <Chip
-                  label={booking.paymentStatus}
+                  label={getPaymentStatusLabel(booking.paymentStatus)}
                   color={getPaymentStatusColor(booking.paymentStatus) as any}
                   variant="outlined"
                   size="small"
@@ -272,20 +306,20 @@ const BookingSearchPage: React.FC = () => {
               <Grid item xs={6} sm={6} md={4}>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 0.5, md: 1 } }}>
                   <HotelIcon sx={{ mr: 1, color: 'primary.main', fontSize: { xs: '1.2rem', md: '1.5rem' } }} />
-                  <Typography variant={isMobile ? "caption" : "body2"} color="text.secondary">Hotel</Typography>
+                  <Typography variant={isMobile ? "caption" : "body2"} color="text.secondary">{t('booking.page.hotel')}</Typography>
                 </Box>
                 <Typography variant={isMobile ? "body2" : "body1"} fontWeight="medium">
                   {booking.hotelName}
                 </Typography>
                 <Typography variant={isMobile ? "caption" : "body2"} color="text.secondary">
-                  Room {booking.roomNumber} - {booking.roomType}
+                  {t('booking.find.searchPage.labels.roomNumber', { roomNumber: booking.roomNumber })} - {booking.roomType}
                 </Typography>
               </Grid>
 
               <Grid item xs={6} sm={6} md={4}>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 0.5, md: 1 } }}>
                   <CalendarIcon sx={{ mr: 1, color: 'primary.main', fontSize: { xs: '1.2rem', md: '1.5rem' } }} />
-                  <Typography variant={isMobile ? "caption" : "body2"} color="text.secondary">Check-in</Typography>
+                  <Typography variant={isMobile ? "caption" : "body2"} color="text.secondary">{t('booking.manage.checkIn')}</Typography>
                 </Box>
                 <Typography variant={isMobile ? "body2" : "body1"} fontWeight="medium">
                   {formatDate(booking.checkInDate)}
@@ -295,13 +329,13 @@ const BookingSearchPage: React.FC = () => {
               <Grid item xs={6} sm={6} md={4}>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 0.5, md: 1 } }}>
                   <CalendarIcon sx={{ mr: 1, color: 'primary.main', fontSize: { xs: '1.2rem', md: '1.5rem' } }} />
-                  <Typography variant={isMobile ? "caption" : "body2"} color="text.secondary">Check-out</Typography>
+                  <Typography variant={isMobile ? "caption" : "body2"} color="text.secondary">{t('booking.manage.checkOut')}</Typography>
                 </Box>
                 <Typography variant={isMobile ? "body2" : "body1"} fontWeight="medium">
                   {formatDate(booking.checkOutDate)}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
-                  {calculateNights(booking.checkInDate, booking.checkOutDate)} night{calculateNights(booking.checkInDate, booking.checkOutDate) !== 1 ? 's' : ''}
+                  {calculateNights(booking.checkInDate, booking.checkOutDate)} {calculateNights(booking.checkInDate, booking.checkOutDate) !== 1 ? t('booking.page.nightsPlural') : t('booking.page.nights')}
                 </Typography>
               </Grid>
             </Grid>
@@ -316,7 +350,7 @@ const BookingSearchPage: React.FC = () => {
                 size={isMobile ? "medium" : "large"}
                 sx={{ py: { xs: 1, md: 1.5 } }}
               >
-                {expandedDetails ? 'Hide Details' : 'Show More Details'}
+                {expandedDetails ? t('booking.find.searchPage.buttons.hideDetails') : t('booking.find.searchPage.buttons.showMoreDetails')}
               </Button>
               
               <Collapse in={expandedDetails}>
@@ -326,7 +360,7 @@ const BookingSearchPage: React.FC = () => {
                   <Grid container spacing={{ xs: 2, md: 3 }}>
                     <Grid item xs={12} md={6}>
                       <Typography variant={isMobile ? "subtitle1" : "h6"} gutterBottom>
-                        Guest Information
+                        {t('booking.manage.guestInformation')}
                       </Typography>
                       <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 0.5, md: 1 } }}>
                         <PersonIcon sx={{ mr: 1, color: 'text.secondary', fontSize: { xs: '1.2rem', md: '1.5rem' } }} />
@@ -339,7 +373,7 @@ const BookingSearchPage: React.FC = () => {
 
                     <Grid item xs={12} md={6}>
                       <Typography variant={isMobile ? "subtitle1" : "h6"} gutterBottom>
-                        Hotel Information
+                        {t('booking.page.hotelInformation')}
                       </Typography>
                       <Typography variant={isMobile ? "body2" : "body1"} fontWeight="medium">
                         {booking.hotelName}
@@ -351,26 +385,26 @@ const BookingSearchPage: React.FC = () => {
 
                     <Grid item xs={12} md={6}>
                       <Typography variant={isMobile ? "subtitle1" : "h6"} gutterBottom>
-                        Room Details
+                        {t('booking.page.roomDetails')}
                       </Typography>
                       <Typography variant={isMobile ? "body2" : "body1"}>
-                        Room {booking.roomNumber} - {booking.roomType}
+                        {t('booking.find.searchPage.labels.roomNumber', { roomNumber: booking.roomNumber })} - {booking.roomType}
                       </Typography>
                       <Typography variant={isMobile ? "caption" : "body2"} color="text.secondary">
-                        {formatCurrencyWithDecimals(booking.pricePerNight || 0)} per night
+                        {formatCurrencyWithDecimals(booking.pricePerNight || 0)} {t('hotelSearch.detail.perNight')}
                       </Typography>
                     </Grid>
 
                     <Grid item xs={12} md={6}>
                       <Typography variant={isMobile ? "subtitle1" : "h6"} gutterBottom>
-                        Booking Information
+                        {t('booking.find.searchPage.sections.bookingInformation')}
                       </Typography>
                       <Typography variant={isMobile ? "body2" : "body2"}>
-                        Booked on: {new Date(booking.createdAt).toLocaleDateString()}
+                        {t('booking.find.searchPage.labels.bookedOn')} {formatDateForDisplay(booking.createdAt)}
                       </Typography>
                       {booking.paymentIntentId && (
                         <Typography variant={isMobile ? "caption" : "body2"} color="text.secondary">
-                          Payment ID: {booking.paymentIntentId}
+                          {t('booking.find.searchPage.labels.paymentId')} {booking.paymentIntentId}
                         </Typography>
                       )}
                     </Grid>

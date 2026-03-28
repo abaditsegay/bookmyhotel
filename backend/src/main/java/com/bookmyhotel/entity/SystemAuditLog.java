@@ -79,63 +79,159 @@ public class SystemAuditLog extends BaseEntity {
     @Column(name = "error_message", columnDefinition = "TEXT")
     private String errorMessage;
 
-    public SystemAuditLog() {}
+    public SystemAuditLog() {
+    }
 
     // Getters and Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Long getId() {
+        return id;
+    }
 
-    public String getEntityType() { return entityType; }
-    public void setEntityType(String entityType) { this.entityType = entityType; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public Long getEntityId() { return entityId; }
-    public void setEntityId(Long entityId) { this.entityId = entityId; }
+    public String getEntityType() {
+        return entityType;
+    }
 
-    public String getAction() { return action; }
-    public void setAction(String action) { this.action = action; }
+    public void setEntityType(String entityType) {
+        this.entityType = entityType;
+    }
 
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
+    public Long getEntityId() {
+        return entityId;
+    }
 
-    public String getOldValues() { return oldValues; }
-    public void setOldValues(String oldValues) { this.oldValues = oldValues; }
+    public void setEntityId(Long entityId) {
+        this.entityId = entityId;
+    }
 
-    public String getNewValues() { return newValues; }
-    public void setNewValues(String newValues) { this.newValues = newValues; }
+    public String getAction() {
+        return action;
+    }
 
-    public Long getPerformedByUserId() { return performedByUserId; }
-    public void setPerformedByUserId(Long performedByUserId) { this.performedByUserId = performedByUserId; }
+    public void setAction(String action) {
+        this.action = action;
+    }
 
-    public String getPerformedByUserName() { return performedByUserName; }
-    public void setPerformedByUserName(String performedByUserName) { this.performedByUserName = performedByUserName; }
+    public String getDescription() {
+        return description;
+    }
 
-    public String getPerformedByUserEmail() { return performedByUserEmail; }
-    public void setPerformedByUserEmail(String performedByUserEmail) { this.performedByUserEmail = performedByUserEmail; }
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
-    public String getPerformedByUserRole() { return performedByUserRole; }
-    public void setPerformedByUserRole(String performedByUserRole) { this.performedByUserRole = performedByUserRole; }
+    public String getOldValues() {
+        return oldValues;
+    }
 
-    public String getIpAddress() { return ipAddress; }
-    public void setIpAddress(String ipAddress) { this.ipAddress = ipAddress; }
+    public void setOldValues(String oldValues) {
+        this.oldValues = oldValues;
+    }
 
-    public String getUserAgent() { return userAgent; }
-    public void setUserAgent(String userAgent) { this.userAgent = userAgent; }
+    public String getNewValues() {
+        return newValues;
+    }
 
-    public String getRequestPath() { return requestPath; }
-    public void setRequestPath(String requestPath) { this.requestPath = requestPath; }
+    public void setNewValues(String newValues) {
+        this.newValues = newValues;
+    }
 
-    public String getRequestMethod() { return requestMethod; }
-    public void setRequestMethod(String requestMethod) { this.requestMethod = requestMethod; }
+    public Long getPerformedByUserId() {
+        return performedByUserId;
+    }
 
-    public Integer getResponseStatus() { return responseStatus; }
-    public void setResponseStatus(Integer responseStatus) { this.responseStatus = responseStatus; }
+    public void setPerformedByUserId(Long performedByUserId) {
+        this.performedByUserId = performedByUserId;
+    }
 
-    public LocalDateTime getPerformedAt() { return performedAt; }
-    public void setPerformedAt(LocalDateTime performedAt) { this.performedAt = performedAt; }
+    public String getPerformedByUserName() {
+        return performedByUserName;
+    }
 
-    public boolean isSuccess() { return success; }
-    public void setSuccess(boolean success) { this.success = success; }
+    public void setPerformedByUserName(String performedByUserName) {
+        this.performedByUserName = performedByUserName;
+    }
 
-    public String getErrorMessage() { return errorMessage; }
-    public void setErrorMessage(String errorMessage) { this.errorMessage = errorMessage; }
+    public String getPerformedByUserEmail() {
+        return performedByUserEmail;
+    }
+
+    public void setPerformedByUserEmail(String performedByUserEmail) {
+        this.performedByUserEmail = performedByUserEmail;
+    }
+
+    public String getPerformedByUserRole() {
+        return performedByUserRole;
+    }
+
+    public void setPerformedByUserRole(String performedByUserRole) {
+        this.performedByUserRole = performedByUserRole;
+    }
+
+    public String getIpAddress() {
+        return ipAddress;
+    }
+
+    public void setIpAddress(String ipAddress) {
+        this.ipAddress = ipAddress;
+    }
+
+    public String getUserAgent() {
+        return userAgent;
+    }
+
+    public void setUserAgent(String userAgent) {
+        this.userAgent = userAgent;
+    }
+
+    public String getRequestPath() {
+        return requestPath;
+    }
+
+    public void setRequestPath(String requestPath) {
+        this.requestPath = requestPath;
+    }
+
+    public String getRequestMethod() {
+        return requestMethod;
+    }
+
+    public void setRequestMethod(String requestMethod) {
+        this.requestMethod = requestMethod;
+    }
+
+    public Integer getResponseStatus() {
+        return responseStatus;
+    }
+
+    public void setResponseStatus(Integer responseStatus) {
+        this.responseStatus = responseStatus;
+    }
+
+    public LocalDateTime getPerformedAt() {
+        return performedAt;
+    }
+
+    public void setPerformedAt(LocalDateTime performedAt) {
+        this.performedAt = performedAt;
+    }
+
+    public boolean isSuccess() {
+        return success;
+    }
+
+    public void setSuccess(boolean success) {
+        this.success = success;
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
+    }
 }

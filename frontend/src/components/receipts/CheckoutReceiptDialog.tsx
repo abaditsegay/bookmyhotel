@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { formatCurrency, formatCurrencyWithDecimals } from '../../utils/currencyUtils';
 import {
   Dialog,
@@ -28,7 +29,7 @@ import {
   Email as EmailIcon,
 } from '@mui/icons-material';
 import { ConsolidatedReceipt, frontDeskApiService } from '../../services/frontDeskApi';
-import { formatDateForDisplay } from '../../utils/dateUtils';
+import { formatDateForDisplay, formatDateTimeForDisplay } from '../../utils/dateUtils';
 import { useAuth } from '../../contexts/AuthContext';
 import { COLORS, addAlpha } from '../../theme/themeColors';
 
@@ -45,6 +46,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
   receipt,
   guestName,
 }) => {
+  const { t } = useTranslation();
   const theme = useTheme();
   const { user, token } = useAuth();
   const [emailLoading, setEmailLoading] = useState(false);
@@ -63,7 +65,8 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
   if (!receipt) return null;
 
   const formatDate = (dateString: string) => formatDateForDisplay(dateString);
-  const formatDateTime = (dateString: string) => new Date(dateString).toLocaleString();
+  const formatDateTime = (dateString: string) => formatDateTimeForDisplay(dateString);
+  const getNightLabel = (count: number) => count === 1 ? t('receipts.nightSingle') : t('receipts.nightPlural');
 
   const handlePrint = () => {
     const primaryColor = theme.palette.primary.main;
@@ -81,7 +84,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
         <html>
           <head>
             <meta charset="utf-8">
-            <title>Hotel Receipt - ${receipt.receiptNumber}</title>
+            <title>${receipt.hotelName} - ${t('receipts.receiptNumber', { number: receipt.receiptNumber })}</title>
             <style>
               @page {
                 size: A4;
@@ -310,39 +313,39 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
               <h1>${receipt.hotelName}</h1>
               <div class="address">${receipt.hotelAddress}</div>
               <div class="badges">
-                <div class="badge receipt">Official Receipt</div>
-                <div class="badge number">Receipt #${receipt.receiptNumber}</div>
+                <div class="badge receipt">${t('receipts.official')}</div>
+                <div class="badge number">${t('receipts.receiptNumber', { number: receipt.receiptNumber })}</div>
               </div>
             </div>
 
             <div class="content">
               <!-- Guest Information Section -->
               <div class="section">
-                <h2>Guest Information</h2>
+                <h2>${t('receipts.guestInformation')}</h2>
                 <div class="info-grid">
                   <div>
                     <div class="info-item">
-                      <div class="info-label">Full Name:</div>
+                      <div class="info-label">${t('receipts.fullName')}:</div>
                       <div class="info-value">${receipt.guestName}</div>
                     </div>
                     <div class="info-item">
-                      <div class="info-label">Email:</div>
-                      <div class="info-value">${receipt.guestEmail}</div>
+                      <div class="info-label">${t('receipts.email')}:</div>
+                      <div class="info-value">${receipt.guestEmail || t('receipts.notAvailable')}</div>
                     </div>
                     ${receipt.guestPhone ? `
                     <div class="info-item">
-                      <div class="info-label">Phone:</div>
+                      <div class="info-label">${t('receipts.phone')}:</div>
                       <div class="info-value">${receipt.guestPhone}</div>
                     </div>
                     ` : ''}
                   </div>
                   <div>
                     <div class="info-item">
-                      <div class="info-label">Confirmation:</div>
+                      <div class="info-label">${t('receipts.confirmation')}:</div>
                       <div class="info-value highlight">${receipt.confirmationNumber}</div>
                     </div>
                     <div class="info-item">
-                      <div class="info-label">Guests:</div>
+                      <div class="info-label">${t('receipts.guests')}:</div>
                       <div class="info-value">${receipt.numberOfGuests}</div>
                     </div>
                   </div>
@@ -351,29 +354,29 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
 
               <!-- Stay Details Section -->
               <div class="section">
-                <h2>Stay Details</h2>
+                <h2>${t('receipts.stayDetails')}</h2>
                 <div class="info-grid">
                   <div>
                     <div class="info-item">
-                      <div class="info-label">Room:</div>
+                      <div class="info-label">${t('receipts.room')}:</div>
                       <div class="info-value">${receipt.roomNumber} (${receipt.roomType})</div>
                     </div>
                     <div class="info-item">
-                      <div class="info-label">Check-in:</div>
+                      <div class="info-label">${t('receipts.checkIn')}:</div>
                       <div class="info-value">${formatDate(receipt.checkInDate)}</div>
                     </div>
                     <div class="info-item">
-                      <div class="info-label">Check-out:</div>
+                      <div class="info-label">${t('receipts.checkOut')}:</div>
                       <div class="info-value">${formatDate(receipt.checkOutDate)}</div>
                     </div>
                   </div>
                   <div>
                     <div class="info-item">
-                      <div class="info-label">Duration:</div>
-                      <div class="info-value">${receipt.numberOfNights} night${receipt.numberOfNights !== 1 ? 's' : ''}</div>
+                      <div class="info-label">${t('receipts.duration')}:</div>
+                      <div class="info-value">${receipt.numberOfNights} ${getNightLabel(receipt.numberOfNights)}</div>
                     </div>
                     <div class="info-item">
-                      <div class="info-label">Rate per Night:</div>
+                      <div class="info-label">${t('receipts.ratePerNight')}:</div>
                       <div class="info-value">${formatCurrency(receipt.roomChargePerNight)}</div>
                     </div>
                   </div>
@@ -386,16 +389,16 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
               <table class="table">
                 <thead>
                   <tr>
-                    <th>DESCRIPTION</th>
-                    <th class="center">QTY</th>
-                    <th class="center">UNIT PRICE</th>
-                    <th class="right">AMOUNT</th>
+                    <th>${t('receipts.billing.description')}</th>
+                    <th class="center">${t('receipts.billing.qty')}</th>
+                    <th class="center">${t('receipts.billing.unitPrice')}</th>
+                    <th class="right">${t('receipts.billing.amount')}</th>
                   </tr>
                 </thead>
                 <tbody>
                   <!-- Room Accommodation -->
                   <tr>
-                    <td>Room Accommodation (${receipt.numberOfNights} night${receipt.numberOfNights !== 1 ? 's' : ''})</td>
+                    <td>${t('receipts.roomAccommodation')} (${receipt.numberOfNights} ${getNightLabel(receipt.numberOfNights)})</td>
                     <td class="center">${receipt.numberOfNights}</td>
                     <td class="center">${formatCurrencyWithDecimals(receipt.roomChargePerNight)}</td>
                     <td class="right">${formatCurrencyWithDecimals(receipt.totalRoomCharges)}</td>
@@ -409,7 +412,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                     const total = unitPrice * quantity;
                     return `
                       <tr>
-                        <td>${charge.description || 'Additional Service'}</td>
+                        <td>${charge.description || t('receipts.additionalService')}</td>
                         <td class="center">${quantity}</td>
                         <td class="center">${formatCurrencyWithDecimals(unitPrice)}</td>
                         <td class="right">${formatCurrencyWithDecimals(total)}</td>
@@ -420,7 +423,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                   ${receipt.taxesAndFees?.map(tax => {
                     return `
                       <tr>
-                        <td colspan="3">${tax.description || 'Tax'}</td>
+                        <td colspan="3">${tax.description || t('receipts.tax')}</td>
                         <td class="right">${formatCurrencyWithDecimals(tax.amount || 0)}</td>
                       </tr>
                     `;
@@ -428,14 +431,14 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
 
                   ${(receipt.totalTaxesAndFees || 0) > 0 ? `
                   <tr class="subtotal">
-                    <td colspan="3">Taxes & Fees Subtotal</td>
+                    <td colspan="3">${t('receipts.billing.taxesAndFees')}</td>
                     <td class="right">${formatCurrencyWithDecimals(receipt.totalTaxesAndFees)}</td>
                   </tr>
                   ` : ''}
 
                   <!-- Total Amount -->
                   <tr class="total">
-                    <td>TOTAL AMOUNT</td>
+                    <td>${t('receipts.billing.totalAmount')}</td>
                     <td class="center"></td>
                     <td class="center"></td>
                     <td class="right amount">${formatCurrencyWithDecimals(receipt.grandTotal)}</td>
@@ -445,10 +448,10 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
 
               <!-- Footer -->
               <div class="footer">
-                <h3>Thank you for choosing ${receipt.hotelName}!</h3>
-                <p>Generated on ${formatDateTime(receipt.generatedAt)}</p>
-                ${receipt.generatedBy ? `<p>Generated by: ${receipt.generatedBy}</p>` : ''}
-                <p>This is an official receipt for your stay.</p>
+                <h3>${t('receipts.thankYouHotel', { hotelName: receipt.hotelName })}</h3>
+                <p>${t('receipts.generatedOn', { date: formatDateTime(receipt.generatedAt) })}</p>
+                ${receipt.generatedBy ? `<p>${t('receipts.generatedBy', { name: receipt.generatedBy })}</p>` : ''}
+                <p>${t('receipts.billing.officialReceipt')}</p>
               </div>
             </div>
           </body>
@@ -489,7 +492,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
     if (!receipt.reservationId || !token) {
       setSnackbar({
         open: true,
-        message: 'Unable to send email: missing reservation information',
+        message: t('receipts.emailDialog.errors.missingReservationInfo'),
         severity: 'error',
       });
       return;
@@ -498,7 +501,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
     if (!recipientEmail || !recipientEmail.trim()) {
       setSnackbar({
         open: true,
-        message: 'Please enter a valid email address',
+        message: t('receipts.emailDialog.errors.invalidEmail'),
         severity: 'error',
       });
       return;
@@ -509,7 +512,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
     if (!emailRegex.test(recipientEmail)) {
       setSnackbar({
         open: true,
-        message: 'Please enter a valid email address',
+        message: t('receipts.emailDialog.errors.invalidEmail'),
         severity: 'error',
       });
       return;
@@ -527,21 +530,21 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
       if (result.success) {
         setSnackbar({
           open: true,
-          message: `Receipt sent successfully to ${recipientEmail}`,
+          message: t('receipts.emailDialog.success', { email: recipientEmail }),
           severity: 'success',
         });
         handleCloseEmailDialog();
       } else {
         setSnackbar({
           open: true,
-          message: result.message || 'Failed to send receipt',
+          message: result.message || t('receipts.emailDialog.errors.failedToSend'),
           severity: 'error',
         });
       }
     } catch (error) {
       setSnackbar({
         open: true,
-        message: 'An error occurred while sending the receipt',
+        message: t('receipts.emailDialog.errors.unexpectedError'),
         severity: 'error',
       });
     } finally {
@@ -589,14 +592,14 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
             </Typography>
             <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', justifyContent: 'center', mb: 2 }}>
               <Typography variant="body2" sx={{ fontWeight: 600, color: COLORS.TEXT_SECONDARY }}>
-                Official Receipt
+                {t('receipts.official')}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Receipt #{receipt.receiptNumber}
+                {t('receipts.receiptNumber', { number: receipt.receiptNumber })}
               </Typography>
             </Box>
             <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
-              <Tooltip title="Print Receipt">
+              <Tooltip title={t('receipts.actions.printReceipt')}>
                 <IconButton 
                   size="small"
                   onClick={handlePrint} 
@@ -608,7 +611,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                   <PrintIcon fontSize="small" />
                 </IconButton>
               </Tooltip>
-              <Tooltip title="Download PDF">
+              <Tooltip title={t('receipts.actions.downloadPdf')}>
                 <IconButton 
                   size="small"
                   onClick={handleDownload} 
@@ -620,7 +623,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                   <DownloadIcon fontSize="small" />
                 </IconButton>
               </Tooltip>
-              <Tooltip title="Email Receipt">
+              <Tooltip title={t('receipts.actions.emailReceipt')}>
                 <IconButton 
                   size="small"
                   onClick={handleEmail} 
@@ -652,13 +655,13 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                 fontSize: '1rem'
               }}
             >
-              Guest Information
+              {t('receipts.guestInformation')}
             </Typography>
             <Grid container spacing={3}>
               <Grid item xs={6}>
                 <Box sx={{ mb: 2 }}>
                   <Typography variant="caption" sx={{ color: COLORS.TEXT_SECONDARY, textTransform: 'uppercase', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.5px' }}>
-                    Full Name:
+                    {t('receipts.fullName')}:
                   </Typography>
                   <Typography variant="body2" sx={{ fontWeight: 500, mt: 0.5 }}>
                     {guestName}
@@ -666,25 +669,25 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                 </Box>
                 <Box sx={{ mb: 2 }}>
                   <Typography variant="caption" sx={{ color: COLORS.TEXT_SECONDARY, textTransform: 'uppercase', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.5px' }}>
-                    Email:
+                    {t('receipts.email')}:
                   </Typography>
                   <Typography variant="body2" sx={{ fontWeight: 500, mt: 0.5 }}>
-                    {receipt.guestEmail || 'N/A'}
+                    {receipt.guestEmail || t('receipts.notAvailable')}
                   </Typography>
                 </Box>
                 <Box>
                   <Typography variant="caption" sx={{ color: COLORS.TEXT_SECONDARY, textTransform: 'uppercase', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.5px' }}>
-                    Phone:
+                    {t('receipts.phone')}:
                   </Typography>
                   <Typography variant="body2" sx={{ fontWeight: 500, mt: 0.5 }}>
-                    {receipt.guestPhone || 'N/A'}
+                    {receipt.guestPhone || t('receipts.notAvailable')}
                   </Typography>
                 </Box>
               </Grid>
               <Grid item xs={6}>
                 <Box sx={{ mb: 2 }}>
                   <Typography variant="caption" sx={{ color: COLORS.TEXT_SECONDARY, textTransform: 'uppercase', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.5px' }}>
-                    Confirmation:
+                    {t('receipts.confirmation')}:
                   </Typography>
                   <Typography variant="body2" sx={{ fontWeight: 700, color: theme.palette.primary.main, mt: 0.5 }}>
                     {receipt.confirmationNumber}
@@ -692,7 +695,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                 </Box>
                 <Box>
                   <Typography variant="caption" sx={{ color: COLORS.TEXT_SECONDARY, textTransform: 'uppercase', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.5px' }}>
-                    Guests:
+                    {t('receipts.guests')}:
                   </Typography>
                   <Typography variant="body2" sx={{ fontWeight: 500, mt: 0.5 }}>
                     {receipt.numberOfGuests}
@@ -719,13 +722,13 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                 fontSize: '1rem'
               }}
             >
-              Stay Details
+              {t('receipts.stayDetails')}
             </Typography>
             <Grid container spacing={3}>
               <Grid item xs={6}>
                 <Box sx={{ mb: 2 }}>
                   <Typography variant="caption" sx={{ color: COLORS.TEXT_SECONDARY, textTransform: 'uppercase', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.5px' }}>
-                    Room:
+                    {t('receipts.room')}:
                   </Typography>
                   <Typography variant="body2" sx={{ fontWeight: 500, mt: 0.5 }}>
                     {receipt.roomNumber} ({receipt.roomType})
@@ -733,7 +736,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                 </Box>
                 <Box sx={{ mb: 2 }}>
                   <Typography variant="caption" sx={{ color: COLORS.TEXT_SECONDARY, textTransform: 'uppercase', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.5px' }}>
-                    Check-in:
+                    {t('receipts.checkIn')}:
                   </Typography>
                   <Typography variant="body2" sx={{ fontWeight: 500, mt: 0.5 }}>
                     {formatDate(receipt.checkInDate)}
@@ -741,7 +744,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                 </Box>
                 <Box>
                   <Typography variant="caption" sx={{ color: COLORS.TEXT_SECONDARY, textTransform: 'uppercase', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.5px' }}>
-                    Check-out:
+                    {t('receipts.checkOut')}:
                   </Typography>
                   <Typography variant="body2" sx={{ fontWeight: 500, mt: 0.5 }}>
                     {formatDate(receipt.checkOutDate)}
@@ -751,15 +754,15 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
               <Grid item xs={6}>
                 <Box sx={{ mb: 2 }}>
                   <Typography variant="caption" sx={{ color: COLORS.TEXT_SECONDARY, textTransform: 'uppercase', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.5px' }}>
-                    Duration:
+                    {t('receipts.duration')}:
                   </Typography>
                   <Typography variant="body2" sx={{ fontWeight: 500, mt: 0.5 }}>
-                    {receipt.numberOfNights} night{receipt.numberOfNights > 1 ? 's' : ''}
+                    {receipt.numberOfNights} {getNightLabel(receipt.numberOfNights)}
                   </Typography>
                 </Box>
                 <Box>
                   <Typography variant="caption" sx={{ color: COLORS.TEXT_SECONDARY, textTransform: 'uppercase', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.5px' }}>
-                    Rate per night:
+                    {t('receipts.ratePerNight')}:
                   </Typography>
                   <Typography variant="body2" sx={{ fontWeight: 500, mt: 0.5 }}>
                     {formatCurrency(receipt.roomChargePerNight)}
@@ -784,7 +787,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                     border: `1px solid ${COLORS.BORDER_LIGHT}`,
                     borderBottom: `2px solid ${COLORS.BORDER_LIGHT}`
                   }}>
-                    Description
+                    {t('receipts.billing.description')}
                   </TableCell>
                   <TableCell align="center" sx={{ 
                     fontWeight: 700, 
@@ -796,7 +799,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                     border: `1px solid ${COLORS.BORDER_LIGHT}`,
                     borderBottom: `2px solid ${COLORS.BORDER_LIGHT}`
                   }}>
-                    QTY
+                    {t('receipts.billing.qty')}
                   </TableCell>
                   <TableCell align="right" sx={{ 
                     fontWeight: 700, 
@@ -808,7 +811,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                     border: `1px solid ${COLORS.BORDER_LIGHT}`,
                     borderBottom: `2px solid ${COLORS.BORDER_LIGHT}`
                   }}>
-                    Unit Price
+                    {t('receipts.billing.unitPrice')}
                   </TableCell>
                   <TableCell align="right" sx={{ 
                     fontWeight: 700, 
@@ -820,7 +823,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                     border: `1px solid ${COLORS.BORDER_LIGHT}`,
                     borderBottom: `2px solid ${COLORS.BORDER_LIGHT}`
                   }}>
-                    Amount
+                    {t('receipts.billing.amount')}
                   </TableCell>
                 </TableRow>
               </TableHead>
@@ -828,7 +831,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                 {/* Room charges */}
                 <TableRow>
                   <TableCell sx={{ border: `1px solid ${COLORS.BORDER_LIGHT}` }}>
-                    Room Accommodation ({receipt.numberOfNights} night{receipt.numberOfNights > 1 ? 's' : ''})
+                    {t('receipts.roomAccommodation')} ({receipt.numberOfNights} {getNightLabel(receipt.numberOfNights)})
                   </TableCell>
                   <TableCell align="center" sx={{ border: `1px solid ${COLORS.BORDER_LIGHT}` }}>
                     {receipt.numberOfNights}
@@ -852,7 +855,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                   return (
                     <TableRow key={index}>
                       <TableCell sx={{ border: `1px solid ${COLORS.BORDER_LIGHT}` }}>
-                        {charge.description}
+                        {charge.description || t('receipts.additionalService')}
                       </TableCell>
                       <TableCell align="center" sx={{ border: `1px solid ${COLORS.BORDER_LIGHT}` }}>
                         {quantity}
@@ -871,7 +874,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                 {receipt.taxesAndFees && receipt.taxesAndFees.length > 0 && receipt.taxesAndFees.map((tax: any, index: number) => (
                   <TableRow key={`tax-${index}`}>
                     <TableCell colSpan={3} sx={{ textAlign: 'right', fontWeight: 500, border: `1px solid ${COLORS.BORDER_LIGHT}` }}>
-                      {tax.description}
+                      {tax.description || t('receipts.tax')}
                     </TableCell>
                     <TableCell align="right" sx={{ fontWeight: 600, border: `1px solid ${COLORS.BORDER_LIGHT}` }}>
                       {formatCurrency(tax.amount)}
@@ -882,7 +885,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                 {/* Taxes & Fees Subtotal */}
                 <TableRow>
                   <TableCell colSpan={3} sx={{ textAlign: 'right', fontWeight: 700, border: `1px solid ${COLORS.BORDER_LIGHT}` }}>
-                    Taxes & Fees Subtotal
+                    {t('receipts.billing.taxesAndFees')}
                   </TableCell>
                   <TableCell align="right" sx={{ fontWeight: 700, border: `1px solid ${COLORS.BORDER_LIGHT}` }}>
                     {formatCurrency(receipt.totalTaxesAndFees)}
@@ -902,7 +905,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                       borderRight: 'none'
                     }}
                   >
-                    TOTAL AMOUNT
+                    {t('receipts.billing.totalAmount')}
                   </TableCell>
                   <TableCell 
                     align="right" 
@@ -931,10 +934,10 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
             textAlign: 'center'
           }}>
             <Typography variant="body1" sx={{ fontWeight: 600, mb: 1 }}>
-              Thank you for choosing {receipt.hotelName}!
+              {t('receipts.thankYouHotel', { hotelName: receipt.hotelName })}
             </Typography>
             <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 2 }}>
-              Generated on {formatDateTime(receipt.generatedAt)}
+              {t('receipts.generatedOn', { date: formatDateTime(receipt.generatedAt) })}
             </Typography>
           </Box>
         </Box>
@@ -955,7 +958,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
             }
           }}
         >
-          Close
+          {t('receipts.actions.close')}
         </Button>
       </DialogActions>
 
@@ -966,26 +969,26 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>Send Receipt via Email</DialogTitle>
+        <DialogTitle>{t('receipts.emailDialog.title')}</DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 2 }}>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              Enter the email address where you want to send the receipt. The guest's email is pre-filled below.
+              {t('receipts.emailDialog.description')}
             </Typography>
             <TextField
               autoFocus
               fullWidth
-              label="Recipient Email Address"
+              label={t('receipts.emailDialog.recipientLabel')}
               type="email"
               value={recipientEmail}
               onChange={(e) => setRecipientEmail(e.target.value)}
-              placeholder="guest@example.com"
-              helperText="You can modify the email address before sending"
+              placeholder={t('receipts.emailDialog.recipientPlaceholder')}
+              helperText={t('receipts.emailDialog.recipientHelper')}
               disabled={emailLoading}
               sx={{ mb: 2 }}
             />
             <Typography variant="caption" color="text.secondary">
-              <strong>Booking:</strong> {receipt.confirmationNumber}
+              <strong>{t('receipts.emailDialog.bookingLabel')}</strong> {receipt.confirmationNumber}
             </Typography>
           </Box>
         </DialogContent>
@@ -995,7 +998,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
             disabled={emailLoading}
             sx={{ textTransform: 'none' }}
           >
-            Cancel
+            {t('receipts.emailDialog.cancel')}
           </Button>
           <Button 
             onClick={handleSendEmail}
@@ -1004,7 +1007,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
             startIcon={emailLoading ? <CircularProgress size={20} /> : <EmailIcon />}
             sx={{ textTransform: 'none' }}
           >
-            {emailLoading ? 'Sending...' : 'Send Email'}
+            {emailLoading ? t('receipts.emailDialog.sending') : t('receipts.emailDialog.send')}
           </Button>
         </DialogActions>
       </Dialog>

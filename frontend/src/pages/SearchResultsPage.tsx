@@ -1,102 +1,59 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { COLORS, addAlpha } from '../theme/themeColors';
+import { useTranslation } from 'react-i18next';
 import {
-  Container,
+  Alert,
   Typography,
   Box,
-  Alert,
   Snackbar,
-
-
+  Container,
   useMediaQuery,
   useTheme,
   Stack,
   Button,
-  Card,
-  CardContent,
 } from '@mui/material';
-import { SearchOff as SearchOffIcon } from '@mui/icons-material';
 
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { hotelApiService } from '../services/hotelApi';
 import HotelDetailsCard from '../components/hotel/HotelDetailsCard';
-import { HotelCardSkeleton } from '../components/common/SkeletonLoaders';
-import EmptyState from '../components/common/EmptyState';
+import { DataState } from '../components/common';
+import { PageHeader, SurfaceCard } from '../components/ui';
+import { usePublicHotelSearchResults, PublicHotelSearchLocationState, formatHotelSearchSummary } from '../hooks/usePublicHotelSearchResults';
 import { 
-  HotelSearchRequest, 
   HotelSearchResult,
+  AvailableRoom,
 } from '../types/hotel';
 
 const SearchResultsPage: React.FC = () => {
-  // Updated to neutral design matching LoginPage
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const { isAuthenticated } = useAuth();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  
-  // State from search parameters
-  const [searchRequest, setSearchRequest] = useState<HotelSearchRequest | null>(null);
-  const [hotels, setHotels] = useState<HotelSearchResult[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  
-  // Success/error feedback
+
+  const locationState = (location.state as PublicHotelSearchLocationState | null) ?? null;
+  const { searchRequest, hotels, successMessage: initialSuccessMessage, isLoading, error, hasSearchRequest, refetch } =
+    usePublicHotelSearchResults(locationState);
   const [successMessage, setSuccessMessage] = useState('');
 
-  // Function to perform a new search when we have searchRequest but no hotels
-  const performSearch = useCallback(async (searchReq: HotelSearchRequest) => {
-    try {
-      setLoading(true);
-      setError('');
-      // console.log('🔍 Re-performing hotel search:', searchReq);
-      const results = await hotelApiService.searchHotelsPublic(searchReq);
-      setHotels(results);
-    } catch (err) {
-      // console.error('❌ Hotel search failed:', err);
-      setError(err instanceof Error ? err.message : 'An error occurred while searching for hotels');
-      // If search fails, redirect back to search page
-      navigate('/hotels/search');
-    } finally {
-      setLoading(false);
-    }
-  }, [navigate]);
-
-  // Extract search parameters from location state or URL
   useEffect(() => {
-    const state = location.state as { 
-      searchRequest?: HotelSearchRequest; 
-      hotels?: HotelSearchResult[];
-      successMessage?: string;
-    };
-    
-    if (state?.searchRequest && state?.hotels && state.hotels.length > 0) {
-      // If we have data passed from the search page
-      setSearchRequest(state.searchRequest);
-      setHotels(state.hotels);
-      setLoading(false);
-    } else if (state?.searchRequest) {
-      // If we have searchRequest but no hotels, perform a new search
-      setSearchRequest(state.searchRequest);
-      performSearch(state.searchRequest);
-    } else {
-      // If no data, redirect back to search
-      navigate('/hotels/search');
+    if (!hasSearchRequest) {
+      navigate('/hotels/search', { replace: true });
     }
+  }, [hasSearchRequest, navigate]);
 
-    // Handle success message from booking
-    if (state?.successMessage) {
-      setSuccessMessage(state.successMessage);
+  useEffect(() => {
+    if (initialSuccessMessage) {
+      setSuccessMessage(initialSuccessMessage);
     }
-  }, [location, navigate, performSearch]);
+  }, [initialSuccessMessage]);
 
   const handleBookRoom = async (hotelId: number, roomId: number, asGuest: boolean = false) => {
-    // Get room details for booking
     const hotel = hotels.find((h: HotelSearchResult) => h.id === hotelId);
     if (!hotel) return;
     
-    const room = hotel.availableRooms.find((r: any) => r.id === roomId);
+    const room = hotel.availableRooms.find((availableRoom: AvailableRoom) => availableRoom.id === roomId);
     if (!room) return;
 
     if (asGuest) {
@@ -139,7 +96,6 @@ const SearchResultsPage: React.FC = () => {
   };
 
   const handleBookRoomType = async (hotelId: number, roomType: string, asGuest: boolean = false) => {
-    // Get hotel details for booking
     const hotel = hotels.find((h: HotelSearchResult) => h.id === hotelId);
     if (!hotel) return;
     
@@ -197,57 +153,21 @@ const SearchResultsPage: React.FC = () => {
     });
   };
 
-  const formatSearchSummary = () => {
-    if (!searchRequest) return '';
-    
-    const parts = [];
-    if (searchRequest.location) {
-      parts.push(`in ${searchRequest.location}`);
-    }
-    parts.push(`from ${searchRequest.checkInDate} to ${searchRequest.checkOutDate}`);
-    parts.push(`for ${searchRequest.guests} guest${searchRequest.guests > 1 ? 's' : ''}`);
-    
-    return parts.join(' ');
-  };
+  const searchSummary = useMemo(
+    () =>
+      formatHotelSearchSummary(searchRequest, {
+        inLabel: t('hotelSearch.summary.in'),
+        fromLabel: t('hotelSearch.summary.from'),
+        toLabel: t('hotelSearch.summary.to'),
+        forLabel: t('hotelSearch.summary.for'),
+        guestSingular: t('hotelSearch.summary.guestSingle'),
+        guestPlural: t('hotelSearch.summary.guestPlural'),
+      }),
+    [searchRequest, t],
+  );
 
-  if (loading) {
-    return (
-      <Box
-        sx={{
-          minHeight: '100vh',
-          backgroundColor: theme.palette.background.default,
-        }}
-      >
-        <Container maxWidth="lg" sx={{ py: isMobile ? 2 : 4, px: isMobile ? 1 : 3 }}>
-          <Box sx={{ mb: 3 }}>
-            <Button 
-              onClick={handleBackToSearch}
-              variant="outlined"
-              disabled
-              sx={{ 
-                borderRadius: 1,
-                textTransform: 'none',
-                fontWeight: 500,
-                borderColor: COLORS.SECONDARY,
-                borderWidth: '2px',
-              }}
-            >
-              ← Back to Search
-            </Button>
-          </Box>
-          
-          <Typography variant="h5" sx={{ mb: 3, fontWeight: 600 }}>
-            Searching for hotels...
-          </Typography>
-          
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-            <HotelCardSkeleton />
-            <HotelCardSkeleton />
-            <HotelCardSkeleton />
-          </Box>
-        </Container>
-      </Box>
-    );
+  if (!hasSearchRequest) {
+    return null;
   }
 
   return (
@@ -264,7 +184,6 @@ const SearchResultsPage: React.FC = () => {
           px: isMobile ? 1 : 3,
         }}
       >
-      {/* Simple Header with Back Navigation */}
       <Box sx={{ mb: 3 }}>
         <Button 
           onClick={handleBackToSearch}
@@ -285,82 +204,73 @@ const SearchResultsPage: React.FC = () => {
             },
           }}
         >
-          ← Back to Search
+          {t('hotelSearch.results.backToSearch')}
         </Button>
       </Box>
 
       {/* Search Summary and Actions */}
-      <Card 
+      <SurfaceCard 
+        variantStyle="default"
         sx={{ 
           mb: 3,
-          backgroundColor: COLORS.WHITE,
-          border: `2px solid ${COLORS.SECONDARY}`,
-          borderRadius: 1,
           boxShadow: `0 2px 8px ${addAlpha(COLORS.SECONDARY, 0.1)}`,
         }}
+        contentSx={{ p: { xs: 2.5, md: 3 } }}
       >
-        <CardContent sx={{ p: 3 }}>
-          <Box sx={{ mb: 3 }}>
-            <Typography 
-              variant="h5" 
-              sx={{ 
-                fontWeight: 600,
-                color: COLORS.PRIMARY,
-                mb: 1,
-              }}
-            >
-              Search Results
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              {searchRequest ? `Hotels ${formatSearchSummary()}` : 'Loading search results...'}
-            </Typography>
-            <Typography variant="body2" sx={{ 
-              color: 'text.primary',
-              fontWeight: 600,
-            }}>
-              {hotels.length} hotel{hotels.length === 1 ? '' : 's'} found
-            </Typography>
-          </Box>
+        <PageHeader
+          title={t('hotelSearch.results.title')}
+          description={searchRequest ? `${t('hotelSearch.results.descriptionPrefix')} ${searchSummary}` : t('hotelSearch.results.loadingDescription')}
+          actions={
+            <Stack direction={isMobile ? 'column' : 'row'} spacing={2} justifyContent="flex-start">
+              <Button 
+                variant="outlined"
+                onClick={handleBackToSearch}
+                sx={{ 
+                  borderRadius: 1,
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  borderColor: addAlpha(COLORS.SECONDARY, 0.8),
+                  borderWidth: '1px',
+                  color: COLORS.PRIMARY,
+                  backgroundColor: COLORS.BG_LIGHT,
+                  '&:hover': {
+                    borderColor: COLORS.SECONDARY_HOVER,
+                    backgroundColor: COLORS.BG_DEFAULT,
+                    borderWidth: '1px',
+                    transform: 'translateY(-1px)',
+                  },
+                }}
+              >
+                {t('hotelSearch.results.modifySearch')}
+              </Button>
+            </Stack>
+          }
+        />
+        <Typography variant="body2" sx={{ color: 'text.primary', fontWeight: 600, mt: 2 }}>
+          {hotels.length === 1
+            ? t('hotelSearch.results.hotelsFoundSingle', { count: hotels.length })
+            : t('hotelSearch.results.hotelsFoundPlural', { count: hotels.length })}
+        </Typography>
+      </SurfaceCard>
 
-          <Stack 
-            direction={isMobile ? "column" : "row"} 
-            spacing={2}
-            justifyContent="flex-start"
-          >
-            <Button 
-              variant="outlined"
-              onClick={handleBackToSearch}
-              sx={{ 
-                borderRadius: 2,
-                textTransform: 'none',
-                fontWeight: 600,
-                borderColor: COLORS.SECONDARY,
-                borderWidth: '2px',
-                color: COLORS.PRIMARY,
-                backgroundColor: COLORS.BG_LIGHT,
-                '&:hover': {
-                  borderColor: COLORS.SECONDARY_HOVER,
-                  backgroundColor: COLORS.BG_DEFAULT,
-                  borderWidth: '2px',
-                  transform: 'translateY(-1px)',
-                },
-              }}
-            >
-              Modify Search
-            </Button>
-          </Stack>
-        </CardContent>
-      </Card>
-
-      {/* Error State */}
-      {error && (
-        <Alert severity="error" sx={{ mb: 3 }}>
-          {error}
-        </Alert>
-      )}
-
-      {/* Results Section */}
-      {hotels.length > 0 ? (
+      <DataState
+        loading={isLoading}
+        error={error}
+        isEmpty={!isLoading && hotels.length === 0}
+        loadingMessage={t('hotelSearch.results.searching')}
+        fallbackErrorMessage={t('hotelSearch.results.refreshError')}
+        emptyTitle={t('hotelSearch.results.emptyTitle')}
+        emptyMessage={t('hotelSearch.results.emptyMessage')}
+        emptyAction={{
+          label: t('hotelSearch.results.modifySearch'),
+          onClick: handleBackToSearch,
+          variant: 'contained',
+        }}
+        onRetry={() => {
+          void refetch();
+        }}
+        minHeight="40vh"
+      >
         <Box>
           {hotels.map((hotel, index) => (
             <Box key={hotel.id} sx={{ mb: isMobile ? 2 : 3 }}>
@@ -368,35 +278,13 @@ const SearchResultsPage: React.FC = () => {
                 hotel={hotel}
                 onBookRoom={handleBookRoom}
                 onBookRoomType={handleBookRoomType}
-                defaultExpanded={index === 0} // Expand first hotel by default
+                defaultExpanded={index === 0}
                 horizontalLayout={true}
               />
             </Box>
           ))}
         </Box>
-      ) : (
-        <Card 
-          sx={{ 
-            backgroundColor: COLORS.WHITE,
-            border: `2px solid ${COLORS.SECONDARY}`,
-            borderRadius: 1,
-            boxShadow: `0 2px 8px ${addAlpha(COLORS.SECONDARY, 0.1)}`,
-          }}
-        >
-          <CardContent sx={{ p: 0 }}>
-            <EmptyState
-              icon={<SearchOffIcon />}
-              title="No Hotels Found"
-              message="We couldn't find any hotels matching your search criteria. Try adjusting your search dates, location, or filters to find more options."
-              action={{
-                label: "Modify Search",
-                onClick: handleBackToSearch,
-                variant: "contained"
-              }}
-            />
-          </CardContent>
-        </Card>
-      )}
+      </DataState>
 
       {/* Success Snackbar */}
       <Snackbar

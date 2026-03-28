@@ -36,7 +36,6 @@ import {
   TrendingUp,
   ExpandMore as ExpandMoreIcon,
   Settings,
-  Business,
   Refresh,
   BarChart as BarChartIcon,
   Description as ApiIcon,
@@ -338,9 +337,9 @@ export const SystemDashboardPage: React.FC = () => {
           sx={{
             p: 3,
             mb: 4,
-            border: `2px solid ${COLORS.PRIMARY}`,
             borderRadius: 2,
             background: `linear-gradient(135deg, ${COLORS.PRIMARY}08 0%, ${COLORS.SECONDARY}08 100%)`,
+            boxShadow: `0 10px 24px ${COLORS.PRIMARY}14`,
           }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
@@ -438,7 +437,7 @@ export const SystemDashboardPage: React.FC = () => {
         <Grid container spacing={3}>
           {isSystemAdmin && (
             <Grid item xs={12} md={6}>
-              <Paper elevation={0} sx={{ p: 3, border: 1, borderColor: 'divider' }}>
+              <Paper elevation={0} sx={{ p: 3, borderRadius: designSystem.borderRadius.lg, boxShadow: designSystem.shadows.card }}>
                 <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
                   <TrendingUp sx={{ mr: 1 }} />
                   {t('dashboard.system.systemOverview')}
@@ -479,7 +478,7 @@ export const SystemDashboardPage: React.FC = () => {
           )}
 
           <Grid item xs={12} md={isSystemAdmin ? 6 : 12}>
-            <Paper elevation={0} sx={{ p: 3, border: 1, borderColor: 'divider' }}>
+            <Paper elevation={0} sx={{ p: 3, borderRadius: designSystem.borderRadius.lg, boxShadow: designSystem.shadows.card }}>
               <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
                 <Dashboard sx={{ mr: 1 }} />
                 {t('dashboard.system.recentActivity')}
@@ -587,7 +586,7 @@ export const SystemDashboardPage: React.FC = () => {
           {/* Charts */}
           <Grid container spacing={3}>
             <Grid item xs={12} lg={8}>
-              <Paper elevation={0} sx={{ p: 3, borderRadius: designSystem.borderRadius.lg, border: 1, borderColor: 'divider' }}>
+              <Paper elevation={0} sx={{ p: 3, borderRadius: designSystem.borderRadius.lg, boxShadow: designSystem.shadows.card }}>
                 <Typography variant="h6" sx={{ mb: 3, fontWeight: 'bold' }}>
                   {t('dashboard.system.monthlyRevenueChart')}
                 </Typography>
@@ -600,7 +599,7 @@ export const SystemDashboardPage: React.FC = () => {
             </Grid>
             
             <Grid item xs={12} lg={4}>
-              <Paper elevation={0} sx={{ p: 3, borderRadius: designSystem.borderRadius.lg, border: 1, borderColor: 'divider', height: '100%' }}>
+              <Paper elevation={0} sx={{ p: 3, borderRadius: designSystem.borderRadius.lg, boxShadow: designSystem.shadows.card, height: '100%' }}>
                 <Typography variant="h6" sx={{ mb: 3, fontWeight: 'bold' }}>
                   {t('dashboard.system.bookingStatusChart')}
                 </Typography>

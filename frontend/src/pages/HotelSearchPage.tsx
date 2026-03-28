@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { COLORS, addAlpha, getGradient } from '../theme/themeColors';
+import React, { useMemo } from 'react';
+import { getGradient } from '../theme/themeColors';
 import {
   Typography,
   Box,
@@ -7,11 +7,12 @@ import {
   useTheme,
   useMediaQuery,
 } from '@mui/material';
+import { useMutation } from '@tanstack/react-query';
 import { StandardLoading, StandardError, ErrorBoundary } from '../components/common';
 import StandardCard from '../components/common/StandardCard';
 import StandardButton from '../components/common/StandardButton';
 
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 // import VerticalHotelAdvertisementBanner from '../components/VerticalHotelAdvertisementBanner';
 import HotelSearchForm from '../components/hotel/HotelSearchForm';
@@ -22,34 +23,30 @@ import {
 
 const HotelSearchPage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const initialSearchRequest = useMemo(
+    () => ((location.state as { searchRequest?: HotelSearchRequest } | null)?.searchRequest ?? null),
+    [location.state]
+  );
 
-  const handleSearch = async (searchRequest: HotelSearchRequest) => {
-    setLoading(true);
-    setError('');
-    
-    try {
-      // Use public API call for hotel search (no authentication/tenant headers)
-      const results = await hotelApiService.searchHotelsPublic(searchRequest);
-      
-      
-      // Navigate to hotel list page with the data
+  const searchMutation = useMutation({
+    mutationFn: (searchRequest: HotelSearchRequest) => hotelApiService.searchHotelsPublic(searchRequest),
+    onSuccess: (results, searchRequest) => {
       navigate('/hotels/search-results', {
         state: {
           searchRequest,
           hotels: results
         }
       });
-    } catch (err) {
-      // console.error('❌ Hotel search failed:', err);
-      setError(err instanceof Error ? err.message : t('hotelSearch.errors.searchFailed'));
-    } finally {
-      setLoading(false);
-    }
+    },
+  });
+
+  const handleSearch = (searchRequest: HotelSearchRequest) => {
+    searchMutation.reset();
+    searchMutation.mutate(searchRequest);
   };
 
   return (
@@ -75,7 +72,6 @@ const HotelSearchPage: React.FC = () => {
         sx={{ 
           mb: isMobile ? 3 : 4,
           backgroundColor: theme.palette.background.paper,
-          border: `1px solid ${theme.palette.divider}`,
           boxShadow: 'none',
         }}
       >
@@ -85,7 +81,6 @@ const HotelSearchPage: React.FC = () => {
             mb: isMobile ? 2 : 3,
             p: 2,
             backgroundColor: theme.palette.background.default,
-            border: `1px solid ${addAlpha(COLORS.BORDER_LIGHT, 0.3)}`,
           }}>
             <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>
               {t('hotelSearch.title')}
@@ -96,22 +91,27 @@ const HotelSearchPage: React.FC = () => {
           </Box>
 
           <ErrorBoundary level="component">
-            <HotelSearchForm onSearch={handleSearch} loading={loading} />
+            <HotelSearchForm
+              onSearch={handleSearch}
+              loading={searchMutation.isPending}
+              initialValues={initialSearchRequest}
+            />
           </ErrorBoundary>
 
-          {error && (
+          {searchMutation.isError && (
             <Box sx={{ mt: 2 }}>
               <StandardError
-                error={true}
-                message={error}
-                severity="error"
-                showRetry={false}
+                error
+                errorValue={searchMutation.error}
+                fallbackMessage={t('hotelSearch.errors.searchFailed')}
+                showRetry={Boolean(searchMutation.variables)}
+                onRetry={searchMutation.variables ? () => searchMutation.mutate(searchMutation.variables) : undefined}
               />
             </Box>
           )}
 
           <StandardLoading
-            loading={loading}
+            loading={searchMutation.isPending}
             message={t('hotelSearch.form.searching')}
             size="large"
             overlay={false}
@@ -132,7 +132,6 @@ const HotelSearchPage: React.FC = () => {
             mb: isMobile ? 2 : 3,
             p: 2,
             backgroundColor: theme.palette.background.default,
-            border: `1px solid ${addAlpha(COLORS.BORDER_LIGHT, 0.3)}`,
           }}>
             <Typography variant="h5" sx={{ fontWeight: 600, mb: 1, color: 'text.primary' }}>
               {t('hotelSearch.alreadyHaveBooking.title')}

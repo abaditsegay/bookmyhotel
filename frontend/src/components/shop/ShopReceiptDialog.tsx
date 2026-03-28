@@ -23,6 +23,7 @@ import { useTranslation } from 'react-i18next';
 import { ShopOrder } from '../../types/shop';
 import { getPremiumTableHeadSx } from './premiumStyles';
 import { COLORS, addAlpha } from '../../theme/themeColors';
+import { formatDateTimeForDisplay } from '../../utils/dateUtils';
 
 interface ShopReceiptDialogProps {
   open: boolean;
@@ -82,14 +83,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
   // Helper function to safely format dates
   const formatDate = (dateString: string) => {
     try {
-      const date = new Date(dateString);
-      return isNaN(date.getTime()) ? 'N/A' : date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
+      return formatDateTimeForDisplay(dateString) || 'N/A';
     } catch (error) {
       return 'N/A';
     }
