@@ -74,8 +74,8 @@ jobs:
           app.url=${{ vars.APP_FRONTEND_URL }}
           app.frontend.url=${{ vars.APP_FRONTEND_URL }}
           app.name=${{ vars.APP_NAME }}
-          app.uat.shared-hotel-id=${{ vars.APP_UAT_SHARED_HOTEL_ID }}
-          app.uat.shared-hotel-name=${{ vars.APP_UAT_SHARED_HOTEL_NAME }}
+          app.uat.shared-hotel-id=${{ vars.APP_UAT_SHARED_HOTEL_ID || '1' }}
+          app.uat.shared-hotel-name=${{ vars.APP_UAT_SHARED_HOTEL_NAME || 'Grand Plaza Hotel' }}
 
           # JWT
           jwt.secret.key=${{ secrets.JWT_SECRET }}

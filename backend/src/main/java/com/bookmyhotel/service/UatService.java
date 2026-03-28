@@ -213,9 +213,9 @@ public class UatService {
             return resolvedByName;
         }
 
-        Hotel resolvedByTestKeyword = resolveByTestKeyword();
-        if (resolvedByTestKeyword != null) {
-            return resolvedByTestKeyword;
+        Hotel resolvedByCommonKeyword = resolveByCommonKeyword();
+        if (resolvedByCommonKeyword != null) {
+            return resolvedByCommonKeyword;
         }
 
         if (actor.getHotel() != null && actor.getHotel().getIsActive()) {
@@ -239,12 +239,19 @@ public class UatService {
                 .orElse(matches.isEmpty() ? null : matches.get(0));
     }
 
-    private Hotel resolveByTestKeyword() {
-        List<Hotel> matches = hotelRepository.findByNameContainingIgnoreCaseAndIsActiveTrue("test");
-        return matches.stream()
-                .sorted(Comparator.comparing(Hotel::getName, String.CASE_INSENSITIVE_ORDER))
-                .findFirst()
-                .orElse(null);
+    private Hotel resolveByCommonKeyword() {
+        for (String keyword : List.of("test", "uat", "qa")) {
+            List<Hotel> matches = hotelRepository.findByNameContainingIgnoreCaseAndIsActiveTrue(keyword);
+            Hotel match = matches.stream()
+                    .sorted(Comparator.comparing(Hotel::getName, String.CASE_INSENSITIVE_ORDER))
+                    .findFirst()
+                    .orElse(null);
+            if (match != null) {
+                return match;
+            }
+        }
+
+        return null;
     }
 
     private User loadActor(Authentication authentication) {
