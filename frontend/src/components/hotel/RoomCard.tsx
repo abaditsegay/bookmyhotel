@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Card,
   CardContent,
@@ -19,7 +20,6 @@ import { AvailableRoom } from '../../types/hotel';
 import { useAuth } from '../../contexts/AuthContext';
 import { COLORS, addAlpha } from '../../theme/themeColors';
 import { formatCurrency } from '../../utils/currencyUtils';
-import { getRoomBedInfo, getRoomTypeLabel } from '../../constants/roomTypes';
 
 interface RoomCardProps {
   room: AvailableRoom;
@@ -44,21 +44,39 @@ const getRoomImage = (roomType: string): string => {
 
 // Mock amenities based on room type
 const getRoomAmenities = (roomType: string): string[] => {
-  const baseAmenities = ['Free WiFi', 'Air Conditioning', 'Room Service'];
+  const baseAmenities = ['freeWifi', 'airConditioning', 'roomService'];
   const typeAmenities = {
-    SINGLE: [...baseAmenities, 'Work Desk'],
-    DOUBLE: [...baseAmenities, 'Mini Bar', 'Safe'],
-    STANDARD: [...baseAmenities, 'Mini Bar', 'Safe'],
-    FAMILY: [...baseAmenities, 'Extra Space', 'Multiple Beds', 'Kids Welcome'],
-    ACCESSIBLE: [...baseAmenities, 'Wheelchair Accessible', 'Roll-in Shower', 'Grab Bars'],
-    SUITE: [...baseAmenities, 'Living Area', 'Kitchenette', 'Balcony'],
-    DELUXE: [...baseAmenities, 'Premium Bedding', 'City View', 'Mini Bar'],
-    PRESIDENTIAL: [...baseAmenities, 'Butler Service', 'Private Terrace', 'Jacuzzi', 'Premium Amenities'],
+    SINGLE: [...baseAmenities, 'workDesk'],
+    DOUBLE: [...baseAmenities, 'miniBar', 'safe'],
+    STANDARD: [...baseAmenities, 'miniBar', 'safe'],
+    FAMILY: [...baseAmenities, 'extraSpace', 'multipleBeds', 'kidsWelcome'],
+    ACCESSIBLE: [...baseAmenities, 'wheelchairAccessible', 'rollInShower', 'grabBars'],
+    SUITE: [...baseAmenities, 'livingArea', 'kitchenette', 'balcony'],
+    DELUXE: [...baseAmenities, 'premiumBedding', 'cityView', 'miniBar'],
+    PRESIDENTIAL: [...baseAmenities, 'butlerService', 'privateTerrace', 'jacuzzi', 'premiumAmenities'],
   };
   return typeAmenities[roomType as keyof typeof typeAmenities] || baseAmenities;
 };
 
+const getRoomTypeLabelKey = (roomType: string): string => roomType.toLowerCase();
+
+const getBedInfoKey = (roomType: string): string => {
+  const bedInfo = {
+    SINGLE: 'single',
+    DOUBLE: 'double',
+    STANDARD: 'standard',
+    DELUXE: 'deluxe',
+    SUITE: 'suite',
+    FAMILY: 'family',
+    ACCESSIBLE: 'accessible',
+    PRESIDENTIAL: 'presidential',
+  };
+
+  return bedInfo[roomType as keyof typeof bedInfo] || 'presidential';
+};
+
 const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
+  const { t } = useTranslation();
   const amenities = getRoomAmenities(room.roomType);
   const { isAuthenticated } = useAuth();
   const theme = useTheme();
@@ -70,14 +88,12 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
       sx={{ 
         height: '100%',
         backgroundColor: COLORS.WHITE,
-        border: `2px solid ${COLORS.SECONDARY}`,
         borderRadius: 2,
         boxShadow: `0 4px 12px ${addAlpha(COLORS.SECONDARY, 0.15)}`,
         transition: 'all 0.3s ease-in-out',
         '&:hover': {
           transform: 'translateY(-8px)',
           boxShadow: `0 8px 20px ${addAlpha(COLORS.SECONDARY, 0.25)}`,
-          borderColor: COLORS.SECONDARY_HOVER,
         },
       }}
     >
@@ -110,10 +126,10 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
                   color: COLORS.PRIMARY,
                 }}
               >
-                Room {room.roomNumber}
+                {t('hotelSearch.roomCard.roomNumber', { roomNumber: room.roomNumber })}
               </Typography>
               <Chip 
-                label={getRoomTypeLabel(room.roomType)} 
+                label={t(`hotelSearch.roomTypes.${getRoomTypeLabelKey(room.roomType)}`)} 
                 variant="outlined" 
                 size="small"
                 sx={{ 
@@ -130,7 +146,6 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
               textAlign: 'center',
               p: 1.5,
               backgroundColor: addAlpha(COLORS.SECONDARY, 0.1),
-              border: `2px solid ${COLORS.SECONDARY}`,
               borderRadius: 1,
             }}>
               <Typography 
@@ -148,7 +163,7 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
                 color="text.secondary"
                 sx={{ fontSize: isSmallMobile ? '0.7rem' : undefined, fontWeight: 500 }}
               >
-                per night
+                {t('hotelSearch.detail.perNight')}
               </Typography>
             </Box>
           </Stack>
@@ -157,10 +172,10 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.5 }}>
             <Box>
               <Typography variant="subtitle1" component="h3" gutterBottom sx={{ fontWeight: 'bold', color: COLORS.PRIMARY }}>
-                Room {room.roomNumber}
+                {t('hotelSearch.roomCard.roomNumber', { roomNumber: room.roomNumber })}
               </Typography>
               <Chip 
-                label={getRoomTypeLabel(room.roomType)} 
+                label={t(`hotelSearch.roomTypes.${getRoomTypeLabelKey(room.roomType)}`)} 
                 variant="outlined" 
                 size="small"
                 sx={{ 
@@ -180,7 +195,7 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
                 {formatCurrency(room.pricePerNight || 0)}
               </Typography>
               <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>
-                per night
+                {t('hotelSearch.detail.perNight')}
               </Typography>
             </Box>
           </Box>
@@ -196,7 +211,7 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
                 color="text.secondary"
                 sx={{ fontSize: isSmallMobile ? '0.7rem' : '0.75rem' }}
               >
-                Up to {room.capacity} guests
+                {t('hotelSearch.roomCard.upToGuests', { count: room.capacity })}
               </Typography>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -206,7 +221,7 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
                 color="text.secondary"
                 sx={{ fontSize: isSmallMobile ? '0.7rem' : '0.75rem' }}
               >
-                {getRoomBedInfo(room.roomType)}
+                {t(`hotelSearch.bedInfo.${getBedInfoKey(room.roomType)}`)}
               </Typography>
             </Box>
           </Stack>
@@ -214,11 +229,11 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
             <PeopleIcon sx={{ fontSize: 16, mr: 1, color: 'text.secondary' }} />
             <Typography variant="caption" color="text.secondary">
-              Up to {room.capacity} guests
+              {t('hotelSearch.roomCard.upToGuests', { count: room.capacity })}
             </Typography>
             <BedIcon sx={{ fontSize: 16, ml: 2, mr: 1, color: 'text.secondary' }} />
             <Typography variant="caption" color="text.secondary">
-              {getRoomBedInfo(room.roomType)}
+              {t(`hotelSearch.bedInfo.${getBedInfoKey(room.roomType)}`)}
             </Typography>
           </Box>
         )}
@@ -248,7 +263,7 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
               fontSize: isMobile ? '0.7rem' : '0.75rem',
             }}
           >
-            Room Amenities
+            {t('hotelSearch.roomCard.amenities')}
           </Typography>
           <Box sx={{ 
             display: 'flex', 
@@ -258,7 +273,7 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
             {amenities.slice(0, isMobile ? 3 : amenities.length).map((amenity, index) => (
               <Chip 
                 key={index} 
-                label={amenity} 
+                label={t(`hotelSearch.amenities.${amenity}`)} 
                 size="small" 
                 variant="outlined"
                 sx={{ 
@@ -269,7 +284,7 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
             ))}
             {isMobile && amenities.length > 3 && (
               <Chip 
-                label={`+${amenities.length - 3} more`} 
+                label={t('hotelSearch.roomCard.moreAmenities', { count: amenities.length - 3 })} 
                 size="small" 
                 variant="outlined"
                 sx={{ 
@@ -300,16 +315,14 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
                 py: isMobile ? 0.8 : 1,
                 backgroundColor: COLORS.PRIMARY,
                 color: COLORS.WHITE,
-                border: `2px solid ${COLORS.SECONDARY}`,
                 boxShadow: `0 2px 8px ${addAlpha(COLORS.SECONDARY, 0.2)}`,
                 '&:hover': {
                   backgroundColor: COLORS.PRIMARY_HOVER,
-                  borderColor: COLORS.SECONDARY_HOVER,
                   boxShadow: `0 4px 12px ${addAlpha(COLORS.SECONDARY, 0.3)}`,
                 },
               }}
             >
-              Book Now
+              {t('hotelSearch.roomCard.bookNow')}
             </Button>
           ) : (
             // For non-authenticated users - show both options
@@ -326,16 +339,14 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
                   py: isMobile ? 0.8 : 1,
                   backgroundColor: COLORS.PRIMARY,
                   color: COLORS.WHITE,
-                  border: `2px solid ${COLORS.SECONDARY}`,
                   boxShadow: `0 2px 8px ${addAlpha(COLORS.SECONDARY, 0.2)}`,
                   '&:hover': {
                     backgroundColor: COLORS.PRIMARY_HOVER,
-                    borderColor: COLORS.SECONDARY_HOVER,
                     boxShadow: `0 4px 12px ${addAlpha(COLORS.SECONDARY, 0.3)}`,
                   },
                 }}
               >
-                Sign in to Book
+                {t('hotelSearch.roomCard.signInToBook')}
               </Button>
               <Button
                 fullWidth
@@ -347,17 +358,14 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
                   fontWeight: 700,
                   fontSize: isMobile ? '0.75rem' : '0.8rem',
                   py: isMobile ? 0.6 : 0.8,
-                  borderColor: COLORS.SECONDARY,
                   color: COLORS.PRIMARY,
-                  border: `2px solid ${COLORS.SECONDARY}`,
                   '&:hover': {
                     backgroundColor: addAlpha(COLORS.SECONDARY, 0.1),
-                    borderColor: COLORS.SECONDARY_HOVER,
                     color: COLORS.PRIMARY_HOVER,
                   },
                 }}
               >
-                Book as Guest
+                {t('hotelSearch.roomCard.bookAsGuest')}
               </Button>
             </Stack>
           )}

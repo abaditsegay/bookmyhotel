@@ -44,12 +44,11 @@ const StandardCard: React.FC<StandardCardProps> = ({
     switch (cardVariant) {
       case 'outlined':
         return {
-          border: `1px solid ${theme.palette.divider}`,
-          boxShadow: 'none',
-          transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
+          boxShadow: designSystem.shadows.sm,
+          transition: 'box-shadow 0.2s ease, transform 0.2s ease',
           '&:hover': {
-            borderColor: theme.palette.primary.main,
-            boxShadow: `0 0 0 1px ${theme.palette.primary.main}20`,
+            boxShadow: designSystem.shadows.md,
+            transform: 'translateY(-1px)',
           },
         };
       case 'elevated':
@@ -64,7 +63,6 @@ const StandardCard: React.FC<StandardCardProps> = ({
       case 'gradient':
         return {
           background: `linear-gradient(135deg, ${theme.palette.primary.main}08 0%, ${theme.palette.secondary.main}08 100%)`,
-          border: `1px solid ${theme.palette.primary.main}20`,
           boxShadow: designSystem.shadows.sm,
           transition: 'all 0.2s ease',
           '&:hover': {
@@ -76,7 +74,6 @@ const StandardCard: React.FC<StandardCardProps> = ({
         return {
           background: addAlpha(COLORS.WHITE, 0.85),
           backdropFilter: 'blur(10px)',
-          border: `1px solid ${addAlpha(COLORS.WHITE, 0.2)}`,
           boxShadow: designSystem.shadows.md,
           transition: 'all 0.2s ease',
           '&:hover': {

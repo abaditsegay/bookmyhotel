@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BookingService } from '../../services/BookingService';
+import { useTranslation } from 'react-i18next';
 import {
   Dialog,
   DialogTitle,
@@ -28,6 +28,8 @@ import {
   Person as PersonIcon,
 } from '@mui/icons-material';
 import { bookingApiService, BookingSearchResponse } from '../../services/bookingApi';
+import { formatDateForDisplay } from '../../utils/dateUtils';
+import { getRoomTypeLabel } from '../../constants/roomTypes';
 
 interface BookingSearchModalProps {
   open: boolean;
@@ -35,6 +37,7 @@ interface BookingSearchModalProps {
 }
 
 const BookingSearchModal: React.FC<BookingSearchModalProps> = ({ open, onClose }) => {
+  const { t } = useTranslation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   
@@ -57,12 +60,12 @@ const BookingSearchModal: React.FC<BookingSearchModalProps> = ({ open, onClose }
 
   const handleSearch = async () => {
     if (searchType === 'confirmation' && !confirmationNumber.trim()) {
-      setError('Please enter a confirmation number');
+      setError(t('booking.find.searchPage.errors.enterConfirmationNumber'));
       return;
     }
     
     if (searchType === 'email' && (!email.trim() || !lastName.trim())) {
-      setError('Please enter both email and last name');
+      setError(t('booking.find.searchPage.errors.enterEmailAndLastName'));
       return;
     }
 
@@ -81,10 +84,10 @@ const BookingSearchModal: React.FC<BookingSearchModalProps> = ({ open, onClose }
       if (result.success && result.data) {
         setBooking(result.data);
       } else {
-        setError(result.message || 'Booking not found');
+        setError(result.message || t('booking.find.searchPage.errors.bookingNotFound'));
       }
     } catch (err) {
-      setError('Failed to search for booking. Please try again.');
+      setError(t('booking.find.searchPage.errors.searchFailed'));
       // console.error('Booking search error:', err);
     } finally {
       setLoading(false);
@@ -125,12 +128,36 @@ const BookingSearchModal: React.FC<BookingSearchModalProps> = ({ open, onClose }
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      weekday: 'short',
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
+    return formatDateForDisplay(dateString);
+  };
+
+  const getBookingStatusLabel = (status?: string) => {
+    const normalizedStatus = status?.toLowerCase().replace(/[_\s]/g, '');
+    if (!normalizedStatus) {
+      return '';
+    }
+
+    const translated = t(`booking.guestManagementPage.statuses.${normalizedStatus}`);
+    return translated === `booking.guestManagementPage.statuses.${normalizedStatus}` ? status : translated;
+  };
+
+  const getPaymentStatusLabel = (status?: string) => {
+    const normalizedStatus = (status || 'PENDING').toLowerCase().replace(/[_\s]/g, '');
+    const translated = t(`booking.guestManagementPage.paymentStatuses.${normalizedStatus}`);
+    return translated === `booking.guestManagementPage.paymentStatuses.${normalizedStatus}` ? (status || 'PENDING') : translated;
+  };
+
+  const getRoomTypeTranslation = (roomType?: string) => {
+    if (!roomType) {
+      return '';
+    }
+
+    const translated = t(`hotelSearch.roomTypes.${roomType.toLowerCase()}`);
+    return translated === `hotelSearch.roomTypes.${roomType.toLowerCase()}` ? getRoomTypeLabel(roomType) : translated;
+  };
+
+  const getNightLabel = (count: number) => {
+    return count === 1 ? t('booking.guestManagementPage.nightSingle') : t('booking.guestManagementPage.nightPlural');
   };
 
   const calculateNights = (checkIn: string, checkOut: string) => {
@@ -157,10 +184,10 @@ const BookingSearchModal: React.FC<BookingSearchModalProps> = ({ open, onClose }
       <DialogTitle sx={{ m: 0, p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <Box>
           <Typography variant="h6" component="div">
-            Find Your Booking
+            {t('booking.find.searchPage.title')}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Search using your confirmation number or email
+            {t('booking.find.searchPage.subtitle')}
           </Typography>
         </Box>
         <IconButton
@@ -178,7 +205,7 @@ const BookingSearchModal: React.FC<BookingSearchModalProps> = ({ open, onClose }
         {/* Search Form */}
         <Box sx={{ mb: 3 }}>
           <Typography variant="subtitle1" gutterBottom fontWeight="medium">
-            Search Method
+            {t('booking.find.searchPage.searchMethod')}
           </Typography>
           <Box sx={{ display: 'flex', gap: 1, mb: 3, flexWrap: 'wrap' }}>
             <Button
@@ -186,14 +213,14 @@ const BookingSearchModal: React.FC<BookingSearchModalProps> = ({ open, onClose }
               onClick={() => setSearchType('confirmation')}
               size="small"
             >
-              Confirmation Number
+              {t('booking.find.searchPage.methods.confirmation')}
             </Button>
             <Button
               variant={searchType === 'email' ? 'contained' : 'outlined'}
               onClick={() => setSearchType('email')}
               size="small"
             >
-              Email & Last Name
+              {t('booking.find.searchPage.methods.emailAndLastName')}
             </Button>
           </Box>
         </Box>
@@ -201,10 +228,10 @@ const BookingSearchModal: React.FC<BookingSearchModalProps> = ({ open, onClose }
         {searchType === 'confirmation' ? (
           <TextField
             fullWidth
-            label="Confirmation Number"
+            label={t('booking.find.fields.confirmationNumber')}
             value={confirmationNumber}
             onChange={(e) => setConfirmationNumber(e.target.value)}
-            placeholder="Enter your booking confirmation number"
+            placeholder={t('booking.find.searchPage.placeholders.confirmationNumber')}
             variant="outlined"
             size="small"
             sx={{ mb: 2 }}
@@ -215,11 +242,11 @@ const BookingSearchModal: React.FC<BookingSearchModalProps> = ({ open, onClose }
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
-                label="Email Address"
+                label={t('booking.find.fields.email')}
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
+                placeholder={t('booking.find.searchPage.placeholders.email')}
                 variant="outlined"
                 size="small"
                 onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
@@ -228,10 +255,10 @@ const BookingSearchModal: React.FC<BookingSearchModalProps> = ({ open, onClose }
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
-                label="Last Name"
+                label={t('booking.find.searchPage.fields.lastName')}
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
-                placeholder="Enter your last name"
+                placeholder={t('booking.find.searchPage.placeholders.lastName')}
                 variant="outlined"
                 size="small"
                 onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
@@ -254,7 +281,7 @@ const BookingSearchModal: React.FC<BookingSearchModalProps> = ({ open, onClose }
           disabled={loading}
           sx={{ mb: 3 }}
         >
-          {loading ? 'Searching...' : 'Search Booking'}
+          {loading ? t('booking.find.buttons.searching') : t('booking.find.searchPage.buttons.searchBooking')}
         </Button>
 
         {/* Booking Results */}
@@ -264,21 +291,21 @@ const BookingSearchModal: React.FC<BookingSearchModalProps> = ({ open, onClose }
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
                 <Box>
                   <Typography variant="h6" gutterBottom>
-                    Booking Found!
+                    {t('booking.find.found.title')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Confirmation: {booking.confirmationNumber}
+                    {t('booking.find.found.confirmation', { confirmationNumber: booking.confirmationNumber })}
                   </Typography>
                 </Box>
                 <Box sx={{ display: 'flex', gap: 1, flexDirection: 'column', alignItems: 'flex-end' }}>
                   <Chip
-                    label={BookingService.getStatusDisplayLabel(booking.status)}
+                    label={getBookingStatusLabel(booking.status)}
                     color={getStatusColor(booking.status) as any}
                     variant="filled"
                     size="small"
                   />
                   <Chip
-                    label={booking.paymentStatus}
+                    label={getPaymentStatusLabel(booking.paymentStatus)}
                     color={getPaymentStatusColor(booking.paymentStatus) as any}
                     variant="outlined"
                     size="small"
@@ -293,7 +320,7 @@ const BookingSearchModal: React.FC<BookingSearchModalProps> = ({ open, onClose }
                 <Grid item xs={12}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                     <HotelIcon sx={{ mr: 1, color: 'primary.main', fontSize: 20 }} />
-                    <Typography variant="body2" color="text.secondary">Hotel & Room Type</Typography>
+                    <Typography variant="body2" color="text.secondary">{t('booking.manage.hotelAndRoom')}</Typography>
                   </Box>
                   
                   {/* Hotel Name with Payment Info at rightmost */}
@@ -306,7 +333,7 @@ const BookingSearchModal: React.FC<BookingSearchModalProps> = ({ open, onClose }
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, alignItems: 'flex-end' }}>
                       {/* Payment Status */}
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Typography variant="caption" color="text.secondary">Payment Status:</Typography>
+                        <Typography variant="caption" color="text.secondary">{t('booking.find.found.labels.paymentStatus')}:</Typography>
                         <Box
                           sx={{
                             px: 1,
@@ -319,14 +346,14 @@ const BookingSearchModal: React.FC<BookingSearchModalProps> = ({ open, onClose }
                             textTransform: 'uppercase',
                           }}
                         >
-                          {booking.paymentStatus || 'PENDING'}
+                          {getPaymentStatusLabel(booking.paymentStatus)}
                         </Box>
                       </Box>
                       
                       {/* Payment Reference */}
                       {booking.paymentReference && (
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Typography variant="caption" color="text.secondary">Payment Ref:</Typography>
+                          <Typography variant="caption" color="text.secondary">{t('booking.find.found.labels.paymentReference')}:</Typography>
                           <Typography 
                             variant="caption" 
                             sx={{ 
@@ -345,14 +372,14 @@ const BookingSearchModal: React.FC<BookingSearchModalProps> = ({ open, onClose }
                     </Box>
                   </Box>
                   <Typography variant="body2" color="text.secondary">
-                    Room Type {booking.roomType}
+                    {t('booking.find.found.labels.roomType')}: {getRoomTypeTranslation(booking.roomType)}
                   </Typography>
                 </Grid>
 
                 <Grid item xs={12} sm={6}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                     <CalendarIcon sx={{ mr: 1, color: 'primary.main', fontSize: 20 }} />
-                    <Typography variant="body2" color="text.secondary">Check-in</Typography>
+                    <Typography variant="body2" color="text.secondary">{t('booking.find.found.labels.checkIn')}</Typography>
                   </Box>
                   <Typography variant="body1" fontWeight="medium">
                     {formatDate(booking.checkInDate)}
@@ -362,7 +389,7 @@ const BookingSearchModal: React.FC<BookingSearchModalProps> = ({ open, onClose }
                 <Grid item xs={12} sm={6}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                     <CalendarIcon sx={{ mr: 1, color: 'primary.main', fontSize: 20 }} />
-                    <Typography variant="body2" color="text.secondary">Check-out</Typography>
+                    <Typography variant="body2" color="text.secondary">{t('booking.find.found.labels.checkOut')}</Typography>
                   </Box>
                   <Typography variant="body1" fontWeight="medium">
                     {formatDate(booking.checkOutDate)}
@@ -372,13 +399,13 @@ const BookingSearchModal: React.FC<BookingSearchModalProps> = ({ open, onClose }
                 <Grid item xs={12}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                     <PersonIcon sx={{ mr: 1, color: 'primary.main', fontSize: 20 }} />
-                    <Typography variant="body2" color="text.secondary">Guest</Typography>
+                    <Typography variant="body2" color="text.secondary">{t('booking.find.found.labels.guestName')}</Typography>
                   </Box>
                   <Typography variant="body1" fontWeight="medium">
                     {booking.guestName}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    {calculateNights(booking.checkInDate, booking.checkOutDate)} night{calculateNights(booking.checkInDate, booking.checkOutDate) !== 1 ? 's' : ''}
+                    {calculateNights(booking.checkInDate, booking.checkOutDate)} {getNightLabel(calculateNights(booking.checkInDate, booking.checkOutDate))}
                   </Typography>
                 </Grid>
               </Grid>
@@ -389,7 +416,7 @@ const BookingSearchModal: React.FC<BookingSearchModalProps> = ({ open, onClose }
 
       <DialogActions sx={{ p: 2 }}>
         <Button onClick={handleClose} variant="outlined">
-          Close
+          {t('common.close')}
         </Button>
       </DialogActions>
     </Dialog>

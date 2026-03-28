@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import {
   Container,
@@ -29,8 +30,10 @@ import {
 import { BookingResponse } from '../types/hotel';
 import { buildApiUrl } from '../config/apiConfig';
 import { formatDateForDisplay } from '../utils/dateUtils';
+import { formatCurrencyWithDecimals } from '../utils/currencyUtils';
 
 const BookingManagementPage: React.FC = () => {
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [booking, setBooking] = useState<BookingResponse | null>(null);
@@ -50,28 +53,28 @@ const BookingManagementPage: React.FC = () => {
       
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(errorText || 'Failed to load booking');
+        throw new Error(errorText || t('booking.managementPage.errors.failedToLoadBooking'));
       }
 
       const bookingData = await response.json();
       setBooking(bookingData);
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load booking');
+      setError(err instanceof Error ? err.message : t('booking.managementPage.errors.failedToLoadBooking'));
     } finally {
       setLoading(false);
     }
-  }, [token]);
+  }, [token, t]);
 
   useEffect(() => {
     if (!token) {
-      setError('Invalid booking link. Please check your email for the correct link.');
+      setError(t('booking.managementPage.errors.invalidLink'));
       setLoading(false);
       return;
     }
 
     fetchBooking();
-  }, [token, fetchBooking]);
+  }, [token, fetchBooking, t]);
 
   const handleCancelBooking = async () => {
     if (!token) return;
@@ -83,7 +86,7 @@ const BookingManagementPage: React.FC = () => {
 
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(errorText || 'Failed to cancel booking');
+        throw new Error(errorText || t('booking.managementPage.errors.failedToCancelBooking'));
       }
 
       // Get the updated booking data from the response
@@ -95,8 +98,19 @@ const BookingManagementPage: React.FC = () => {
       // Update the local booking state with the cancelled booking data
       setBooking(updatedBooking);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to cancel booking');
+      setError(err instanceof Error ? err.message : t('booking.managementPage.errors.failedToCancelBooking'));
     }
+  };
+
+  const getStatusLabel = (status: string) => {
+    const normalizedStatus = status?.toLowerCase().replace(/[_\s]/g, '');
+    const translated = t(`booking.guestManagementPage.statuses.${normalizedStatus}`);
+    return translated === `booking.guestManagementPage.statuses.${normalizedStatus}` ? status : translated;
+  };
+
+  const getRoomTypeTranslation = (roomType: string) => {
+    const translated = t(`hotelSearch.roomTypes.${roomType.toLowerCase()}`);
+    return translated === `hotelSearch.roomTypes.${roomType.toLowerCase()}` ? roomType : translated;
   };
 
   const getStatusColor = (status: string) => {
@@ -130,7 +144,7 @@ const BookingManagementPage: React.FC = () => {
             fontSize: { xs: '1.1rem', md: '1.25rem' },
           }}
         >
-          Loading your booking...
+          {t('booking.managementPage.loading')}
         </Typography>
       </Container>
     );
@@ -159,7 +173,7 @@ const BookingManagementPage: React.FC = () => {
           onClick={() => navigate('/')}
           size={isMobile ? 'small' : 'medium'}
         >
-          Return to Home
+          {t('bookingConfirmation.actions.returnHome')}
         </Button>
       </Container>
     );
@@ -178,7 +192,7 @@ const BookingManagementPage: React.FC = () => {
           severity="warning"
           sx={{ fontSize: { xs: '0.875rem', md: '1rem' } }}
         >
-          Booking not found. Please check your email for the correct link.
+          {t('booking.managementPage.errors.notFound')}
         </Alert>
       </Container>
     );
@@ -206,10 +220,10 @@ const BookingManagementPage: React.FC = () => {
             gutterBottom
             sx={{ fontSize: { xs: '1.5rem', md: '2.125rem' } }}
           >
-            Booking Details
+            {t('booking.manage.bookingDetails')}
           </Typography>
           <Chip
-            label={booking.status}
+            label={getStatusLabel(booking.status)}
             color={getStatusColor(booking.status) as any}
             sx={{ 
               mb: 2,
@@ -235,7 +249,7 @@ const BookingManagementPage: React.FC = () => {
                   }}
                 >
                   <CalendarToday sx={{ mr: 1, fontSize: { xs: '1rem', md: '1.25rem' } }} />
-                  Stay Details
+                  {t('booking.manage.stayDetails')}
                 </Typography>
                 <Typography 
                   variant="body1" 
@@ -244,7 +258,7 @@ const BookingManagementPage: React.FC = () => {
                     fontSize: { xs: '0.875rem', md: '1rem' },
                   }}
                 >
-                  <strong>Check-in:</strong> {formatDateForDisplay(booking.checkInDate)}
+                  <strong>{t('booking.manage.checkIn')}:</strong> {formatDateForDisplay(booking.checkInDate)}
                 </Typography>
                 <Typography 
                   variant="body1" 
@@ -253,7 +267,7 @@ const BookingManagementPage: React.FC = () => {
                     fontSize: { xs: '0.875rem', md: '1rem' },
                   }}
                 >
-                  <strong>Check-out:</strong> {formatDateForDisplay(booking.checkOutDate)}
+                  <strong>{t('booking.manage.checkOut')}:</strong> {formatDateForDisplay(booking.checkOutDate)}
                 </Typography>
                 <Typography 
                   variant="body1" 
@@ -262,7 +276,7 @@ const BookingManagementPage: React.FC = () => {
                     fontSize: { xs: '0.875rem', md: '1rem' },
                   }}
                 >
-                  <strong>Total Amount:</strong> ETB {booking.totalAmount?.toFixed(2)}
+                  <strong>{t('booking.manage.totalAmount')}:</strong> {formatCurrencyWithDecimals(booking.totalAmount || 0)}
                 </Typography>
                 <Typography 
                   variant="caption" 
@@ -271,13 +285,12 @@ const BookingManagementPage: React.FC = () => {
                     fontStyle: 'italic',
                   }}
                 >
-                  (including all taxes)
+                  {t('booking.managementPage.includingTaxes')}
                 </Typography>
               </CardContent>
             </Card>
           </Grid>
 
-          {/* Hotel Information */}
           <Grid item xs={12} md={6}>
             <Card sx={{ height: '100%' }}>
               <CardContent sx={{ p: { xs: 2, md: 3 } }}>
@@ -292,7 +305,7 @@ const BookingManagementPage: React.FC = () => {
                   }}
                 >
                   <Hotel sx={{ mr: 1, fontSize: { xs: '1rem', md: '1.25rem' } }} />
-                  Hotel Details
+                  {t('booking.manage.hotelAndRoom')}
                 </Typography>
                 <Typography 
                   variant="body1" 
@@ -301,7 +314,7 @@ const BookingManagementPage: React.FC = () => {
                     fontSize: { xs: '0.875rem', md: '1rem' },
                   }}
                 >
-                  <strong>Hotel:</strong> {booking.hotelName}
+                  <strong>{t('booking.manage.hotel')}:</strong> {booking.hotelName}
                 </Typography>
                 <Typography 
                   variant="body1" 
@@ -310,19 +323,18 @@ const BookingManagementPage: React.FC = () => {
                     fontSize: { xs: '0.875rem', md: '1rem' },
                   }}
                 >
-                  <strong>Room:</strong> {booking.roomType}
+                  <strong>{t('booking.manage.roomType')}:</strong> {getRoomTypeTranslation(booking.roomType)}
                 </Typography>
                 <Typography 
                   variant="body1"
                   sx={{ fontSize: { xs: '0.875rem', md: '1rem' } }}
                 >
-                  <strong>Confirmation:</strong> #{booking.reservationId}
+                  <strong>{t('booking.manage.confirmationLabel')}:</strong> #{booking.reservationId}
                 </Typography>
               </CardContent>
             </Card>
           </Grid>
 
-          {/* Guest Information */}
           <Grid item xs={12}>
             <Card>
               <CardContent sx={{ p: { xs: 2, md: 3 } }}>
@@ -337,7 +349,7 @@ const BookingManagementPage: React.FC = () => {
                   }}
                 >
                   <Person sx={{ mr: 1, fontSize: { xs: '1rem', md: '1.25rem' } }} />
-                  Guest Information
+                  {t('booking.manage.guestInformation')}
                 </Typography>
                 <Grid container spacing={{ xs: 1, md: 2 }}>
                   <Grid item xs={12} sm={6}>
@@ -345,7 +357,7 @@ const BookingManagementPage: React.FC = () => {
                       variant="body1"
                       sx={{ fontSize: { xs: '0.875rem', md: '1rem' } }}
                     >
-                      <strong>Name:</strong> {booking.guestName}
+                      <strong>{t('booking.manage.name')}:</strong> {booking.guestName}
                     </Typography>
                   </Grid>
                   <Grid item xs={12} sm={6}>
@@ -390,7 +402,7 @@ const BookingManagementPage: React.FC = () => {
                 minWidth: { xs: 'auto', sm: '140px' },
               }}
             >
-              Cancel Booking
+              {t('booking.manage.cancelBooking')}
             </Button>
           </Box>
         )}
@@ -405,11 +417,11 @@ const BookingManagementPage: React.FC = () => {
         fullWidth
       >
         <DialogTitle sx={{ fontSize: { xs: '1.1rem', md: '1.25rem' } }}>
-          Cancel Booking
+          {t('booking.manage.cancelDialogTitle')}
         </DialogTitle>
         <DialogContent>
           <Typography sx={{ fontSize: { xs: '0.875rem', md: '1rem' } }}>
-            Are you sure you want to cancel this booking? This action cannot be undone.
+            {t('booking.managementPage.cancelPrompt')}
           </Typography>
         </DialogContent>
         <DialogActions sx={{ 
@@ -422,7 +434,7 @@ const BookingManagementPage: React.FC = () => {
             size={isMobile ? 'small' : 'medium'}
             sx={{ width: { xs: '100%', sm: 'auto' } }}
           >
-            Keep Booking
+            {t('booking.manage.keepBooking')}
           </Button>
           <Button 
             onClick={handleCancelBooking} 
@@ -431,7 +443,7 @@ const BookingManagementPage: React.FC = () => {
             size={isMobile ? 'small' : 'medium'}
             sx={{ width: { xs: '100%', sm: 'auto' } }}
           >
-            Cancel Booking
+            {t('booking.manage.cancelBookingAction')}
           </Button>
         </DialogActions>
       </Dialog>

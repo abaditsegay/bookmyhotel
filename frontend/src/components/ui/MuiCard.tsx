@@ -43,7 +43,6 @@ const Card: React.FC<CardProps> = ({
     switch (cardVariant) {
       case 'outlined':
         return {
-          border: `1px solid ${designSystem.colors.divider}`,
           boxShadow: 'none',
           '&:hover': {
             boxShadow: designSystem.shadows.sm,
@@ -58,7 +57,6 @@ const Card: React.FC<CardProps> = ({
         };
       default:
         return {
-          border: `1px solid ${designSystem.colors.primary[50]}`,
           boxShadow: designSystem.shadows.card,
           '&:hover': {
             boxShadow: designSystem.shadows.cardHover,

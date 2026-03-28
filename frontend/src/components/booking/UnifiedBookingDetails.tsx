@@ -38,8 +38,9 @@ import { useTenant } from '../../contexts/TenantContext';
 import { hotelAdminApi, RoomResponse } from '../../services/hotelAdminApi';
 import { frontDeskApiService } from '../../services/frontDeskApi';
 import { ROOM_TYPE_VALUES } from '../../constants/roomTypes';
-import { formatDateForDisplay, formatDateForInput } from '../../utils/dateUtils';
+import { formatDateForDisplay, parseDateInputValue, formatDateObjectForInput } from '../../utils/dateUtils';
 import { formatCurrency } from '../../utils/currencyUtils';
+import PremiumDatePicker from '../common/PremiumDatePicker';
 import PremiumTextField from '../common/PremiumTextField';
 import PremiumSelect from '../common/PremiumSelect';
 import { COLORS, addAlpha } from '../../theme/themeColors';
@@ -1218,25 +1219,21 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
                 
                 <Grid container spacing={2}>
                   <Grid item xs={12} sm={6}>
-                    <PremiumTextField
-                      fullWidth
+                    <PremiumDatePicker
                       label={t('booking.details.checkInDate')}
-                      value={formatDateForInput(currentBooking?.checkInDate || '')}
-                      type="date"
-                      onChange={(e) => handleFieldChange('checkInDate', e.target.value)}
+                      value={parseDateInputValue(currentBooking?.checkInDate || '')}
+                      onChange={(value) => handleFieldChange('checkInDate', formatDateObjectForInput(value))}
                       disabled={!isEditing}
-                      InputLabelProps={{ shrink: true }}
+                      slotProps={{ textField: { fullWidth: true, InputLabelProps: { shrink: true } } }}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    <PremiumTextField
-                      fullWidth
+                    <PremiumDatePicker
                       label={t('booking.details.checkOutDate')}
-                      value={formatDateForInput(currentBooking?.checkOutDate || '')}
-                      type="date"
-                      onChange={(e) => handleFieldChange('checkOutDate', e.target.value)}
+                      value={parseDateInputValue(currentBooking?.checkOutDate || '')}
+                      onChange={(value) => handleFieldChange('checkOutDate', formatDateObjectForInput(value))}
                       disabled={!isEditing}
-                      InputLabelProps={{ shrink: true }}
+                      slotProps={{ textField: { fullWidth: true, InputLabelProps: { shrink: true } } }}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>

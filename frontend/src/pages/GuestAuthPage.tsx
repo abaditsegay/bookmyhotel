@@ -12,6 +12,7 @@ import {
   Link,
 } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
+import { useTranslation } from 'react-i18next';
 import PremiumTextField from '../components/common/PremiumTextField';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -43,6 +44,7 @@ function TabPanel(props: TabPanelProps) {
 
 const GuestAuthPage: React.FC = () => {
   const theme = useTheme();
+  const { t } = useTranslation();
   const [tabValue, setTabValue] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -126,7 +128,7 @@ const GuestAuthPage: React.FC = () => {
       // Note: If login fails, the error will be set in authError by AuthContext
     } catch (err) {
       // console.error('Login error:', err);
-      setError('Login failed. Please try again.');
+      setError(t('auth.login.loginFailed'));
     } finally {
       setLoading(false);
     }
@@ -143,18 +145,18 @@ const GuestAuthPage: React.FC = () => {
 
     // Validation
     if (registerPassword !== confirmPassword) {
-      setError('Passwords do not match');
+      setError(t('auth.login.passwordsNoMatch'));
       return;
     }
 
     if (registerPassword.length < 6) {
-      setError('Password must be at least 6 characters long');
+      setError(t('auth.login.passwordTooShort'));
       return;
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(registerEmail)) {
-      setError('Please provide a valid email address');
+      setError(t('auth.login.invalidEmail'));
       return;
     }
 
@@ -177,7 +179,7 @@ const GuestAuthPage: React.FC = () => {
 
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(errorText || 'Registration failed');
+        throw new Error(errorText || t('auth.login.registrationFailed'));
       }
 
       const registrationData = await response.json();
@@ -202,7 +204,7 @@ const GuestAuthPage: React.FC = () => {
       localStorage.setItem('auth_token', registrationData.token);
       localStorage.setItem('auth_user', JSON.stringify(user));
 
-      setSuccess('Registration successful! Redirecting...');
+      setSuccess(t('auth.login.registrationSuccess'));
 
       // Small delay to show success message
       setTimeout(() => {
@@ -213,7 +215,7 @@ const GuestAuthPage: React.FC = () => {
         }
       }, 1500);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Registration failed');
+      setError(err instanceof Error ? err.message : t('auth.login.registrationFailed'));
     } finally {
       setLoading(false);
     }
@@ -233,7 +235,7 @@ const GuestAuthPage: React.FC = () => {
             gap: 2,
           }}
         >
-          <Typography variant="h6">Loading...</Typography>
+          <Typography variant="h6">{t('auth.login.loading')}</Typography>
         </Box>
       </Container>
     );
@@ -261,9 +263,6 @@ const GuestAuthPage: React.FC = () => {
             boxShadow: theme.palette.mode === 'light' 
               ? `0 2px 8px ${addAlpha(COLORS.SECONDARY, 0.1)}`
               : `0 8px 32px -4px ${alpha(theme.palette.primary.main, 0.25)}`,
-            border: theme.palette.mode === 'dark' 
-              ? `1px solid ${alpha(theme.palette.primary.main, 0.3)}`
-              : `1px solid ${COLORS.SECONDARY}`,
             borderRadius: 3,
             overflow: 'hidden',
             position: 'relative',
@@ -304,7 +303,11 @@ const GuestAuthPage: React.FC = () => {
                 color: theme.palette.text.secondary,
               }}
             >
-              Sign in to complete your booking
+              {bookingData?.hotelName
+                ? t('auth.login.signInToBook', { hotelName: bookingData.hotelName })
+                : tabValue === 0
+                  ? t('auth.login.signInSubtitle')
+                  : t('auth.login.createAccountSubtitle')}
             </Typography>
 
             <Box 
@@ -339,8 +342,8 @@ const GuestAuthPage: React.FC = () => {
                   },
                 }}
               >
-                <Tab label="Sign In" />
-                <Tab label="Create Account" />
+                <Tab label={t('auth.login.signIn')} />
+                <Tab label={t('auth.login.createAccount')} />
               </Tabs>
             </Box>
 
@@ -361,7 +364,7 @@ const GuestAuthPage: React.FC = () => {
               <Box component="form" onSubmit={handleLogin}>
                 <PremiumTextField
                   fullWidth
-                  label="Email"
+                  label={t('auth.login.emailLabel')}
                   type="email"
                   value={loginEmail}
                   onChange={(e) => setLoginEmail(e.target.value)}
@@ -371,7 +374,7 @@ const GuestAuthPage: React.FC = () => {
                 />
                 <PremiumTextField
                   fullWidth
-                  label="Password"
+                  label={t('auth.login.passwordLabel')}
                   type={showLoginPassword ? 'text' : 'password'}
                   value={loginPassword}
                   onChange={(e) => setLoginPassword(e.target.value)}
@@ -408,11 +411,9 @@ const GuestAuthPage: React.FC = () => {
                     textTransform: 'none',
                     borderRadius: 2,
                     backgroundColor: COLORS.PRIMARY,
-                    border: `2px solid ${COLORS.SECONDARY}`,
                     color: COLORS.WHITE,
                     '&:hover': {
                       backgroundColor: COLORS.PRIMARY_HOVER,
-                      borderColor: COLORS.SECONDARY_HOVER,
                       transform: 'translateY(-1px)',
                     },
                     '&:active': {
@@ -422,13 +423,12 @@ const GuestAuthPage: React.FC = () => {
                     '&:disabled': {
                       background: theme.palette.action.disabledBackground,
                       color: theme.palette.action.disabled,
-                      border: `2px solid ${addAlpha(COLORS.BLACK, 0.12)}`,
                     },
                     transition: 'all 0.2s ease',
                   }}
                   disabled={loading}
                 >
-                  {loading ? 'Signing In...' : 'Sign In'}
+                  {loading ? t('auth.login.signingIn') : t('auth.login.signInButton')}
                 </Button>
                 
                 {/* Mobile-friendly fallback button */}
@@ -442,13 +442,11 @@ const GuestAuthPage: React.FC = () => {
                     fontWeight: 500,
                     textTransform: 'none',
                     borderRadius: 2,
-                    borderWidth: 2,
-                    borderColor: COLORS.SECONDARY,
+                    border: 'none',
+                    backgroundColor: addAlpha(COLORS.SECONDARY, 0.08),
                     color: COLORS.PRIMARY,
                     '&:hover': {
-                      borderColor: COLORS.SECONDARY_HOVER,
-                      backgroundColor: COLORS.BG_LIGHT,
-                      borderWidth: 2,
+                      backgroundColor: addAlpha(COLORS.SECONDARY, 0.14),
                       transform: 'translateY(-1px)',
                     },
                     '&:active': {
@@ -456,7 +454,7 @@ const GuestAuthPage: React.FC = () => {
                       transition: 'transform 0.1s ease',
                     },
                     '&:disabled': {
-                      borderColor: theme.palette.action.disabled,
+                      backgroundColor: theme.palette.action.disabledBackground,
                       color: theme.palette.action.disabled,
                     },
                     transition: 'all 0.2s ease',
@@ -464,7 +462,7 @@ const GuestAuthPage: React.FC = () => {
                   disabled={loading}
                   onClick={handleMobileLogin}
                 >
-                  {loading ? 'Signing In...' : 'Mobile Sign In (Tap Here)'}
+                  {loading ? t('auth.login.signingIn') : t('auth.login.mobileSignInButton')}
                 </Button>
               </Box>
             </TabPanel>
@@ -474,7 +472,7 @@ const GuestAuthPage: React.FC = () => {
               <Box component="form" onSubmit={handleRegister}>
                 <PremiumTextField
                   fullWidth
-                  label="First Name"
+                  label={t('auth.login.firstNameLabel')}
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
                   margin="normal"
@@ -482,7 +480,7 @@ const GuestAuthPage: React.FC = () => {
                 />
                 <PremiumTextField
                   fullWidth
-                  label="Last Name"
+                  label={t('auth.login.lastNameLabel')}
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
                   margin="normal"
@@ -490,7 +488,7 @@ const GuestAuthPage: React.FC = () => {
                 />
                 <PremiumTextField
                   fullWidth
-                  label="Email"
+                  label={t('auth.login.emailLabel')}
                   type="email"
                   value={registerEmail}
                   onChange={(e) => setRegisterEmail(e.target.value)}
@@ -500,14 +498,14 @@ const GuestAuthPage: React.FC = () => {
                 />
                 <PremiumTextField
                   fullWidth
-                  label="Phone (optional)"
+                  label={t('auth.login.phoneLabel')}
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   margin="normal"
                 />
                 <PremiumTextField
                   fullWidth
-                  label="Password"
+                  label={t('auth.login.passwordLabel')}
                   type={showRegisterPassword ? 'text' : 'password'}
                   value={registerPassword}
                   onChange={(e) => setRegisterPassword(e.target.value)}
@@ -533,7 +531,7 @@ const GuestAuthPage: React.FC = () => {
                 />
                 <PremiumTextField
                   fullWidth
-                  label="Confirm Password"
+                  label={t('auth.login.confirmPasswordLabel')}
                   type={showConfirmPassword ? 'text' : 'password'}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
@@ -571,10 +569,8 @@ const GuestAuthPage: React.FC = () => {
                     borderRadius: 2,
                     backgroundColor: COLORS.PRIMARY,
                     color: COLORS.WHITE,
-                    border: `2px solid ${COLORS.SECONDARY}`,
                     '&:hover': {
                       backgroundColor: COLORS.PRIMARY_HOVER,
-                      borderColor: COLORS.SECONDARY_HOVER,
                       transform: 'translateY(-1px)',
                     },
                     '&:active': {
@@ -584,19 +580,18 @@ const GuestAuthPage: React.FC = () => {
                     '&:disabled': {
                       background: theme.palette.action.disabledBackground,
                       color: theme.palette.action.disabled,
-                      border: `2px solid ${addAlpha(COLORS.BLACK, 0.12)}`,
                     },
                     transition: 'all 0.2s ease',
                   }}
                   disabled={loading}
                 >
-                  {loading ? 'Creating Account...' : 'Create Account'}
+                  {loading ? t('auth.login.creating') : t('auth.login.createAccountButton')}
                 </Button>
               </Box>
             </TabPanel>
 
             <Typography variant="body2" color="textSecondary" align="center" sx={{ mt: 2 }}>
-              Need to make a booking? You'll need to{' '}
+              {t('auth.login.manageReservationsPrefix')}{' '}
               {tabValue === 0 ? (
                 <Link 
                   component="button" 
@@ -613,7 +608,7 @@ const GuestAuthPage: React.FC = () => {
                     },
                   }}
                 >
-                  create an account
+                  {t('auth.login.createAccount')}
                 </Link>
               ) : (
                 <Link 
@@ -631,10 +626,10 @@ const GuestAuthPage: React.FC = () => {
                     },
                   }}
                 >
-                  sign in
+                  {t('auth.login.signIn')}
                 </Link>
               )}{' '}
-              first to manage your reservations.
+              {t('auth.login.manageReservationsSuffix')}
             </Typography>
           </CardContent>
         </Card>

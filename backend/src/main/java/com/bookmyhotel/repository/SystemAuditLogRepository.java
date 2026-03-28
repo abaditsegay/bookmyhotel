@@ -14,12 +14,12 @@ import java.time.LocalDateTime;
 public interface SystemAuditLogRepository extends JpaRepository<SystemAuditLog, Long> {
 
     @Query("SELECT l FROM SystemAuditLog l WHERE " +
-           "(:action IS NULL OR l.action = :action) AND " +
-           "(:entityType IS NULL OR l.entityType = :entityType) AND " +
-           "(:userEmail IS NULL OR LOWER(l.performedByUserEmail) LIKE LOWER(CONCAT('%', :userEmail, '%'))) AND " +
-           "(:from IS NULL OR l.performedAt >= :from) AND " +
-           "(:to IS NULL OR l.performedAt <= :to) " +
-           "ORDER BY l.performedAt DESC")
+            "(:action IS NULL OR l.action = :action) AND " +
+            "(:entityType IS NULL OR l.entityType = :entityType) AND " +
+            "(:userEmail IS NULL OR LOWER(l.performedByUserEmail) LIKE LOWER(CONCAT('%', :userEmail, '%'))) AND " +
+            "(:from IS NULL OR l.performedAt >= :from) AND " +
+            "(:to IS NULL OR l.performedAt <= :to) " +
+            "ORDER BY l.performedAt DESC")
     Page<SystemAuditLog> findWithFilters(
             @Param("action") String action,
             @Param("entityType") String entityType,

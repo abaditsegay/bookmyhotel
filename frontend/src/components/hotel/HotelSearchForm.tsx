@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Paper,
   Grid,
@@ -23,18 +23,38 @@ import { COLORS, addAlpha } from '../../theme/themeColors';
 interface HotelSearchFormProps {
   onSearch: (searchRequest: HotelSearchRequest) => void;
   loading?: boolean;
+  initialValues?: Partial<HotelSearchRequest> | null;
 }
 
-const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = false }) => {
+const defaultCheckInDate = () => addDays(new Date(), 7);
+const defaultCheckOutDate = () => addDays(new Date(), 9);
+
+const parseDateOrFallback = (value: string | undefined, fallback: Date): Date => {
+  if (!value) {
+    return fallback;
+  }
+
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? fallback : parsed;
+};
+
+const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = false, initialValues = null }) => {
   const { t } = useTranslation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { showNotification } = useNotification();
   
-  const [location, setLocation] = useState('');
-  const [checkInDate, setCheckInDate] = useState<Date | null>(addDays(new Date(), 7));
-  const [checkOutDate, setCheckOutDate] = useState<Date | null>(addDays(new Date(), 9));
-  const [guests, setGuests] = useState(1);
+  const [location, setLocation] = useState(initialValues?.location || '');
+  const [checkInDate, setCheckInDate] = useState<Date | null>(parseDateOrFallback(initialValues?.checkInDate, defaultCheckInDate()));
+  const [checkOutDate, setCheckOutDate] = useState<Date | null>(parseDateOrFallback(initialValues?.checkOutDate, defaultCheckOutDate()));
+  const [guests, setGuests] = useState(initialValues?.guests || 1);
+
+  useEffect(() => {
+    setLocation(initialValues?.location || '');
+    setCheckInDate(parseDateOrFallback(initialValues?.checkInDate, defaultCheckInDate()));
+    setCheckOutDate(parseDateOrFallback(initialValues?.checkOutDate, defaultCheckOutDate()));
+    setGuests(initialValues?.guests || 1);
+  }, [initialValues?.location, initialValues?.checkInDate, initialValues?.checkOutDate, initialValues?.guests]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,7 +110,6 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
           boxSizing: 'border-box',
           borderRadius: 1,
           background: theme.palette.background.paper,
-          border: `2px solid ${COLORS.PRIMARY}`,
           boxShadow: `0 2px 8px ${addAlpha(COLORS.PRIMARY, 0.1)}`,
         }}
       >
@@ -138,7 +157,7 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
             <Grid item xs={12} md={6}>
               <PremiumTextField
                 label={t('hotelSearch.form.destination')}
-                placeholder={isMobile ? "Where are you going?" : t('hotelSearch.form.destinationPlaceholder')}
+                placeholder={t('hotelSearch.form.destinationPlaceholder')}
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
                 helperText={t('hotelSearch.form.destinationHelper')}
@@ -155,7 +174,10 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
                 label={t('hotelSearch.form.guests')}
                 type="number"
                 value={guests.toString()}
-                onChange={(e) => setGuests(Number(e.target.value))}
+                onChange={(e) => {
+                  const parsedGuests = Number(e.target.value);
+                  setGuests(Number.isNaN(parsedGuests) ? 1 : Math.min(10, Math.max(1, parsedGuests)));
+                }}
                 helperText={t('hotelSearch.form.guestsHelper')}
                 fullWidth
                 InputProps={{

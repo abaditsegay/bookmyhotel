@@ -3,7 +3,19 @@
  * Since all dates come from date pickers, these focus on formatting and calculation
  */
 import dayjs, { Dayjs } from 'dayjs';
-import { formatEthiopianDate, formatEthiopianDateTime } from './ethiopianCalendar';
+import { formatEthiopianDate, formatEthiopianDateLong, formatEthiopianDateTime } from './ethiopianCalendar';
+
+const parseDisplayDateValue = (value: string): Date | null => {
+  if (!value) return null;
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    const [year, month, day] = value.split('-').map(Number);
+    return new Date(year, month - 1, day);
+  }
+
+  const date = new Date(value);
+  return isNaN(date.getTime()) ? null : date;
+};
 
 /**
  * Formats a date string for HTML date input (YYYY-MM-DD format)
@@ -37,40 +49,54 @@ export const formatDateForInput = (dateString: string): string => {
 };
 
 /**
+ * Parses a YYYY-MM-DD-style input value into a local Date object.
+ */
+export const parseDateInputValue = (dateString: string): Date | null => {
+  const normalized = formatDateForInput(dateString);
+  if (!normalized) return null;
+
+  const [year, month, day] = normalized.split('-').map(Number);
+  return new Date(year, month - 1, day);
+};
+
+/**
+ * Formats a Date object into YYYY-MM-DD for form state and API payloads.
+ */
+export const formatDateObjectForInput = (date: Date | null | undefined): string => {
+  if (!date || isNaN(date.getTime())) return '';
+
+  const year = date.getFullYear();
+  const monthNumber = date.getMonth() + 1;
+  const dayNumber = date.getDate();
+  const month = monthNumber < 10 ? `0${monthNumber}` : `${monthNumber}`;
+  const day = dayNumber < 10 ? `0${dayNumber}` : `${dayNumber}`;
+
+  return `${year}-${month}-${day}`;
+};
+
+/**
  * Formats a date string for display (localized format)
  * Uses consistent formatting for display purposes
  */
 export const formatDateForDisplay = (dateString: string): string => {
   if (!dateString) return '';
-  
-  // Extract date part from any format to avoid timezone issues
-  let dateOnly: string;
-  
-  // If it's in YYYY-MM-DD format, use as-is
-  if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
-    dateOnly = dateString;
-  } 
-  // If it's an ISO string or has time info, extract just the date part
-  else if (dateString.includes('T') || dateString.includes(' ')) {
-    dateOnly = dateString.split('T')[0].split(' ')[0];
-  }
-  // For other formats, try to convert to YYYY-MM-DD first
-  else {
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return dateString; // Return original if invalid
-    
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    dateOnly = `${year}-${month}-${day}`;
-  }
-  
-  // Always create date using local timezone to avoid off-by-one issues
-  const [year, month, day] = dateOnly.split('-');
-  const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+  const date = parseDisplayDateValue(dateString);
+  if (!date) return dateString;
 
   // formatEthiopianDate checks getCalendarType() and getLang() internally
   return formatEthiopianDate(date);
+};
+
+/**
+ * Formats a date string for display with day name.
+ */
+export const formatDateLongForDisplay = (dateString: string): string => {
+  if (!dateString) return '';
+
+  const date = parseDisplayDateValue(dateString);
+  if (!date) return dateString;
+
+  return formatEthiopianDateLong(date);
 };
 
 /**

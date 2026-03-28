@@ -115,8 +115,8 @@ public class HotelSearchService {
                 roomTypeEnum);
 
         return availableRooms.stream()
-            .filter(room -> isRoomInPriceRange(room, request))
-            .map(this::convertToAvailableRoomDto)
+                .filter(room -> isRoomInPriceRange(room, request))
+                .map(this::convertToAvailableRoomDto)
                 .collect(Collectors.toList());
     }
 
@@ -180,7 +180,7 @@ public class HotelSearchService {
                 (int) availableCount,
                 (int) totalCount,
                 dynamicPrice,
-            sampleRoom != null && sampleRoom.getCapacity() != null ? sampleRoom.getCapacity() : 1);
+                sampleRoom != null && sampleRoom.getCapacity() != null ? sampleRoom.getCapacity() : 1);
 
         // Set description separately
         if (sampleRoom != null) {
@@ -192,8 +192,8 @@ public class HotelSearchService {
             // Convert RoomType enum to roomTypeId (ordinal + 1)
             Long roomTypeId = (long) (roomType.ordinal() + 1);
             Optional<com.bookmyhotel.entity.HotelImage> heroImage = hotelImageService.getRoomTypeHeroImagePublic(
-                hotelId,
-                roomTypeId);
+                    hotelId,
+                    roomTypeId);
 
             if (heroImage.isPresent()) {
                 dto.setImageUrl(heroImage.get().getFilePath());

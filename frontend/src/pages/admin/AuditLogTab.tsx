@@ -32,6 +32,7 @@ import { adminApiService, SystemAuditLogDto, AuditLogParams } from '../../servic
 import { useAuthenticatedApi } from '../../hooks/useAuthenticatedApi';
 import PremiumTextField from '../../components/common/PremiumTextField';
 import PremiumSelect from '../../components/common/PremiumSelect';
+import { formatDateTimeForDisplay } from '../../utils/dateUtils';
 
 const ENTITY_TYPES = ['SYSTEM', 'USER', 'HOTEL', 'ROOM', 'TENANT', 'HOTEL_REGISTRATION'];
 const ACTIONS = [
@@ -134,7 +135,7 @@ const AuditLogTab: React.FC = () => {
 
   const formatDateTime = (dt: string) => {
     try {
-      return new Date(dt).toLocaleString();
+      return formatDateTimeForDisplay(dt);
     } catch {
       return dt;
     }

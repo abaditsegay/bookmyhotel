@@ -10,11 +10,10 @@ import {
   useTheme,
   useMediaQuery,
 } from '@mui/material';
-import { formatEthiopianDate } from '../../utils/ethiopianCalendar';
-import { useCalendarStore } from '../../contexts/store';
 import { useTranslation } from 'react-i18next';
 import { formatCurrencyWithDecimals } from '../../utils/currencyUtils';
 import { COLORS } from '../../theme/themeColors';
+import { formatDateCalendarAware } from '../../utils/dateUtils';
 
 interface BookingSummaryProps {
   hotelName: string;
@@ -47,14 +46,9 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
   const { t } = useTranslation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const { calendarType } = useCalendarStore();
 
   const formatDate = (date: Date | null): string => {
-    if (!date) return '';
-    if (calendarType === 'gregorian') {
-      return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-    }
-    return formatEthiopianDate(date);
+    return formatDateCalendarAware(date);
   };
 
   // Calculate pricing breakdown

@@ -28,6 +28,7 @@ import {
 } from '@mui/material';
 import { Refresh, CheckCircle, Cancel, Visibility, NavigateNext, NavigateBefore } from '@mui/icons-material';
 import PremiumDisplayField from '../../components/common/PremiumDisplayField';
+import { formatDateTimeForDisplay } from '../../utils/dateUtils';
 
 interface HotelRegistration {
   id: number;
@@ -158,13 +159,7 @@ const HotelRegistrationAdmin: React.FC = () => {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    return formatDateTimeForDisplay(dateString);
   };
 
   return (

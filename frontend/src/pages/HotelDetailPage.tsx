@@ -1,13 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { formatEthiopianPhone } from '../utils/phoneUtils';
+import { useTranslation } from 'react-i18next';
 import {
   Container,
   Typography,
   Box,
-  Alert,
-  CircularProgress,
-  Card,
-  CardContent,
   Breadcrumbs,
   Link,
   IconButton,
@@ -19,6 +16,7 @@ import {
   useTheme,
   Stack,
 } from '@mui/material';
+import { useQuery } from '@tanstack/react-query';
 import {
   ArrowBack as ArrowBackIcon,
   LocationOn as LocationIcon,
@@ -30,14 +28,19 @@ import { useAuth } from '../contexts/AuthContext';
 import { hotelApiService } from '../services/hotelApi';
 import RoomCard from '../components/hotel/RoomCard';
 import RoomTypeCard from '../components/hotel/RoomTypeCard';
+import { DataState } from '../components/common';
+import { SurfaceCard } from '../components/ui';
 import { COLORS, addAlpha } from '../theme/themeColors';
 import { formatCurrencyWithDecimals } from '../utils/currencyUtils';
+import { formatHotelSearchSummary } from '../hooks/usePublicHotelSearchResults';
 import { 
   HotelSearchRequest, 
   HotelSearchResult,
+  AvailableRoom,
 } from '../types/hotel';
 
 const HotelDetailPage: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const { hotelId } = useParams<{ hotelId: string }>();
@@ -45,12 +48,31 @@ const HotelDetailPage: React.FC = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  
-  // State from search parameters
-  const [searchRequest, setSearchRequest] = useState<HotelSearchRequest | null>(null);
-  const [hotel, setHotel] = useState<HotelSearchResult | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+
+  const parsedHotelId = Number.parseInt(hotelId || '', 10);
+  const hasValidHotelId = Number.isInteger(parsedHotelId);
+  const locationState = (location.state as { searchRequest?: HotelSearchRequest } | null) ?? null;
+  const searchRequest = locationState?.searchRequest ?? null;
+
+  const hotelQuery = useQuery<HotelSearchResult>({
+    queryKey: [
+      'public-hotel-details',
+      parsedHotelId,
+      searchRequest?.checkInDate,
+      searchRequest?.checkOutDate,
+      searchRequest?.guests,
+    ],
+    enabled: hasValidHotelId,
+    queryFn: () =>
+      hotelApiService.getHotelDetailsPublic(
+        parsedHotelId,
+        searchRequest?.checkInDate,
+        searchRequest?.checkOutDate,
+        searchRequest?.guests
+      ),
+  });
+
+  const hotel = hotelQuery.data ?? null;
   const amenityHighlights = hotel?.facilityAmenities
     ? hotel.facilityAmenities
         .split(/[\n,]/)
@@ -95,52 +117,32 @@ const HotelDetailPage: React.FC = () => {
     return cityImages[city as keyof typeof cityImages] || cityImages['New York'];
   };
 
-  // Load hotel details
   useEffect(() => {
-    const loadHotelDetails = async () => {
-      if (!hotelId) {
-        navigate('/hotels/search');
-        return;
-      }
+    if (!hasValidHotelId) {
+      navigate('/hotels/search', { replace: true });
+    }
+  }, [hasValidHotelId, navigate]);
 
-      try {
-        setLoading(true);
-        setError('');
-        
-        // Get search request from location state
-        const state = location.state as { 
-          searchRequest?: HotelSearchRequest; 
-        };
-        
-        if (state?.searchRequest) {
-          setSearchRequest(state.searchRequest);
-        }
+  const formatSearchSummary = useMemo(
+    () => () => formatHotelSearchSummary(searchRequest, {
+      inLabel: t('hotelSearch.summary.in'),
+      fromLabel: t('hotelSearch.summary.from'),
+      toLabel: t('hotelSearch.summary.to'),
+      forLabel: t('hotelSearch.summary.for'),
+      guestSingular: t('hotelSearch.summary.guestSingle'),
+      guestPlural: t('hotelSearch.summary.guestPlural'),
+    }) || t('hotelSearch.detail.hotelDetails'),
+    [searchRequest, t]
+  );
 
-        // Fetch hotel details
-        // console.log('🏨 Loading hotel details for:', hotelId);
-        const hotelDetails = await hotelApiService.getHotelDetailsPublic(
-          parseInt(hotelId),
-          state?.searchRequest?.checkInDate,
-          state?.searchRequest?.checkOutDate,
-          state?.searchRequest?.guests
-        );
-        // console.log('✅ Hotel details loaded:', hotelDetails);
-        setHotel(hotelDetails);
-      } catch (err) {
-        // console.error('❌ Failed to load hotel details:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load hotel details');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadHotelDetails();
-  }, [hotelId, location, navigate]);
+  if (!hasValidHotelId) {
+    return null;
+  }
 
   const handleBookRoom = async (hotelId: number, roomId: number, asGuest: boolean = false) => {
     if (!hotel || !searchRequest) return;
     
-    const room = hotel.availableRooms.find((r: any) => r.id === roomId);
+    const room = hotel.availableRooms.find((availableRoom: AvailableRoom) => availableRoom.id === roomId);
     if (!room) return;
 
     if (asGuest) {
@@ -229,44 +231,11 @@ const HotelDetailPage: React.FC = () => {
     });
   };
 
-  const formatSearchSummary = () => {
-    if (!searchRequest) return 'Hotel Details';
-    
-    const parts = [];
-    if (searchRequest.location) {
-      parts.push(`in ${searchRequest.location}`);
-    }
-    parts.push(`from ${searchRequest.checkInDate} to ${searchRequest.checkOutDate}`);
-    parts.push(`for ${searchRequest.guests} guest${searchRequest.guests > 1 ? 's' : ''}`);
-    
-    return parts.join(' ');
-  };
-
-  if (loading) {
-    return (
-      <Container maxWidth="xl" sx={{ py: 4 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
-          <CircularProgress size={48} />
-        </Box>
-      </Container>
-    );
-  }
-
-  if (!hotel) {
-    return (
-      <Container maxWidth="xl" sx={{ py: 4 }}>
-        <Alert severity="error">
-          Hotel not found. Please try searching again.
-        </Alert>
-      </Container>
-    );
-  }
-
   // Determine if we should use room types or individual rooms
-  const useRoomTypes = hotel.roomTypeAvailability && hotel.roomTypeAvailability.length > 0;
+  const useRoomTypes = Boolean(hotel?.roomTypeAvailability && hotel.roomTypeAvailability.length > 0);
   const hasAvailableRooms = useRoomTypes ? 
-    hotel.roomTypeAvailability?.some(rt => rt.availableCount > 0) || false : 
-    hotel.availableRooms && hotel.availableRooms.length > 0;
+    hotel?.roomTypeAvailability?.some(rt => rt.availableCount > 0) || false : 
+    Boolean(hotel?.availableRooms && hotel.availableRooms.length > 0);
 
   return (
     <Container 
@@ -283,15 +252,13 @@ const HotelDetailPage: React.FC = () => {
           sx={{ 
             mr: 2,
             bgcolor: theme.palette.background.paper,
-            border: `1px solid ${theme.palette.divider}`,
             borderRadius: 2,
             '&:hover': {
               bgcolor: theme.palette.action.hover,
-              borderColor: theme.palette.action.disabled,
             },
             transition: 'all 0.2s ease-in-out',
           }}
-          aria-label="back to search results"
+          aria-label={t('hotelSearch.detail.backToSearchResults')}
         >
           <ArrowBackIcon />
         </IconButton>
@@ -319,7 +286,7 @@ const HotelDetailPage: React.FC = () => {
                 },
               }}
             >
-              Hotel Search
+              {t('hotelSearch.title')}
             </Link>
             <Link 
               component="button" 
@@ -335,46 +302,55 @@ const HotelDetailPage: React.FC = () => {
                 },
               }}
             >
-              Search Results
+              {t('hotelSearch.results.title')}
             </Link>
             <Typography variant="body2" color="text.primary" sx={{ fontWeight: 600 }}>
-              {hotel?.name || 'Hotel Details'}
+              {hotel?.name || t('hotelSearch.detail.hotelDetails')}
             </Typography>
           </Breadcrumbs>
         )}
       </Box>
 
-      {/* Error State */}
-      {error && (
-        <Alert severity="error" sx={{ mb: 3 }}>
-          {error}
-        </Alert>
-      )}
-
-      {/* Hotel Hero Image - Mobile Responsive */}
-      <CardMedia
-        component="img"
-        height={isMobile ? "200" : "300"}
-        image={getHotelImage('hero')}
-        alt={hotel.name}
-        sx={{ 
-          borderRadius: 2, 
-          mb: isMobile ? 2 : 3,
-          objectFit: 'cover',
+      <DataState
+        loading={hotelQuery.isLoading}
+        error={hotelQuery.error}
+        isEmpty={!hotel}
+        loadingMessage={t('hotelSearch.detail.loadingHotelDetails')}
+        fallbackErrorMessage={t('hotelSearch.detail.loadHotelError')}
+        emptyTitle={t('hotelSearch.detail.hotelNotFoundTitle')}
+        emptyMessage={t('hotelSearch.detail.hotelNotFoundMessage')}
+        emptyAction={{
+          label: t('hotelSearch.detail.searchHotels'),
+          onClick: () => navigate('/hotels/search'),
         }}
-      />
-
-      {/* Hotel Information - Mobile Responsive */}
-      <Card 
-        sx={{
-          backgroundColor: COLORS.WHITE,
-          border: `2px solid ${COLORS.PRIMARY}`,
-          borderRadius: 2,
-          boxShadow: `0 4px 12px ${addAlpha(COLORS.PRIMARY, 0.15)}`,
-          mb: isMobile ? 2 : 3,
+        onRetry={() => {
+          void hotelQuery.refetch();
         }}
+        minHeight="60vh"
       >
-        <CardContent sx={{ p: isMobile ? 2 : 3 }}>
+        {hotel && (
+        <>
+          {/* Hotel Hero Image - Mobile Responsive */}
+          <CardMedia
+            component="img"
+            height={isMobile ? "200" : "300"}
+            image={getHotelImage('hero')}
+            alt={hotel?.name || 'Hotel'}
+            sx={{ 
+              borderRadius: 2, 
+              mb: isMobile ? 2 : 3,
+              objectFit: 'cover',
+            }}
+          />
+
+          {/* Hotel Information - Mobile Responsive */}
+          <SurfaceCard 
+            variantStyle="elevated"
+            sx={{
+              mb: isMobile ? 2 : 3,
+            }}
+            contentSx={{ p: isMobile ? 2 : 3 }}
+          >
         {/* Mobile Layout - Stacked */}
         {isMobile ? (
           <Stack spacing={2}>
@@ -417,20 +393,19 @@ const HotelDetailPage: React.FC = () => {
                   p: 2,
                   backgroundColor: addAlpha(COLORS.PRIMARY, 0.1),
                   borderRadius: 1,
-                  border: `2px solid ${COLORS.PRIMARY}`,
                 }}
               >
                 <Typography variant="h5" sx={{ 
                   color: COLORS.PRIMARY,
                   fontWeight: 700 
                 }}>
-                  From {formatCurrencyWithDecimals(hotel.minPrice || 0)}
+                  {t('hotelSearch.detail.fromPrice')} {formatCurrencyWithDecimals(hotel.minPrice || 0)}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
-                  per night
+                  {t('hotelSearch.detail.perNight')}
                 </Typography>
                 <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>
-                  Up to {formatCurrencyWithDecimals(hotel.maxPrice || 0)}
+                  {t('hotelSearch.detail.upToPrice')} {formatCurrencyWithDecimals(hotel.maxPrice || 0)}
                 </Typography>
               </Box>
             )}
@@ -459,13 +434,13 @@ const HotelDetailPage: React.FC = () => {
                   color: COLORS.PRIMARY,
                   fontWeight: 700 
                 }}>
-                  From {formatCurrencyWithDecimals(hotel.minPrice || 0)}
+                  {t('hotelSearch.detail.fromPrice')} {formatCurrencyWithDecimals(hotel.minPrice || 0)}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
-                  per night
+                  {t('hotelSearch.detail.perNight')}
                 </Typography>
                 <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500 }}>
-                  Up to {formatCurrencyWithDecimals(hotel.maxPrice || 0)}
+                  {t('hotelSearch.detail.upToPrice')} {formatCurrencyWithDecimals(hotel.maxPrice || 0)}
                 </Typography>
               </Box>
             )}
@@ -545,10 +520,10 @@ const HotelDetailPage: React.FC = () => {
         {(hotel.checkInTime || hotel.checkOutTime || hotel.numberOfRooms || websiteUrl || amenityHighlights.length > 0) && (
           <Box sx={{ mt: 2.5 }}>
             <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" sx={{ mb: amenityHighlights.length > 0 || websiteUrl ? 1.5 : 0 }}>
-              {hotel.checkInTime && <Chip size="small" label={`Check-in ${hotel.checkInTime}`} variant="outlined" />}
-              {hotel.checkOutTime && <Chip size="small" label={`Check-out ${hotel.checkOutTime}`} variant="outlined" />}
+              {hotel.checkInTime && <Chip size="small" label={`${t('hotelSearch.detail.checkIn')} ${hotel.checkInTime}`} variant="outlined" />}
+              {hotel.checkOutTime && <Chip size="small" label={`${t('hotelSearch.detail.checkOut')} ${hotel.checkOutTime}`} variant="outlined" />}
               {hotel.numberOfRooms && hotel.numberOfRooms > 0 && (
-                <Chip size="small" label={`${hotel.numberOfRooms} rooms`} variant="outlined" />
+                <Chip size="small" label={t('hotelSearch.detail.roomsCount', { count: hotel.numberOfRooms })} variant="outlined" />
               )}
             </Stack>
 
@@ -559,14 +534,14 @@ const HotelDetailPage: React.FC = () => {
                 rel="noreferrer"
                 sx={{ display: 'inline-block', mb: amenityHighlights.length > 0 ? 1.5 : 0, fontWeight: 600 }}
               >
-                Visit hotel website
+                {t('hotelSearch.detail.visitWebsite')}
               </Link>
             )}
 
             {amenityHighlights.length > 0 && (
               <Box>
                 <Typography variant="body2" sx={{ fontWeight: 700, mb: 1, color: COLORS.PRIMARY }}>
-                  Guest amenities
+                  {t('hotelSearch.detail.guestAmenities')}
                 </Typography>
                 <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
                   {amenityHighlights.map((amenity) => (
@@ -584,28 +559,22 @@ const HotelDetailPage: React.FC = () => {
             mt: 2, 
             p: 1.5, 
             backgroundColor: COLORS.BG_LIGHT, 
-            border: `1px solid ${COLORS.PRIMARY}`, 
             borderRadius: 1 
           }}>
             <Typography variant="body2" sx={{ color: 'text.primary', fontWeight: 600 }}>
-              Showing availability {formatSearchSummary()}
+              {t('hotelSearch.detail.showingAvailability')} {formatSearchSummary()}
             </Typography>
           </Box>
         )}
-        </CardContent>
-      </Card>
+          </SurfaceCard>
 
-      {/* Professional Rooms Section */}
-      {searchRequest && (
-        <Card 
-          sx={{
-            backgroundColor: COLORS.WHITE,
-            border: `2px solid ${COLORS.PRIMARY}`,
-            borderRadius: 2,
-            boxShadow: `0 4px 12px ${addAlpha(COLORS.PRIMARY, 0.15)}`,
-          }}
-        >
-          <CardContent sx={{ p: isMobile ? 2 : 3 }}>
+          {/* Professional Rooms Section */}
+          {searchRequest && hotel && (
+            <SurfaceCard 
+              variantStyle="elevated"
+              sx={{}}
+              contentSx={{ p: isMobile ? 2 : 3 }}
+            >
             <Typography 
               variant={isMobile ? "h6" : "h5"} 
               sx={{ 
@@ -616,8 +585,8 @@ const HotelDetailPage: React.FC = () => {
               }}
             >
               {useRoomTypes ? 
-                `Available Room Types (${hotel.roomTypeAvailability?.length || 0})` :
-                `Available Rooms (${hotel.availableRooms?.length || 0})`
+                t('hotelSearch.detail.availableRoomTypes', { count: hotel.roomTypeAvailability?.length || 0 }) :
+                t('hotelSearch.detail.availableRooms', { count: hotel.availableRooms?.length || 0 })
               }
           </Typography>
 
@@ -690,7 +659,7 @@ const HotelDetailPage: React.FC = () => {
                 gutterBottom
                 sx={{ fontSize: isMobile ? '1.1rem' : undefined }}
               >
-                No rooms available
+                {t('hotelSearch.detail.noRoomsAvailableTitle')}
               </Typography>
               <Typography 
                 variant={isMobile ? "body2" : "body1"} 
@@ -701,7 +670,7 @@ const HotelDetailPage: React.FC = () => {
                   lineHeight: 1.4,
                 }}
               >
-                We couldn't find any available rooms for your selected dates.
+                {t('hotelSearch.detail.noRoomsAvailableMessage')}
               </Typography>
               <Typography 
                 variant="body2" 
@@ -710,44 +679,42 @@ const HotelDetailPage: React.FC = () => {
                   fontSize: isMobile ? '0.8rem' : undefined,
                 }}
               >
-                Try adjusting your search dates or criteria.
+                {t('hotelSearch.detail.noRoomsAvailableHint')}
               </Typography>
             </Box>
           )}
-          </CardContent>
-        </Card>
-      )}
+            </SurfaceCard>
+          )}
 
-      {/* No Search Request - Hotel Info Only - Mobile Responsive */}
-      {!searchRequest && (
-        <Card 
-          sx={{
-            backgroundColor: theme.palette.background.paper,
-            border: `1px solid ${theme.palette.divider}`,
-            borderRadius: 2,
-            boxShadow: theme.shadows[2],
-            textAlign: 'center',
-          }}
-        >
-          <CardContent sx={{ p: isMobile ? 3 : 4 }}>
-          <Typography variant="h5" color="text.primary" gutterBottom sx={{ fontWeight: 700 }}>
-            Search for availability
-          </Typography>
-          <Typography variant="body1" color="text.secondary" paragraph sx={{ fontWeight: 500 }}>
-            To see available rooms and make a booking, please use our hotel search.
-          </Typography>
-          <Box sx={{ mt: 3 }}>
-            <Button
-              variant="contained"
-              onClick={() => navigate('/hotels/search')}
-              size="large"
+          {/* No Search Request - Hotel Info Only - Mobile Responsive */}
+          {!searchRequest && (
+            <SurfaceCard 
+              variantStyle="subtle"
+              sx={{
+                textAlign: 'center',
+              }}
+              contentSx={{ p: isMobile ? 3 : 4 }}
             >
-              Search Hotels
-            </Button>
-          </Box>
-          </CardContent>
-        </Card>
-      )}
+              <Typography variant="h5" color="text.primary" gutterBottom sx={{ fontWeight: 700 }}>
+                {t('hotelSearch.detail.searchForAvailability')}
+              </Typography>
+              <Typography variant="body1" color="text.secondary" paragraph sx={{ fontWeight: 500 }}>
+                {t('hotelSearch.detail.searchForAvailabilityDescription')}
+              </Typography>
+              <Box sx={{ mt: 3 }}>
+                <Button
+                  variant="contained"
+                  onClick={() => navigate('/hotels/search')}
+                  size="large"
+                >
+                  {t('hotelSearch.detail.searchHotels')}
+                </Button>
+              </Box>
+            </SurfaceCard>
+          )}
+        </>
+        )}
+      </DataState>
     </Container>
   );
 };

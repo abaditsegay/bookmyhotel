@@ -137,7 +137,7 @@ const themeOptions: ThemeOptions = {
     MuiCard: {
       styleOverrides: {
         root: {
-          borderRadius: designSystem.borderRadius.xl,
+          borderRadius: designSystem.borderRadius.lg,
           border: 'none',
           boxShadow: `0 4px 20px ${addAlpha(COLORS.BLACK, 0.08)}`,
           transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',

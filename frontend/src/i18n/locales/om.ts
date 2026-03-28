@@ -35,7 +35,11 @@ export const omTranslations = {
       passwordsNoMatch: "Jecha icciitiin wal hin simnu",
       registrationSuccess: "Galmaan galuun milkaa'e! Kallatti jijjiiraa...",
       loginFailed: "Seenan dadhabe",
-      registrationFailed: "Galmaan galuun dadhabe"
+      registrationFailed: "Galmaan galuun dadhabe",
+      loading: "Fe'aa jira...",
+      mobileSignInButton: "Mobaayiliidhaan seeni (as tuqi)",
+      manageReservationsPrefix: "Qabannoo gochuuf dura",
+      manageReservationsSuffix: "seeni yookaan herrega uumiitii qabannoowwan kee bulchi."
     },
     forgotPassword: {
       title: "Jecha Icciitii Dagattee",
@@ -917,6 +921,56 @@ export const omTranslations = {
           paymentReference: "Wabii Kaffaltii"
         }
       },
+      searchPage: {
+        title: "Kutaa Keessan Barbaadaa",
+        subtitle: "Lakkoofsa mirkaneessaa yookaan imeeliidhaan kutaa keessan barbaadaa",
+        searchMethod: "Mala Barbaachaa",
+        methods: {
+          confirmation: "Lakkoofsa Mirkaneessaa",
+          emailAndLastName: "Imeelii fi Maqaa Maatii"
+        },
+        fields: {
+          lastName: "Maqaa Maatii"
+        },
+        placeholders: {
+          confirmationNumber: "Lakkoofsa mirkaneessaa kutaa keessanii galchaa",
+          email: "Imeelii keessan galchaa",
+          lastName: "Maqaa maatii keessan galchaa"
+        },
+        buttons: {
+          searchBooking: "Kutaa Barbaadi",
+          showMoreDetails: "Bal'ina Dabalataa Agarsiisi",
+          hideDetails: "Bal'ina Dhoksi"
+        },
+        sections: {
+          bookingInformation: "Odeeffannoo Kutaa"
+        },
+        labels: {
+          roomNumber: "Kutee {{roomNumber}}",
+          bookedOn: "Kan qabame:",
+          paymentId: "Aqoonsa Kaffaltii:"
+        },
+        statuses: {
+          booked: "Qabameera",
+          checkedIn: "Seenameera",
+          checkedOut: "Ba'eera",
+          cancelled: "Haquameera",
+          pending: "Eeggataa jira"
+        },
+        paymentStatuses: {
+          paid: "Kaffalameera",
+          pending: "Eeggataa jira",
+          payAtFrontdesk: "Fuula hojii irratti kaffali",
+          failed: "Dadhabe",
+          refunded: "Deebi'ameera"
+        },
+        errors: {
+          enterConfirmationNumber: "Maaloo lakkoofsa mirkaneessaa galchaa",
+          enterEmailAndLastName: "Maaloo imeelii fi maqaa maatii lamaan galchaa",
+          bookingNotFound: "Kutaan hin argamne",
+          searchFailed: "Kutaa barbaaduun dadhabe. Maaloo irra deebi'ii yaali."
+        }
+      },
       help: {
         title: "Gargaarsa Barbaaddaa?",
         description: "Kutaa keessan argachuuf lakkoofsi mirkaneessaa fi teessoon imeelii kutaa gochuun itti fayyadaman lamaan isin barbaachisu. Lakkoofsi mirkaneessaa imeelii mirkaneessaa kutaa keessan keessatti argama. Yoo kutaa keessan argachuu hin dandeenye, maaloo kallattiitti hotela quunnamaa."
@@ -970,11 +1024,125 @@ export const omTranslations = {
       cancelling: "Dhiisaa jira...",
       cancelBookingAction: "Kutaa Dhiisi"
     },
+    managementPage: {
+      loading: "Qabannoo keessan fe'aa jira...",
+      includingTaxes: "(gibira hundaa dabalatee)",
+      cancelPrompt: "Qabannoo kana dhiisuu akka barbaaddan mirkanaa'oo dhaa? Gocha kana deebisanii jijjiiruun hin danda'amu.",
+      errors: {
+        failedToLoadBooking: "Qabannoo fe'uun dadhabe",
+        invalidLink: "Hidhaan qabannoo sirrii miti. Maaloo hidhaa sirrii imeelii keessan keessaa ilaalaa.",
+        failedToCancelBooking: "Qabannoo dhiisuun dadhabe",
+        notFound: "Qabannoon hin argamne. Maaloo hidhaa sirrii imeelii keessan keessaa ilaalaa."
+      }
+    },
     paymentStatus: {
       completed: "XUMURRAME",
       pending: "EEGGATAA JIRA", 
       processing: "QOPHII KEESSA",
       failed: "DADHABE"
+    },
+    myBookingsPage: {
+      subtitle: "Qabannoo hotela keessan bulchaa fi hordofaa",
+      loading: "Qabannoowwan keessan fe'aa jira...",
+      browseHotels: "Hotelaalee Ilaali",
+      contactSupport: "Deeggarsa Quunnamaa",
+      modifyDeadlineTooltip: "Jijjiirraan sa'aatii 24 dura seenuu duratti godhamuu qaba",
+      specialRequests: "Gaaffiiwwan addaa",
+      nightSingle: "halkan",
+      nightPlural: "halkanoota",
+      cancelDialogPrompt: "Qabannoo kana dhiisuu akka barbaaddan mirkanaa'oo dhaa?",
+      cancelIrreversible: "Gocha kana deebisanii jijjiiruun hin danda'amu. Seerotni deebi'ii kaffaltii hojii irra oolu danda'u.",
+      modifyDialogDescription: "Bal'ina qabannoo keessanii armaan gadiitti fooyyessaa. Guyyoota, akaakuu kutee, ykn gaaffii addaa jijjiiruu dandeessu.",
+      currentBooking: "Qabannoo Amma Jiru",
+      newCheckInDate: "Guyyaa Seenuu Haaraa",
+      newCheckOutDate: "Guyyaa Ba'uu Haaraa",
+      currentValue: "Amma: {{value}}",
+      specialRequestsPlaceholder: "Turtii keessaniif gaaffii addaa kamiyyuu galchaa...",
+      none: "Hin jiru",
+      statuses: {
+        booked: "Qabameera",
+        checkedin: "Seenameera",
+        checkedout: "Ba'eera",
+        cancelled: "Dhiifameera",
+        pending: "Eegamaa jira",
+        noshow: "Hin dhufne"
+      },
+      paymentStatuses: {
+        paid: "Kaffalameera",
+        pending: "Eegamaa jira",
+        failed: "Dadhabe",
+        refunded: "Deebifameera",
+        payatfrontdesk: "Fuuldura Teessoo Kaffali"
+      },
+      errors: {
+        loginRequired: "Qabannoowwan keessan ilaaluuf maaloo seenaa",
+        loadFailed: "Qabannoowwan keessan fe'uun dadhabe. Maaloo booda irra deebi'ii yaali.",
+        cancelFailed: "Qabannoo dhiisuun dadhabe. Maaloo irra deebi'ii yaali ykn deeggarsa quunnamaa.",
+        noChanges: "Qabannoo fooyyessuuf jijjiirama tokko yoo xiqqaate godhaa.",
+        modifyFailed: "Qabannoo fooyyessuun dadhabe.",
+        modifyFailedWithSupport: "Qabannoo fooyyessuun dadhabe. Maaloo irra deebi'ii yaali ykn deeggarsa quunnamaa."
+      }
+    },
+    guestManagementPage: {
+      cancelledNoticeTitle: "Qabannoon Dhiifameera",
+      cancelledNoticeMessage: "Qabannoon kun dhiifameera. Yoo qabannoo haaraa gochuu barbaaddan, maaloo gara fuula qabannoo keenyaa deemaa. Yoo waa'ee deebii kaffaltii gaaffii qabaattan, maaloo hotela sana kallattiidhaan quunnamaa.",
+      modifyDeadline: "Jijjiirraan sa'aatii 24 dura seenuu duratti godhamuu qaba.",
+      nightSingle: "halkan",
+      nightPlural: "halkanoota",
+      priceSummary: "Cuunfaa Gatii",
+      priceUnavailable: "Odeeffannoon gatii qabannoo kanaaf hin jiru. Maaloo deeggarsa quunnamaa.",
+      pricePerNight: "Gatii Halkan Tokkoof",
+      numberOfNights: "Baay'ina Halkanootaa",
+      pricingUpdated: "GATIIN HAAROMFAMEERA",
+      whatChanged: "Maal Jijjiirame:",
+      dates: "Guyyoota",
+      roomTypeChangeDetected: "Jijjiiramni akaakuu kutee ni argame. Gatiin dhumaa sirnaan irratti hundaa'ee serveriin ni shallagama.",
+      priceCalculationBreakdown: "Caccabsa Shallaggii Gatii:",
+      originalBooking: "Qabannoo Duraa",
+      modifiedBooking: "Qabannoo Fooyya'e",
+      ratePerNight: "Gatii/Halkan",
+      total: "Waliigala",
+      calculation: "Shallaggii",
+      estimatedServerPrice: "* Tilmaama - serveriin gatii dhugaa ni shallaga",
+      originalTotal: "Waliigala Duraa",
+      newTotal: "Waliigala Haaraa",
+      additionalCost: "Baasii Dabalataa",
+      savings: "Qusannaa",
+      noChange: "Jijjiirri Hin Jiru",
+      pricingPersistHint: "Fooyya'iinsi gatii kun hanga dialog kana cufanitti itti fufa",
+      fetchingRoomPrice: "Gatii akaakuu kutee filatameef fe'aa jira...",
+      makeNewBooking: "Qabannoo Haaraa Godhi",
+      findAnotherBooking: "Qabannoo Biraa Barbaadi",
+      statuses: {
+        booked: "Qabameera",
+        cancelled: "Dhiifameera",
+        checkedin: "Seenameera",
+        checkedout: "Ba'eera",
+        pending: "Eegamaa jira"
+      },
+      paymentStatuses: {
+        completed: "XUMURRAME",
+        processing: "QOPHII KEESSA",
+        pending: "EEGGATAA JIRA",
+        failed: "DADHABE"
+      },
+      messages: {
+        failedToLoadBooking: "Qabannoo fe'uun dadhabe",
+        bookingNotFoundOrAccessDenied: "Qabannoon hin argamne yookaan hayyamni hin jiru",
+        showingCachedInformation: "Odeeffannoo qabannoo haaromsuun hin danda'amne. Odeeffannoon kuufame agarsiifamaa jira.",
+        noBookingInformation: "Odeeffannoon qabannoo hin jiru. Maaloo dura qabannoo keessan barbaadaa.",
+        authenticationEmailSent: "Imeeliin mirkaneessaa ergameera. Maaloo imeelii keessan ilaalaa fi {{action}} gochuuf hidhaa cuqaasaa.",
+        authenticationEmailFailed: "Imeelii mirkaneessaa {{action}}f erguun dadhabe. Maaloo irra deebi'ii yaali.",
+        failedToModifyBooking: "Qabannoo fooyyessuun dadhabe",
+        bookingModifiedSuccessfully: "Qabannoon milkaa'inaan fooyya'eera",
+        additionalCharges: "Kaffaltii dabalataa: ETB {{amount}}",
+        refundAmount: "Hanga deebii kaffaltii: ETB {{amount}}",
+        newTotalAmount: "Waliigala haaraa: ETB {{amount}}",
+        modifyUnexpectedError: "Yeroo qabannoo fooyyessan dogoggorri uumameera",
+        bookingCancelledSuccessfully: "Qabannoon milkaa'inaan dhiifameera",
+        failedToCancelBooking: "Qabannoo dhiisuun dadhabe",
+        cancelTryAgain: "Qabannoo dhiisuun dadhabe. Maaloo irra deebi'ii yaali."
+      }
     },
 
     guestBooking: "Kutaa Keessummaa",
@@ -1073,7 +1241,27 @@ export const omTranslations = {
       
       // Lakkoofsa Bilbilaa Itoophiyaa (kaffaltii mobaayilaaf)
       ethiopianPhoneLabel: "Lakkoofsa Bilbilaa Itoophiyaa",
-      ethiopianPhonePlaceholder: "Lakkoofsa bilbilaa Itoophiyaa kaffaltii mobaayilaaf galchi"
+      ethiopianPhonePlaceholder: "Lakkoofsa bilbilaa Itoophiyaa kaffaltii mobaayilaaf galchi",
+
+      validation: {
+        guestsRequired: "Lakkoofsi keessummootaa barbaachisaa dha",
+        guestsMin: "Yoo xiqqaate keessummaan 1 barbaachisaa dha",
+        guestsMax: "Keessummoonni {{count}} qofa hayyamamu",
+        guestNameRequired: "Maqaan keessummaa barbaachisaa dha",
+        nameMinLength: "Maqaan yoo xiqqaate qubee 2 qabaachuu qaba",
+        nameMaxLength: "Maqaan qubee 100 gadi ta'uu qaba",
+        namePattern: "Maqaan qubee fi bakka duwwaa qofa qabaachuu danda'a",
+        emailRequired: "Teessoon imeelii barbaachisaa dha",
+        validEmail: "Maaloo teessoo imeelii sirrii galchi",
+        emailMaxLength: "Imeeliin qubee 255 gadi ta'uu qaba",
+        phoneRequired: "Lakkoofsi bilbilaa barbaachisaa dha",
+        validPhone: "Maaloo lakkoofsa bilbilaa sirrii galchi",
+        phoneMinLength: "Lakkoofsi bilbilaa yoo xiqqaate digitii 10 qabaachuu qaba",
+        phoneMaxLength: "Lakkoofsi bilbilaa digitii 15 gadi ta'uu qaba",
+        specialRequestsMaxLength: "Gaaffiin addaa qubee 500 gadi ta'uu qaba",
+        fixValidationErrors: "Maaloo dogoggora mirkaneessaa erguu dura sirreessi",
+        createBookingFailed: "Buukii uumuu dadhabe. Maaloo irra deebi'ii yaali."
+      }
     },
     
     details: {
@@ -1512,10 +1700,12 @@ export const omTranslations = {
   // Rasiiditii fi Herrega
   receipts: {
     official: "Rasiidii Seeraa",
+    receiptNumber: "Rasiidii #{{number}}",
     guestInformation: "Odeeffannoo Keessummaa",
     fullName: "Maqaa Guutuu",
     email: "Imeelii",
     phone: "Bilbila",
+    notAvailable: "Hin jiru",
     confirmation: "Mirkaneessaa",
     guests: "Keessummaa",
     
@@ -1525,6 +1715,38 @@ export const omTranslations = {
     checkOut: "Ba'uu",
     duration: "Yeroo",
     ratePerNight: "Gatii Halkan Tokkoof",
+    nightSingle: "halkan",
+    nightPlural: "halkanoota",
+    roomAccommodation: "Tajaajila Kutaa",
+    additionalService: "Tajaajila Dabalataa",
+    tax: "Gibira",
+    thankYouHotel: "{{hotelName}} filachuuf galatoomaa!",
+    generatedOn: "Kan uumame {{date}}",
+    generatedBy: "Kan uume: {{name}}",
+    actions: {
+      printReceipt: "Rasiidii Maxxansi",
+      downloadPdf: "PDF Buusi",
+      emailReceipt: "Rasiidii Imeeliidhaan Ergi",
+      close: "Cufi"
+    },
+    emailDialog: {
+      title: "Rasiidii Imeeliidhaan Ergi",
+      description: "Teessoo imeelii rasiidii itti erguu barbaaddan galchaa. Imeeliin keessummaa armaan gadiitti dursee guutameera.",
+      recipientLabel: "Teessoo Imeelii Fudhattaa",
+      recipientPlaceholder: "guest@example.com",
+      recipientHelper: "Erguu dura teessoo imeelii jijjiiruu dandeessu",
+      bookingLabel: "Bakka buusii:",
+      cancel: "Haquu",
+      send: "Imeelii Ergi",
+      sending: "Ergamaa jira...",
+      success: "Rasiidiin milkaa'inaan gara {{email}} ergameera",
+      errors: {
+        missingReservationInfo: "Imeelii erguun hin danda'amu: odeeffannoon bakka buusii ni dhaba",
+        invalidEmail: "Maaloo teessoo imeelii sirrii galchaa",
+        failedToSend: "Rasiidii erguun dadhabe",
+        unexpectedError: "Yeroo rasiidii ergamu dogoggorri uumameera"
+      }
+    },
     
     billing: {
       description: "IBSA",
@@ -1609,6 +1831,162 @@ export const omTranslations = {
     invalidDates: "Maaloo guyyoota keessan sakatta'aa."
   },
 
+  publicHotelRegistration: {
+    title: "Hotela Kee Galmeessi",
+    form: {
+      title: "Odeeffannoo Hotelaa",
+      subtitle: "Jalqabuuf odeeffannoo bu'uuraa kenni. Erga seentee booda piroofaayilii hotelaa guutuu dandeessa.",
+      fields: {
+        hotelName: "Maqaa Hotelaa",
+        contactPerson: "Nama Qunnamtii",
+        contactEmail: "Imeelii Nama Qunnamtii",
+        address: "Teessoo",
+        city: "Magaalaa",
+        country: "Biyya"
+      },
+      placeholders: {
+        hotelName: "Maqaa hotelaa galchi",
+        contactPerson: "Maqaa nama qunnamtii galchi",
+        contactEmail: "Imeelii nama qunnamtii galchi",
+        address: "Teessoo hotelaa galchi",
+        city: "Magaalaa galchi"
+      }
+    },
+    actions: {
+      cancel: "Dhiisi",
+      submit: "Galmee Ergi",
+      submitting: "Ergaa jira...",
+      goToLogin: "Gara Seensaatti Deemi"
+    },
+    success: {
+      title: "Galmeen Milkaa'eera!",
+      description: {
+        before: "Hotelli kee",
+        after: "milkaa'inaan galmaa'eera."
+      },
+      emailNotice: {
+        before: "Imeeliin odeeffannoo seensaa yeroo keessaa qabu gara",
+        after: "ergameera. Maaloo sanduuqa ergaa fi spam keessan ilaalaa."
+      }
+    },
+    nextSteps: {
+      title: "Itti aanuun maal ta'a?",
+      step1: "Odeeffannoo seensaa yeroo argachuuf imeelii kee ilaali",
+      step2: "Piroofaayilii hotelaa xumuruuf seeni",
+      step3: "Gareen keenya galmee kee ni ilaala ni mirkaneessas",
+      step4: "Waltajjii keenya irratti hotela kee bulchuu jalqabi"
+    },
+    messages: {
+      submitFailed: "Galmee hotelaa erguun dadhabee. Maaloo irra deebi'ii yaali."
+    }
+  },
+
+  hotelRegistrationStatus: {
+    title: "Haala Galmee Ilaali",
+    subtitle: "Haala galmee hotela keessanii ilaaluuf imeelii keessan galchaa",
+    emailPlaceholder: "Imeelii galmeef itti fayyadamtan galchaa",
+    registrationId: "Aqoonsa Galmee: {{id}}",
+    actions: {
+      search: "Barbaadi"
+    },
+    fields: {
+      contactPerson: "Nama Qunnamtii",
+      contactEmail: "Imeelii Nama Qunnamtii",
+      submitted: "Kan ergame",
+      reviewed: "Kan ilaalame",
+      comments: "Yaada"
+    },
+    statuses: {
+      approved: "MIRKANAAYE",
+      pending: "EEGGATAA JIRA",
+      under_review: "GAMAAGGAMAA JIRA",
+      rejected: "DIDAMEERA"
+    },
+    messages: {
+      pendingTitle: "Galmeen keessan gamaaggamee jira.",
+      pendingBody: "Gareen keenya yeroo baayyee guyyoota hojii 2-3 keessatti iyyannoo ni ilaala. Yeroo gamaaggamni xumuramu beeksisni imeelii isin ga'a.",
+      approvedTitle: "Baga gammaddan! Galmeen hotela keessanii mirkanaa'eera.",
+      approvedBody: "Odeeffannoon seensaa imeeliidhaan isin ga'uu qaba ture. Yoo isin hin geenye garee deeggarsa keenya quunnamaa.",
+      rejectedTitle: "Galmeen keessan hin mirkanoofne.",
+      rejectedBody: "Maaloo yaadota armaan ol jiran ilaalaa fi jijjiirama gaafatame waliin galmee haaraa erguuf bilisa ta'aa."
+    },
+    help: {
+      title: "Gargaarsa Barbaaddaa?",
+      description: "Galmee keessan argachuu yoo dadhabdan yookaan adeemsa irratti gaaffii yoo qabaattan:",
+      tip1: "Imeelii sirrii galmee keessaniin fayyadamtan akka jirattan mirkaneeffadhaa",
+      tip2: "Imeelii beeksisaa argachuuf galmee spam/junk ilaalaa",
+      tip3: "Garee deeggarsa keenya support@shegersolutions.com irratti quunnamaa"
+    },
+    errors: {
+      enterEmail: "Maaloo teessoo imeelii keessan galchaa",
+      notFound: "Teessoo imeelii kanaaf galmeen hotelaa hin argamne",
+      checkFailed: "Haala galmee ilaaluun dadhabe",
+      checkFailedRetry: "Haala galmee ilaaluun dadhabe. Maaloo irra deebi'ii yaali."
+    }
+  },
+
+  hotelBanner: {
+    title: "Hoteelota Filatamoo",
+    featuredBadge: "Filatamaa",
+    usingSampleHotels: "Hoteelota fakkeenyaa fayyadamaa jira",
+    liveData: "Daataa Kallattii",
+    multipleRates: "Baay'ee",
+    viewDetails: "Bal'ina ilaali",
+    refreshesEveryTwoMinutes: "Daqiiqaa 2 keessatti ni haaromfama",
+    fallback: {
+      resort: {
+        name: "Riizoortii Isppaa Sadarkaa Olaanaa",
+        description: "Paakeejota isppaa sadarkaa olaanaa keenya waliin boqonnaa guutuu mudadhu."
+      },
+      business: {
+        name: "Hotela Daldalaa Giddugalaa",
+        description: "Tajaajiloota ammayyaa imaltoota daldalaaf mijatan."
+      },
+      mountain: {
+        name: "Loojii Mul'ata Tulluu",
+        description: "Mul'ata tulluu ajaa'ibaa waliin gara uumamaatti miliqi."
+      }
+    }
+  },
+
+  emptyStates: {
+    noDataTitle: "Daataan hin jiru",
+    noDataMessage: "Ammaaf waan agarsiifamu hin jiru.",
+    noSearchResults: {
+      title: "Bu'aan hin argamne",
+      message: "Barbaacha keessaniif kan walsimu hin arganne. Mijoo yookaan jechoota barbaachaa sirreessaa.",
+      action: "Mijoo qulqulleessi"
+    },
+    noBookings: {
+      title: "Buukii hin jiru",
+      message: "Buukii tokkollee hin qabdan. Hoteelota qoradhaa fi buukii keessan jalqabaa godhaa!"
+    },
+    noOrders: {
+      title: "Ajaji hin jiru",
+      message: "Ajajni agarsiifamu hin jiru. Isaan arguuf ajaja uumuu jalqabi.",
+      action: "Ajaja Uumi"
+    },
+    noProducts: {
+      title: "Oomishaan hin jiru",
+      message: "Oomishaan hanga ammaatti hin dabalamin. Gurgurtaa jalqabuuf oomishaalee dabali.",
+      action: "Oomisha Dabali"
+    },
+    noHotels: {
+      title: "Hoteelonni hin argamne",
+      message: "Ulaagaa keessaniif hoteelonni walsiman hin jiran. Barbaacha bal'isi yookaan booda deebi'ii ilaali."
+    },
+    noReceipts: {
+      title: "Riisiitii hin jiru",
+      message: "Ammaaf riisiitiin agarsiifamu hin jiru."
+    }
+  },
+  notFoundPage: {
+    title: "Fuulli hin argamne",
+    message: "Fuulli ati barbaaddu hin jiru yookaan bakka irraa socho'eera.",
+    goHome: "Gara Manaatti Deemi",
+    helpText: "Yoo kun dogoggora ta'uu amantan, maaloo deeggarsa quunnamaa yookaan gara fuula jalqabaatti deebi'uun yaalaa."
+  },
+
   // Existing sections (shop, hotelSearch, etc.)
   hotelSearch: {
     title: "Iddoo Hawaasaa Gaarii Barbaadaa",
@@ -1637,6 +2015,134 @@ export const omTranslations = {
       searchFailed: "Barbaachi dadhabe. Maaloo irra deebi'aa yaali.",
       invalidDates: "Maaloo guyyoota keessan sakatta'aa.",
       networkError: "Dogoggora neetworkii. Maaloo walitti hidhamiinsa keessan sakatta'aa."
+    },
+    summary: {
+      in: "keessatti",
+      from: "irraa",
+      to: "hanga",
+      for: "keessummoota",
+      guestSingle: "keessummaa",
+      guestPlural: "keessummoota"
+    },
+    results: {
+      title: "Bu'aa Barbaachaa",
+      backToSearch: "Gara Barbaachaatti Deebi'i",
+      descriptionPrefix: "Hoteelota",
+      loadingDescription: "Bu'aa barbaachaa fe'aa jira...",
+      modifySearch: "Barbaacha Fooyyessi",
+      hotelsFoundSingle: "Hotelli {{count}} argame",
+      hotelsFoundPlural: "Hoteelonni {{count}} argaman",
+      searching: "Hoteelota barbaadaa jira...",
+      refreshError: "Bu'aa barbaacha hotelaa haaromsuun amma hin danda'amu.",
+      refreshListError: "Tarree hotelaa haaromsuun amma hin danda'amu.",
+      emptyTitle: "Hoteelonni Hin Argamne",
+      emptyMessage: "Ulaagaa barbaacha keessaniin hoteelota walsiman hin arganne. Guyyoota, bakka ykn calallii jijjiiruudhaan yaalaa.",
+      listEmptyMessage: "Ulaagaa keessaniin hoteelonni walsiman hin jiran. Barbaacha bal'isi ykn guyyoota jijjiiri."
+    },
+    detail: {
+      hotelDetails: "Bal'ina Hotelaa",
+      backToSearchResults: "Gara Bu'aa Barbaachaatti Deebi'i",
+      loadingHotelDetails: "Bal'ina hotelaa fe'aa jira...",
+      loadHotelError: "Bal'ina hotelaa amma fe'uun hin danda'amu.",
+      hotelNotFoundTitle: "Hotelli hin argamne",
+      hotelNotFoundMessage: "Maaloo irra deebi'ii barbaadi ykn hoteelota biro ilaali.",
+      searchHotels: "Hoteelota Barbaadi",
+      fromPrice: "Irraa",
+      perNight: "halkan tokkoof",
+      upToPrice: "Hanga",
+      checkIn: "Seensa",
+      checkOut: "Ba'a",
+      roomsCount: "Kuteewwan {{count}}",
+      visitWebsite: "Marsariitii hotelaa daawwadhu",
+      guestAmenities: "Tajaajiloota keessummaa",
+      showingAvailability: "Jiraachuu agarsiisaa jira",
+      availableRoomTypes: "Gosa kutee jiran ({{count}})",
+      availableRooms: "Kuteewwan jiran ({{count}})",
+      noRoomsAvailableTitle: "Kuteewwan hin jiran",
+      noRoomsAvailableMessage: "Guyyoota filattaniif kuteewwan jiran hin arganne.",
+      noRoomsAvailableHint: "Guyyoota ykn ulaagaalee barbaacha keessan jijjiiruudhaan yaalaa.",
+      searchForAvailability: "Jiraachuu barbaadi",
+      searchForAvailabilityDescription: "Kuteewwan jiran arguuf fi buukii gochuuf, maaloo barbaacha hotelaa keenya fayyadami."
+    },
+    card: {
+      availableCompact: "{{count}} jiru",
+      availableRooms: "Kuteewwan {{count}} jiran",
+      roomTypesCount: "Gosa Kutee ({{count}})",
+      roomsCount: "Kuteewwan ({{count}})",
+      hideRooms: "Kuteewwan Dhoksi",
+      showAllRooms: "Kuteewwan Hunda Agarsiisi",
+      viewMoreRoomTypes: "Gosa kutee {{count}} dabalataa ilaali",
+      viewMoreRooms: "Kuteewwan {{count}} dabalataa ilaali"
+    },
+    listCard: {
+      noRoomsAvailable: "Kuteewwan hin jiran",
+      availableLabel: "Jiran:",
+      priceRangeLabel: "Daangaa gatii:",
+      viewHotelDetails: "Bal'ina hotelaa ilaali",
+      viewHotel: "Hotela ilaali"
+    },
+    hotelCard: {
+      availableRoomsCount: "Kuteewwan jiran ({{count}})",
+      moreRoomsAvailable: "+{{count}} kuteewwan dabalataa jiru",
+      noRoomsAvailableForDates: "Guyyoota filatamaniif kuteewwan hin jiran",
+      unavailable: "Hin Jiru"
+    },
+    roomCard: {
+      roomNumber: "Kutaa {{roomNumber}}",
+      upToGuests: "Hanga keessummoota {{count}}",
+      amenities: "Tajaajiloota Kutaa",
+      moreAmenities: "+{{count}} dabalataa",
+      bookNow: "Amma Buukessi",
+      signInToBook: "Buukessuuf Seeni",
+      bookAsGuest: "Akka Keessummaatti Buukessi"
+    },
+    roomTypeCard: {
+      availableCount: "{{count}} Jiru",
+      fullyBooked: "Guutumaan guutuutti qabameera",
+      notAvailable: "Hin Jiru"
+    },
+    roomTypes: {
+      single: "Kutaa Tokkoffaa",
+      double: "Kutaa Lama",
+      standard: "Kutaa Idilee",
+      deluxe: "Kutaa Dilaksii",
+      suite: "Suutii",
+      family: "Kutaa Maatii",
+      accessible: "Kutaa Qaqqabamaa",
+      presidential: "Suutii Pireezidaantii"
+    },
+    bedInfo: {
+      single: "siree 1",
+      double: "sireewwan 2",
+      standard: "sireewwan 2",
+      deluxe: "siree king",
+      suite: "kuteewwan hedduu",
+      family: "sireewwan hedduu",
+      accessible: "siree qaqqabamaa",
+      presidential: "suutii sadarkaa olaanaa"
+    },
+    amenities: {
+      freeWifi: "WiFi bilisaa",
+      airConditioning: "Qilleensa qabbaneessaa",
+      roomService: "Tajaajila kutaa",
+      workDesk: "Minjaala hojii",
+      miniBar: "Miinii baar",
+      safe: "Kuusaa nageenyaa",
+      extraSpace: "Bakka dabalataa",
+      multipleBeds: "Sireewwan hedduu",
+      kidsWelcome: "Ijoolleen ni simatamu",
+      wheelchairAccessible: "Kursii marfamtuudhaan qaqqabamaa",
+      rollInShower: "Shawara seenuu salphaa",
+      grabBars: "Ulee qabannaa",
+      livingArea: "Bakka jireenyaa",
+      kitchenette: "Mana nyaataa xiqqaa",
+      balcony: "Baalkonii",
+      premiumBedding: "Meeshaalee siree sadarkaa olaanaa",
+      cityView: "Mul'ata magaalaa",
+      butlerService: "Tajaajila butler",
+      privateTerrace: "Teraasii dhuunfaa",
+      jacuzzi: "Jaakuuzii",
+      premiumAmenities: "Tajaajiloota sadarkaa olaanaa"
     }
   },
   walkInBooking: {
@@ -2204,6 +2710,7 @@ export const omTranslations = {
     // Error states
     errorNotFound: "Bakka buusi hin argamne",
     errorDescription: "Odeeffannoo bakka buusi keessanii argachuu hin dandeenye. Maaloo lakkoofsa mirkaneessuu keessanii mirkaneessaa yookaan irra deebi'aa yaala.",
+    errorNoBookingInformation: "Odeeffannoon qabannoo hin jiru",
     
     // Action buttons
     actions: {
@@ -2280,7 +2787,30 @@ export const omTranslations = {
       paid: "Kaffalame",
       payAtFrontDesk: "Simannaa Duratti Kaffali",
       failed: "Kufe",
-      refunded: "Deebifame"
+      refunded: "Deebifame",
+      partiallyRefunded: "Gartokkoon deebifame",
+      forfeited: "Dhabame"
+    },
+
+    print: {
+      title: "Mirkaneessaa Bakka Buusii",
+      confirmationNumber: "Lakkoofsa Mirkaneessaa: {{confirmationNumber}}",
+      footerThankYou: "{{hotelName}} filachuuf galatoomaa!",
+      labels: {
+        guestName: "Maqaa Keessummaa:",
+        email: "Imeelii:",
+        numberOfGuests: "Lakkoofsa Keessummootaa:",
+        hotel: "Hotela:",
+        address: "Teessoo:",
+        roomType: "Gosa Kutaa:",
+        roomAssignment: "Ramaddii Kutaa:",
+        checkIn: "Seensaa:",
+        checkOut: "Ba'uu:",
+        nights: "Halkanootaa:",
+        ratePerNight: "Gatii halkan tokkoof:",
+        status: "Haala:",
+        paymentStatus: "Haala Kaffaltii:"
+      }
     },
     
     // Important information
@@ -2323,6 +2853,9 @@ export const omTranslations = {
     home: "Mana",
     hotels: "Hoteelota",
     bookings: "Kutaalee",
+    hotelRegistration: "Galmee Hoteelaa",
+    myReservation: "Qabannoo Koo",
+    login: "Seeni",
     profile: "Piroofaayilii",
     logout: "Ba'uu",
     dashboard: "Gabatee",

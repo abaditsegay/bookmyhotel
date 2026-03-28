@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Card,
   CardContent,
@@ -51,6 +52,7 @@ const getHotelImage = (hotel: HotelSearchResult): string => {
 };
 
 const HotelCard: React.FC<HotelCardProps> = ({ hotel, onViewDetails, onBookRoom }) => {
+  const { t } = useTranslation();
   const hasAvailableRooms = hotel.availableRooms && hotel.availableRooms.length > 0;
 
   return (
@@ -107,7 +109,7 @@ const HotelCard: React.FC<HotelCardProps> = ({ hotel, onViewDetails, onBookRoom 
         {hasAvailableRooms ? (
           <Box>
             <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 'bold' }}>
-              Available Rooms ({hotel.availableRooms.length})
+              {t('hotelSearch.hotelCard.availableRoomsCount', { count: hotel.availableRooms.length })}
             </Typography>
             <Grid container spacing={1} sx={{ mb: 2 }}>
               {hotel.availableRooms.slice(0, 3).map((room) => (
@@ -124,12 +126,12 @@ const HotelCard: React.FC<HotelCardProps> = ({ hotel, onViewDetails, onBookRoom 
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <Box>
                         <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
-                          Room {room.roomNumber} - {room.roomType}
+                          {t('hotelSearch.roomCard.roomNumber', { roomNumber: room.roomNumber })} - {t(`hotelSearch.roomTypes.${room.roomType.toLowerCase()}`)}
                         </Typography>
                         <Box sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}>
                           <PeopleIcon sx={{ fontSize: 14, mr: 0.5, color: 'text.secondary' }} />
                           <Typography variant="caption" color="text.secondary">
-                            Up to {room.capacity} guests
+                            {t('hotelSearch.roomCard.upToGuests', { count: room.capacity })}
                           </Typography>
                         </Box>
                       </Box>
@@ -138,7 +140,7 @@ const HotelCard: React.FC<HotelCardProps> = ({ hotel, onViewDetails, onBookRoom 
                           ${room.pricePerNight}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
-                          per night
+                          {t('hotelSearch.detail.perNight')}
                         </Typography>
                       </Box>
                     </Box>
@@ -154,14 +156,14 @@ const HotelCard: React.FC<HotelCardProps> = ({ hotel, onViewDetails, onBookRoom 
             
             {hotel.availableRooms.length > 3 && (
               <Typography variant="caption" color="primary.main">
-                +{hotel.availableRooms.length - 3} more rooms available
+                {t('hotelSearch.hotelCard.moreRoomsAvailable', { count: hotel.availableRooms.length - 3 })}
               </Typography>
             )}
           </Box>
         ) : (
           <Box sx={{ textAlign: 'center', py: 2 }}>
             <Typography variant="body2" color="text.secondary">
-              No rooms available for selected dates
+              {t('hotelSearch.hotelCard.noRoomsAvailableForDates')}
             </Typography>
           </Box>
         )}
@@ -172,7 +174,7 @@ const HotelCard: React.FC<HotelCardProps> = ({ hotel, onViewDetails, onBookRoom 
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <MoneyIcon sx={{ fontSize: 18, mr: 0.5, color: 'success.main' }} />
               <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
-                ${hotel.minPrice} - ${hotel.maxPrice} per night
+                ${hotel.minPrice} - ${hotel.maxPrice} {t('hotelSearch.detail.perNight')}
               </Typography>
             </Box>
           </Box>
@@ -188,7 +190,7 @@ const HotelCard: React.FC<HotelCardProps> = ({ hotel, onViewDetails, onBookRoom 
               onClick={() => onViewDetails(hotel.id)}
               size="small"
             >
-              View Details
+              {t('hotelBanner.viewDetails')}
             </Button>
           </Grid>
           <Grid item xs={6}>
@@ -199,7 +201,7 @@ const HotelCard: React.FC<HotelCardProps> = ({ hotel, onViewDetails, onBookRoom 
               onClick={() => hasAvailableRooms && onBookRoom(hotel.id, hotel.availableRooms[0].id, false)}
               size="small"
             >
-              {hasAvailableRooms ? 'Book Now' : 'Unavailable'}
+              {hasAvailableRooms ? t('hotelSearch.roomCard.bookNow') : t('hotelSearch.hotelCard.unavailable')}
             </Button>
           </Grid>
         </Grid>

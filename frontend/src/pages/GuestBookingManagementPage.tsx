@@ -36,7 +36,8 @@ import { useTranslation } from 'react-i18next';
 import { bookingApiService } from '../services/bookingApi';
 import { buildApiUrl, API_CONFIG } from '../config/apiConfig';
 import { ROOM_TYPES, getRoomTypeLabel } from '../constants/roomTypes';
-import { formatDateForInput, formatDateForAPI, formatDateForDisplay } from '../utils/dateUtils';
+import PremiumDatePicker from '../components/common/PremiumDatePicker';
+import { formatDateForInput, formatDateForAPI, formatDateForDisplay, parseDateInputValue, formatDateObjectForInput } from '../utils/dateUtils';
 import { formatCurrencyWithDecimals } from '../utils/currencyUtils';
 
 // Get today's date in YYYY-MM-DD format (avoiding timezone issues)
@@ -89,6 +90,7 @@ const GuestBookingManagementPage: React.FC = () => {
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [authLoading, setAuthLoading] = useState(false);
   const [authMessage, setAuthMessage] = useState('');
+  const [authMessageSeverity, setAuthMessageSeverity] = useState<'success' | 'error'>('success');
   const [pendingAction, setPendingAction] = useState<'modify' | 'cancel' | null>(null);
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
@@ -274,17 +276,17 @@ const GuestBookingManagementPage: React.FC = () => {
       
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(errorText || 'Failed to load booking');
+        throw new Error(errorText || t('booking.guestManagementPage.messages.failedToLoadBooking'));
       }
 
       const bookingData = await response.json();
       setBooking(bookingData);
     } catch (err) {
-      setErrorMessage(err instanceof Error ? err.message : 'Failed to load booking');
+      setErrorMessage(err instanceof Error ? err.message : t('booking.guestManagementPage.messages.failedToLoadBooking'));
     } finally {
       setLoading(false);
     }
-  }, [token]);
+  }, [token, t]);
 
   // Fetch booking data from URL parameters (confirmation number and email)
   const fetchBookingFromParams = useCallback(async () => {
@@ -308,17 +310,17 @@ const GuestBookingManagementPage: React.FC = () => {
       );
       
       if (!response.ok) {
-        throw new Error('Booking not found or access denied');
+        throw new Error(t('booking.guestManagementPage.messages.bookingNotFoundOrAccessDenied'));
       }
       
       const bookingData = await response.json();
       setBooking(bookingData);
     } catch (err) {
-      setErrorMessage(err instanceof Error ? err.message : 'Failed to load booking');
+      setErrorMessage(err instanceof Error ? err.message : t('booking.guestManagementPage.messages.failedToLoadBooking'));
     } finally {
       setLoading(false);
     }
-  }, [confirmationNumber, email]);
+  }, [confirmationNumber, email, t]);
 
   // Fetch fresh booking data using confirmation number and email from initial booking
   const fetchFreshDataFromInitialBooking = useCallback(async () => {
@@ -342,18 +344,18 @@ const GuestBookingManagementPage: React.FC = () => {
       );
       
       if (!response.ok) {
-        throw new Error('Booking not found or access denied');
+        throw new Error(t('booking.guestManagementPage.messages.bookingNotFoundOrAccessDenied'));
       }
       
       const bookingData = await response.json();
       setBooking(bookingData);
     } catch (err) {
-      setErrorMessage('Could not refresh booking data. Showing cached information.');
+      setErrorMessage(t('booking.guestManagementPage.messages.showingCachedInformation'));
       setLoading(false);
     } finally {
       setLoading(false);
     }
-  }, [initialBooking]);
+  }, [initialBooking, t]);
 
   // Load booking data on component mount - ALWAYS fetch fresh data from server
   useEffect(() => {
@@ -368,10 +370,10 @@ const GuestBookingManagementPage: React.FC = () => {
       fetchFreshDataFromInitialBooking();
     } else {
       // No token, no URL params, and no initial data - redirect to find booking
-      setErrorMessage('No booking information available. Please search for your booking first.');
+      setErrorMessage(t('booking.guestManagementPage.messages.noBookingInformation'));
       setLoading(false);
     }
-  }, [token, confirmationNumber, email, initialBooking, fetchBookingFromToken, fetchBookingFromParams, fetchFreshDataFromInitialBooking]);
+  }, [token, confirmationNumber, email, initialBooking, fetchBookingFromToken, fetchBookingFromParams, fetchFreshDataFromInitialBooking, t]);
 
   // Update modification form when booking data changes
   useEffect(() => {
@@ -480,7 +482,7 @@ const GuestBookingManagementPage: React.FC = () => {
                   variant="contained"
                   onClick={() => navigate('/guest-auth')}
                 >
-                  Find My Booking
+                  {t('publicHotelRegistration.alreadyHaveBooking.button')}
                 </Button>
               </Box>
             </Box>
@@ -525,6 +527,36 @@ const GuestBookingManagementPage: React.FC = () => {
     }
   };
 
+  const getPaymentStatusLabel = (status?: string): string => {
+    if (!status) return t('booking.paymentStatus.pending');
+
+    const normalized = status.toLowerCase().replace(/[_\s]/g, '');
+    const translated = t(`booking.guestManagementPage.paymentStatuses.${normalized}`);
+    return translated === `booking.guestManagementPage.paymentStatuses.${normalized}` ? status : translated;
+  };
+
+  const getBookingStatusLabel = (status: string): string => {
+    const normalized = status.toLowerCase().replace(/[_\s]/g, '');
+    const translated = t(`booking.guestManagementPage.statuses.${normalized}`);
+    return translated === `booking.guestManagementPage.statuses.${normalized}` ? status : translated;
+  };
+
+  const getRoomTypeTranslation = (roomType: string): string => {
+    const translated = t(`hotelSearch.roomTypes.${roomType.toLowerCase()}`);
+    return translated === `hotelSearch.roomTypes.${roomType.toLowerCase()}` ? getRoomTypeLabel(roomType) : translated;
+  };
+
+  const formatNightCount = (count: number): string => {
+    const unit = count === 1 ? t('booking.guestManagementPage.nightSingle') : t('booking.guestManagementPage.nightPlural');
+    return `${count} ${unit}`;
+  };
+
+  const formatPriceChangeLabel = (difference: number): string => {
+    if (difference > 0) return t('booking.guestManagementPage.additionalCost');
+    if (difference < 0) return t('booking.guestManagementPage.savings');
+    return t('booking.guestManagementPage.noChange');
+  };
+
   const canModifyBooking = () => {
     const checkInDate = new Date(booking.checkInDate);
     const now = new Date();
@@ -545,6 +577,7 @@ const GuestBookingManagementPage: React.FC = () => {
     try {
       setAuthLoading(true);
       setAuthMessage('');
+      setAuthMessageSeverity('success');
       setPendingAction(action);
       
       const response = await fetch(`${API_CONFIG.BASE_URL}/bookings/authenticate`, {
@@ -562,13 +595,22 @@ const GuestBookingManagementPage: React.FC = () => {
       const result = await response.json();
 
       if (result.success) {
-        setAuthMessage(`Authentication email sent! Please check your email and click the link to ${action} your booking.`);
+        setAuthMessageSeverity('success');
+        setAuthMessage(t('booking.guestManagementPage.messages.authenticationEmailSent', {
+          action: action === 'modify' ? t('booking.manage.modifyBooking') : t('booking.manage.cancelBooking')
+        }));
       } else {
-        setAuthMessage(result.message || `Failed to send authentication email for ${action}. Please try again.`);
+        setAuthMessageSeverity('error');
+        setAuthMessage(result.message || t('booking.guestManagementPage.messages.authenticationEmailFailed', {
+          action: action === 'modify' ? t('booking.manage.modifyBooking') : t('booking.manage.cancelBooking')
+        }));
       }
     } catch (error) {
       // console.error('Error sending authentication email:', error);
-      setAuthMessage(`Failed to send authentication email for ${action}. Please try again.`);
+      setAuthMessageSeverity('error');
+      setAuthMessage(t('booking.guestManagementPage.messages.authenticationEmailFailed', {
+        action: action === 'modify' ? t('booking.manage.modifyBooking') : t('booking.manage.cancelBooking')
+      }));
     } finally {
       setAuthLoading(false);
     }
@@ -612,22 +654,22 @@ const GuestBookingManagementPage: React.FC = () => {
         
         if (!apiResponse.ok) {
           const errorText = await apiResponse.text();
-          throw new Error(errorText || 'Failed to modify booking');
+          throw new Error(errorText || t('booking.guestManagementPage.messages.failedToModifyBooking'));
         }
         
         response = await apiResponse.json();
         
         if (response.success) {
           // Build detailed success message with pricing info
-          let message = response.message || 'Booking modified successfully';
+          let message = response.message || t('booking.guestManagementPage.messages.bookingModifiedSuccessfully');
           if (response.additionalCharges && response.additionalCharges > 0) {
-            message += ` | Additional charges: ETB ${response.additionalCharges.toFixed(2)}`;
+            message += ` | ${t('booking.guestManagementPage.messages.additionalCharges', { amount: response.additionalCharges.toFixed(2) })}`;
           }
           if (response.refundAmount && response.refundAmount > 0) {
-            message += ` | Refund amount: ETB ${response.refundAmount.toFixed(2)}`;
+            message += ` | ${t('booking.guestManagementPage.messages.refundAmount', { amount: response.refundAmount.toFixed(2) })}`;
           }
           if (response.updatedBooking && response.updatedBooking.totalAmount) {
-            message += ` | New total: ETB ${response.updatedBooking.totalAmount.toFixed(2)}`;
+            message += ` | ${t('booking.guestManagementPage.messages.newTotalAmount', { amount: response.updatedBooking.totalAmount.toFixed(2) })}`;
           }
           
           setSuccessMessage(message);
@@ -656,7 +698,7 @@ const GuestBookingManagementPage: React.FC = () => {
             });
           }
         } else {
-          setErrorMessage(response.message || 'Failed to modify booking');
+          setErrorMessage(response.message || t('booking.guestManagementPage.messages.failedToModifyBooking'));
         }
       } else {
         // Modify via booking API (from search)
@@ -664,17 +706,17 @@ const GuestBookingManagementPage: React.FC = () => {
         
         if (response.success) {
           // Build detailed success message with pricing info
-          let message = response.message || 'Booking modified successfully';
+          let message = response.message || t('booking.guestManagementPage.messages.bookingModifiedSuccessfully');
           const responseData = response.data || response;
           
           if (responseData.additionalCharges && responseData.additionalCharges > 0) {
-            message += ` | Additional charges: ETB ${responseData.additionalCharges.toFixed(2)}`;
+            message += ` | ${t('booking.guestManagementPage.messages.additionalCharges', { amount: responseData.additionalCharges.toFixed(2) })}`;
           }
           if (responseData.refundAmount && responseData.refundAmount > 0) {
-            message += ` | Refund amount: ETB ${responseData.refundAmount.toFixed(2)}`;
+            message += ` | ${t('booking.guestManagementPage.messages.refundAmount', { amount: responseData.refundAmount.toFixed(2) })}`;
           }
           if (responseData.updatedBooking && responseData.updatedBooking.totalAmount) {
-            message += ` | New total: ETB ${responseData.updatedBooking.totalAmount.toFixed(2)}`;
+            message += ` | ${t('booking.guestManagementPage.messages.newTotalAmount', { amount: responseData.updatedBooking.totalAmount.toFixed(2) })}`;
           }
           
           setSuccessMessage(message);
@@ -708,11 +750,11 @@ const GuestBookingManagementPage: React.FC = () => {
             });
           }
         } else {
-          setErrorMessage(response.message || 'Failed to modify booking');
+          setErrorMessage(response.message || t('booking.guestManagementPage.messages.failedToModifyBooking'));
         }
       }
     } catch (error) {
-      setErrorMessage('An error occurred while modifying the booking');
+      setErrorMessage(t('booking.guestManagementPage.messages.modifyUnexpectedError'));
     } finally {
       setLoading(false);
     }
@@ -745,7 +787,7 @@ const GuestBookingManagementPage: React.FC = () => {
         );
         
         if (apiResponse.success) {
-          setSuccessMessage(apiResponse.message || 'Booking cancelled successfully');
+          setSuccessMessage(apiResponse.message || t('booking.guestManagementPage.messages.bookingCancelledSuccessfully'));
           setCancelDialogOpen(false);
           
           // Update booking state to reflect cancellation
@@ -758,7 +800,7 @@ const GuestBookingManagementPage: React.FC = () => {
           setCancellationReason('');
           return;
         } else {
-          setErrorMessage(apiResponse.message || 'Failed to cancel booking');
+          setErrorMessage(apiResponse.message || t('booking.guestManagementPage.messages.failedToCancelBooking'));
           return;
         }
       }
@@ -766,7 +808,7 @@ const GuestBookingManagementPage: React.FC = () => {
       // Handle token-based cancellation response
       if (response && !response.ok) {
         const errorText = await response.text();
-        throw new Error(errorText || 'Failed to cancel booking');
+        throw new Error(errorText || t('booking.guestManagementPage.messages.failedToCancelBooking'));
       }
 
       if (response) {
@@ -774,13 +816,13 @@ const GuestBookingManagementPage: React.FC = () => {
         const updatedBooking = await response.json();
         
         setCancelDialogOpen(false);
-        setSuccessMessage('Booking cancelled successfully');
+        setSuccessMessage(t('booking.guestManagementPage.messages.bookingCancelledSuccessfully'));
         
         // Update the local booking state with the cancelled booking data
         setBooking(updatedBooking);
       }
     } catch (error) {
-      setErrorMessage('Failed to cancel booking. Please try again.');
+      setErrorMessage(t('booking.guestManagementPage.messages.cancelTryAgain'));
     } finally {
       setLoading(false);
     }
@@ -844,11 +886,10 @@ const GuestBookingManagementPage: React.FC = () => {
             }}
           >
             <Typography variant="h6" gutterBottom>
-              Booking Cancelled
+              {t('booking.guestManagementPage.cancelledNoticeTitle')}
             </Typography>
             <Typography variant="body2">
-              This booking has been cancelled. If you need to make a new reservation, please visit our booking page.
-              If you have questions about refunds, please contact the hotel directly.
+              {t('booking.guestManagementPage.cancelledNoticeMessage')}
             </Typography>
           </Alert>
         )}
@@ -884,7 +925,7 @@ const GuestBookingManagementPage: React.FC = () => {
                 </Typography>
               </Box>
               <Chip
-                label={booking.status}
+                label={getBookingStatusLabel(booking.status)}
                 color={getStatusColor(booking.status) as any}
                 variant="filled"
               />
@@ -934,7 +975,7 @@ const GuestBookingManagementPage: React.FC = () => {
         {/* Authentication Message */}
         {authMessage && (
           <Alert 
-            severity={authMessage.includes('sent') ? 'success' : 'error'}
+            severity={authMessageSeverity}
             sx={{ mt: 2 }}
           >
             {authMessage}
@@ -952,7 +993,7 @@ const GuestBookingManagementPage: React.FC = () => {
                     : addAlpha(COLORS.INFO, 0.04),
                 }}
               >
-                Modifications must be made at least 24 hours before check-in.
+                {t('booking.guestManagementPage.modifyDeadline')}
               </Alert>
             )}
           </Box>
@@ -995,10 +1036,10 @@ const GuestBookingManagementPage: React.FC = () => {
                   <strong>{t('booking.manage.checkOut')}:</strong> {formatDate(booking.checkOutDate)}
                 </Typography>
                 <Typography variant="body1" sx={{ mb: 1 }}>
-                  <strong>{t('booking.manage.duration')}:</strong> {nights} night{nights !== 1 ? 's' : ''}
+                  <strong>{t('booking.manage.duration')}:</strong> {formatNightCount(nights)}
                 </Typography>
                 <Typography variant="body1" sx={{ mb: 1 }}>
-                  <strong>{t('booking.manage.rate')}:</strong> {formatCurrencyWithDecimals(booking.pricePerNight || 0)}/night
+                  <strong>{t('booking.manage.rate')}:</strong> {formatCurrencyWithDecimals(booking.pricePerNight || 0)} {t('bookingConfirmation.room.perNight')}
                 </Typography>
               </Box>
             </Grid>
@@ -1030,14 +1071,14 @@ const GuestBookingManagementPage: React.FC = () => {
                     <ReceiptIcon sx={{ color: 'white', fontSize: 28 }} />
                   </Box>
                   <Typography variant="h5" sx={{ fontWeight: 'bold', color: COLORS.SUCCESS }}>
-                    Price Summary
+                    {t('booking.guestManagementPage.priceSummary')}
                   </Typography>
                 </Box>
                 {(() => {
                   if (!booking.pricePerNight) {
                     return (
                       <Typography color="error" sx={{ py: 2, textAlign: 'center' }}>
-                        Price information is unavailable for this booking. Please contact support.
+                        {t('booking.guestManagementPage.priceUnavailable')}
                       </Typography>
                     );
                   }
@@ -1052,7 +1093,7 @@ const GuestBookingManagementPage: React.FC = () => {
                       <Grid container spacing={3} sx={{ mb: 3 }}>
                         <Grid item xs={12} sm={6}>
                           <Typography variant="body2" sx={{ mb: 0.5, color: COLORS.TEXT_SECONDARY, fontWeight: 500 }}>
-                            Price per Night
+                            {t('booking.guestManagementPage.pricePerNight')}
                           </Typography>
                           <Typography variant="h5" sx={{ fontWeight: 'bold', color: COLORS.SUCCESS }}>
                             {formatCurrencyWithDecimals(booking.pricePerNight || 0)}
@@ -1060,7 +1101,7 @@ const GuestBookingManagementPage: React.FC = () => {
                         </Grid>
                         <Grid item xs={12} sm={6}>
                           <Typography variant="body2" sx={{ mb: 0.5, color: COLORS.TEXT_SECONDARY, fontWeight: 500 }}>
-                            Number of Nights
+                            {t('booking.guestManagementPage.numberOfNights')}
                           </Typography>
                           <Typography variant="h5" sx={{ fontWeight: 'bold', color: COLORS.SUCCESS }}>
                             {nights}
@@ -1074,7 +1115,7 @@ const GuestBookingManagementPage: React.FC = () => {
                       <Box sx={{ mb: 2.5 }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1.5 }}>
                           <Typography variant="body1" sx={{ color: COLORS.TEXT_SECONDARY }}>
-                            Subtotal
+                            {t('bookingConfirmation.pricing.subtotal')}
                           </Typography>
                           <Typography variant="body1" sx={{ fontWeight: 'bold', color: COLORS.TEXT_PRIMARY }}>
                             {formatCurrencyWithDecimals(subtotal)}
@@ -1090,7 +1131,7 @@ const GuestBookingManagementPage: React.FC = () => {
                         </Box>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1.5 }}>
                           <Typography variant="body1" sx={{ color: COLORS.TEXT_SECONDARY }}>
-                            Service Tax ({((hotelServiceTaxRate || 0) * 100).toFixed(2)}%)
+                            {t('bookingConfirmation.pricing.serviceTax')} ({((hotelServiceTaxRate || 0) * 100).toFixed(2)}%)
                           </Typography>
                           <Typography variant="body1" sx={{ fontWeight: 'bold', color: COLORS.TEXT_PRIMARY }}>
                             {formatCurrencyWithDecimals(serviceTaxAmount)}
@@ -1101,7 +1142,7 @@ const GuestBookingManagementPage: React.FC = () => {
                       <Box sx={{ borderTop: `2px solid ${addAlpha(COLORS.SUCCESS, 0.3)}`, pt: 2.5 }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <Typography variant="h6" sx={{ fontWeight: 'bold', color: COLORS.SUCCESS }}>
-                            Total Amount
+                            {t('booking.manage.totalAmount')}
                           </Typography>
                           <Typography variant="h5" sx={{ fontWeight: 'bold', color: COLORS.SUCCESS }}>
                             {formatCurrencyWithDecimals(total)}
@@ -1138,7 +1179,7 @@ const GuestBookingManagementPage: React.FC = () => {
                   {booking.hotelAddress}
                 </Typography>
                 <Typography variant="body1" sx={{ mb: 1 }}>
-                  <strong>{t('booking.manage.roomType')}:</strong> {getRoomTypeLabel(booking.roomType)}
+                  <strong>{t('booking.manage.roomType')}:</strong> {getRoomTypeTranslation(booking.roomType)}
                 </Typography>
                 <Typography variant="body1" sx={{ color: 'success.main', fontWeight: 'bold' }}>
                   <strong>{t('booking.manage.roomAssignment')}:</strong> {t('booking.manage.roomAssignmentNote')}
@@ -1210,7 +1251,7 @@ const GuestBookingManagementPage: React.FC = () => {
                           fontWeight: 'bold'
                         }}
                       >
-                        {booking.paymentStatus || 'PENDING'}
+                        {getPaymentStatusLabel(booking.paymentStatus || 'PENDING')}
                       </Typography>
                     </Typography>
                   </Grid>
@@ -1265,21 +1306,21 @@ const GuestBookingManagementPage: React.FC = () => {
                 borderRadius: 2,
               }}>
                 <Typography variant="h5" sx={{ color: COLORS.PRIMARY, fontWeight: 'bold', mb: 3, textAlign: 'center' }}>
-                  🔄 PRICING UPDATED
+                  {`🔄 ${t('booking.guestManagementPage.pricingUpdated')}`}
                 </Typography>
                 
                 {/* What Changed Section */}
                 <Box sx={{ mb: 3, p: 2, backgroundColor: addAlpha(COLORS.WHITE, 0.5), borderRadius: 1 }}>
                   <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 2, color: (theme) => theme.palette.primary.dark }}>
-                    📋 What Changed:
+                    {`📋 ${t('booking.guestManagementPage.whatChanged')}`}
                   </Typography>
                   
                   {datesChanged && (
                     <Box sx={{ mb: 1.5 }}>
                       <Typography variant="body2" sx={{ color: COLORS.TEXT_SECONDARY }}>
-                        <strong>Dates:</strong> {formatDate(booking.checkInDate)} → {formatDate(modificationData.newCheckInDate)} (Check-in)<br/>
+                        <strong>{t('booking.guestManagementPage.dates')}:</strong> {formatDate(booking.checkInDate)} → {formatDate(modificationData.newCheckInDate)} ({t('booking.manage.checkIn')})<br/>
                         <Typography component="span" sx={{ ml: 7.5 }}>
-                          {formatDate(booking.checkOutDate)} → {formatDate(modificationData.newCheckOutDate)} (Check-out)
+                          {formatDate(booking.checkOutDate)} → {formatDate(modificationData.newCheckOutDate)} ({t('booking.manage.checkOut')})
                         </Typography>
                       </Typography>
                     </Box>
@@ -1288,13 +1329,13 @@ const GuestBookingManagementPage: React.FC = () => {
                   {nightsChanged && (
                     <Box sx={{ mb: 1.5 }}>
                       <Typography variant="body2" sx={{ color: COLORS.TEXT_SECONDARY }}>
-                        <strong>Duration:</strong> {originalNights} night{originalNights !== 1 ? 's' : ''} → {newNights} night{newNights !== 1 ? 's' : ''} 
+                        <strong>{t('booking.manage.duration')}:</strong> {formatNightCount(originalNights)} → {formatNightCount(newNights)} 
                         <Typography component="span" sx={{ 
                           ml: 1, 
                           color: newNights > originalNights ? COLORS.ERROR : COLORS.SUCCESS,
                           fontWeight: 'bold'
                         }}>
-                          ({newNights > originalNights ? '+' : ''}{newNights - originalNights} night{Math.abs(newNights - originalNights) !== 1 ? 's' : ''})
+                          ({newNights > originalNights ? '+' : ''}{Math.abs(newNights - originalNights)} {Math.abs(newNights - originalNights) === 1 ? t('booking.guestManagementPage.nightSingle') : t('booking.guestManagementPage.nightPlural')})
                         </Typography>
                       </Typography>
                     </Box>
@@ -1303,10 +1344,10 @@ const GuestBookingManagementPage: React.FC = () => {
                   {roomTypeChanged && (
                     <Box sx={{ mb: 1.5 }}>
                       <Typography variant="body2" sx={{ color: COLORS.TEXT_SECONDARY }}>
-                        <strong>Room Type:</strong> {getRoomTypeLabel(originalRoomType)} → {getRoomTypeLabel(newRoomType)}
+                        <strong>{t('booking.manage.roomType')}:</strong> {getRoomTypeTranslation(originalRoomType)} → {getRoomTypeTranslation(newRoomType)}
                       </Typography>
                       <Alert severity="warning" sx={{ mt: 1 }}>
-                        Room type change detected. Final pricing will be calculated by the server based on the new room type's rate.
+                        {t('booking.guestManagementPage.roomTypeChangeDetected')}
                       </Alert>
                     </Box>
                   )}
@@ -1315,7 +1356,7 @@ const GuestBookingManagementPage: React.FC = () => {
                 {/* Price Calculation Breakdown */}
                 <Box sx={{ mb: 3, p: 2, backgroundColor: addAlpha(COLORS.WHITE, 0.5), borderRadius: 1 }}>
                   <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 2, color: (theme) => theme.palette.primary.dark }}>
-                    🧮 Price Calculation Breakdown:
+                    {`🧮 ${t('booking.guestManagementPage.priceCalculationBreakdown')}`}
                   </Typography>
                   
                   <Grid container spacing={2}>
@@ -1323,31 +1364,31 @@ const GuestBookingManagementPage: React.FC = () => {
                     <Grid item xs={12} sm={6}>
                       <Box sx={{ p: 2, backgroundColor: addAlpha(COLORS.ERROR, 0.05), borderRadius: 1, border: `1px solid ${addAlpha(COLORS.ERROR, 0.3)}` }}>
                         <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1, color: COLORS.ERROR }}>
-                          Original Booking:
+                          {t('booking.guestManagementPage.originalBooking')}:
                         </Typography>
                         <Typography variant="body2" sx={{ color: COLORS.TEXT_SECONDARY, mb: 0.5 }}>
-                          Room Type: {getRoomTypeLabel(originalRoomType)}
+                          {t('booking.manage.roomType')}: {getRoomTypeTranslation(originalRoomType)}
                         </Typography>
                         <Typography variant="body2" sx={{ color: COLORS.TEXT_SECONDARY, mb: 0.5 }}>
-                          Rate/Night: {formatCurrencyWithDecimals(originalPricePerNight)}
+                          {t('booking.guestManagementPage.ratePerNight')}: {formatCurrencyWithDecimals(originalPricePerNight)}
                         </Typography>
                         <Typography variant="body2" sx={{ color: COLORS.TEXT_SECONDARY, mb: 0.5 }}>
-                          Nights: {originalNights}
+                          {t('booking.guestManagementPage.numberOfNights')}: {originalNights}
                         </Typography>
                         <Typography variant="body2" sx={{ color: COLORS.TEXT_SECONDARY, mb: 0.5 }}>
-                          Subtotal: {formatCurrencyWithDecimals(modPricing.originalSubtotal)}
+                          {t('bookingConfirmation.pricing.subtotal')}: {formatCurrencyWithDecimals(modPricing.originalSubtotal)}
                         </Typography>
                         <Typography variant="body2" sx={{ color: COLORS.TEXT_SECONDARY, mb: 0.5 }}>
                           VAT ({modPricing.vatRate > 0 ? (modPricing.vatRate * 100).toFixed(2) : '0.00'}%): {formatCurrencyWithDecimals(modPricing.originalVatAmount)}
                         </Typography>
                         <Typography variant="body2" sx={{ color: COLORS.TEXT_SECONDARY, mb: 0.5 }}>
-                          Service Tax ({modPricing.serviceTaxRate > 0 ? (modPricing.serviceTaxRate * 100).toFixed(2) : '0.00'}%): {formatCurrencyWithDecimals(modPricing.originalServiceTaxAmount)}
+                          {t('bookingConfirmation.pricing.serviceTax')} ({modPricing.serviceTaxRate > 0 ? (modPricing.serviceTaxRate * 100).toFixed(2) : '0.00'}%): {formatCurrencyWithDecimals(modPricing.originalServiceTaxAmount)}
                         </Typography>
                         <Typography variant="body2" sx={{ fontWeight: 'bold', color: COLORS.ERROR, mt: 1, pt: 1, borderTop: `1px solid ${addAlpha(COLORS.ERROR, 0.3)}` }}>
-                          Total: {formatCurrencyWithDecimals(modPricing.originalSubtotal + modPricing.originalVatAmount + modPricing.originalServiceTaxAmount)}
+                          {t('booking.guestManagementPage.total')}: {formatCurrencyWithDecimals(modPricing.originalSubtotal + modPricing.originalVatAmount + modPricing.originalServiceTaxAmount)}
                         </Typography>
                         <Typography variant="caption" sx={{ color: COLORS.TEXT_DISABLED, mt: 0.5, display: 'block' }}>
-                          Calculation: {formatCurrencyWithDecimals(originalPricePerNight)} × {originalNights} = {formatCurrencyWithDecimals(modPricing.originalSubtotal)}{modPricing.vatRate > 0 ? ` + ${formatCurrencyWithDecimals(modPricing.originalVatAmount)} (VAT)` : ''}{modPricing.serviceTaxRate > 0 ? ` + ${formatCurrencyWithDecimals(modPricing.originalServiceTaxAmount)} (Service Tax)` : ''} = {formatCurrencyWithDecimals(modPricing.originalSubtotal + modPricing.originalVatAmount + modPricing.originalServiceTaxAmount)}
+                          {t('booking.guestManagementPage.calculation')}: {formatCurrencyWithDecimals(originalPricePerNight)} × {originalNights} = {formatCurrencyWithDecimals(modPricing.originalSubtotal)}{modPricing.vatRate > 0 ? ` + ${formatCurrencyWithDecimals(modPricing.originalVatAmount)} (${t('bookingConfirmation.pricing.vat')})` : ''}{modPricing.serviceTaxRate > 0 ? ` + ${formatCurrencyWithDecimals(modPricing.originalServiceTaxAmount)} (${t('bookingConfirmation.pricing.serviceTax')})` : ''} = {formatCurrencyWithDecimals(modPricing.originalSubtotal + modPricing.originalVatAmount + modPricing.originalServiceTaxAmount)}
                         </Typography>
                       </Box>
                     </Grid>
@@ -1356,13 +1397,13 @@ const GuestBookingManagementPage: React.FC = () => {
                     <Grid item xs={12} sm={6}>
                       <Box sx={{ p: 2, backgroundColor: addAlpha(COLORS.SUCCESS, 0.05), borderRadius: 1, border: `1px solid ${addAlpha(COLORS.SUCCESS, 0.3)}` }}>
                         <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1, color: COLORS.SUCCESS }}>
-                          Modified Booking:
+                          {t('booking.guestManagementPage.modifiedBooking')}:
                         </Typography>
                         <Typography variant="body2" sx={{ color: COLORS.TEXT_SECONDARY, mb: 0.5 }}>
-                          Room Type: {getRoomTypeLabel(newRoomType)}
+                          {t('booking.manage.roomType')}: {getRoomTypeTranslation(newRoomType)}
                         </Typography>
                         <Typography variant="body2" sx={{ color: COLORS.TEXT_SECONDARY, mb: 0.5 }}>
-                          Rate/Night: {formatCurrencyWithDecimals(newPricePerNight)}
+                          {t('booking.guestManagementPage.ratePerNight')}: {formatCurrencyWithDecimals(newPricePerNight)}
                           {roomTypeChanged && (
                             <Typography component="span" sx={{ color: COLORS.WARNING, fontSize: '0.75rem', ml: 0.5 }}>
                               *
@@ -1370,19 +1411,19 @@ const GuestBookingManagementPage: React.FC = () => {
                           )}
                         </Typography>
                         <Typography variant="body2" sx={{ color: COLORS.TEXT_SECONDARY, mb: 0.5 }}>
-                          Nights: {newNights}
+                          {t('booking.guestManagementPage.numberOfNights')}: {newNights}
                         </Typography>
                         <Typography variant="body2" sx={{ color: COLORS.TEXT_SECONDARY, mb: 0.5 }}>
-                          Subtotal: {formatCurrencyWithDecimals(modPricing.subtotal)}
+                          {t('bookingConfirmation.pricing.subtotal')}: {formatCurrencyWithDecimals(modPricing.subtotal)}
                         </Typography>
                         <Typography variant="body2" sx={{ color: COLORS.TEXT_SECONDARY, mb: 0.5 }}>
                           VAT ({modPricing.vatRate > 0 ? (modPricing.vatRate * 100).toFixed(2) : '0.00'}%): {formatCurrencyWithDecimals(modPricing.vatAmount)}
                         </Typography>
                         <Typography variant="body2" sx={{ color: COLORS.TEXT_SECONDARY, mb: 0.5 }}>
-                          Service Tax ({modPricing.serviceTaxRate > 0 ? (modPricing.serviceTaxRate * 100).toFixed(2) : '0.00'}%): {formatCurrencyWithDecimals(modPricing.serviceTaxAmount)}
+                          {t('bookingConfirmation.pricing.serviceTax')} ({modPricing.serviceTaxRate > 0 ? (modPricing.serviceTaxRate * 100).toFixed(2) : '0.00'}%): {formatCurrencyWithDecimals(modPricing.serviceTaxAmount)}
                         </Typography>
                         <Typography variant="body2" sx={{ fontWeight: 'bold', color: COLORS.SUCCESS, mt: 1, pt: 1, borderTop: `1px solid ${addAlpha(COLORS.SUCCESS, 0.3)}` }}>
-                          Total: {formatCurrencyWithDecimals(currentCalculatedTotal)}
+                          {t('booking.guestManagementPage.total')}: {formatCurrencyWithDecimals(currentCalculatedTotal)}
                           {roomTypeChanged && (
                             <Typography component="span" sx={{ color: COLORS.WARNING, fontSize: '0.75rem', ml: 0.5 }}>
                               *
@@ -1390,11 +1431,11 @@ const GuestBookingManagementPage: React.FC = () => {
                           )}
                         </Typography>
                         <Typography variant="caption" sx={{ color: COLORS.TEXT_DISABLED, mt: 0.5, display: 'block' }}>
-                          Calculation: {formatCurrencyWithDecimals(newPricePerNight)} × {newNights} = {formatCurrencyWithDecimals(modPricing.subtotal)}{modPricing.vatRate > 0 ? ` + ${formatCurrencyWithDecimals(modPricing.vatAmount)} (VAT)` : ''}{modPricing.serviceTaxRate > 0 ? ` + ${formatCurrencyWithDecimals(modPricing.serviceTaxAmount)} (Service Tax)` : ''} = {formatCurrencyWithDecimals(currentCalculatedTotal)}
+                          {t('booking.guestManagementPage.calculation')}: {formatCurrencyWithDecimals(newPricePerNight)} × {newNights} = {formatCurrencyWithDecimals(modPricing.subtotal)}{modPricing.vatRate > 0 ? ` + ${formatCurrencyWithDecimals(modPricing.vatAmount)} (${t('bookingConfirmation.pricing.vat')})` : ''}{modPricing.serviceTaxRate > 0 ? ` + ${formatCurrencyWithDecimals(modPricing.serviceTaxAmount)} (${t('bookingConfirmation.pricing.serviceTax')})` : ''} = {formatCurrencyWithDecimals(currentCalculatedTotal)}
                         </Typography>
                         {roomTypeChanged && (
                           <Typography variant="caption" sx={{ color: COLORS.WARNING, mt: 0.5, display: 'block' }}>
-                            * Estimated - server will calculate actual price
+                            {t('booking.guestManagementPage.estimatedServerPrice')}
                           </Typography>
                         )}
                       </Box>
@@ -1406,7 +1447,7 @@ const GuestBookingManagementPage: React.FC = () => {
                 <Grid container spacing={2} sx={{ mb: 2 }}>
                   <Grid item xs={4}>
                     <Box sx={{ textAlign: 'center' }}>
-                      <Typography variant="h6" sx={{ color: COLORS.TEXT_SECONDARY, mb: 1 }}>Original Total</Typography>
+                      <Typography variant="h6" sx={{ color: COLORS.TEXT_SECONDARY, mb: 1 }}>{t('booking.guestManagementPage.originalTotal')}</Typography>
                       <Typography variant="h4" sx={{ color: COLORS.ERROR, fontWeight: 'bold' }}>
                         {formatCurrencyWithDecimals(modPricing.originalSubtotal + modPricing.originalVatAmount + modPricing.originalServiceTaxAmount)}
                       </Typography>
@@ -1414,7 +1455,7 @@ const GuestBookingManagementPage: React.FC = () => {
                   </Grid>
                   <Grid item xs={4}>
                     <Box sx={{ textAlign: 'center' }}>
-                      <Typography variant="h6" sx={{ color: COLORS.TEXT_SECONDARY, mb: 1 }}>New Total</Typography>
+                      <Typography variant="h6" sx={{ color: COLORS.TEXT_SECONDARY, mb: 1 }}>{t('booking.guestManagementPage.newTotal')}</Typography>
                       <Typography variant="h4" sx={{ color: COLORS.SUCCESS, fontWeight: 'bold' }}>
                         {formatCurrencyWithDecimals(currentCalculatedTotal)}
                         {roomTypeChanged && (
@@ -1428,7 +1469,7 @@ const GuestBookingManagementPage: React.FC = () => {
                   <Grid item xs={4}>
                     <Box sx={{ textAlign: 'center' }}>
                       <Typography variant="h6" sx={{ color: COLORS.TEXT_SECONDARY, mb: 1 }}>
-                        {priceDifference > 0 ? 'Additional Cost' : priceDifference < 0 ? 'Savings' : 'No Change'}
+                        {formatPriceChangeLabel(priceDifference)}
                       </Typography>
                       <Typography 
                         variant="h4" 
@@ -1444,7 +1485,7 @@ const GuestBookingManagementPage: React.FC = () => {
                 </Grid>
                 
                 <Typography variant="body2" sx={{ color: COLORS.PRIMARY, fontStyle: 'italic', textAlign: 'center', mt: 2 }}>
-                  💡 This pricing update will persist until you close this dialog
+                  {`💡 ${t('booking.guestManagementPage.pricingPersistHint')}`}
                 </Typography>
               </Box>
             );
@@ -1473,25 +1514,23 @@ const GuestBookingManagementPage: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12} sm={6}>
-              <TextField
+              <PremiumDatePicker
                 label={t('booking.manage.checkInDate')}
-                type="date"
                 fullWidth
-                value={modificationData.newCheckInDate}
-                onChange={(e) => setModificationData({ ...modificationData, newCheckInDate: e.target.value })}
-                InputLabelProps={{ shrink: true }}
-                inputProps={{ min: getTodayForInput() }}
+                value={parseDateInputValue(modificationData.newCheckInDate)}
+                onChange={(value) => setModificationData({ ...modificationData, newCheckInDate: formatDateObjectForInput(value) })}
+                minDate={parseDateInputValue(getTodayForInput())}
+                slotProps={{ textField: { InputLabelProps: { shrink: true } } }}
               />
             </Grid>
             <Grid item xs={12} sm={6}>
-              <TextField
+              <PremiumDatePicker
                 label={t('booking.manage.checkOutDate')}
-                type="date"
                 fullWidth
-                value={modificationData.newCheckOutDate}
-                onChange={(e) => setModificationData({ ...modificationData, newCheckOutDate: e.target.value })}
-                InputLabelProps={{ shrink: true }}
-                inputProps={{ min: modificationData.newCheckInDate }}
+                value={parseDateInputValue(modificationData.newCheckOutDate)}
+                onChange={(value) => setModificationData({ ...modificationData, newCheckOutDate: formatDateObjectForInput(value) })}
+                minDate={parseDateInputValue(modificationData.newCheckInDate)}
+                slotProps={{ textField: { InputLabelProps: { shrink: true } } }}
               />
             </Grid>
             <Grid item xs={12} sm={6}>
@@ -1520,12 +1559,12 @@ const GuestBookingManagementPage: React.FC = () => {
                     await fetchRoomPriceForType(newRoomType);
                   }
                 }}
-                helperText={fetchingRoomPrice ? 'Fetching price for selected room type...' : ''}
+                helperText={fetchingRoomPrice ? t('booking.guestManagementPage.fetchingRoomPrice') : ''}
               >
                 <MenuItem value="">{t('booking.manage.selectRoomType')}</MenuItem>
                 {ROOM_TYPES.map((roomType) => (
                   <MenuItem key={roomType.value} value={roomType.value}>
-                    {getRoomTypeLabel(roomType.value)}
+                    {getRoomTypeTranslation(roomType.value)}
                   </MenuItem>
                 ))}
               </TextField>
@@ -1597,19 +1636,19 @@ const GuestBookingManagementPage: React.FC = () => {
               variant="contained"
               onClick={() => navigate('/hotels/search')}
             >
-              Make New Booking
+              {t('booking.guestManagementPage.makeNewBooking')}
             </Button>
             <Button
               variant="outlined"
               onClick={() => navigate('/find-booking')}
             >
-              Find Another Booking
+              {t('booking.guestManagementPage.findAnotherBooking')}
             </Button>
             <Button
               variant="outlined"
               onClick={() => navigate('/')}
             >
-              Return Home
+              {t('bookingConfirmation.actions.returnHome')}
             </Button>
           </>
         ) : (
@@ -1618,13 +1657,13 @@ const GuestBookingManagementPage: React.FC = () => {
               variant="outlined"
               onClick={() => navigate('/find-booking')}
             >
-              Find Another Booking
+              {t('booking.guestManagementPage.findAnotherBooking')}
             </Button>
             <Button
               variant="outlined"
               onClick={() => navigate('/')}
             >
-              Return Home
+              {t('bookingConfirmation.actions.returnHome')}
             </Button>
           </>
         )}

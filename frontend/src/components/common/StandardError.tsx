@@ -9,6 +9,7 @@ import {
 } from '@mui/icons-material';
 import { designSystem } from '../../theme/designSystem';
 import { COLORS, addAlpha } from '../../theme/themeColors';
+import { getErrorMessage, getErrorSeverity, getErrorTitle } from '../../utils/errorHandler';
 
 interface StandardErrorProps {
   /**
@@ -20,6 +21,11 @@ interface StandardErrorProps {
    * Error message to display
    */
   message?: string;
+
+  /**
+   * Unknown/raw error value that should be translated into a business-friendly message.
+   */
+  errorValue?: unknown;
   
   /**
    * Error title (optional)
@@ -55,6 +61,11 @@ interface StandardErrorProps {
    * Whether to show as full-width alert or inline
    */
   fullWidth?: boolean;
+
+  /**
+   * Fallback message used when errorValue cannot be translated.
+   */
+  fallbackMessage?: string;
 }
 
 /**
@@ -90,6 +101,7 @@ interface StandardErrorProps {
 const StandardError: React.FC<StandardErrorProps> = ({
   error,
   message = 'An unexpected error occurred. Please try again.',
+  errorValue,
   title,
   severity = 'error',
   showRetry = false,
@@ -97,9 +109,14 @@ const StandardError: React.FC<StandardErrorProps> = ({
   retryText = 'Try Again',
   children,
   fullWidth = true,
+  fallbackMessage,
 }) => {
+  const resolvedMessage = errorValue ? getErrorMessage(errorValue, fallbackMessage || message) : message;
+  const resolvedSeverity = errorValue ? getErrorSeverity(errorValue) : severity;
+  const resolvedTitle = title || (errorValue ? getErrorTitle(errorValue) : undefined);
+
   const getIcon = () => {
-    switch (severity) {
+    switch (resolvedSeverity) {
       case 'warning':
         return <WarningIcon />;
       case 'info':
@@ -119,7 +136,7 @@ const StandardError: React.FC<StandardErrorProps> = ({
       }}
     >
       <Alert
-        severity={severity}
+        severity={resolvedSeverity}
         icon={getIcon()}
         sx={{
           borderRadius: `${designSystem.spacing.xs}px`, // 4px consistent border radius
@@ -149,9 +166,9 @@ const StandardError: React.FC<StandardErrorProps> = ({
           ) : undefined
         }
       >
-        {title && <AlertTitle sx={{ fontWeight: 600 }}>{title}</AlertTitle>}
+        {resolvedTitle && <AlertTitle sx={{ fontWeight: 600 }}>{resolvedTitle}</AlertTitle>}
         <Typography variant="body2" sx={{ lineHeight: 1.5 }}>
-          {message}
+          {resolvedMessage}
         </Typography>
       </Alert>
     </Box>

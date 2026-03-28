@@ -3,8 +3,6 @@ import {
   Alert,
   Box,
   Button,
-  Card,
-  CardContent,
   Chip,
   CircularProgress,
   Divider,
@@ -24,7 +22,12 @@ import {
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { API_CONFIG, PAYMENT_CONFIG } from '../../config/apiConfig';
-import { COLORS, addAlpha } from '../../theme/themeColors';
+import StandardError from '../../components/common/StandardError';
+import StandardLoading from '../../components/common/StandardLoading';
+import { PageHeader, SurfaceCard } from '../../components/ui';
+import { createErrorFromResponse } from '../../utils/errorHandler';
+import { formatDateTimeForDisplay } from '../../utils/dateUtils';
+import { infoPanelSx, pageShellSx, sectionTitleRowSx } from '../../theme/sxHelpers';
 
 type GatewayMode = 'mock' | 'real';
 
@@ -41,7 +44,7 @@ const SystemSettingsPage: React.FC = () => {
   const [selectedMode, setSelectedMode] = useState<GatewayMode>('mock');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<unknown | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
   const hasPendingChanges = useMemo(() => {
@@ -66,7 +69,7 @@ const SystemSettingsPage: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to load payment gateway settings');
+        throw await createErrorFromResponse(response, 'Unable to load payment gateway settings right now.');
       }
 
       const data: PaymentGatewaySettingsResponse = await response.json();
@@ -74,7 +77,7 @@ const SystemSettingsPage: React.FC = () => {
       setSettings({ ...data, gatewayMode: normalizedMode });
       setSelectedMode(normalizedMode);
     } catch (fetchError) {
-      setError(fetchError instanceof Error ? fetchError.message : 'Failed to load payment gateway settings');
+      setError(fetchError);
     } finally {
       setLoading(false);
     }
@@ -104,7 +107,7 @@ const SystemSettingsPage: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to save payment gateway settings');
+        throw await createErrorFromResponse(response, 'Unable to save payment gateway settings right now.');
       }
 
       const data: PaymentGatewaySettingsResponse = await response.json();
@@ -112,7 +115,7 @@ const SystemSettingsPage: React.FC = () => {
       setSelectedMode(data.gatewayMode);
       setSuccess(`Payment gateway mode updated to ${data.gatewayMode.toUpperCase()}.`);
     } catch (saveError) {
-      setError(saveError instanceof Error ? saveError.message : 'Failed to save payment gateway settings');
+      setError(saveError);
     } finally {
       setSaving(false);
     }
@@ -123,41 +126,36 @@ const SystemSettingsPage: React.FC = () => {
       return 'Not yet updated';
     }
 
-    const parsed = new Date(value);
-    if (Number.isNaN(parsed.getTime())) {
-      return value;
-    }
-
-    return parsed.toLocaleString();
+    return formatDateTimeForDisplay(value) || value;
   };
 
   return (
-    <Box sx={{ p: { xs: 2, md: 4 }, backgroundColor: '#f8fafc', minHeight: '100vh' }}>
+    <Box sx={pageShellSx}>
       <Stack spacing={3}>
-        <Box>
-          <Typography variant="h4" sx={{ fontWeight: 700, color: COLORS.PRIMARY, mb: 1 }}>
-            System Settings
-          </Typography>
-          <Typography variant="body1" sx={{ color: 'text.secondary', maxWidth: 760 }}>
-            Manage environment-wide booking gateway behavior. This controls whether public booking checkout uses the mock payment processor or the live Ethiopian wallet integrations.
-          </Typography>
-        </Box>
+        <PageHeader
+          eyebrow="System configuration"
+          title="System Settings"
+          description="Manage environment-wide booking gateway behavior. This controls whether public booking checkout uses the mock payment processor or the live Ethiopian wallet integrations."
+        />
 
-        {error && <Alert severity="error">{error}</Alert>}
-        {success && <Alert severity="success">{success}</Alert>}
+        <StandardError
+          error={Boolean(error)}
+          errorValue={error}
+          fallbackMessage="Unable to load payment gateway settings right now."
+          showRetry
+          onRetry={fetchSettings}
+        />
 
-        <Card elevation={0} sx={{ border: `1px solid ${addAlpha(COLORS.PRIMARY, 0.12)}` }}>
-          <CardContent sx={{ p: { xs: 2.5, md: 3.5 } }}>
-            {loading ? (
-              <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
-                <CircularProgress />
-              </Box>
-            ) : (
+        <StandardError error={Boolean(success)} message={success || undefined} severity="success" />
+
+        <SurfaceCard variantStyle="default">
+          <StandardLoading loading={loading} message="Loading payment gateway settings..." minHeight={240}>
+            {!loading && (
               <Stack spacing={3}>
                 <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} justifyContent="space-between">
                   <Box>
-                    <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
-                      <PaymentsIcon sx={{ color: COLORS.PRIMARY }} />
+                    <Stack direction="row" spacing={1} alignItems="center" sx={sectionTitleRowSx}>
+                      <PaymentsIcon color="primary" />
                       <Typography variant="h6" sx={{ fontWeight: 700 }}>
                         Booking Payment Gateway
                       </Typography>
@@ -216,7 +214,7 @@ const SystemSettingsPage: React.FC = () => {
                     : 'Switching to MOCK keeps public checkout safe and prevents live Ethiopian wallet initiation from the backend.'}
                 </Alert>
 
-                <Box sx={{ p: 2, borderRadius: 2, backgroundColor: addAlpha(COLORS.PRIMARY, 0.04) }}>
+                <Box sx={infoPanelSx}>
                   <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>
                     Effective source
                   </Typography>
@@ -251,8 +249,8 @@ const SystemSettingsPage: React.FC = () => {
                 </Stack>
               </Stack>
             )}
-          </CardContent>
-        </Card>
+          </StandardLoading>
+        </SurfaceCard>
       </Stack>
     </Box>
   );

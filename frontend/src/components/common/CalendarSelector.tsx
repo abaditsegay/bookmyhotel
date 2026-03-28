@@ -11,7 +11,7 @@ import {
   CalendarMonth as CalendarIcon,
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
-import { useCalendarStore, CalendarType } from '../../contexts/store';
+import { useCalendarStore, CalendarType, getCalendarType } from '../../contexts/store';
 
 interface CalendarSelectorProps {
   variant?: 'icon' | 'text';
@@ -22,8 +22,9 @@ const CalendarSelector: React.FC<CalendarSelectorProps> = ({
   variant = 'icon',
   size = 'medium'
 }) => {
-  const { t } = useTranslation();
+  const { i18n } = useTranslation();
   const { calendarType, setCalendarType } = useCalendarStore();
+  const effectiveCalendarType = getCalendarType(i18n.language, calendarType);
   
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -37,6 +38,12 @@ const CalendarSelector: React.FC<CalendarSelectorProps> = ({
   };
 
   const handleCalendarChange = (type: CalendarType) => {
+    if (!i18n.language.startsWith('am') && type === 'ethiopian') {
+      setCalendarType('gregorian');
+      handleClose();
+      return;
+    }
+
     setCalendarType(type);
     handleClose();
   };
@@ -46,7 +53,7 @@ const CalendarSelector: React.FC<CalendarSelectorProps> = ({
     { type: 'gregorian', name: 'Gregorian Calendar', shortName: 'GC' },
   ];
 
-  const currentCalendar = calendars.find(c => c.type === calendarType) || calendars[0];
+  const currentCalendar = calendars.find(c => c.type === effectiveCalendarType) || calendars[0];
 
   if (variant === 'text') {
     return (
@@ -93,7 +100,7 @@ const CalendarSelector: React.FC<CalendarSelectorProps> = ({
             <MenuItem
               key={calendar.type}
               onClick={() => handleCalendarChange(calendar.type)}
-              selected={calendarType === calendar.type}
+              selected={effectiveCalendarType === calendar.type}
               sx={{ minWidth: 140 }}
             >
               <Typography variant="body2">
@@ -171,7 +178,7 @@ const CalendarSelector: React.FC<CalendarSelectorProps> = ({
           <MenuItem
             key={calendar.type}
             onClick={() => handleCalendarChange(calendar.type)}
-            selected={calendarType === calendar.type}
+            selected={effectiveCalendarType === calendar.type}
             sx={{ minWidth: 140 }}
           >
             <Typography variant="body2">

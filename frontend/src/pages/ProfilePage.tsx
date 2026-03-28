@@ -26,6 +26,7 @@ import ThemeToggle from '../components/common/ThemeToggle';
 import StandardCard from '../components/common/StandardCard';
 import StandardButton from '../components/common/StandardButton';
 import PremiumTextField from '../components/common/PremiumTextField';
+import { formatDateForDisplay, formatDateTimeForDisplay } from '../utils/dateUtils';
 import { COLORS, addAlpha } from '../theme/themeColors';
 
 const ProfilePage: React.FC = () => {
@@ -423,7 +424,7 @@ const ProfilePage: React.FC = () => {
                 Member Since
               </Typography>
               <Typography variant="body1">
-                {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
+                {user?.createdAt ? formatDateForDisplay(user.createdAt) : 'N/A'}
               </Typography>
             </Grid>
             <Grid item xs={12} sm={6}>
@@ -431,7 +432,7 @@ const ProfilePage: React.FC = () => {
                 Last Login
               </Typography>
               <Typography variant="body1">
-                {user?.lastLogin ? new Date(user.lastLogin).toLocaleString() : 'N/A'}
+                {user?.lastLogin ? formatDateTimeForDisplay(user.lastLogin) : 'N/A'}
               </Typography>
             </Grid>
             <Grid item xs={12} sm={6}>

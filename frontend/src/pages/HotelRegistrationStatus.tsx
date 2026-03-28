@@ -22,6 +22,7 @@ import {
   Cancel,
   Visibility,
 } from '@mui/icons-material';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import PremiumDisplayField from '../components/common/PremiumDisplayField';
 
@@ -37,6 +38,7 @@ interface RegistrationStatus {
 }
 
 const HotelRegistrationStatus: React.FC = () => {
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
@@ -49,7 +51,7 @@ const HotelRegistrationStatus: React.FC = () => {
     setRegistration(null);
     
     if (!email.trim()) {
-      setError('Please enter your email address');
+      setError(t('hotelRegistrationStatus.errors.enterEmail'));
       return;
     }
 
@@ -59,12 +61,12 @@ const HotelRegistrationStatus: React.FC = () => {
       const response = await fetch(`/api/public/hotel-registration/status?email=${encodeURIComponent(email.trim())}`);
       
       if (response.status === 404) {
-        setError('No hotel registration found for this email address');
+        setError(t('hotelRegistrationStatus.errors.notFound'));
         return;
       }
       
       if (!response.ok) {
-        const errorMessage = response.headers.get('Error-Message') || 'Failed to check registration status';
+        const errorMessage = response.headers.get('Error-Message') || t('hotelRegistrationStatus.errors.checkFailed');
         throw new Error(errorMessage);
       }
 
@@ -73,7 +75,7 @@ const HotelRegistrationStatus: React.FC = () => {
       
     } catch (err: any) {
       // console.error('Error checking registration status:', err);
-      setError(err.message || 'Failed to check registration status. Please try again.');
+      setError(err.message || t('hotelRegistrationStatus.errors.checkFailedRetry'));
     } finally {
       setLoading(false);
     }
@@ -109,7 +111,8 @@ const HotelRegistrationStatus: React.FC = () => {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    const locale = i18n.language === 'am' ? 'am-ET' : i18n.language === 'om' ? 'om-ET' : 'en-US';
+    return new Date(dateString).toLocaleDateString(locale, {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -127,10 +130,10 @@ const HotelRegistrationStatus: React.FC = () => {
         </IconButton>
         <Box>
           <Typography variant="h4" component="h1" gutterBottom>
-            Check Registration Status
+            {t('hotelRegistrationStatus.title')}
           </Typography>
           <Typography variant="body1" color="text.secondary">
-            Enter your email to check the status of your hotel registration
+            {t('hotelRegistrationStatus.subtitle')}
           </Typography>
         </Box>
       </Box>
@@ -141,11 +144,11 @@ const HotelRegistrationStatus: React.FC = () => {
           <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
             <TextField
               fullWidth
-              label="Email Address"
+              label={t('booking.find.fields.email')}
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter the email used for registration"
+              placeholder={t('hotelRegistrationStatus.emailPlaceholder')}
               required
             />
             <Button
@@ -155,7 +158,7 @@ const HotelRegistrationStatus: React.FC = () => {
               disabled={loading}
               sx={{ minWidth: 120 }}
             >
-              {loading ? 'Searching...' : 'Search'}
+              {loading ? t('booking.find.buttons.searching') : t('hotelRegistrationStatus.actions.search')}
             </Button>
           </Box>
 
@@ -178,13 +181,13 @@ const HotelRegistrationStatus: React.FC = () => {
                   {registration.hotelName}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Registration ID: {registration.id}
+                  {t('hotelRegistrationStatus.registrationId', { id: registration.id })}
                 </Typography>
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 {getStatusIcon(registration.status)}
                 <Chip 
-                  label={registration.status.replace('_', ' ').toUpperCase()} 
+                  label={t(`hotelRegistrationStatus.statuses.${registration.status.toLowerCase()}`, registration.status.replace('_', ' ').toUpperCase())} 
                   color={getStatusColor(registration.status)}
                   variant="outlined"
                 />
@@ -194,7 +197,7 @@ const HotelRegistrationStatus: React.FC = () => {
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6}>
                 <PremiumDisplayField
-                  label="Contact Person"
+                  label={t('hotelRegistrationStatus.fields.contactPerson')}
                   value={registration.contactPerson}
                   isEditMode={false}
                 />
@@ -202,7 +205,7 @@ const HotelRegistrationStatus: React.FC = () => {
 
               <Grid item xs={12} sm={6}>
                 <PremiumDisplayField
-                  label="Contact Email"
+                  label={t('hotelRegistrationStatus.fields.contactEmail')}
                   value={registration.contactEmail}
                   isEditMode={false}
                 />
@@ -210,7 +213,7 @@ const HotelRegistrationStatus: React.FC = () => {
 
               <Grid item xs={12} sm={6}>
                 <PremiumDisplayField
-                  label="Submitted"
+                  label={t('hotelRegistrationStatus.fields.submitted')}
                   value={formatDate(registration.submittedAt)}
                   isEditMode={false}
                 />
@@ -219,7 +222,7 @@ const HotelRegistrationStatus: React.FC = () => {
               {registration.reviewedAt && (
                 <Grid item xs={12} sm={6}>
                   <PremiumDisplayField
-                    label="Reviewed"
+                    label={t('hotelRegistrationStatus.fields.reviewed')}
                     value={formatDate(registration.reviewedAt)}
                     isEditMode={false}
                   />
@@ -229,7 +232,7 @@ const HotelRegistrationStatus: React.FC = () => {
               {registration.reviewComments && (
                 <Grid item xs={12}>
                   <PremiumDisplayField
-                    label="Comments"
+                    label={t('hotelRegistrationStatus.fields.comments')}
                     value={registration.reviewComments}
                     isEditMode={false}
                     multiline
@@ -243,9 +246,8 @@ const HotelRegistrationStatus: React.FC = () => {
             {registration.status.toLowerCase() === 'pending' && (
               <Alert severity="info" sx={{ mt: 3 }}>
                 <Typography variant="body2">
-                  <strong>Your registration is under review.</strong><br />
-                  Our team typically reviews applications within 2-3 business days. 
-                  You'll receive an email notification once the review is complete.
+                  <strong>{t('hotelRegistrationStatus.messages.pendingTitle')}</strong><br />
+                  {t('hotelRegistrationStatus.messages.pendingBody')}
                 </Typography>
               </Alert>
             )}
@@ -253,9 +255,8 @@ const HotelRegistrationStatus: React.FC = () => {
             {registration.status.toLowerCase() === 'approved' && (
               <Alert severity="success" sx={{ mt: 3 }}>
                 <Typography variant="body2">
-                  <strong>Congratulations! Your hotel registration has been approved.</strong><br />
-                  You should have received login credentials via email. If you haven't received them, 
-                  please contact our support team.
+                  <strong>{t('hotelRegistrationStatus.messages.approvedTitle')}</strong><br />
+                  {t('hotelRegistrationStatus.messages.approvedBody')}
                 </Typography>
               </Alert>
             )}
@@ -263,9 +264,8 @@ const HotelRegistrationStatus: React.FC = () => {
             {registration.status.toLowerCase() === 'rejected' && (
               <Alert severity="error" sx={{ mt: 3 }}>
                 <Typography variant="body2">
-                  <strong>Your registration was not approved.</strong><br />
-                  Please review the comments above and feel free to submit a new registration 
-                  with the requested changes.
+                  <strong>{t('hotelRegistrationStatus.messages.rejectedTitle')}</strong><br />
+                  {t('hotelRegistrationStatus.messages.rejectedBody')}
                 </Typography>
               </Alert>
             )}
@@ -277,19 +277,19 @@ const HotelRegistrationStatus: React.FC = () => {
       <Card sx={{ mt: 3, bgcolor: 'grey.50' }}>
         <CardContent>
           <Typography variant="h6" gutterBottom>
-            Need Help?
+            {t('hotelRegistrationStatus.help.title')}
           </Typography>
           <Typography variant="body2" sx={{ mb: 2 }}>
-            If you can't find your registration or have questions about the process:
+            {t('hotelRegistrationStatus.help.description')}
           </Typography>
           <Typography variant="body2" sx={{ mb: 1 }}>
-            • Make sure you're using the exact email address from your registration
+            • {t('hotelRegistrationStatus.help.tip1')}
           </Typography>
           <Typography variant="body2" sx={{ mb: 1 }}>
-            • Check your spam/junk folder for notification emails
+            • {t('hotelRegistrationStatus.help.tip2')}
           </Typography>
           <Typography variant="body2">
-            • Contact our support team at support@shegersolutions.com
+            • {t('hotelRegistrationStatus.help.tip3')}
           </Typography>
         </CardContent>
       </Card>

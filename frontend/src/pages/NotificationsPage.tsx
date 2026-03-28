@@ -42,6 +42,8 @@ import {
 // import { useAuth } from '../contexts/AuthContext';
 import { useNotificationsWithEvents, BookingNotification } from '../hooks/useNotifications';
 import { useBookingNotifications } from '../hooks/useBookingNotifications';
+import { formatDateForDisplay, formatDateTimeForDisplay } from '../utils/dateUtils';
+import { formatEthiopianTime } from '../utils/ethiopianCalendar';
 
 const NotificationsPage: React.FC = () => {
   // const { user } = useAuth(); // Keep for future role-based features
@@ -111,7 +113,7 @@ const NotificationsPage: React.FC = () => {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString();
+    return formatDateTimeForDisplay(dateString);
   };
 
   const handlePageChange = (event: unknown, newPage: number) => {
@@ -244,12 +246,12 @@ const NotificationsPage: React.FC = () => {
               </TableCell>
               <TableCell>
                 <Typography variant="body2" fontWeight={notification.status === 'UNREAD' ? 'bold' : 'normal'}>
-                  {new Date(notification.checkInDate).toLocaleDateString()}
+                  {formatDateForDisplay(notification.checkInDate)}
                 </Typography>
               </TableCell>
               <TableCell>
                 <Typography variant="body2" fontWeight={notification.status === 'UNREAD' ? 'bold' : 'normal'}>
-                  {new Date(notification.checkOutDate).toLocaleDateString()}
+                  {formatDateForDisplay(notification.checkOutDate)}
                 </Typography>
               </TableCell>
               <TableCell sx={{ maxWidth: 200 }}>
@@ -333,10 +335,10 @@ const NotificationsPage: React.FC = () => {
               </TableCell>
               <TableCell>
                 <Typography variant="body2" fontWeight={notification.status === 'UNREAD' ? 'bold' : 'normal'}>
-                  {new Date(notification.createdAt).toLocaleDateString()}
+                  {formatDateForDisplay(notification.createdAt)}
                 </Typography>
                 <Typography variant="caption" color="textSecondary" fontWeight={notification.status === 'UNREAD' ? 'bold' : 'normal'}>
-                  {new Date(notification.createdAt).toLocaleTimeString()}
+                  {formatEthiopianTime(notification.createdAt)}
                 </Typography>
               </TableCell>
             </TableRow>
@@ -526,10 +528,10 @@ const NotificationsPage: React.FC = () => {
                     <Typography><strong>Room:</strong> {selectedNotification.roomNumber}</Typography>
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    <Typography><strong>Check-in:</strong> {new Date(selectedNotification.checkInDate).toLocaleDateString()}</Typography>
+                    <Typography><strong>Check-in:</strong> {formatDateForDisplay(selectedNotification.checkInDate)}</Typography>
                   </Grid>
                   <Grid item xs={12} sm={6}>
-                    <Typography><strong>Check-out:</strong> {new Date(selectedNotification.checkOutDate).toLocaleDateString()}</Typography>
+                    <Typography><strong>Check-out:</strong> {formatDateForDisplay(selectedNotification.checkOutDate)}</Typography>
                   </Grid>
                 </Grid>
               </Box>
@@ -693,10 +695,10 @@ const NotificationsPage: React.FC = () => {
                                   <Box display="flex" alignItems="center" gap={1}>
                                     <Box>
                                       <Typography variant="body2">
-                                        {new Date(notification.createdAt).toLocaleDateString()}
+                                        {formatDateForDisplay(notification.createdAt)}
                                       </Typography>
                                       <Typography variant="caption" color="textSecondary">
-                                        {new Date(notification.createdAt).toLocaleTimeString()}
+                                        {formatEthiopianTime(notification.createdAt)}
                                       </Typography>
                                     </Box>
                                     {index === 0 && (

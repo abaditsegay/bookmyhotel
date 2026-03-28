@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Card,
   CardContent,
@@ -53,6 +54,7 @@ const getHotelImage = (hotel: HotelSearchResult): string => {
 };
 
 const HotelListCard: React.FC<HotelListCardProps> = ({ hotel, onViewHotel }) => {
+  const { t } = useTranslation();
   // Responsive breakpoints
   const theme = useTheme();
   const isLargeScreen = useMediaQuery(theme.breakpoints.up('lg')); // 1200px+
@@ -64,20 +66,26 @@ const HotelListCard: React.FC<HotelListCardProps> = ({ hotel, onViewHotel }) => 
   // Mock rating (in a real app, this would come from the backend)
   const hotelRating = 4.2 + (hotel.id % 10) / 10; // Generates ratings between 4.2-5.1
 
+  const formatRoomTypeLabel = (roomType: string): string => {
+    const key = roomType.toLowerCase();
+    const translated = t(`hotelSearch.roomTypes.${key}`);
+    return translated === `hotelSearch.roomTypes.${key}` ? roomType : translated;
+  };
+
   // Get most popular room types for preview
   const getPopularRoomTypes = () => {
     if (useRoomTypes && hotel.roomTypeAvailability) {
       return hotel.roomTypeAvailability
         .filter(rt => rt.availableCount > 0)
         .slice(0, 3)
-        .map(rt => rt.roomType)
+        .map(rt => formatRoomTypeLabel(rt.roomType))
         .join(', ');
     } else if (hotel.availableRooms) {
       const roomTypes = hotel.availableRooms.map(room => room.roomType);
       const uniqueTypes = Array.from(new Set(roomTypes));
-      return uniqueTypes.slice(0, 3).join(', ');
+      return uniqueTypes.slice(0, 3).map((roomType) => formatRoomTypeLabel(roomType)).join(', ');
     }
-    return 'No rooms available';
+    return t('hotelSearch.listCard.noRoomsAvailable');
   };
 
   return (
@@ -88,16 +96,14 @@ const HotelListCard: React.FC<HotelListCardProps> = ({ hotel, onViewHotel }) => 
         flexDirection: isLargeScreen ? 'row' : 'column',
         height: isLargeScreen ? '280px' : 'auto',
         mb: { xs: 2, md: 2 },
-        borderRadius: 2,
+        borderRadius: 1.5,
         overflow: 'hidden',
-        border: `2px solid ${COLORS.SECONDARY}`,
         boxShadow: `0 4px 12px ${addAlpha(COLORS.SECONDARY, 0.15)}`,
         backgroundColor: COLORS.WHITE,
-        transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, border-color 0.2s ease-in-out',
+        transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
         '&:hover': {
           transform: isMobile ? 'none' : 'translateY(-4px)',
           boxShadow: `0 8px 20px ${addAlpha(COLORS.SECONDARY, 0.25)}`,
-          borderColor: COLORS.SECONDARY_HOVER,
         },
         '&:active': isMobile ? {
           transform: 'scale(0.98)',
@@ -182,10 +188,10 @@ const HotelListCard: React.FC<HotelListCardProps> = ({ hotel, onViewHotel }) => 
                       lineHeight: 1.2,
                     }}
                   >
-                    From {formatCurrencyWithDecimals(hotel.minPrice || 0)}
+                    {t('hotelSearch.detail.fromPrice')} {formatCurrencyWithDecimals(hotel.minPrice || 0)}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    per night
+                    {t('hotelSearch.detail.perNight')}
                   </Typography>
                 </Box>
               </Box>
@@ -198,10 +204,10 @@ const HotelListCard: React.FC<HotelListCardProps> = ({ hotel, onViewHotel }) => 
               </Typography>
               <Box sx={{ textAlign: 'right' }}>
                 <Typography variant="h6" color={COLORS.PRIMARY} sx={{ fontWeight: 'bold' }}>
-                  From {formatCurrencyWithDecimals(hotel.minPrice || 0)}
+                  {t('hotelSearch.detail.fromPrice')} {formatCurrencyWithDecimals(hotel.minPrice || 0)}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
-                  per night
+                  {t('hotelSearch.detail.perNight')}
                 </Typography>
               </Box>
             </Box>
@@ -281,7 +287,7 @@ const HotelListCard: React.FC<HotelListCardProps> = ({ hotel, onViewHotel }) => 
               lineHeight: 1.3,
             }}
           >
-            <strong>Available:</strong> {getPopularRoomTypes()}
+            <strong>{t('hotelSearch.listCard.availableLabel')}</strong> {getPopularRoomTypes()}
           </Typography>
           <Typography 
             variant="body2" 
@@ -291,7 +297,7 @@ const HotelListCard: React.FC<HotelListCardProps> = ({ hotel, onViewHotel }) => 
               lineHeight: 1.3,
             }}
           >
-            <strong>Price range:</strong> {formatCurrency(hotel.minPrice || 0)} - {formatCurrency(hotel.maxPrice || 0)} per night
+            <strong>{t('hotelSearch.listCard.priceRangeLabel')}</strong> {formatCurrency(hotel.minPrice || 0)} - {formatCurrency(hotel.maxPrice || 0)} {t('hotelSearch.detail.perNight')}
           </Typography>
         </Box>
 
@@ -363,7 +369,7 @@ const HotelListCard: React.FC<HotelListCardProps> = ({ hotel, onViewHotel }) => 
                 },
               }}
             >
-              View Hotel Details
+              {t('hotelSearch.listCard.viewHotelDetails')}
             </Button>
           </Box>
         ) : (
@@ -411,7 +417,7 @@ const HotelListCard: React.FC<HotelListCardProps> = ({ hotel, onViewHotel }) => 
                 },
               }}
             >
-              View Hotel
+              {t('hotelSearch.listCard.viewHotel')}
             </Button>
           </Box>
         )}

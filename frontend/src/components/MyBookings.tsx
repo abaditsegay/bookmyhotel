@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Box,
   Container,
@@ -23,7 +24,6 @@ import {
   Select,
   Tooltip,
   useTheme,
-  useMediaQuery,
 } from '@mui/material';
 import { ROOM_TYPES, getRoomTypeLabel } from '../constants/roomTypes';
 import {
@@ -48,8 +48,10 @@ import { BookingService } from '../services/BookingService';
 import { BookingResponse, BookingModificationRequest } from '../types/booking';
 import { StandardLoading, StandardError } from './common';
 import { COLORS, addAlpha, getGradient } from '../theme/themeColors';
+import { formatDateForDisplay, formatDateTimeForDisplay } from '../utils/dateUtils';
 
 const MyBookings: React.FC = () => {
+  const { t } = useTranslation();
   const { user, token } = useAuth();
   const theme = useTheme();
   const [bookings, setBookings] = useState<BookingResponse[]>([]);
@@ -69,7 +71,7 @@ const MyBookings: React.FC = () => {
 
   const fetchBookings = useCallback(async () => {
     if (!user || !token) {
-      setError('Please log in to view your bookings');
+      setError(t('booking.myBookingsPage.errors.loginRequired'));
       setLoading(false);
       return;
     }
@@ -80,12 +82,12 @@ const MyBookings: React.FC = () => {
       const userBookings = await BookingService.getUserBookings(Number(user.id), token);
       setBookings(userBookings);
     } catch (err) {
-      setError('Failed to load your bookings. Please try again later.');
+      setError(t('booking.myBookingsPage.errors.loadFailed'));
       // console.error('Error fetching bookings:', err);
     } finally {
       setLoading(false);
     }
-  }, [user, token]);
+  }, [user, token, t]);
 
   useEffect(() => {
     fetchBookings();
@@ -101,7 +103,7 @@ const MyBookings: React.FC = () => {
       setCancelDialogOpen(false);
       setSelectedBooking(null);
     } catch (err) {
-      setError('Failed to cancel booking. Please try again or contact support.');
+      setError(t('booking.myBookingsPage.errors.cancelFailed'));
       // console.error('Error cancelling booking:', err);
     } finally {
       setCancelling(false);
@@ -131,7 +133,7 @@ const MyBookings: React.FC = () => {
       }
       
       if (Object.keys(modificationRequest).length === 0) {
-        setError('Please make at least one change to modify the booking.');
+        setError(t('booking.myBookingsPage.errors.noChanges'));
         return;
       }
       
@@ -143,14 +145,43 @@ const MyBookings: React.FC = () => {
         setSelectedBooking(null);
         resetModifyForm();
       } else {
-        setError(response.message || 'Failed to modify booking.');
+        setError(response.message || t('booking.myBookingsPage.errors.modifyFailed'));
       }
     } catch (err: any) {
-      setError(err.message || 'Failed to modify booking. Please try again or contact support.');
+      setError(err.message || t('booking.myBookingsPage.errors.modifyFailedWithSupport'));
       // console.error('Error modifying booking:', err);
     } finally {
       setModifying(false);
     }
+  };
+
+  const getStatusLabel = (status: string) => {
+    const normalized = status.toLowerCase().replace(/_/g, '');
+    const translated = t(`booking.myBookingsPage.statuses.${normalized}`);
+    return translated === `booking.myBookingsPage.statuses.${normalized}`
+      ? BookingService.getStatusDisplayLabel(status)
+      : translated;
+  };
+
+  const getPaymentStatusLabel = (paymentStatus: string) => {
+    const normalized = paymentStatus.toLowerCase().replace(/_/g, '');
+    const translated = t(`booking.myBookingsPage.paymentStatuses.${normalized}`);
+    return translated === `booking.myBookingsPage.paymentStatuses.${normalized}`
+      ? paymentStatus.replace(/_/g, ' ')
+      : translated;
+  };
+
+  const getRoomTypeTranslation = (roomType: string) => {
+    const translated = t(`hotelSearch.roomTypes.${roomType.toLowerCase()}`);
+    return translated === `hotelSearch.roomTypes.${roomType.toLowerCase()}`
+      ? getRoomTypeLabel(roomType)
+      : translated;
+  };
+
+  const formatStayDuration = (booking: BookingResponse) => {
+    const nights = BookingService.calculateStayDuration(booking.checkInDate, booking.checkOutDate);
+    const unit = nights === 1 ? t('booking.myBookingsPage.nightSingle') : t('booking.myBookingsPage.nightPlural');
+    return `${nights} ${unit}`;
   };
 
   const openModifyDialog = (booking: BookingResponse) => {
@@ -227,7 +258,7 @@ const MyBookings: React.FC = () => {
         <StandardLoading 
           loading={true}
           overlay={true} 
-          message="Loading your bookings..." 
+          message={t('booking.myBookingsPage.loading')} 
           size="large"
         />
       </Container>
@@ -243,7 +274,7 @@ const MyBookings: React.FC = () => {
           severity="error"
           showRetry={true}
           onRetry={fetchBookings}
-          retryText="Try Again"
+          retryText={t('common.tryAgain')}
         />
       </Container>
     );
@@ -271,10 +302,10 @@ const MyBookings: React.FC = () => {
               mb: 1,
             }}
           >
-            📋 My Bookings
+            {`📋 ${t('dashboard.customer.myBookings')}`}
           </Typography>
           <Typography variant="h6" color="text.secondary">
-            Manage and track your hotel reservations
+            {t('booking.myBookingsPage.subtitle')}
           </Typography>
         </Box>
 
@@ -299,10 +330,10 @@ const MyBookings: React.FC = () => {
               mb: 2,
             }}
           >
-            No Bookings Yet
+            {t('emptyStates.noBookings.title')}
           </Typography>
           <Typography variant="body1" color="text.secondary" sx={{ mb: 4, fontSize: '1.1rem' }}>
-            You haven't made any bookings yet. Start exploring our hotels and make your first reservation!
+            {t('emptyStates.noBookings.message')}
           </Typography>
           <Button 
             variant="contained" 
@@ -321,7 +352,7 @@ const MyBookings: React.FC = () => {
               },
             }}
           >
-            🏨 Browse Hotels
+            {`🏨 ${t('booking.myBookingsPage.browseHotels')}`}
           </Button>
         </Card>
       ) : (
@@ -367,7 +398,7 @@ const MyBookings: React.FC = () => {
                       <Box display="flex" alignItems="center" gap={1} mb={1}>
                         {getStatusIcon(booking.status)}
                         <Chip 
-                          label={BookingService.getStatusDisplayLabel(booking.status)}
+                          label={getStatusLabel(booking.status)}
                           color={BookingService.getStatusColor(booking.status)}
                           size="medium"
                           sx={{
@@ -379,7 +410,7 @@ const MyBookings: React.FC = () => {
                         />
                       </Box>
                       <Chip 
-                        label={booking.paymentStatus}
+                        label={getPaymentStatusLabel(booking.paymentStatus)}
                         color={BookingService.getPaymentStatusColor(booking.paymentStatus)}
                         size="medium"
                         variant="outlined"
@@ -413,18 +444,18 @@ const MyBookings: React.FC = () => {
                             gap: 1,
                           }}
                         >
-                          📋 Booking Details
+                          {`📋 ${t('booking.manage.bookingDetails')}`}
                         </Typography>
                         <Box display="flex" alignItems="center" gap={1} mb={1}>
                           <Receipt fontSize="small" />
                           <Typography variant="body2">
-                            Confirmation: <strong>{booking.confirmationNumber}</strong>
+                            {t('booking.manage.confirmationLabel')}: <strong>{booking.confirmationNumber}</strong>
                           </Typography>
                         </Box>
                         <Box display="flex" alignItems="center" gap={1} mb={1}>
                           <Hotel fontSize="small" />
                           <Typography variant="body2">
-                            Room {booking.roomNumber} - {getRoomTypeLabel(booking.roomType)}
+                            {t('booking.find.searchPage.labels.roomNumber', { roomNumber: booking.roomNumber })} - {getRoomTypeTranslation(booking.roomType)}
                           </Typography>
                         </Box>
                         <Box display="flex" alignItems="center" gap={1}>
@@ -439,25 +470,23 @@ const MyBookings: React.FC = () => {
                     <Grid item xs={12} md={6}>
                       <Box mb={2}>
                         <Typography variant="subtitle2" color="primary" gutterBottom>
-                          Stay Information
+                          {t('booking.details.stayInformation')}
                         </Typography>
                         <Box display="flex" alignItems="center" gap={1} mb={1}>
                           <CalendarToday fontSize="small" />
                           <Typography variant="body2">
-                            Check-in: <strong>{BookingService.formatDate(booking.checkInDate)}</strong>
+                            {t('booking.manage.checkIn')}: <strong>{formatDateForDisplay(booking.checkInDate)}</strong>
                           </Typography>
                         </Box>
                         <Box display="flex" alignItems="center" gap={1} mb={1}>
                           <CalendarToday fontSize="small" />
                           <Typography variant="body2">
-                            Check-out: <strong>{BookingService.formatDate(booking.checkOutDate)}</strong>
+                            {t('booking.manage.checkOut')}: <strong>{formatDateForDisplay(booking.checkOutDate)}</strong>
                           </Typography>
                         </Box>
                         <Box display="flex" alignItems="center" gap={1}>
                           <Typography variant="body2">
-                            Duration: <strong>
-                              {BookingService.calculateStayDuration(booking.checkInDate, booking.checkOutDate)} nights
-                            </strong>
+                            {t('booking.manage.duration')}: <strong>{formatStayDuration(booking)}</strong>
                           </Typography>
                         </Box>
                       </Box>
@@ -469,20 +498,20 @@ const MyBookings: React.FC = () => {
                   <Box display="flex" justifyContent="space-between" alignItems="center">
                     <Box>
                       <Typography variant="body2" color="text.secondary">
-                        Booked on: {BookingService.formatDateTime(booking.createdAt)}
+                        {t('booking.find.searchPage.labels.bookedOn')} {formatDateTimeForDisplay(booking.createdAt)}
                       </Typography>
                       {booking.specialRequests && (
                         <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                          Special requests: {booking.specialRequests}
+                          {t('booking.myBookingsPage.specialRequests')}: {booking.specialRequests}
                         </Typography>
                       )}
                     </Box>
                     <Box textAlign="right">
                       <Typography variant="body2" color="text.secondary">
-                        {BookingService.formatCurrency(booking.pricePerNight)} / night
+                        {BookingService.formatCurrency(booking.pricePerNight)} / {t('booking.myBookingsPage.nightSingle')}
                       </Typography>
                       <Typography variant="h6" color="primary">
-                        Total: {BookingService.formatCurrency(booking.totalAmount)}
+                        {t('booking.manage.totalAmount')}: {BookingService.formatCurrency(booking.totalAmount)}
                       </Typography>
                     </Box>
                   </Box>
@@ -517,7 +546,7 @@ const MyBookings: React.FC = () => {
                       },
                     }}
                   >
-                    💬 Contact Support
+                    {`💬 ${t('booking.myBookingsPage.contactSupport')}`}
                   </Button>
                   {canModifyBooking(booking) ? (
                     <Button 
@@ -539,11 +568,11 @@ const MyBookings: React.FC = () => {
                         },
                       }}
                     >
-                      ✏️ Modify Booking
+                      {`✏️ ${t('booking.manage.modifyBooking')}`}
                     </Button>
                   ) : (
                     booking.status !== 'CANCELLED' && (
-                      <Tooltip title="Modifications must be made at least 24 hours before check-in">
+                      <Tooltip title={t('booking.myBookingsPage.modifyDeadlineTooltip')}>
                         <span>
                           <Button 
                             variant="outlined"
@@ -559,7 +588,7 @@ const MyBookings: React.FC = () => {
                               textTransform: 'none',
                             }}
                           >
-                            ✏️ Modify Booking
+                            {`✏️ ${t('booking.manage.modifyBooking')}`}
                           </Button>
                         </span>
                       </Tooltip>
@@ -588,7 +617,7 @@ const MyBookings: React.FC = () => {
                         },
                       }}
                     >
-                      ❌ Cancel Booking
+                      {`❌ ${t('booking.manage.cancelBooking')}`}
                     </Button>
                   )}
                 </CardActions>
@@ -600,34 +629,34 @@ const MyBookings: React.FC = () => {
 
       {/* Cancel Booking Dialog */}
       <Dialog open={cancelDialogOpen} onClose={closeCancelDialog} maxWidth="sm" fullWidth>
-        <DialogTitle>Cancel Booking</DialogTitle>
+        <DialogTitle>{t('booking.manage.cancelDialogTitle')}</DialogTitle>
         <DialogContent>
           {selectedBooking && (
             <Box>
               <Alert severity="warning" sx={{ mb: 2 }}>
-                Are you sure you want to cancel this booking?
+                {t('booking.myBookingsPage.cancelDialogPrompt')}
               </Alert>
               <Typography variant="body1" gutterBottom>
-                <strong>Hotel:</strong> {selectedBooking.hotelName}
+                <strong>{t('booking.manage.hotel')}:</strong> {selectedBooking.hotelName}
               </Typography>
               <Typography variant="body1" gutterBottom>
-                <strong>Confirmation:</strong> {selectedBooking.confirmationNumber}
+                <strong>{t('booking.manage.confirmationLabel')}:</strong> {selectedBooking.confirmationNumber}
               </Typography>
               <Typography variant="body1" gutterBottom>
-                <strong>Check-in:</strong> {BookingService.formatDate(selectedBooking.checkInDate)}
+                <strong>{t('booking.manage.checkIn')}:</strong> {formatDateForDisplay(selectedBooking.checkInDate)}
               </Typography>
               <Typography variant="body1" gutterBottom>
-                <strong>Total Amount:</strong> {BookingService.formatCurrency(selectedBooking.totalAmount)}
+                <strong>{t('booking.manage.totalAmount')}:</strong> {BookingService.formatCurrency(selectedBooking.totalAmount)}
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-                This action cannot be undone. Refund policies may apply.
+                {t('booking.myBookingsPage.cancelIrreversible')}
               </Typography>
             </Box>
           )}
         </DialogContent>
         <DialogActions>
           <Button onClick={closeCancelDialog} disabled={cancelling}>
-            Keep Booking
+            {t('booking.manage.keepBooking')}
           </Button>
           <Button 
             onClick={handleCancelBooking} 
@@ -636,72 +665,72 @@ const MyBookings: React.FC = () => {
             disabled={cancelling}
             startIcon={cancelling ? <CircularProgress size={20} /> : <Cancel />}
           >
-            {cancelling ? 'Cancelling...' : 'Cancel Booking'}
+            {cancelling ? t('booking.manage.cancelling') : t('booking.manage.cancelBookingAction')}
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* Modify Booking Dialog */}
       <Dialog open={modifyDialogOpen} onClose={closeModifyDialog} maxWidth="md" fullWidth>
-        <DialogTitle>Modify Booking</DialogTitle>
+        <DialogTitle>{t('booking.manage.modifyDialogTitle')}</DialogTitle>
         <DialogContent>
           {selectedBooking && (
             <Box>
               <Alert severity="info" sx={{ mb: 3 }}>
-                Modify your booking details below. You can change dates, room type, or special requests.
+                {t('booking.myBookingsPage.modifyDialogDescription')}
               </Alert>
               
               <Typography variant="subtitle1" gutterBottom sx={{ mb: 2 }}>
-                Current Booking: {selectedBooking.hotelName} - {selectedBooking.confirmationNumber}
+                {t('booking.myBookingsPage.currentBooking')}: {selectedBooking.hotelName} - {selectedBooking.confirmationNumber}
               </Typography>
 
               <LocalizationProvider dateAdapter={AdapterDateFns}>
                 <Grid container spacing={3}>
                   <Grid item xs={12} md={6}>
                     <PremiumDatePicker
-                      label="New Check-in Date"
+                      label={t('booking.myBookingsPage.newCheckInDate')}
                       value={newCheckInDate}
                       onChange={(date) => setNewCheckInDate(date)}
                       minDate={new Date()}
                       slotProps={{
                         textField: {
                           fullWidth: true,
-                          helperText: `Current: ${BookingService.formatDate(selectedBooking.checkInDate)}`
+                          helperText: t('booking.myBookingsPage.currentValue', { value: formatDateForDisplay(selectedBooking.checkInDate) })
                         }
                       }}
                     />
                   </Grid>
                   <Grid item xs={12} md={6}>
                     <PremiumDatePicker
-                      label="New Check-out Date"
+                      label={t('booking.myBookingsPage.newCheckOutDate')}
                       value={newCheckOutDate}
                       onChange={(date) => setNewCheckOutDate(date)}
                       minDate={newCheckInDate ? addDays(newCheckInDate, 1) : addDays(new Date(), 1)}
                       slotProps={{
                         textField: {
                           fullWidth: true,
-                          helperText: `Current: ${BookingService.formatDate(selectedBooking.checkOutDate)}`
+                          helperText: t('booking.myBookingsPage.currentValue', { value: formatDateForDisplay(selectedBooking.checkOutDate) })
                         }
                       }}
                     />
                   </Grid>
                   <Grid item xs={12}>
                     <FormControl fullWidth>
-                      <InputLabel>Room Type</InputLabel>
+                      <InputLabel>{t('booking.manage.roomType')}</InputLabel>
                       <Select
                         value={newRoomType}
-                        label="Room Type"
+                        label={t('booking.manage.roomType')}
                         onChange={(e) => setNewRoomType(e.target.value as string)}
                       >
                         {ROOM_TYPES.map((roomType) => (
                           <MenuItem key={roomType.value} value={roomType.value}>
-                            {roomType.label}
+                            {getRoomTypeTranslation(roomType.value)}
                           </MenuItem>
                         ))}
                       </Select>
                     </FormControl>
                     <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-                      Current: {getRoomTypeLabel(selectedBooking.roomType)}
+                      {t('booking.myBookingsPage.currentValue', { value: getRoomTypeTranslation(selectedBooking.roomType) })}
                     </Typography>
                   </Grid>
                   <Grid item xs={12}>
@@ -709,11 +738,11 @@ const MyBookings: React.FC = () => {
                       fullWidth
                       multiline
                       rows={3}
-                      label="Special Requests"
+                      label={t('booking.myBookingsPage.specialRequests')}
                       value={newSpecialRequests}
                       onChange={(e) => setNewSpecialRequests(e.target.value)}
-                      placeholder="Enter any special requests for your stay..."
-                      helperText={`Current: ${selectedBooking.specialRequests || 'None'}`}
+                      placeholder={t('booking.myBookingsPage.specialRequestsPlaceholder')}
+                      helperText={t('booking.myBookingsPage.currentValue', { value: selectedBooking.specialRequests || t('booking.myBookingsPage.none') })}
                     />
                   </Grid>
                 </Grid>
@@ -729,7 +758,7 @@ const MyBookings: React.FC = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={closeModifyDialog} disabled={modifying}>
-            Cancel
+            {t('booking.manage.cancel')}
           </Button>
           <Button 
             onClick={handleModifyBooking} 
@@ -738,7 +767,7 @@ const MyBookings: React.FC = () => {
             disabled={modifying}
             startIcon={modifying ? <CircularProgress size={20} /> : <Edit />}
           >
-            {modifying ? 'Modifying...' : 'Modify Booking'}
+            {modifying ? t('booking.manage.modifying') : t('booking.manage.modifyBookingAction')}
           </Button>
         </DialogActions>
       </Dialog>

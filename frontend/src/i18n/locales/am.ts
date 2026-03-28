@@ -35,7 +35,11 @@ export const amTranslations = {
       passwordsNoMatch: "የይለፍ ቃሎች አይመሳሰሉም",
       registrationSuccess: "መመዝገብ በተሳካ ሁኔታ ተጠናቋል! በማዞር ላይ...",
       loginFailed: "መይግቡት አልተሳካም",
-      registrationFailed: "መመዝገብ አልተሳካም"
+      registrationFailed: "መመዝገብ አልተሳካም",
+      loading: "በመጫን ላይ...",
+      mobileSignInButton: "በሞባይል ይግቡ (እዚህ ይንኩ)",
+      manageReservationsPrefix: "ማስያዝ ለማድረግ መጀመሪያ",
+      manageReservationsSuffix: "በመግባት ወይም መለያ በመፍጠር መያዣዎችዎን ማስተዳደር ይችላሉ።"
     },
     forgotPassword: {
       title: "የይለፍ ቃል ረሳህ",
@@ -874,6 +878,56 @@ export const amTranslations = {
           paymentReference: "የክፍያ ማረጋገጫ"
         }
       },
+      searchPage: {
+        title: "መያዣዎን ይፈልጉ",
+        subtitle: "መያዣዎን በማረጋገጫ ቁጥርዎ ወይም በኢሜይልዎ ይፈልጉ",
+        searchMethod: "የፍለጋ ዘዴ",
+        methods: {
+          confirmation: "የማረጋገጫ ቁጥር",
+          emailAndLastName: "ኢሜይል እና የአባት ስም"
+        },
+        fields: {
+          lastName: "የአባት ስም"
+        },
+        placeholders: {
+          confirmationNumber: "የመያዣ ማረጋገጫ ቁጥርዎን ያስገቡ",
+          email: "ኢሜይልዎን ያስገቡ",
+          lastName: "የአባት ስምዎን ያስገቡ"
+        },
+        buttons: {
+          searchBooking: "መያዣ ፈልግ",
+          showMoreDetails: "ተጨማሪ ዝርዝሮችን አሳይ",
+          hideDetails: "ዝርዝሮችን ደብቅ"
+        },
+        sections: {
+          bookingInformation: "የመያዣ መረጃ"
+        },
+        labels: {
+          roomNumber: "ክፍል {{roomNumber}}",
+          bookedOn: "የተያዘበት:",
+          paymentId: "የክፍያ መለያ:"
+        },
+        statuses: {
+          booked: "ተይዟል",
+          checkedIn: "ገብቷል",
+          checkedOut: "ወጥቷል",
+          cancelled: "ተሰርዟል",
+          pending: "በመጠባበቅ ላይ"
+        },
+        paymentStatuses: {
+          paid: "ተከፍሏል",
+          pending: "በመጠባበቅ ላይ",
+          payAtFrontdesk: "በሪሴፕሽን ይክፈሉ",
+          failed: "አልተሳካም",
+          refunded: "ተመላሽ ተደርጓል"
+        },
+        errors: {
+          enterConfirmationNumber: "እባክዎ የማረጋገጫ ቁጥር ያስገቡ",
+          enterEmailAndLastName: "እባክዎ ሁለቱንም ኢሜይል እና የአባት ስም ያስገቡ",
+          bookingNotFound: "መያዣ አልተገኘም",
+          searchFailed: "መያዣ መፈለግ አልተሳካም። እባክዎ እንደገና ይሞክሩ።"
+        }
+      },
       help: {
         title: "እርዳታ ይፈልጋሉ?",
         description: "መያዣዎን ለማግኘት የየማረጋገጫ ቁጥርዎ እና ማስያዝ ሲያደርጉ የተጠቀሙበት ኢሜይል አድራሻ ሁለቱም ያስፈልግዎታል። የማረጋገጫ ቁጥሩ በመያዣ ማረጋገጫ ኢሜይልዎ ውስጥ ሊገኝ ይችላል። መያዣዎን ማግኘት ካልቻሉ እባክዎ ሆቴሉን በቀጥታ ያግኙ።"
@@ -927,11 +981,125 @@ export const amTranslations = {
       cancelling: "በመሰረዝ ላይ...",
       cancelBookingAction: "መያዣ ይሰርዙ"
     },
+    managementPage: {
+      loading: "መያዣዎን በመጫን ላይ...",
+      includingTaxes: "(ሁሉንም ግብሮች ጨምሮ)",
+      cancelPrompt: "ይህን መያዣ መሰረዝ እርግጠኛ ነዎት? ይህ እርምጃ መቀልበስ አይቻልም።",
+      errors: {
+        failedToLoadBooking: "መያዣውን መጫን አልተሳካም",
+        invalidLink: "ልክ ያልሆነ የመያዣ አገናኝ ነው። እባክዎ ለትክክለኛው አገናኝ ኢሜይልዎን ያረጋግጡ።",
+        failedToCancelBooking: "መያዣውን መሰረዝ አልተሳካም",
+        notFound: "መያዣው አልተገኘም። እባክዎ ለትክክለኛው አገናኝ ኢሜይልዎን ያረጋግጡ።"
+      }
+    },
     paymentStatus: {
       completed: "ተጠናቅቋል",
       pending: "በመጠባበቅ ላይ", 
       processing: "በሂደት ላይ",
       failed: "ተወዳድሯል"
+    },
+    myBookingsPage: {
+      subtitle: "የሆቴል መያዣዎችዎን ያስተዳድሩ እና ይከታተሉ",
+      loading: "መያዣዎችዎን በመጫን ላይ...",
+      browseHotels: "ሆቴሎችን ያስሱ",
+      contactSupport: "ድጋፍን ያግኙ",
+      modifyDeadlineTooltip: "ለውጦች ከመግቢያ ቢያንስ 24 ሰዓት በፊት መደረግ አለባቸው",
+      specialRequests: "ልዩ ጥያቄዎች",
+      nightSingle: "ሌሊት",
+      nightPlural: "ሌሊቶች",
+      cancelDialogPrompt: "ይህን መያዣ መሰረዝ እርግጠኛ ነዎት?",
+      cancelIrreversible: "ይህ እርምጃ መቀለበስ አይቻልም። የገንዘብ መመለሻ ፖሊሲዎች ሊተገበሩ ይችላሉ።",
+      modifyDialogDescription: "ከታች ያሉትን የመያዣ ዝርዝሮች ይቀይሩ። ቀኖችን፣ የክፍል አይነትን ወይም ልዩ ጥያቄዎችን መቀየር ይችላሉ።",
+      currentBooking: "አሁን ያለው መያዣ",
+      newCheckInDate: "አዲስ የመግቢያ ቀን",
+      newCheckOutDate: "አዲስ የመውጫ ቀን",
+      currentValue: "አሁን: {{value}}",
+      specialRequestsPlaceholder: "ለመቆያዎ ማንኛውም ልዩ ጥያቄ ያስገቡ...",
+      none: "ምንም የለም",
+      statuses: {
+        booked: "ተይዟል",
+        checkedin: "ገብቷል",
+        checkedout: "ወጥቷል",
+        cancelled: "ተሰርዟል",
+        pending: "በመጠባበቅ ላይ",
+        noshow: "አልተገኘም"
+      },
+      paymentStatuses: {
+        paid: "ተከፍሏል",
+        pending: "በመጠባበቅ ላይ",
+        failed: "አልተሳካም",
+        refunded: "ተመላሽ ተደርጓል",
+        payatfrontdesk: "በፊት ዴስክ ይክፈሉ"
+      },
+      errors: {
+        loginRequired: "መያዣዎችዎን ለማየት እባክዎ ይግቡ",
+        loadFailed: "መያዣዎችዎን መጫን አልተሳካም። እባክዎ በኋላ ይሞክሩ።",
+        cancelFailed: "መያዣን መሰረዝ አልተሳካም። እባክዎ እንደገና ይሞክሩ ወይም ድጋፍን ያግኙ።",
+        noChanges: "መያዣውን ለመቀየር ቢያንስ አንድ ለውጥ ያድርጉ።",
+        modifyFailed: "መያዣውን መቀየር አልተሳካም።",
+        modifyFailedWithSupport: "መያዣውን መቀየር አልተሳካም። እባክዎ እንደገና ይሞክሩ ወይም ድጋፍን ያግኙ።"
+      }
+    },
+    guestManagementPage: {
+      cancelledNoticeTitle: "መያዣው ተሰርዟል",
+      cancelledNoticeMessage: "ይህ መያዣ ተሰርዟል። አዲስ መያዣ ማድረግ ካስፈለገዎ እባክዎ ወደ መያዣ ገጻችን ይሂዱ። ስለ ተመላሽ ክፍያ ጥያቄ ካለዎ ሆቴሉን በቀጥታ ያግኙ።",
+      modifyDeadline: "ለውጦች ከመግቢያ ቢያንስ 24 ሰዓት በፊት መደረግ አለባቸው።",
+      nightSingle: "ሌሊት",
+      nightPlural: "ሌሊቶች",
+      priceSummary: "የዋጋ ማጠቃለያ",
+      priceUnavailable: "የዚህ መያዣ የዋጋ መረጃ አይገኝም። እባክዎ ድጋፍን ያግኙ።",
+      pricePerNight: "በሌሊት ዋጋ",
+      numberOfNights: "የሌሊቶች ብዛት",
+      pricingUpdated: "ዋጋው ተዘምኗል",
+      whatChanged: "ምን ተቀይሯል:",
+      dates: "ቀኖች",
+      roomTypeChangeDetected: "የክፍል አይነት ለውጥ ተገኝቷል። የመጨረሻ ዋጋ በአዲሱ የክፍል አይነት ዋጋ መሰረት በሰርቨሩ ይሰላል።",
+      priceCalculationBreakdown: "የዋጋ ስሌት ዝርዝር:",
+      originalBooking: "የመጀመሪያ መያዣ",
+      modifiedBooking: "የተሻሻለ መያዣ",
+      ratePerNight: "በሌሊት ዋጋ",
+      total: "ጠቅላላ",
+      calculation: "ስሌት",
+      estimatedServerPrice: "* ግምታዊ - ትክክለኛው ዋጋ በሰርቨሩ ይሰላል",
+      originalTotal: "የቀድሞ ጠቅላላ",
+      newTotal: "አዲስ ጠቅላላ",
+      additionalCost: "ተጨማሪ ወጪ",
+      savings: "ቁጠባ",
+      noChange: "ለውጥ የለም",
+      pricingPersistHint: "ይህ የዋጋ ዝመና ይህን ውይይት እስኪዘጉ ድረስ ይቀጥላል",
+      fetchingRoomPrice: "ለተመረጠው የክፍል አይነት ዋጋ በማምጣት ላይ...",
+      makeNewBooking: "አዲስ መያዣ ያድርጉ",
+      findAnotherBooking: "ሌላ መያዣ ያግኙ",
+      statuses: {
+        booked: "ተይዟል",
+        cancelled: "ተሰርዟል",
+        checkedin: "ገብቷል",
+        checkedout: "ወጥቷል",
+        pending: "በመጠባበቅ ላይ"
+      },
+      paymentStatuses: {
+        completed: "ተጠናቅቋል",
+        processing: "በሂደት ላይ",
+        pending: "በመጠባበቅ ላይ",
+        failed: "አልተሳካም"
+      },
+      messages: {
+        failedToLoadBooking: "መያዣውን መጫን አልተሳካም",
+        bookingNotFoundOrAccessDenied: "መያዣው አልተገኘም ወይም ፍቃድ የለዎትም",
+        showingCachedInformation: "የመያዣ መረጃን ማደስ አልተቻለም። የተቀመጠው መረጃ እየታየ ነው።",
+        noBookingInformation: "ምንም የመያዣ መረጃ የለም። እባክዎ መጀመሪያ መያዣዎን ይፈልጉ።",
+        authenticationEmailSent: "የማረጋገጫ ኢሜይል ተልኳል። እባክዎ ኢሜይልዎን ያረጋግጡ እና {{action}} ለማድረግ አገናኙን ይጫኑ።",
+        authenticationEmailFailed: "ለ{{action}} የማረጋገጫ ኢሜይል መላክ አልተሳካም። እባክዎ እንደገና ይሞክሩ።",
+        failedToModifyBooking: "መያዣውን መቀየር አልተሳካም",
+        bookingModifiedSuccessfully: "መያዣው በተሳካ ሁኔታ ተቀይሯል",
+        additionalCharges: "ተጨማሪ ክፍያዎች: ETB {{amount}}",
+        refundAmount: "የተመላሽ መጠን: ETB {{amount}}",
+        newTotalAmount: "አዲስ ጠቅላላ: ETB {{amount}}",
+        modifyUnexpectedError: "መያዣውን በመቀየር ላይ ስህተት ተፈጥሯል",
+        bookingCancelledSuccessfully: "መያዣው በተሳካ ሁኔታ ተሰርዟል",
+        failedToCancelBooking: "መያዣውን መሰረዝ አልተሳካም",
+        cancelTryAgain: "መያዣውን መሰረዝ አልተሳካም። እባክዎ እንደገና ይሞክሩ።"
+      }
     },
     guestBooking: "የእንግዳ መያዣ",
     
@@ -1029,7 +1197,27 @@ export const amTranslations = {
       
       // Ethiopian Phone Number (for mobile payments)
       ethiopianPhoneLabel: "የኢትዮጵያ ስልክ ቁጥር",
-      ethiopianPhonePlaceholder: "ለሞባይል ክፍያ የኢትዮጵያ ስልክ ቁጥር ያስገቡ"
+      ethiopianPhonePlaceholder: "ለሞባይል ክፍያ የኢትዮጵያ ስልክ ቁጥር ያስገቡ",
+
+      validation: {
+        guestsRequired: "የእንግዶች ቁጥር ያስፈልጋል",
+        guestsMin: "ቢያንስ 1 እንግዳ ያስፈልጋል",
+        guestsMax: "ከፍተኛው {{count}} እንግዶች ይፈቀዳሉ",
+        guestNameRequired: "የእንግዳ ስም ያስፈልጋል",
+        nameMinLength: "ስም ቢያንስ 2 ፊደላት ሊኖረው ይገባል",
+        nameMaxLength: "ስም ከ100 ፊደላት በታች መሆን አለበት",
+        namePattern: "ስም ፊደላትን እና ክፍተቶችን ብቻ ሊያካትት ይችላል",
+        emailRequired: "የኢሜይል አድራሻ ያስፈልጋል",
+        validEmail: "እባክዎ ትክክለኛ የኢሜይል አድራሻ ያስገቡ",
+        emailMaxLength: "ኢሜይል ከ255 ፊደላት በታች መሆን አለበት",
+        phoneRequired: "የስልክ ቁጥር ያስፈልጋል",
+        validPhone: "እባክዎ ትክክለኛ የስልክ ቁጥር ያስገቡ",
+        phoneMinLength: "የስልክ ቁጥር ቢያንስ 10 አሃዞች ሊኖሩት ይገባል",
+        phoneMaxLength: "የስልክ ቁጥር ከ15 አሃዞች በታች መሆን አለበት",
+        specialRequestsMaxLength: "ልዩ ጥያቄዎች ከ500 ፊደላት በታች መሆን አለባቸው",
+        fixValidationErrors: "ከማስገባትዎ በፊት እባክዎ የማረጋገጫ ስህተቶችን ያስተካክሉ",
+        createBookingFailed: "መያዣ መፍጠር አልተሳካም። እባክዎ እንደገና ይሞክሩ።"
+      }
     },
     
     details: {
@@ -1428,10 +1616,12 @@ export const amTranslations = {
   // Receipts & Billing
   receipts: {
     official: "ይፋዊ ደረሰኝ",
+    receiptNumber: "ደረሰኝ #{{number}}",
     guestInformation: "የእንግዳ መረጃ",
     fullName: "ሙሉ ስም",
     email: "ኢሜይል",
     phone: "ስልክ",
+    notAvailable: "የለም",
     confirmation: "ማረጋገጫ",
     guests: "እንግዶች",
     
@@ -1441,6 +1631,38 @@ export const amTranslations = {
     checkOut: "መውጫ",
     duration: "ጊዜ",
     ratePerNight: "በሌሊት ተመን",
+    nightSingle: "ሌሊት",
+    nightPlural: "ሌሊቶች",
+    roomAccommodation: "የክፍል መጠለያ",
+    additionalService: "ተጨማሪ አገልግሎት",
+    tax: "ታክስ",
+    thankYouHotel: "{{hotelName}} ን ስለመረጡ እናመሰግናለን!",
+    generatedOn: "የተፈጠረበት {{date}}",
+    generatedBy: "የፈጠረው: {{name}}",
+    actions: {
+      printReceipt: "ደረሰኝ አትም",
+      downloadPdf: "PDF አውርድ",
+      emailReceipt: "ደረሰኝ በኢሜይል ላክ",
+      close: "ዝጋ"
+    },
+    emailDialog: {
+      title: "ደረሰኝ በኢሜይል ላክ",
+      description: "ደረሰኙን መላክ የሚፈልጉበትን ኢሜይል አድራሻ ያስገቡ። የእንግዳው ኢሜይል ከታች ቀድሞ ተሞልቷል።",
+      recipientLabel: "የተቀባይ ኢሜይል አድራሻ",
+      recipientPlaceholder: "guest@example.com",
+      recipientHelper: "ከመላኩ በፊት የኢሜይል አድራሻውን መቀየር ይችላሉ",
+      bookingLabel: "ማስያዣ:",
+      cancel: "ሰርዝ",
+      send: "ኢሜይል ላክ",
+      sending: "በመላክ ላይ...",
+      success: "ደረሰኙ በተሳካ ሁኔታ ወደ {{email}} ተልኳል",
+      errors: {
+        missingReservationInfo: "ኢሜይል መላክ አይቻልም: የማስያዣ መረጃ ይጎድላል",
+        invalidEmail: "እባክዎ ትክክለኛ ኢሜይል አድራሻ ያስገቡ",
+        failedToSend: "ደረሰኝ መላክ አልተሳካም",
+        unexpectedError: "ደረሰኙን በመላክ ላይ ስህተት ተፈጥሯል"
+      }
+    },
     
     billing: {
       description: "መግለጫ",
@@ -1521,6 +1743,162 @@ export const amTranslations = {
     searchFailed: "ፍለጋ አልተሳካም። እባክዎ እንደገና ይሞክሩ።",
     invalidDates: "እባክዎ ቀኖችዎን ይፈትሹ።"
   },
+  publicHotelRegistration: {
+    title: "ሆቴልዎን ያስመዝግቡ",
+    form: {
+      title: "የሆቴል መረጃ",
+      subtitle: "ለመጀመር መሠረታዊ ዝርዝሮችን ያቅርቡ። ከገቡ በኋላ የሆቴልዎን ፕሮፋይል ማጠናቀቅ ይችላሉ።",
+      fields: {
+        hotelName: "የሆቴል ስም",
+        contactPerson: "ተጠሪ ሰው",
+        contactEmail: "የተጠሪ ኢሜይል",
+        address: "አድራሻ",
+        city: "ከተማ",
+        country: "ሀገር"
+      },
+      placeholders: {
+        hotelName: "የሆቴል ስም ያስገቡ",
+        contactPerson: "የተጠሪ ሰው ስም ያስገቡ",
+        contactEmail: "የተጠሪ ኢሜይል ያስገቡ",
+        address: "የሆቴል አድራሻ ያስገቡ",
+        city: "ከተማ ያስገቡ"
+      }
+    },
+    actions: {
+      cancel: "ሰርዝ",
+      submit: "ምዝገባ አስገባ",
+      submitting: "በመላክ ላይ...",
+      goToLogin: "ወደ መግቢያ ሂድ"
+    },
+    success: {
+      title: "ምዝገባው ተሳክቷል!",
+      description: {
+        before: "ሆቴልዎ",
+        after: "በተሳካ ሁኔታ ተመዝግቧል።"
+      },
+      emailNotice: {
+        before: "ጊዜያዊ የመግቢያ መረጃዎች ያሉበት ኢሜይል ወደ",
+        after: "ተልኳል። እባክዎ ገቢ መልእክትዎን እና የስፓም ሳጥንዎን ይመልከቱ።"
+      }
+    },
+    nextSteps: {
+      title: "ቀጣዩ ምንድን ነው?",
+      step1: "ለጊዜያዊ የመግቢያ መረጃዎች ኢሜይልዎን ይመልከቱ",
+      step2: "የሆቴል ፕሮፋይልዎን ለማጠናቀቅ ይግቡ",
+      step3: "ቡድናችን ምዝገባዎን ይገምግማል እና ያፀድቃል",
+      step4: "በመድረካችን ላይ ሆቴልዎን ማስተዳደር ይጀምሩ"
+    },
+    messages: {
+      submitFailed: "የሆቴል ምዝገባ ማስገባት አልተሳካም። እባክዎ እንደገና ይሞክሩ።"
+    }
+  },
+
+  hotelRegistrationStatus: {
+    title: "የምዝገባ ሁኔታን ይመልከቱ",
+    subtitle: "የሆቴል ምዝገባዎን ሁኔታ ለማየት ኢሜይልዎን ያስገቡ",
+    emailPlaceholder: "ለምዝገባው የተጠቀሙበትን ኢሜይል ያስገቡ",
+    registrationId: "የምዝገባ መለያ: {{id}}",
+    actions: {
+      search: "ፈልግ"
+    },
+    fields: {
+      contactPerson: "ተጠሪ ሰው",
+      contactEmail: "የተጠሪ ኢሜይል",
+      submitted: "የቀረበ",
+      reviewed: "የተገመገመ",
+      comments: "አስተያየቶች"
+    },
+    statuses: {
+      approved: "ጸድቋል",
+      pending: "በመጠባበቅ ላይ",
+      under_review: "በግምገማ ላይ",
+      rejected: "ውድቅ ተደርጓል"
+    },
+    messages: {
+      pendingTitle: "ምዝገባዎ በግምገማ ላይ ነው።",
+      pendingBody: "ቡድናችን በተለምዶ ማመልከቻዎችን በ2-3 የስራ ቀናት ውስጥ ይገመግማል። ግምገማው ሲጠናቀቅ የኢሜይል ማሳወቂያ ይደርስዎታል።",
+      approvedTitle: "እንኳን ደስ አለዎት! የሆቴል ምዝገባዎ ጸድቋል።",
+      approvedBody: "የመግቢያ መረጃዎች በኢሜይል ሊደርሱዎት ነበር። ካልደረሱዎት እባክዎ የድጋፍ ቡድናችንን ያግኙ።",
+      rejectedTitle: "ምዝገባዎ አልጸደቀም።",
+      rejectedBody: "እባክዎ ከላይ ያሉትን አስተያየቶች ይመልከቱ እና በተጠየቁት ለውጦች አዲስ ምዝገባ ለማቅረብ ነፃ ይሁኑ።"
+    },
+    help: {
+      title: "እርዳታ ይፈልጋሉ?",
+      description: "ምዝገባዎን ማግኘት ካልቻሉ ወይም ስለ ሂደቱ ጥያቄዎች ካሉዎት:",
+      tip1: "ከምዝገባዎ ጋር ትክክለኛውን ኢሜይል እየተጠቀሙ መሆኑን ያረጋግጡ",
+      tip2: "ለማሳወቂያ ኢሜይሎች የስፓም/ጃንክ ፎልደርዎን ያረጋግጡ",
+      tip3: "የድጋፍ ቡድናችንን በ support@shegersolutions.com ያግኙ"
+    },
+    errors: {
+      enterEmail: "እባክዎ የኢሜይል አድራሻዎን ያስገቡ",
+      notFound: "ለዚህ ኢሜይል አድራሻ የሆቴል ምዝገባ አልተገኘም",
+      checkFailed: "የምዝገባ ሁኔታን ማረጋገጥ አልተሳካም",
+      checkFailedRetry: "የምዝገባ ሁኔታን ማረጋገጥ አልተሳካም። እባክዎ እንደገና ይሞክሩ።"
+    }
+  },
+
+  hotelBanner: {
+    title: "ተለይተው የቀረቡ ሆቴሎች",
+    featuredBadge: "ተለይቶ የቀረበ",
+    usingSampleHotels: "የናሙና ሆቴሎችን በመጠቀም ላይ",
+    liveData: "ቀጥታ መረጃ",
+    multipleRates: "ብዙ",
+    viewDetails: "ዝርዝሮችን ይመልከቱ",
+    refreshesEveryTwoMinutes: "በየ2 ደቂቃው ይታደሳል",
+    fallback: {
+      resort: {
+        name: "የቅንጦት ስፓ ሪዞርት",
+        description: "በፕሪሚየም የስፓ ፓኬጆቻችን ከፍተኛ ዕረፍትን ይለማመዱ።"
+      },
+      business: {
+        name: "የንግድ ሆቴል ዳውንታውን",
+        description: "ለንግድ ተጓዦች ተስማሚ ዘመናዊ ምቾቶች።"
+      },
+      mountain: {
+        name: "የተራራ እይታ ሎጅ",
+        description: "አስደናቂ የተራራ እይታዎች ጋር ወደ ተፈጥሮ ያምልጡ።"
+      }
+    }
+  },
+
+  emptyStates: {
+    noDataTitle: "ምንም መረጃ የለም",
+    noDataMessage: "አሁን ለማሳየት ምንም የለም።",
+    noSearchResults: {
+      title: "ምንም ውጤት አልተገኘም",
+      message: "ከፍለጋዎ ጋር የሚዛመዱ ውጤቶችን አላገኘንም። ማጣሪያዎችን ወይም የፍለጋ ቃላትን ያስተካክሉ።",
+      action: "ማጣሪያዎችን አጽዳ"
+    },
+    noBookings: {
+      title: "እስካሁን ምንም ማስያዣ የለም",
+      message: "ምንም ማስያዣ የለዎትም። ሆቴሎችን ማሰስ ይጀምሩ እና የመጀመሪያውን ቦታ ማስያዝዎን ያድርጉ!"
+    },
+    noOrders: {
+      title: "እስካሁን ምንም ትዕዛዝ የለም",
+      message: "የሚታዩ ትዕዛዞች የሉም። እነሱን ለማየት ትዕዛዞችን መፍጠር ይጀምሩ።",
+      action: "ትዕዛዝ ፍጠር"
+    },
+    noProducts: {
+      title: "ምንም ምርቶች አይገኙም",
+      message: "እስካሁን ምንም ምርቶች አልተጨመሩም። መሸጥ ለመጀመር ምርቶችን ያክሉ።",
+      action: "ምርት ጨምር"
+    },
+    noHotels: {
+      title: "ሆቴሎች አልተገኙም",
+      message: "ከመስፈርቶችዎ ጋር የሚስማሙ ሆቴሎች የሉም። ፍለጋዎን ያስፋፉ ወይም በኋላ እንደገና ይመልከቱ።"
+    },
+    noReceipts: {
+      title: "ደረሰኞች የሉም",
+      message: "በአሁኑ ጊዜ የሚታዩ ደረሰኞች የሉም።"
+    }
+  },
+  notFoundPage: {
+    title: "ገጹ አልተገኘም",
+    message: "የሚፈልጉት ገጽ የለም ወይም ተንቀሳቅሷል።",
+    goHome: "ወደ ቤት ሂድ",
+    helpText: "ይህ ስህተት ነው ብለው ካመኑ፣ እባክዎ ድጋፍን ያግኙ ወይም ወደ መነሻ ገጹ ለመመለስ ይሞክሩ።"
+  },
+
   hotelSearch: {
     title: "የሚፈልጉትን ፍጹም መቆየት ያግኙ",
     subtitle: "ፍለጋ እና የምትፈልጉትን ተስማሚ የሆቴል ክፍል ይቦዩ",
@@ -1568,6 +1946,134 @@ export const amTranslations = {
       searchFailed: "ፍለጋ አልተሳካም። እባክዎ እንደገና ይሞክሩ።",
       invalidDates: "እባክዎ ቀናቶቻችንን ይመልከቱ።",
       networkError: "የኔትወርክ ስህተት። እባክዎ ግንኙነትዎን ይመልከቱ።"
+    },
+    summary: {
+      in: "በ",
+      from: "ከ",
+      to: "እስከ",
+      for: "ለ",
+      guestSingle: "እንግዳ",
+      guestPlural: "እንግዶች"
+    },
+    results: {
+      title: "የፍለጋ ውጤቶች",
+      backToSearch: "ወደ ፍለጋ ተመለስ",
+      descriptionPrefix: "ሆቴሎች",
+      loadingDescription: "የፍለጋ ውጤቶችን በመጫን ላይ...",
+      modifySearch: "ፍለጋ አስተካክል",
+      hotelsFoundSingle: "{{count}} ሆቴል ተገኝቷል",
+      hotelsFoundPlural: "{{count}} ሆቴሎች ተገኝተዋል",
+      searching: "ሆቴሎችን በመፈለግ ላይ...",
+      refreshError: "የሆቴል ፍለጋ ውጤቶችን አሁን ማደስ አልተቻለም።",
+      refreshListError: "የሆቴል ዝርዝሩን አሁን ማደስ አልተቻለም።",
+      emptyTitle: "ሆቴሎች አልተገኙም",
+      emptyMessage: "ከፍለጋ መስፈርቶችዎ ጋር የሚስማሙ ሆቴሎችን አላገኘንም። ቀኖችን፣ ቦታውን ወይም ማጣሪያዎችን በመቀየር ይሞክሩ።",
+      listEmptyMessage: "ከመስፈርቶችዎ ጋር የሚስማሙ ሆቴሎች የሉም። ፍለጋዎን ያስፋፉ ወይም ቀኖቹን ይቀይሩ።"
+    },
+    detail: {
+      hotelDetails: "የሆቴል ዝርዝር",
+      backToSearchResults: "ወደ ፍለጋ ውጤቶች ተመለስ",
+      loadingHotelDetails: "የሆቴል ዝርዝሮችን በመጫን ላይ...",
+      loadHotelError: "የሆቴል ዝርዝሮችን አሁን መጫን አልተቻለም።",
+      hotelNotFoundTitle: "ሆቴሉ አልተገኘም",
+      hotelNotFoundMessage: "እባክዎ እንደገና ይፈልጉ ወይም ሌሎች የሚገኙ ሆቴሎችን ይመልከቱ።",
+      searchHotels: "ሆቴሎችን ፈልግ",
+      fromPrice: "ከ",
+      perNight: "በአንድ ሌሊት",
+      upToPrice: "እስከ",
+      checkIn: "መግቢያ",
+      checkOut: "መውጫ",
+      roomsCount: "{{count}} ክፍሎች",
+      visitWebsite: "የሆቴሉን ድረ-ገጽ ይጎብኙ",
+      guestAmenities: "የእንግዳ ምቾቶች",
+      showingAvailability: "የሚገኝነት በማሳየት ላይ",
+      availableRoomTypes: "የሚገኙ የክፍል አይነቶች ({{count}})",
+      availableRooms: "የሚገኙ ክፍሎች ({{count}})",
+      noRoomsAvailableTitle: "ምንም ክፍሎች አይገኙም",
+      noRoomsAvailableMessage: "ለመረጡት ቀኖች የሚገኙ ክፍሎችን አላገኘንም።",
+      noRoomsAvailableHint: "የፍለጋ ቀኖችዎን ወይም መስፈርቶችዎን በመቀየር ይሞክሩ።",
+      searchForAvailability: "የሚገኝነትን ፈልግ",
+      searchForAvailabilityDescription: "የሚገኙ ክፍሎችን ለማየት እና ቦታ ለማስያዝ እባክዎ የሆቴል ፍለጋችንን ይጠቀሙ።"
+    },
+    card: {
+      availableCompact: "{{count}} ይገኛሉ",
+      availableRooms: "{{count}} ክፍሎች ይገኛሉ",
+      roomTypesCount: "የክፍል አይነቶች ({{count}})",
+      roomsCount: "ክፍሎች ({{count}})",
+      hideRooms: "ክፍሎችን ደብቅ",
+      showAllRooms: "ሁሉንም ክፍሎች አሳይ",
+      viewMoreRoomTypes: "ተጨማሪ {{count}} የክፍል አይነቶችን አሳይ",
+      viewMoreRooms: "ተጨማሪ {{count}} ክፍሎችን አሳይ"
+    },
+    listCard: {
+      noRoomsAvailable: "ምንም ክፍሎች አይገኙም",
+      availableLabel: "የሚገኙ:",
+      priceRangeLabel: "የዋጋ ክልል:",
+      viewHotelDetails: "የሆቴል ዝርዝሮችን ይመልከቱ",
+      viewHotel: "ሆቴል ይመልከቱ"
+    },
+    hotelCard: {
+      availableRoomsCount: "የሚገኙ ክፍሎች ({{count}})",
+      moreRoomsAvailable: "+{{count}} ተጨማሪ ክፍሎች ይገኛሉ",
+      noRoomsAvailableForDates: "ለተመረጡት ቀናት ክፍሎች አይገኙም",
+      unavailable: "አይገኝም"
+    },
+    roomCard: {
+      roomNumber: "ክፍል {{roomNumber}}",
+      upToGuests: "እስከ {{count}} እንግዶች",
+      amenities: "የክፍል ምቾቶች",
+      moreAmenities: "+{{count}} ተጨማሪ",
+      bookNow: "አሁን ያስይዙ",
+      signInToBook: "ለማስያዝ ይግቡ",
+      bookAsGuest: "እንደ እንግዳ ያስይዙ"
+    },
+    roomTypeCard: {
+      availableCount: "{{count}} ይገኛሉ",
+      fullyBooked: "ሙሉ በሙሉ ተይዟል",
+      notAvailable: "አይገኝም"
+    },
+    roomTypes: {
+      single: "ነጠላ ክፍል",
+      double: "ሁለት አልጋ ክፍል",
+      standard: "መደበኛ ክፍል",
+      deluxe: "ዲሉክስ ክፍል",
+      suite: "ሱዊት",
+      family: "የቤተሰብ ክፍል",
+      accessible: "ለሁሉም ተደራሽ ክፍል",
+      presidential: "ፕሬዚዳንሽያል ሱዊት"
+    },
+    bedInfo: {
+      single: "1 አልጋ",
+      double: "2 አልጋዎች",
+      standard: "2 አልጋዎች",
+      deluxe: "ኪንግ አልጋ",
+      suite: "ብዙ ክፍሎች",
+      family: "ብዙ አልጋዎች",
+      accessible: "ተደራሽ አልጋ",
+      presidential: "የቅንጦት ሱዊት"
+    },
+    amenities: {
+      freeWifi: "ነፃ ዋይፋይ",
+      airConditioning: "አየር ማቀዝቀዣ",
+      roomService: "የክፍል አገልግሎት",
+      workDesk: "የስራ ጠረጴዛ",
+      miniBar: "ሚኒ ባር",
+      safe: "ካዝና",
+      extraSpace: "ተጨማሪ ቦታ",
+      multipleBeds: "ብዙ አልጋዎች",
+      kidsWelcome: "ለልጆች ተስማሚ",
+      wheelchairAccessible: "በዊልቼር ተደራሽ",
+      rollInShower: "ለመግባት ቀላል ሻወር",
+      grabBars: "የመያዣ ባር",
+      livingArea: "መኖሪያ ቦታ",
+      kitchenette: "ትንሽ ማብሰያ",
+      balcony: "ባልኮኒ",
+      premiumBedding: "ፕሪሚየም አልጋ ልብስ",
+      cityView: "የከተማ እይታ",
+      butlerService: "የባትለር አገልግሎት",
+      privateTerrace: "የግል ቴራስ",
+      jacuzzi: "ጃኩዚ",
+      premiumAmenities: "ፕሪሚየም ምቾቶች"
     }
   },
   walkInBooking: {
@@ -2119,6 +2625,7 @@ export const amTranslations = {
     // Error states
     errorNotFound: "ማስያዝ አልተገኘም",
     errorDescription: "የመያዣዎን መረጃ ማግኘት አልቻልንም። እባክዎ የማረጋገጫ ቁጥርዎን ያረጋግጡ ወይም እንደገና ይሞክሩ።",
+    errorNoBookingInformation: "ምንም የመያዣ መረጃ የለም",
     
     // Action buttons
     actions: {
@@ -2187,7 +2694,30 @@ export const amTranslations = {
       paid: "ተከፍሏል",
       payAtFrontDesk: "በሪሴፕሽን ክፈል",
       failed: "አልተሳካም",
-      refunded: "ተመልሷል"
+      refunded: "ተመልሷል",
+      partiallyRefunded: "በከፊል ተመልሷል",
+      forfeited: "ተጠፍቷል"
+    },
+
+    print: {
+      title: "የማስያዝ ማረጋገጫ",
+      confirmationNumber: "የማረጋገጫ ቁጥር: {{confirmationNumber}}",
+      footerThankYou: "{{hotelName}} ን ስለመረጡ እናመሰግናለን!",
+      labels: {
+        guestName: "የእንግዳ ስም:",
+        email: "ኢሜይል:",
+        numberOfGuests: "የእንግዶች ቁጥር:",
+        hotel: "ሆቴል:",
+        address: "አድራሻ:",
+        roomType: "የክፍል አይነት:",
+        roomAssignment: "የክፍል ምደባ:",
+        checkIn: "መግቢያ:",
+        checkOut: "መውጫ:",
+        nights: "ምሽቶች:",
+        ratePerNight: "በምሽት ዋጋ:",
+        status: "ሁኔታ:",
+        paymentStatus: "የክፍያ ሁኔታ:"
+      }
     },
     
     // Important information
@@ -2238,6 +2768,9 @@ export const amTranslations = {
     home: "ቤት",
     hotels: "ሆቴሎች",
     bookings: "ማስያዞች",
+    hotelRegistration: "የሆቴል ምዝገባ",
+    myReservation: "የእኔ ማስያዣ",
+    login: "ይግቡ",
     profile: "መገለጫ",
     logout: "ውጣ",
     dashboard: "መቆጣጠሪያ ገፅ",

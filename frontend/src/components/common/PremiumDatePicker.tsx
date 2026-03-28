@@ -2,13 +2,16 @@ import React from 'react';
 import { DatePicker, DatePickerProps } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { useCalendarStore } from '../../contexts/store';
+import { getCalendarType, useCalendarStore } from '../../contexts/store';
 import { EthDatePicker } from './EthDatePickers';
+import { useTranslation } from 'react-i18next';
 
 const PremiumDatePicker: React.FC<DatePickerProps<Date>> = (props) => {
+  const { i18n } = useTranslation();
   const textFieldProps = props.slotProps?.textField;
   const existingSx = typeof textFieldProps === 'object' && 'sx' in textFieldProps ? textFieldProps.sx : {};
   const { calendarType } = useCalendarStore();
+  const effectiveCalendarType = getCalendarType(i18n.language, calendarType);
 
   const commonProps = {
     ...props,
@@ -73,7 +76,7 @@ const PremiumDatePicker: React.FC<DatePickerProps<Date>> = (props) => {
     }
   };
 
-  if (calendarType === 'ethiopian') {
+  if (effectiveCalendarType === 'ethiopian') {
     return (
       <EthDatePicker key="eth" {...commonProps} />
     );

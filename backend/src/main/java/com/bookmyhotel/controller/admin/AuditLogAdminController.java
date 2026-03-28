@@ -30,14 +30,14 @@ public class AuditLogAdminController {
     /**
      * Paginated audit log list with optional filters.
      *
-     * @param action      filter by action type (CREATE, UPDATE, DELETE, …)
-     * @param entityType  filter by entity type (USER, HOTEL, TENANT, …)
-     * @param userEmail   partial match on performer email
-     * @param from        start of time range (ISO 8601)
-     * @param to          end of time range (ISO 8601)
-     * @param page        0-based page index
-     * @param size        page size (max 100)
-     * @param sort        sort field,direction  e.g. performedAt,desc
+     * @param action     filter by action type (CREATE, UPDATE, DELETE, …)
+     * @param entityType filter by entity type (USER, HOTEL, TENANT, …)
+     * @param userEmail  partial match on performer email
+     * @param from       start of time range (ISO 8601)
+     * @param to         end of time range (ISO 8601)
+     * @param page       0-based page index
+     * @param size       page size (max 100)
+     * @param sort       sort field,direction e.g. performedAt,desc
      */
     @GetMapping("/logs")
     public ResponseEntity<Page<SystemAuditLogDto>> getLogs(
@@ -53,7 +53,8 @@ public class AuditLogAdminController {
         size = Math.min(size, 100);
         String[] sortParts = sort.split(",");
         Sort.Direction dir = sortParts.length > 1 && sortParts[1].equalsIgnoreCase("asc")
-                ? Sort.Direction.ASC : Sort.Direction.DESC;
+                ? Sort.Direction.ASC
+                : Sort.Direction.DESC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(dir, sortParts[0]));
 
         Page<SystemAuditLogDto> result = auditService.getLogs(action, entityType, userEmail, from, to, pageable);
@@ -75,7 +76,6 @@ public class AuditLogAdminController {
     public ResponseEntity<Map<String, Long>> getStats() {
         return ResponseEntity.ok(Map.of(
                 "totalToday", auditService.countToday(),
-                "failedToday", auditService.countFailedToday()
-        ));
+                "failedToday", auditService.countFailedToday()));
     }
 }

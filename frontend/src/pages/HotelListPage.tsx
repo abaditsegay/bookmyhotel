@@ -1,88 +1,46 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
-  Container,
   Typography,
   Box,
   Alert,
   Snackbar,
+  Container,
   Grid,
   useTheme,
   useMediaQuery,
-  Card,
-  CardContent,
   Button,
 } from '@mui/material';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { hotelApiService } from '../services/hotelApi';
 import HotelListCard from '../components/hotel/HotelListCard';
+import { DataState } from '../components/common';
+import { PageHeader, SurfaceCard } from '../components/ui';
 import { COLORS, addAlpha, getGradient } from '../theme/themeColors';
-import { 
-  HotelSearchRequest, 
-  HotelSearchResult,
-} from '../types/hotel';
-import { HotelCardSkeleton } from '../components/common/SkeletonLoaders';
-import { NoHotels } from '../components/common/EmptyState';
+import { PublicHotelSearchLocationState, usePublicHotelSearchResults, formatHotelSearchSummary } from '../hooks/usePublicHotelSearchResults';
 
 const HotelListPage: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  
-  // State from search parameters
-  const [searchRequest, setSearchRequest] = useState<HotelSearchRequest | null>(null);
-  const [hotels, setHotels] = useState<HotelSearchResult[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  
-  // Success/error feedback
+
+  const locationState = (location.state as PublicHotelSearchLocationState | null) ?? null;
+  const { searchRequest, hotels, successMessage: initialSuccessMessage, isLoading, error, hasSearchRequest, refetch } =
+    usePublicHotelSearchResults(locationState);
   const [successMessage, setSuccessMessage] = useState('');
 
-  // Function to perform a new search when we have searchRequest but no hotels
-  const performSearch = useCallback(async (searchReq: HotelSearchRequest) => {
-    try {
-      setLoading(true);
-      setError('');
-      // console.log('🔍 Performing hotel search:', searchReq);
-      const results = await hotelApiService.searchHotelsPublic(searchReq);
-      setHotels(results);
-    } catch (err) {
-      // console.error('❌ Hotel search failed:', err);
-      setError(err instanceof Error ? err.message : 'An error occurred while searching for hotels');
-      // If search fails, redirect back to search page
-      navigate('/hotels/search');
-    } finally {
-      setLoading(false);
-    }
-  }, [navigate]);
-
-  // Extract search parameters from location state or URL
   useEffect(() => {
-    const state = location.state as { 
-      searchRequest?: HotelSearchRequest; 
-      hotels?: HotelSearchResult[];
-      successMessage?: string;
-    };
-    
-    if (state?.searchRequest && state?.hotels && state.hotels.length > 0) {
-      // If we have data passed from the search page
-      setSearchRequest(state.searchRequest);
-      setHotels(state.hotels);
-      setLoading(false);
-    } else if (state?.searchRequest) {
-      // If we have searchRequest but no hotels, perform a new search
-      setSearchRequest(state.searchRequest);
-      performSearch(state.searchRequest);
-    } else {
-      // If no data, redirect back to search
-      navigate('/hotels/search');
+    if (!hasSearchRequest) {
+      navigate('/hotels/search', { replace: true });
     }
+  }, [hasSearchRequest, navigate]);
 
-    // Handle success message from booking
-    if (state?.successMessage) {
-      setSuccessMessage(state.successMessage);
+  useEffect(() => {
+    if (initialSuccessMessage) {
+      setSuccessMessage(initialSuccessMessage);
     }
-  }, [location, navigate, performSearch]);
+  }, [initialSuccessMessage]);
 
   const handleViewHotel = (hotelId: number) => {
     navigate(`/hotels/${hotelId}`, {
@@ -104,37 +62,21 @@ const HotelListPage: React.FC = () => {
     });
   };
 
-  const formatSearchSummary = () => {
-    if (!searchRequest) return '';
-    
-    const parts = [];
-    if (searchRequest.location) {
-      parts.push(`in ${searchRequest.location}`);
-    }
-    parts.push(`from ${searchRequest.checkInDate} to ${searchRequest.checkOutDate}`);
-    parts.push(`for ${searchRequest.guests} guest${searchRequest.guests > 1 ? 's' : ''}`);
-    
-    return parts.join(' ');
-  };
+  const searchSummary = useMemo(
+    () =>
+      formatHotelSearchSummary(searchRequest, {
+        inLabel: t('hotelSearch.summary.in'),
+        fromLabel: t('hotelSearch.summary.from'),
+        toLabel: t('hotelSearch.summary.to'),
+        forLabel: t('hotelSearch.summary.for'),
+        guestSingular: t('hotelSearch.summary.guestSingle'),
+        guestPlural: t('hotelSearch.summary.guestPlural'),
+      }),
+    [searchRequest, t],
+  );
 
-  if (loading) {
-    return (
-      <Container 
-        maxWidth="lg"
-        sx={{ py: isMobile ? 2 : 4, px: isMobile ? 1 : 3 }}
-      >
-        <Typography variant="h5" sx={{ mb: 3 }}>
-          Searching for hotels...
-        </Typography>
-        <Grid container spacing={isMobile ? 2 : 3}>
-          {Array.from({ length: 3 }).map((_, index) => (
-            <Grid item xs={12} key={index}>
-              <HotelCardSkeleton />
-            </Grid>
-          ))}
-        </Grid>
-      </Container>
-    );
+  if (!hasSearchRequest) {
+    return null;
   }
 
   return (
@@ -148,37 +90,23 @@ const HotelListPage: React.FC = () => {
       }}
     >
       {/* Combined Header and Actions Section */}
-      <Card 
+      <SurfaceCard 
+        variantStyle="elevated"
         sx={{ 
           mb: isMobile ? 3 : 4,
-          backgroundColor: COLORS.WHITE,
-          border: `2px solid ${COLORS.PRIMARY}`,
-          borderRadius: 2,
           boxShadow: `0 4px 12px ${addAlpha(COLORS.PRIMARY, 0.15)}`,
-          overflow: 'hidden',
         }}
+        contentSx={{ p: { xs: 2, md: 2.5 } }}
       >
-        <CardContent sx={{ p: isMobile ? 3 : 4 }}>
           {/* Combined Header Section */}
           <Box sx={{ 
-            p: 3,
-            bgcolor: COLORS.BG_LIGHT,
-            borderRadius: 2,
-            border: `1px solid ${COLORS.PRIMARY}`,
+            p: { xs: 1, md: 1.5 },
+            bgcolor: 'transparent',
           }}>
-            <Typography 
-              variant={isMobile ? "h5" : "h4"} 
-              sx={{ 
-                fontWeight: 700,
-                color: COLORS.PRIMARY,
-                mb: 1,
-              }}
-            >
-              Search Results
-            </Typography>
-            <Typography variant="body1" color="text.secondary" sx={{ mb: 2, fontWeight: 500 }}>
-              Hotels {formatSearchSummary()}
-            </Typography>
+            <PageHeader
+              title={t('hotelSearch.results.title')}
+              description={`${t('hotelSearch.results.descriptionPrefix')} ${searchSummary}`}
+            />
             
             <Box sx={{ 
               display: 'flex',
@@ -202,18 +130,20 @@ const HotelListPage: React.FC = () => {
                   border: `1px solid ${COLORS.SECONDARY}`,
                 }}
               >
-                {hotels.length} hotel{hotels.length === 1 ? '' : 's'} found
+                {hotels.length === 1
+                  ? t('hotelSearch.results.hotelsFoundSingle', { count: hotels.length })
+                  : t('hotelSearch.results.hotelsFoundPlural', { count: hotels.length })}
               </Typography>
               
               <Button 
-                onClick={() => {}}
+                onClick={handleBackToSearch}
                 sx={{ 
                   py: 1,
                   px: 2.5,
                   bgcolor: COLORS.WHITE,
                   color: COLORS.PRIMARY,
                   border: `1px solid ${COLORS.SECONDARY}`,
-                  borderRadius: 2,
+                  borderRadius: 1,
                   fontWeight: 600,
                   textTransform: 'none',
                   fontSize: '0.875rem',
@@ -224,22 +154,30 @@ const HotelListPage: React.FC = () => {
                   },
                 }}
               >
-                Sort By Price
+                {t('hotelSearch.results.modifySearch')}
               </Button>
             </Box>
           </Box>
-        </CardContent>
-      </Card>
+      </SurfaceCard>
 
-      {/* Error State */}
-      {error && (
-        <Alert severity="error" sx={{ mb: 3 }}>
-          {error}
-        </Alert>
-      )}
-
-      {/* Results Section */}
-      {hotels.length > 0 ? (
+      <DataState
+        loading={isLoading}
+        error={error}
+        isEmpty={!isLoading && hotels.length === 0}
+        loadingMessage={t('hotelSearch.results.searching')}
+        fallbackErrorMessage={t('hotelSearch.results.refreshListError')}
+        emptyTitle={t('hotelSearch.results.emptyTitle')}
+        emptyMessage={t('hotelSearch.results.listEmptyMessage')}
+        emptyAction={{
+          label: t('hotelSearch.results.modifySearch'),
+          onClick: handleBackToSearch,
+          variant: 'outlined',
+        }}
+        onRetry={() => {
+          void refetch();
+        }}
+        minHeight="40vh"
+      >
         <Box>
           <Grid 
             container 
@@ -255,9 +193,7 @@ const HotelListPage: React.FC = () => {
             ))}
           </Grid>
         </Box>
-      ) : (
-        <NoHotels onRegister={handleBackToSearch} />
-      )}
+      </DataState>
 
       {/* Success Snackbar */}
       <Snackbar

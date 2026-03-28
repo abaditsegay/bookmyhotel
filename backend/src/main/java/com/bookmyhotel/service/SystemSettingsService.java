@@ -20,8 +20,7 @@ public class SystemSettingsService {
 
     private static final Logger logger = LoggerFactory.getLogger(SystemSettingsService.class);
     private static final String PAYMENT_GATEWAY_MODE_KEY = "payment.gateway.mode";
-    private static final String PAYMENT_GATEWAY_MODE_DESCRIPTION =
-            "Controls whether booking checkout uses mock payment processing or live Ethiopian wallet gateways.";
+    private static final String PAYMENT_GATEWAY_MODE_DESCRIPTION = "Controls whether booking checkout uses mock payment processing or live Ethiopian wallet gateways.";
 
     @Autowired
     private SystemSettingRepository systemSettingRepository;

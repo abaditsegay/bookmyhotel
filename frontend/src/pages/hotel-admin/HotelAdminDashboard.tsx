@@ -570,9 +570,9 @@ const HotelAdminDashboard: React.FC = () => {
                       <Grid item xs={12} sm={6} md={3}>
                         <Card elevation={0} sx={{ 
                           background: `linear-gradient(135deg, ${addAlpha(theme.palette.primary.main, 0.15)} 0%, ${addAlpha(theme.palette.primary.light, 0.1)} 100%)`,
-                          border: `1px solid ${addAlpha(theme.palette.primary.main, 0.3)}`,
                           borderRadius: 3,
-                          height: '100%'
+                          height: '100%',
+                          boxShadow: `0 10px 24px ${addAlpha(theme.palette.primary.main, 0.12)}`,
                         }}>
                           <CardContent sx={{ textAlign: 'center', p: 3 }}>
                             <Box sx={{ 
@@ -606,9 +606,9 @@ const HotelAdminDashboard: React.FC = () => {
                       <Grid item xs={12} sm={6} md={3}>
                         <Card elevation={0} sx={{ 
                           background: `linear-gradient(135deg, ${addAlpha(theme.palette.success.main, 0.15)} 0%, ${addAlpha(theme.palette.success.light, 0.1)} 100%)`,
-                          border: `1px solid ${addAlpha(theme.palette.success.main, 0.3)}`,
                           borderRadius: 3,
-                          height: '100%'
+                          height: '100%',
+                          boxShadow: `0 10px 24px ${addAlpha(theme.palette.success.main, 0.12)}`,
                         }}>
                           <CardContent sx={{ textAlign: 'center', p: 3 }}>
                             <Box sx={{ 
@@ -642,9 +642,9 @@ const HotelAdminDashboard: React.FC = () => {
                       <Grid item xs={12} sm={6} md={3}>
                         <Card elevation={0} sx={{ 
                           background: `linear-gradient(135deg, ${addAlpha(theme.palette.warning.main, 0.15)} 0%, ${addAlpha(theme.palette.warning.light, 0.1)} 100%)`,
-                          border: `1px solid ${addAlpha(theme.palette.warning.main, 0.3)}`,
                           borderRadius: 3,
-                          height: '100%'
+                          height: '100%',
+                          boxShadow: `0 10px 24px ${addAlpha(theme.palette.warning.main, 0.12)}`,
                         }}>
                           <CardContent sx={{ textAlign: 'center', p: 3 }}>
                             <Box sx={{ 
@@ -678,9 +678,9 @@ const HotelAdminDashboard: React.FC = () => {
                       <Grid item xs={12} sm={6} md={3}>
                         <Card elevation={0} sx={{ 
                           background: `linear-gradient(135deg, ${addAlpha(theme.palette.info.main, 0.15)} 0%, ${addAlpha(theme.palette.info.light, 0.1)} 100%)`,
-                          border: `1px solid ${addAlpha(theme.palette.info.main, 0.3)}`,
                           borderRadius: 3,
-                          height: '100%'
+                          height: '100%',
+                          boxShadow: `0 10px 24px ${addAlpha(theme.palette.info.main, 0.12)}`,
                         }}>
                           <CardContent sx={{ textAlign: 'center', p: 3 }}>
                             <Box sx={{ 
@@ -1061,10 +1061,9 @@ const HotelAdminDashboard: React.FC = () => {
                   <Grid item xs={12} sm={6} md={3}>
                     <Card elevation={0} sx={{ 
                       backgroundColor: COLORS.BG_LIGHT,
-                      border: `1px solid ${COLORS.BORDER_LIGHT}`,
-                      borderLeft: `2px solid ${COLORS.SECONDARY}`,
                       borderRadius: 2,
                       transition: 'all 0.2s',
+                      boxShadow: `0 8px 20px ${addAlpha(COLORS.SECONDARY, 0.08)}`,
                       '&:hover': {
                         boxShadow: `0 4px 12px ${addAlpha(COLORS.SECONDARY, 0.15)}`,
                         transform: 'translateY(-2px)'
@@ -1087,10 +1086,9 @@ const HotelAdminDashboard: React.FC = () => {
                   <Grid item xs={12} sm={6} md={3}>
                     <Card elevation={0} sx={{ 
                       backgroundColor: COLORS.BG_LIGHT,
-                      border: `1px solid ${COLORS.BORDER_LIGHT}`,
-                      borderLeft: `2px solid ${COLORS.SECONDARY}`,
                       borderRadius: 2,
                       transition: 'all 0.2s',
+                      boxShadow: `0 8px 20px ${addAlpha(COLORS.SECONDARY, 0.08)}`,
                       '&:hover': {
                         boxShadow: `0 4px 12px ${addAlpha(COLORS.SECONDARY, 0.15)}`,
                         transform: 'translateY(-2px)'
@@ -1113,10 +1111,9 @@ const HotelAdminDashboard: React.FC = () => {
                   <Grid item xs={12} sm={6} md={3}>
                     <Card elevation={0} sx={{ 
                       backgroundColor: COLORS.BG_LIGHT,
-                      border: `1px solid ${COLORS.BORDER_LIGHT}`,
-                      borderLeft: `2px solid ${COLORS.SECONDARY}`,
                       borderRadius: 2,
                       transition: 'all 0.2s',
+                      boxShadow: `0 8px 20px ${addAlpha(COLORS.SECONDARY, 0.08)}`,
                       '&:hover': {
                         boxShadow: `0 4px 12px ${addAlpha(COLORS.SECONDARY, 0.15)}`,
                         transform: 'translateY(-2px)'
@@ -1142,10 +1139,9 @@ const HotelAdminDashboard: React.FC = () => {
                   <Grid item xs={12} sm={6} md={3}>
                     <Card elevation={0} sx={{ 
                       backgroundColor: COLORS.BG_LIGHT,
-                      border: `1px solid ${COLORS.BORDER_LIGHT}`,
-                      borderLeft: `2px solid ${COLORS.SECONDARY}`,
                       borderRadius: 2,
                       transition: 'all 0.2s',
+                      boxShadow: `0 8px 20px ${addAlpha(COLORS.SECONDARY, 0.08)}`,
                       '&:hover': {
                         boxShadow: `0 4px 12px ${addAlpha(COLORS.SECONDARY, 0.15)}`,
                         transform: 'translateY(-2px)'
@@ -1172,9 +1168,8 @@ const HotelAdminDashboard: React.FC = () => {
                   <Grid item xs={12} md={6}>
                     <Card elevation={0} sx={{ 
                       backgroundColor: COLORS.BG_LIGHT,
-                      border: `1px solid ${COLORS.BORDER_LIGHT}`,
-                      borderLeft: `2px solid ${COLORS.SECONDARY}`,
-                      borderRadius: 2
+                      borderRadius: 2,
+                      boxShadow: `0 8px 20px ${addAlpha(COLORS.SECONDARY, 0.08)}`,
                     }}>
                       <CardContent>
                         <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: COLORS.PRIMARY }}>
@@ -1214,9 +1209,8 @@ const HotelAdminDashboard: React.FC = () => {
                   <Grid item xs={12} md={6}>
                     <Card elevation={0} sx={{ 
                       backgroundColor: COLORS.BG_LIGHT,
-                      border: `1px solid ${COLORS.BORDER_LIGHT}`,
-                      borderLeft: `2px solid ${COLORS.SECONDARY}`,
-                      borderRadius: 2
+                      borderRadius: 2,
+                      boxShadow: `0 8px 20px ${addAlpha(COLORS.SECONDARY, 0.08)}`,
                     }}>
                       <CardContent>
                         <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: COLORS.PRIMARY }}>
@@ -1258,9 +1252,8 @@ const HotelAdminDashboard: React.FC = () => {
                   <Grid item xs={12}>
                     <Card elevation={0} sx={{ 
                       backgroundColor: COLORS.BG_LIGHT,
-                      border: `1px solid ${COLORS.BORDER_LIGHT}`,
-                      borderLeft: `2px solid ${COLORS.SECONDARY}`,
-                      borderRadius: 2
+                      borderRadius: 2,
+                      boxShadow: `0 8px 20px ${addAlpha(COLORS.SECONDARY, 0.08)}`,
                     }}>
                       <CardContent>
                         <Typography variant="h6" sx={{ fontWeight: 700, mb: 2, color: COLORS.PRIMARY }}>
@@ -1273,8 +1266,8 @@ const HotelAdminDashboard: React.FC = () => {
                               p: 2, 
                               backgroundColor: COLORS.WHITE, 
                               borderRadius: 2,
-                              border: `1px solid ${COLORS.BORDER_LIGHT}`,
                               transition: 'all 0.2s',
+                              boxShadow: `0 6px 16px ${addAlpha(COLORS.BLACK, 0.05)}`,
                               '&:hover': {
                                 boxShadow: `0 4px 12px ${addAlpha(COLORS.SECONDARY, 0.15)}`,
                                 transform: 'translateY(-2px)'
@@ -1294,8 +1287,8 @@ const HotelAdminDashboard: React.FC = () => {
                               p: 2, 
                               backgroundColor: COLORS.WHITE, 
                               borderRadius: 2,
-                              border: `1px solid ${COLORS.BORDER_LIGHT}`,
                               transition: 'all 0.2s',
+                              boxShadow: `0 6px 16px ${addAlpha(COLORS.BLACK, 0.05)}`,
                               '&:hover': {
                                 boxShadow: `0 4px 12px ${addAlpha(COLORS.SECONDARY, 0.15)}`,
                                 transform: 'translateY(-2px)'
@@ -1315,8 +1308,8 @@ const HotelAdminDashboard: React.FC = () => {
                               p: 2, 
                               backgroundColor: COLORS.WHITE, 
                               borderRadius: 2,
-                              border: `1px solid ${COLORS.BORDER_LIGHT}`,
                               transition: 'all 0.2s',
+                              boxShadow: `0 6px 16px ${addAlpha(COLORS.BLACK, 0.05)}`,
                               '&:hover': {
                                 boxShadow: `0 4px 12px ${addAlpha(COLORS.SECONDARY, 0.15)}`,
                                 transform: 'translateY(-2px)'
@@ -1341,10 +1334,9 @@ const HotelAdminDashboard: React.FC = () => {
                   <Grid item xs={12} md={4}>
                     <Card elevation={0} sx={{ 
                       backgroundColor: COLORS.BG_LIGHT,
-                      border: `1px solid ${COLORS.BORDER_LIGHT}`,
-                      borderLeft: `2px solid ${COLORS.SECONDARY}`,
                       borderRadius: 2,
                       transition: 'all 0.2s',
+                      boxShadow: `0 8px 20px ${addAlpha(COLORS.SECONDARY, 0.08)}`,
                       '&:hover': {
                         boxShadow: `0 4px 12px ${addAlpha(COLORS.SECONDARY, 0.15)}`,
                         transform: 'translateY(-2px)'
@@ -1382,10 +1374,9 @@ const HotelAdminDashboard: React.FC = () => {
                   <Grid item xs={12} md={4}>
                     <Card elevation={0} sx={{ 
                       backgroundColor: COLORS.BG_LIGHT,
-                      border: `1px solid ${COLORS.BORDER_LIGHT}`,
-                      borderLeft: `2px solid ${COLORS.SECONDARY}`,
                       borderRadius: 2,
                       transition: 'all 0.2s',
+                      boxShadow: `0 8px 20px ${addAlpha(COLORS.SECONDARY, 0.08)}`,
                       '&:hover': {
                         boxShadow: `0 4px 12px ${addAlpha(COLORS.SECONDARY, 0.15)}`,
                         transform: 'translateY(-2px)'
@@ -1418,10 +1409,9 @@ const HotelAdminDashboard: React.FC = () => {
                   <Grid item xs={12} md={4}>
                     <Card elevation={0} sx={{ 
                       backgroundColor: COLORS.BG_LIGHT,
-                      border: `1px solid ${COLORS.BORDER_LIGHT}`,
-                      borderLeft: `2px solid ${COLORS.SECONDARY}`,
                       borderRadius: 2,
                       transition: 'all 0.2s',
+                      boxShadow: `0 8px 20px ${addAlpha(COLORS.SECONDARY, 0.08)}`,
                       '&:hover': {
                         boxShadow: `0 4px 12px ${addAlpha(COLORS.SECONDARY, 0.15)}`,
                         transform: 'translateY(-2px)'

@@ -29,24 +29,25 @@ public class SystemAuditService {
 
     /**
      * Write an audit log entry asynchronously so it never blocks the main request.
-     * Uses REQUIRES_NEW to ensure it commits even if the outer transaction rolls back.
+     * Uses REQUIRES_NEW to ensure it commits even if the outer transaction rolls
+     * back.
      */
     @Async
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void log(String entityType,
-                    Long entityId,
-                    String action,
-                    String description,
-                    Long userId,
-                    String userName,
-                    String userEmail,
-                    String userRole,
-                    String ipAddress,
-                    String userAgent,
-                    String requestPath,
-                    String requestMethod,
-                    boolean success,
-                    String errorMessage) {
+            Long entityId,
+            String action,
+            String description,
+            Long userId,
+            String userName,
+            String userEmail,
+            String userRole,
+            String ipAddress,
+            String userAgent,
+            String requestPath,
+            String requestMethod,
+            boolean success,
+            String errorMessage) {
         try {
             SystemAuditLog entry = new SystemAuditLog();
             entry.setEntityType(entityType);
@@ -71,11 +72,11 @@ public class SystemAuditService {
 
     @Transactional(readOnly = true)
     public Page<SystemAuditLogDto> getLogs(String action,
-                                           String entityType,
-                                           String userEmail,
-                                           LocalDateTime from,
-                                           LocalDateTime to,
-                                           Pageable pageable) {
+            String entityType,
+            String userEmail,
+            LocalDateTime from,
+            LocalDateTime to,
+            Pageable pageable) {
         Page<SystemAuditLog> page = repository.findWithFilters(
                 emptyToNull(action), emptyToNull(entityType), emptyToNull(userEmail), from, to, pageable);
         List<SystemAuditLogDto> dtos = page.getContent().stream()

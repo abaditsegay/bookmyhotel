@@ -22,6 +22,7 @@ import {
 import TokenManager from '../utils/tokenManager';
 import { StandardCard, StandardButton, StandardLoading, StandardError } from './common';
 import { COLORS, addAlpha } from '../theme/themeColors';
+import { formatDateTimeForDisplay } from '../utils/dateUtils';
 import { buildApiUrl } from '../config/apiConfig';
 
 interface PaymentStatusProps {
@@ -176,7 +177,8 @@ const PaymentStatusTracker: React.FC<PaymentStatusProps> = ({
   const formatTime = (seconds: number): string => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    const formattedSeconds = remainingSeconds < 10 ? `0${remainingSeconds}` : `${remainingSeconds}`;
+    return `${minutes}:${formattedSeconds}`;
   };
 
   const getProviderInfo = () => {
@@ -366,7 +368,7 @@ const PaymentStatusTracker: React.FC<PaymentStatusProps> = ({
               </Typography>
               {status.paymentDate && (
                 <Typography variant="body2" color="text.secondary">
-                  <strong>Completed:</strong> {new Date(status.paymentDate).toLocaleString()}
+                  <strong>Completed:</strong> {formatDateTimeForDisplay(status.paymentDate)}
                 </Typography>
               )}
             </CardContent>

@@ -7,6 +7,8 @@ import {
   UserRole,
   ShiftType
 } from '../types/operations';
+import { formatDateForDisplay, formatDateTimeForDisplay } from './dateUtils';
+import { formatEthiopianTime } from './ethiopianCalendar';
 
 // Priority helpers
 export const getPriorityColor = (priority: TaskPriority): 'error' | 'warning' | 'info' | 'success' => {
@@ -309,33 +311,15 @@ export const formatCurrency = (amount: number): string => {
 };
 
 export const formatDateTime = (dateString: string): string => {
-  const date = new Date(dateString);
-  return new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true,
-  }).format(date);
+  return formatDateTimeForDisplay(dateString);
 };
 
 export const formatDate = (dateString: string): string => {
-  const date = new Date(dateString);
-  return new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  }).format(date);
+  return formatDateForDisplay(dateString);
 };
 
 export const formatTime = (dateString: string): string => {
-  const date = new Date(dateString);
-  return new Intl.DateTimeFormat('en-US', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true,
-  }).format(date);
+  return formatEthiopianTime(dateString);
 };
 
 export const getRelativeTime = (dateString: string): string => {

@@ -518,8 +518,6 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
       <Paper elevation={0} sx={{ 
         p: 3, 
         mb: 3,
-        border: '1px solid',
-        borderColor: 'divider',
         borderRadius: 3,
         boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.08)}`
       }}>
@@ -573,9 +571,8 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
           p: 2.5,
           backgroundColor: COLORS.BG_LIGHT,
           borderRadius: 2,
-          border: '1px solid',
-          borderColor: 'divider',
-          mb: 2
+          mb: 2,
+          boxShadow: `0 6px 16px ${addAlpha(COLORS.BLACK, 0.05)}`,
         }}>
           <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.secondary', mb: 2.5, display: 'flex', alignItems: 'center', gap: 1 }}>
             <FilterIcon fontSize="small" />
@@ -677,7 +674,6 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
       <Paper 
         elevation={1}
         sx={{
-          border: `1px solid ${COLORS.BORDER_LIGHT}`,
           borderRadius: 3,
           boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.08)}`,
           overflow: 'hidden'
@@ -863,7 +859,6 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
           sx: { 
             borderRadius: 3,
             boxShadow: `0 8px 32px ${addAlpha(COLORS.BLACK, 0.12)}`,
-            border: `1px solid ${COLORS.BORDER_LIGHT}`
           }
         }}
       >
@@ -1110,7 +1105,6 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
           sx: { 
             borderRadius: 3,
             boxShadow: `0 8px 32px ${addAlpha(COLORS.BLACK, 0.12)}`,
-            border: `1px solid ${COLORS.BORDER_LIGHT}`
           }
         }}
       >

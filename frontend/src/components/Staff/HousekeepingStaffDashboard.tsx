@@ -162,12 +162,9 @@ const HousekeepingStaffDashboard: React.FC = () => {
         cursor: 'pointer',
         boxShadow: `0 1px 4px ${addAlpha(COLORS.BLACK, 0.05)}`,
         borderRadius: 2,
-        border: '1px solid',
-        borderColor: 'divider',
         transition: 'all 0.2s ease',
         '&:hover': { 
           boxShadow: `0 4px 12px ${addAlpha(COLORS.BLACK, 0.08)}`,
-          borderColor: 'primary.light',
         }
       }}
       onClick={() => openTaskDetails(task)}
@@ -405,13 +402,10 @@ const HousekeepingStaffDashboard: React.FC = () => {
                 sx={{ 
                   height: '100%',
                   backgroundColor: 'background.paper',
-                  border: '1px solid',
-                  borderColor: 'divider',
                   boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.04)}`,
                   transition: 'all 0.2s ease-in-out',
                   '&:hover': {
                     boxShadow: `0 4px 16px ${addAlpha(COLORS.BLACK, 0.08)}`,
-                    borderColor: 'primary.main',
                   }
                 }}
               >
@@ -460,13 +454,10 @@ const HousekeepingStaffDashboard: React.FC = () => {
                 sx={{ 
                   height: '100%',
                   backgroundColor: 'background.paper',
-                  border: '1px solid',
-                  borderColor: 'divider',
                   boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.04)}`,
                   transition: 'all 0.2s ease-in-out',
                   '&:hover': {
                     boxShadow: `0 4px 16px ${addAlpha(COLORS.BLACK, 0.08)}`,
-                    borderColor: 'warning.main',
                   }
                 }}
               >
@@ -515,13 +506,10 @@ const HousekeepingStaffDashboard: React.FC = () => {
                 sx={{ 
                   height: '100%',
                   backgroundColor: 'background.paper',
-                  border: '1px solid',
-                  borderColor: 'divider',
                   boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.04)}`,
                   transition: 'all 0.2s ease-in-out',
                   '&:hover': {
                     boxShadow: `0 4px 16px ${addAlpha(COLORS.BLACK, 0.08)}`,
-                    borderColor: 'info.main',
                   }
                 }}
               >
@@ -570,13 +558,10 @@ const HousekeepingStaffDashboard: React.FC = () => {
                 sx={{ 
                   height: '100%',
                   backgroundColor: 'background.paper',
-                  border: '1px solid',
-                  borderColor: 'divider',
                   boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.04)}`,
                   transition: 'all 0.2s ease-in-out',
                   '&:hover': {
                     boxShadow: `0 4px 16px ${addAlpha(COLORS.BLACK, 0.08)}`,
-                    borderColor: 'success.main',
                   }
                 }}
               >
@@ -643,8 +628,6 @@ const HousekeepingStaffDashboard: React.FC = () => {
             boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.04)}`,
             borderRadius: 2,
             overflow: 'hidden',
-            border: '1px solid',
-            borderColor: 'divider'
           }}
         >
           <CardContent sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
@@ -861,12 +844,9 @@ const HousekeepingStaffDashboard: React.FC = () => {
                                     title="Start Task"
                                     sx={{
                                       color: 'primary.main',
-                                      border: '1px solid',
-                                      borderColor: 'divider',
                                       '&:hover': {
                                         backgroundColor: 'primary.main',
                                         color: 'white',
-                                        borderColor: 'primary.main',
                                       }
                                     }}
                                   >
@@ -880,12 +860,9 @@ const HousekeepingStaffDashboard: React.FC = () => {
                                     title="Complete Task"
                                     sx={{
                                       color: 'success.main',
-                                      border: '1px solid',
-                                      borderColor: 'divider',
                                       '&:hover': {
                                         backgroundColor: 'success.main',
                                         color: 'white',
-                                        borderColor: 'success.main',
                                       }
                                     }}
                                   >
@@ -899,8 +876,6 @@ const HousekeepingStaffDashboard: React.FC = () => {
                                     title="Update Status"
                                     sx={{
                                       color: 'text.secondary',
-                                      border: '1px solid',
-                                      borderColor: 'divider',
                                       '&:hover': {
                                         backgroundColor: 'action.hover',
                                         color: 'text.primary',

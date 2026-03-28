@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Box,
   Card,
@@ -26,51 +27,51 @@ interface AdvertisementBannerProps {
   maxAds?: number;
 }
 
-// Fallback hotel data
-const fallbackHotels: HotelSearchResult[] = [
-  {
-    id: 1,
-    name: 'Luxury Spa Resort',
-    description: 'Experience ultimate relaxation with our premium spa packages and oceanview suites.',
-    address: '123 Ocean Drive',
-    city: 'Malibu',
-    country: 'USA',
-    minPrice: 299,
-    maxPrice: 399,
-    availableRooms: [],
-    roomTypeAvailability: []
-  },
-  {
-    id: 2,
-    name: 'Business Hotel Downtown',
-    description: 'Modern amenities perfect for business travelers in the heart of the city.',
-    address: '456 Business Blvd',
-    city: 'New York',
-    country: 'USA',
-    minPrice: 199,
-    maxPrice: 299,
-    availableRooms: [],
-    roomTypeAvailability: []
-  },
-  {
-    id: 3,
-    name: 'Mountain View Lodge',
-    description: 'Escape to nature with breathtaking mountain views and outdoor activities.',
-    address: '789 Mountain Trail',
-    city: 'Aspen',
-    country: 'USA',
-    minPrice: 259,
-    maxPrice: 359,
-    availableRooms: [],
-    roomTypeAvailability: []
-  }
-];
-
 export default function AdvertisementBanner({ maxAds = 5 }: AdvertisementBannerProps) {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [hotels, setHotels] = useState<HotelSearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const fallbackHotels: HotelSearchResult[] = [
+    {
+      id: 1,
+      name: t('hotelBanner.fallback.resort.name'),
+      description: t('hotelBanner.fallback.resort.description'),
+      address: '123 Ocean Drive',
+      city: 'Malibu',
+      country: 'USA',
+      minPrice: 299,
+      maxPrice: 399,
+      availableRooms: [],
+      roomTypeAvailability: []
+    },
+    {
+      id: 2,
+      name: t('hotelBanner.fallback.business.name'),
+      description: t('hotelBanner.fallback.business.description'),
+      address: '456 Business Blvd',
+      city: 'New York',
+      country: 'USA',
+      minPrice: 199,
+      maxPrice: 299,
+      availableRooms: [],
+      roomTypeAvailability: []
+    },
+    {
+      id: 3,
+      name: t('hotelBanner.fallback.mountain.name'),
+      description: t('hotelBanner.fallback.mountain.description'),
+      address: '789 Mountain Trail',
+      city: 'Aspen',
+      country: 'USA',
+      minPrice: 259,
+      maxPrice: 359,
+      availableRooms: [],
+      roomTypeAvailability: []
+    }
+  ];
 
   // Fetch random hotels from API
   const fetchHotels = useCallback(async () => {
@@ -87,12 +88,12 @@ export default function AdvertisementBanner({ maxAds = 5 }: AdvertisementBannerP
       }
     } catch (err) {
       // console.warn('Failed to fetch random hotels from API, using fallback:', err);
-      setError('Using sample hotels');
+      setError(t('hotelBanner.usingSampleHotels'));
       setHotels(fallbackHotels.slice(0, maxAds));
     } finally {
       setLoading(false);
     }
-  }, [maxAds]);
+  }, [fallbackHotels, maxAds, t]);
 
   // Handle hotel click
   const handleHotelClick = (hotel: HotelSearchResult) => {
@@ -130,10 +131,10 @@ export default function AdvertisementBanner({ maxAds = 5 }: AdvertisementBannerP
         <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
           <OfferIcon color="primary" />
           <Typography variant="h6" sx={{ fontWeight: 'bold', flex: 1 }}>
-            Featured Hotels
+            {t('hotelBanner.title')}
           </Typography>
           <Chip 
-            label="Loading" 
+            label={t('common.loading')} 
             size="small" 
             color="primary" 
             variant="outlined"
@@ -163,10 +164,10 @@ export default function AdvertisementBanner({ maxAds = 5 }: AdvertisementBannerP
       <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
         <OfferIcon color="primary" />
         <Typography variant="h6" sx={{ fontWeight: 'bold', flex: 1 }}>
-          Featured Hotels
+          {t('hotelBanner.title')}
         </Typography>
         <Chip 
-          label={error ? "Sample Hotels" : "Live Data"} 
+          label={error ? t('hotelBanner.usingSampleHotels') : t('hotelBanner.liveData')} 
           size="small" 
           color={error ? "warning" : "primary"} 
           variant="outlined"
@@ -198,7 +199,7 @@ export default function AdvertisementBanner({ maxAds = 5 }: AdvertisementBannerP
                   sx={{ objectFit: 'cover' }}
                 />
                 <Chip
-                  label="Featured"
+                  label={t('hotelBanner.featuredBadge')}
                   size="small"
                   sx={{
                     position: 'absolute',
@@ -258,7 +259,7 @@ export default function AdvertisementBanner({ maxAds = 5 }: AdvertisementBannerP
                     </Typography>
                   )}
                   <Typography variant="caption" color="success.main" sx={{ fontWeight: 'bold' }}>
-                    /night
+                    {t('bookingConfirmation.room.perNight')}
                   </Typography>
                 </Box>
 
@@ -274,7 +275,7 @@ export default function AdvertisementBanner({ maxAds = 5 }: AdvertisementBannerP
                     borderRadius: 2
                   }}
                 >
-                  View Details
+                  {t('hotelBanner.viewDetails')}
                 </Button>
               </CardContent>
               
@@ -288,11 +289,11 @@ export default function AdvertisementBanner({ maxAds = 5 }: AdvertisementBannerP
       <Box sx={{ mt: 2, textAlign: 'center' }}>
         {error ? (
           <Alert severity="info" sx={{ mb: 1 }}>
-            Showing sample hotels. Live hotel data will be available once connected to the API.
+            {t('hotelBanner.usingSampleHotels')}
           </Alert>
         ) : null}
         <Typography variant="caption" color="text.secondary">
-          Updates every 2 minutes • {new Date().toLocaleTimeString()}
+          {t('hotelBanner.refreshesEveryTwoMinutes')} • {new Date().toLocaleTimeString()}
         </Typography>
       </Box>
     </Box>

@@ -38,6 +38,7 @@ import {
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { formatDateTimeForDisplay } from '../../utils/dateUtils';
 import { 
   adminApiService, 
   TenantDTO, 
@@ -635,7 +636,7 @@ const TenantManagementAdmin: React.FC = () => {
                   <PremiumTextField
                     fullWidth
                     label="Created At"
-                    value={selectedTenant.createdAt ? new Date(selectedTenant.createdAt).toLocaleString() : ''}
+                    value={selectedTenant.createdAt ? formatDateTimeForDisplay(selectedTenant.createdAt) : ''}
                     disabled
                   />
                 </Grid>
@@ -644,7 +645,7 @@ const TenantManagementAdmin: React.FC = () => {
                   <PremiumTextField
                     fullWidth
                     label="Last Updated"
-                    value={selectedTenant.updatedAt ? new Date(selectedTenant.updatedAt).toLocaleString() : ''}
+                    value={selectedTenant.updatedAt ? formatDateTimeForDisplay(selectedTenant.updatedAt) : ''}
                     disabled
                   />
                 </Grid>

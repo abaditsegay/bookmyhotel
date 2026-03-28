@@ -31,7 +31,11 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({
     if (savedLanguage && savedLanguage !== i18n.language) {
       i18n.changeLanguage(savedLanguage);
     }
-  }, [i18n]);
+
+    if (savedLanguage) {
+      setCalendarType(savedLanguage === 'am' ? 'ethiopian' : 'gregorian');
+    }
+  }, [i18n, setCalendarType]);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);

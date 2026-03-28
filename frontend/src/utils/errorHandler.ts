@@ -7,10 +7,18 @@
  * Extract user-friendly error message from any error type
  * Handles HTML error responses, network errors, and API errors
  */
-export function getErrorMessage(error: any): string {
+export function getErrorMessage(error: any, fallbackMessage = 'An unexpected error occurred. Please try again.'): string {
+  if (!error) {
+    return fallbackMessage;
+  }
+
   // Handle our custom service/network errors from axios interceptor
   if (error.isServiceError || error.isNetworkError) {
     return error.message;
+  }
+
+  if (typeof Response !== 'undefined' && error instanceof Response) {
+    return getErrorMessage({ response: { status: error.status, headers: { 'content-type': error.headers.get('content-type') || '' } } }, fallbackMessage);
   }
 
   // Handle axios error with response
@@ -62,8 +70,14 @@ export function getErrorMessage(error: any): string {
         return 'Too many requests. Please wait a moment and try again.';
       case 500:
         return 'An internal server error occurred. Please try again later.';
+      case 502:
+      case 503:
+      case 504:
+        return 'Our service is temporarily unavailable. Please try again shortly.';
       default:
-        return `An error occurred (Status: ${status}). Please try again.`;
+        return status >= 500
+          ? 'Our service is temporarily unavailable. Please try again shortly.'
+          : fallbackMessage;
     }
   }
 
@@ -80,20 +94,48 @@ export function getErrorMessage(error: any): string {
 
   // Handle Error objects
   if (error instanceof Error) {
+    const normalizedMessage = error.message.toLowerCase();
+
+    if (
+      normalizedMessage.includes('failed to fetch') ||
+      normalizedMessage.includes('networkerror') ||
+      normalizedMessage.includes('load failed') ||
+      normalizedMessage.includes('network request failed')
+    ) {
+      return 'Unable to reach the server. Please check your internet connection or try again in a moment.';
+    }
+
+    if (normalizedMessage.includes('timeout')) {
+      return 'The request took too long. Please try again.';
+    }
+
     // Don't show generic JS error messages to users
     if (error.message.includes('JSON')) {
       return 'Server returned an invalid response. Please try again.';
     }
-    return error.message;
+
+    if (error.message.startsWith('HTTP ')) {
+      return fallbackMessage;
+    }
+
+    return error.message || fallbackMessage;
   }
 
   // Handle string errors
   if (typeof error === 'string') {
+    if (/^http\s+\d+/i.test(error)) {
+      return fallbackMessage;
+    }
+
+    if (error.toLowerCase().includes('failed to fetch')) {
+      return 'Unable to reach the server. Please check your internet connection or try again in a moment.';
+    }
+
     return error;
   }
 
   // Default fallback
-  return 'An unexpected error occurred. Please try again.';
+  return fallbackMessage;
 }
 
 /**
@@ -129,4 +171,50 @@ export function getErrorSeverity(error: any): 'error' | 'warning' | 'info' {
   if (isBackendDownError(error)) return 'warning';
   if (isNetworkError(error)) return 'warning';
   return 'error';
+}
+
+export function getErrorTitle(error: any): string | undefined {
+  if (isBackendDownError(error)) {
+    return 'Service temporarily unavailable';
+  }
+
+  if (isNetworkError(error)) {
+    return 'Connection issue';
+  }
+
+  if (error?.response?.status === 401) {
+    return 'Authentication required';
+  }
+
+  if (error?.response?.status === 403) {
+    return 'Access denied';
+  }
+
+  return undefined;
+}
+
+export async function createErrorFromResponse(response: Response, fallbackMessage: string): Promise<Error> {
+  const contentType = response.headers.get('content-type') || '';
+  let message = getErrorMessage({ response: { status: response.status, headers: { 'content-type': contentType } } }, fallbackMessage);
+
+  try {
+    if (contentType.includes('application/json')) {
+      const data = await response.json();
+      message = getErrorMessage({ response: { status: response.status, headers: { 'content-type': contentType }, data } }, fallbackMessage);
+    } else {
+      const text = await response.text();
+      if (text && !text.trim().startsWith('<')) {
+        message = getErrorMessage(text, fallbackMessage);
+      }
+    }
+  } catch {
+    message = getErrorMessage({ response: { status: response.status, headers: { 'content-type': contentType } } }, fallbackMessage);
+  }
+
+  const error = new Error(message);
+  (error as Error & { status?: number; isServiceError?: boolean }).status = response.status;
+  if (response.status >= 500) {
+    (error as Error & { isServiceError?: boolean }).isServiceError = true;
+  }
+  return error;
 }

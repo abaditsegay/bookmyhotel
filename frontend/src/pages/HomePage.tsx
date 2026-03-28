@@ -72,7 +72,6 @@ const HomePage = () => {
           sx={{
             mb: isMobile ? 2 : 3,
             backgroundColor: theme.palette.background.paper,
-            border: `1px solid ${theme.palette.divider}`,
             boxShadow: 'none',
           }}
         >
@@ -113,7 +112,7 @@ const HomePage = () => {
                 mb: isMobile ? 2 : 3,
                 p: 2,
                 backgroundColor: theme.palette.background.default,
-                border: `1px solid ${addAlpha(COLORS.BORDER_LIGHT, 0.3)}`,
+                borderRadius: 2,
               }}
             >
               <Typography variant="h5" sx={{ fontWeight: 600, mb: 1, color: 'text.primary' }}>

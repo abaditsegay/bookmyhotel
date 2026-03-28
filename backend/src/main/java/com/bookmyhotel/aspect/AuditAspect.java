@@ -60,8 +60,7 @@ public class AuditAspect {
         String requestMethod = null;
 
         try {
-            ServletRequestAttributes attrs =
-                    (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
+            ServletRequestAttributes attrs = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
             HttpServletRequest request = attrs.getRequest();
             ipAddress = auditService.resolveClientIp(request);
             userAgent = request.getHeader("User-Agent");
@@ -99,8 +98,7 @@ public class AuditAspect {
                         requestPath,
                         requestMethod,
                         success,
-                        errorMessage
-                );
+                        errorMessage);
             } catch (Exception e) {
                 logger.error("AuditAspect failed to record log: {}", e.getMessage());
             }

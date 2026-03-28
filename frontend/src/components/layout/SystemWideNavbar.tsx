@@ -1,5 +1,6 @@
 import { COLORS, addAlpha } from '../../theme/themeColors';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { 
   AppBar, 
   Toolbar, 
@@ -41,6 +42,7 @@ import CalendarSelector from '../common/CalendarSelector';
  * Shows global navigation without tenant-specific context
  */
 export const SystemWideNavbar: React.FC = () => {
+  const { t } = useTranslation();
   const { user, logout } = useAuth();
   const { isSystemWideContext } = useTenant();
   const navigate = useNavigate();
@@ -217,7 +219,7 @@ export const SystemWideNavbar: React.FC = () => {
                 '&:hover': { color: COLORS.WHITE }
               }}
             >
-              Search Hotels
+              {t('hotelSearch.form.searchButton')}
             </Button>
           </Box>
         )}
@@ -251,7 +253,7 @@ export const SystemWideNavbar: React.FC = () => {
           >
             <MenuItem onClick={handleProfile}>
               <AccountCircle sx={{ mr: 1 }} />
-              Profile
+              {t('navigation.profile')}
             </MenuItem>
             {isSystemAdmin && (
               <MenuItem onClick={handleSystemSettings}>
@@ -262,7 +264,7 @@ export const SystemWideNavbar: React.FC = () => {
             <Divider />
             <MenuItem onClick={handleLogout}>
               <Logout sx={{ mr: 1 }} />
-              Logout
+              {t('navigation.logout')}
             </MenuItem>
           </Menu>
         </div>
@@ -330,7 +332,7 @@ export const SystemWideNavbar: React.FC = () => {
                 <ListItemIcon>
                   <Hotel />
                 </ListItemIcon>
-                <ListItemText primary="Search Hotels" />
+                <ListItemText primary={t('hotelSearch.form.searchButton')} />
               </ListItemButton>
             </ListItem>
           )}
@@ -343,7 +345,7 @@ export const SystemWideNavbar: React.FC = () => {
               <ListItemIcon>
                 <AccountCircle />
               </ListItemIcon>
-              <ListItemText primary="Profile" />
+              <ListItemText primary={t('navigation.profile')} />
             </ListItemButton>
           </ListItem>
           
@@ -352,7 +354,7 @@ export const SystemWideNavbar: React.FC = () => {
               <ListItemIcon>
                 <Logout />
               </ListItemIcon>
-              <ListItemText primary="Logout" />
+              <ListItemText primary={t('navigation.logout')} />
             </ListItemButton>
           </ListItem>
         </List>

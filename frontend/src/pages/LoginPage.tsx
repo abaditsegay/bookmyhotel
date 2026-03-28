@@ -446,7 +446,7 @@ const LoginPage: React.FC = () => {
                     onClick={() => setShowSignUp(true)}
                     sx={{ textTransform: 'none', p: 0, minWidth: 'auto' }}
                   >
-                    Sign up here
+                    {t('auth.login.createAccount')}
                   </Button>
                 </>
               ) : (
@@ -457,7 +457,7 @@ const LoginPage: React.FC = () => {
                     onClick={() => setShowSignUp(false)}
                     sx={{ textTransform: 'none', p: 0, minWidth: 'auto' }}
                   >
-                    Sign in here
+                    {t('auth.login.signIn')}
                   </Button>
                 </>
               )}

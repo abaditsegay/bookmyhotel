@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { normalizeEthiopianPhone } from '../../utils/phoneUtils';
 import {
   Dialog,
@@ -50,6 +51,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
   defaultCheckOut,
   defaultGuests = 1,
 }) => {
+  const { t } = useTranslation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
@@ -84,9 +86,9 @@ const BookingForm: React.FC<BookingFormProps> = ({
         max: room?.capacity || 10,
       },
       messages: {
-        required: 'Number of guests is required',
-        min: 'At least 1 guest is required',
-        max: `Maximum ${room?.capacity || 10} guests allowed`,
+        required: t('booking.form.validation.guestsRequired'),
+        min: t('booking.form.validation.guestsMin'),
+        max: t('booking.form.validation.guestsMax', { count: room?.capacity || 10 }),
       },
       initialValue: defaultGuests,
     },
@@ -98,10 +100,10 @@ const BookingForm: React.FC<BookingFormProps> = ({
         pattern: /^[a-zA-Z\s]+$/,
       },
       messages: {
-        required: 'Guest name is required',
-        minLength: 'Name must be at least 2 characters',
-        maxLength: 'Name must be less than 100 characters',
-        pattern: 'Name can only contain letters and spaces',
+        required: t('booking.form.validation.guestNameRequired'),
+        minLength: t('booking.form.validation.nameMinLength'),
+        maxLength: t('booking.form.validation.nameMaxLength'),
+        pattern: t('booking.form.validation.namePattern'),
       },
       initialValue: '',
     },
@@ -112,9 +114,9 @@ const BookingForm: React.FC<BookingFormProps> = ({
         maxLength: 255,
       },
       messages: {
-        required: 'Email address is required',
-        email: 'Please enter a valid email address',
-        maxLength: 'Email must be less than 255 characters',
+        required: t('booking.form.validation.emailRequired'),
+        email: t('booking.form.validation.validEmail'),
+        maxLength: t('booking.form.validation.emailMaxLength'),
       },
       initialValue: '',
     },
@@ -126,10 +128,10 @@ const BookingForm: React.FC<BookingFormProps> = ({
         maxLength: 15,
       },
       messages: {
-        required: 'Phone number is required',
-        phone: 'Please enter a valid phone number',
-        minLength: 'Phone number must be at least 10 digits',
-        maxLength: 'Phone number must be less than 15 digits',
+        required: t('booking.form.validation.phoneRequired'),
+        phone: t('booking.form.validation.validPhone'),
+        minLength: t('booking.form.validation.phoneMinLength'),
+        maxLength: t('booking.form.validation.phoneMaxLength'),
       },
       initialValue: '',
     },
@@ -138,7 +140,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
         maxLength: 500,
       },
       messages: {
-        maxLength: 'Special requests must be less than 500 characters',
+        maxLength: t('booking.form.validation.specialRequestsMaxLength'),
       },
       initialValue: '',
     },
@@ -155,19 +157,19 @@ const BookingForm: React.FC<BookingFormProps> = ({
     setError('');
 
     if (!room || !checkInDate || !checkOutDate) {
-      setError('Please fill in all required fields');
+      setError(t('booking.form.fillAllRequiredFields'));
       return;
     }
 
     if (checkInDate >= checkOutDate) {
-      setError('Check-out date must be after check-in date');
+      setError(t('booking.form.checkOutAfterCheckIn'));
       return;
     }
 
     // Validate form using our validation hook
     const isFormValid = formValidation.validateAll();
     if (!isFormValid) {
-      setError('Please fix the validation errors before submitting');
+      setError(t('booking.form.validation.fixValidationErrors'));
       return;
     }
 
@@ -190,7 +192,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
       },
       {
         onError: (err: any) => {
-          setError(err.message || 'Failed to create booking. Please try again.');
+          setError(err.message || t('booking.form.validation.createBookingFailed'));
         }
       }
     );
@@ -257,7 +259,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
                     {bookingOperation.loading && (
             <Box display="flex" justifyContent="center" alignItems="center" py={2}>
               <LoadingSpinner 
-                message="Processing your booking..."
+                message={t('booking.form.processing')}
                 size={40}
               />
             </Box>
@@ -297,28 +299,28 @@ const BookingForm: React.FC<BookingFormProps> = ({
                   mb: 2,
                 }}
               >
-                Room Details
+                {t('booking.details.roomDetails')}
               </Typography>
               <Grid container spacing={{ xs: 1.5, md: 2 }}>
                 <Grid item xs={12} sm={6}>
                   <Typography variant="body2" sx={{ mb: 0.5, fontWeight: 500 }}>
-                    <strong>Room:</strong> {room.roomNumber}
+                    <strong>{t('booking.form.room')}:</strong> {room.roomNumber}
                   </Typography>
                   <Typography variant="body2" sx={{ mb: 0.5, fontWeight: 500 }}>
-                    <strong>Type:</strong> {room.roomType}
+                    <strong>{t('booking.details.roomType')}:</strong> {t(`hotelSearch.roomTypes.${room.roomType.toLowerCase()}`)}
                   </Typography>
                   <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                    <strong>Capacity:</strong> Up to {room.capacity} guests
+                    <strong>{t('booking.form.numberOfGuests')}:</strong> {t('hotelSearch.roomCard.upToGuests', { count: room.capacity })}
                   </Typography>
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <Typography variant="body2" sx={{ mb: 0.5, fontWeight: 500 }}>
-                    <strong>Price per night:</strong> ETB {room.pricePerNight}
+                    <strong>{t('booking.form.pricePerNight')}:</strong> ETB {room.pricePerNight}
                   </Typography>
                   {nights > 0 && (
                     <>
                       <Typography variant="body2" sx={{ mb: 0.5, fontWeight: 500 }}>
-                        <strong>Nights:</strong> {nights}
+                        <strong>{t('booking.form.nights')}:</strong> {nights}
                       </Typography>
                       <Box 
                         sx={{ 
@@ -338,7 +340,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
                             textAlign: 'center',
                           }}
                         >
-                          <strong>Total: ${totalAmount}</strong>
+                          <strong>{t('booking.form.totalAmount')}: ${totalAmount}</strong>
                         </Typography>
                       </Box>
                     </>
@@ -367,7 +369,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
               {/* Dates and Guests */}
               <Grid item xs={12} sm={4}>
                 <PremiumDatePicker
-                  label="Check-in Date"
+                  label={t('booking.form.checkInDate')}
                   value={checkInDate}
                   onChange={setCheckInDate}
                   minDate={new Date()}
@@ -383,7 +385,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
 
               <Grid item xs={12} sm={4}>
                 <PremiumDatePicker
-                  label="Check-out Date"
+                  label={t('booking.form.checkOutDate')}
                   value={checkOutDate}
                   onChange={setCheckOutDate}
                   minDate={checkInDate || new Date()}
@@ -403,7 +405,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
                   onChange={(newValue) => formValidation.setFieldValue('guests', newValue)}
                   min={1}
                   max={room?.capacity || 10}
-                  label="Number of Guests"
+                  label={t('booking.form.numberOfGuests')}
                   fullWidth
                 />
                 {formValidation.validation.guests?.error && (
@@ -416,7 +418,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
               <Grid item xs={12}>
                 <Divider sx={{ my: { xs: 1, md: 1 } }} />
                 <Typography variant={isMobile ? "subtitle1" : "h6"} component="div" gutterBottom>
-                  Guest Information
+                  {t('booking.form.guestInformation')}
                 </Typography>
               </Grid>
 
@@ -424,7 +426,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
               <Grid item xs={12} sm={6}>
                 <ValidatedInput
                   fullWidth
-                  label="Full Name"
+                  label={t('booking.form.fullName')}
                   {...formValidation.getFieldProps('guestName')}
                   helperText={formValidation.getFieldProps('guestName').helperText || undefined}
                   required
@@ -441,7 +443,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
               <Grid item xs={12} sm={6}>
                 <ValidatedInput
                   fullWidth
-                  label="Email Address"
+                  label={t('booking.form.emailAddress')}
                   type="email"
                   {...formValidation.getFieldProps('guestEmail')}
                   helperText={formValidation.getFieldProps('guestEmail').helperText || undefined}
@@ -458,10 +460,10 @@ const BookingForm: React.FC<BookingFormProps> = ({
               <Grid item xs={12} sm={6}>
                 <ValidatedInput
                   fullWidth
-                  label="Phone Number"
+                  label={t('booking.form.phoneNumber')}
                   {...formValidation.getFieldProps('guestPhone')}
-                  helperText={formValidation.getFieldProps('guestPhone').helperText || 'Enter your phone number'}
-                  placeholder="Enter your phone number"
+                  helperText={formValidation.getFieldProps('guestPhone').helperText || t('booking.form.phonePlaceholder')}
+                  placeholder={t('booking.form.phonePlaceholder')}
                   required
                   size={isMobile ? "small" : "medium"}
                   validationState={
@@ -475,12 +477,12 @@ const BookingForm: React.FC<BookingFormProps> = ({
               <Grid item xs={12}>
                 <ValidatedInput
                   fullWidth
-                  label="Special Requests"
+                  label={t('booking.form.specialRequests')}
                   multiline
                   rows={isMobile ? 2 : 3}
                   {...formValidation.getFieldProps('specialRequests')}
-                  helperText={formValidation.getFieldProps('specialRequests').helperText || 'Any special requests or requirements...'}
-                  placeholder="Any special requests or requirements..."
+                  helperText={formValidation.getFieldProps('specialRequests').helperText || t('booking.form.specialRequestsPlaceholder')}
+                  placeholder={t('booking.form.specialRequestsPlaceholder')}
                   size={isMobile ? "small" : "medium"}
                   validationState={
                     formValidation.validation.specialRequests?.error ? 'error' : 
@@ -505,7 +507,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
             fullWidth={isMobile}
             size={isMobile ? "medium" : "large"}
           >
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button
             onClick={() => handleSubmit({ preventDefault: () => {} } as React.FormEvent)}
@@ -532,7 +534,9 @@ const BookingForm: React.FC<BookingFormProps> = ({
               </Box>
             ) : undefined}
           >
-            {bookingOperation.loading ? 'Processing...' : `Book Now - ${formatCurrencyWithDecimals(totalAmount || 0)}`}
+            {bookingOperation.loading
+              ? t('booking.form.processing')
+              : t('booking.form.bookNowWithAmount', { amount: formatCurrencyWithDecimals(totalAmount || 0) })}
           </Button>
         </DialogActions>
       </Dialog>
