@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -14,6 +15,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.bookmyhotel.audit.AuditTaxonomy;
 import com.bookmyhotel.entity.Hotel;
 import com.bookmyhotel.entity.HotelPricingConfig;
 import com.bookmyhotel.entity.HotelPricingConfig.PricingStrategy;
@@ -36,6 +38,9 @@ public class HotelPricingConfigService {
 
     @Autowired
     private HotelRepository hotelRepository;
+
+    @Autowired
+    private HotelActivityAuditService hotelActivityAuditService;
 
     /**
      * Get the active pricing configuration for a hotel
@@ -112,7 +117,21 @@ public class HotelPricingConfigService {
             config.setUpdatedBy(auth.getName());
         }
 
-        return pricingConfigRepository.save(config);
+        HotelPricingConfig saved = pricingConfigRepository.save(config);
+        hotelActivityAuditService.logActivity(
+            saved.getHotel(),
+            AuditTaxonomy.EntityType.PRICING_CONFIG,
+            saved.getId(),
+            AuditTaxonomy.Action.CREATE,
+            null,
+            createPricingConfigSnapshot(saved),
+            List.of("pricingStrategy", "serviceTaxRate", "vatRate", "cancellationFeeRate",
+                "noShowPenaltyRate", "modificationFeeRate", "peakSeasonMultiplier",
+                "offSeasonMultiplier", "weekendMultiplier", "holidayMultiplier", "currencyCode"),
+            "Created default pricing configuration",
+            true,
+            AuditTaxonomy.ComplianceCategory.FINANCIAL);
+        return saved;
     }
 
     /**
@@ -130,6 +149,7 @@ public class HotelPricingConfigService {
         HotelPricingConfig existingConfig = getActiveConfiguration(hotelId);
 
         HotelPricingConfig configToSave;
+        Map<String, Object> oldSnapshot = existingConfig != null ? createPricingConfigSnapshot(existingConfig) : null;
 
         if (existingConfig == null) {
             // No existing configuration, create new one
@@ -205,6 +225,24 @@ public class HotelPricingConfigService {
         HotelPricingConfig saved = pricingConfigRepository.save(configToSave);
         logger.info("Successfully updated pricing configuration for hotel {}: ID {}, new version {}",
                 hotelId, saved.getId(), saved.getVersion());
+
+        hotelActivityAuditService.logActivity(
+            saved.getHotel(),
+            AuditTaxonomy.EntityType.PRICING_CONFIG,
+            saved.getId(),
+            existingConfig == null ? AuditTaxonomy.Action.CREATE : AuditTaxonomy.Action.UPDATE,
+            oldSnapshot,
+            createPricingConfigSnapshot(saved),
+            List.of("pricingStrategy", "vatRate", "serviceTaxRate", "cityTaxRate", "taxInclusivePricing",
+                "peakSeasonMultiplier", "offSeasonMultiplier", "weekendMultiplier", "holidayMultiplier",
+                "minimumStayNights", "minimumAdvanceBookingHours", "maximumAdvanceBookingDays",
+                "earlyBookingDaysThreshold", "earlyBookingDiscountRate", "loyaltyDiscountRate",
+                "cancellationFeeRate", "modificationFeeRate", "noShowPenaltyRate",
+                "dynamicPricingEnabled", "currencyCode", "notes", "refundPolicy7PlusDays",
+                "refundPolicy3To7Days", "refundPolicy1To2Days", "refundPolicySameDay", "version"),
+            existingConfig == null ? "Created pricing configuration" : "Updated pricing configuration",
+            true,
+            AuditTaxonomy.ComplianceCategory.FINANCIAL);
 
         return saved;
     }
@@ -285,20 +323,34 @@ public class HotelPricingConfigService {
     /**
      * Delete pricing configuration for a hotel
      * 
-     * @param hotelId the hotel ID
+     * @param configId the configuration ID
      * @return true if deleted, false if not found
      */
     @Transactional
-    public boolean deleteConfiguration(Long hotelId) {
-        logger.info("Deleting pricing configuration for hotel ID: {}", hotelId);
+    public boolean deleteConfiguration(Long configId) {
+        logger.info("Deleting pricing configuration with ID: {}", configId);
 
-        Optional<HotelPricingConfig> config = pricingConfigRepository.findByHotelId(hotelId);
+        Optional<HotelPricingConfig> config = pricingConfigRepository.findById(configId);
         if (config.isPresent()) {
-            pricingConfigRepository.delete(config.get());
-            logger.info("Deleted pricing configuration for hotel {}", hotelId);
+            HotelPricingConfig existingConfig = config.get();
+            Map<String, Object> oldSnapshot = createPricingConfigSnapshot(existingConfig);
+            pricingConfigRepository.delete(existingConfig);
+            logger.info("Deleted pricing configuration {}", configId);
+            hotelActivityAuditService.logActivity(
+                    existingConfig.getHotel(),
+                    AuditTaxonomy.EntityType.PRICING_CONFIG,
+                    existingConfig.getId(),
+                    AuditTaxonomy.Action.DELETE,
+                    oldSnapshot,
+                    null,
+                    List.of("pricingStrategy", "vatRate", "serviceTaxRate", "cityTaxRate", "currencyCode",
+                            "version"),
+                    "Deleted pricing configuration",
+                    true,
+                    AuditTaxonomy.ComplianceCategory.FINANCIAL);
             return true;
         } else {
-            logger.warn("No pricing configuration found to delete for hotel {}", hotelId);
+            logger.warn("No pricing configuration found to delete for config {}", configId);
             return false;
         }
     }
@@ -439,7 +491,7 @@ public class HotelPricingConfigService {
      * @return true if valid
      */
     public boolean validateConfiguration(HotelPricingConfig config) {
-        if (config == null || config.getHotel() == null) {
+        if (config == null) {
             return false;
         }
 
@@ -535,5 +587,37 @@ public class HotelPricingConfigService {
     public void deactivateExistingConfigurations(Long hotelId) {
         // No-op since we're using versioning instead of multiple active records
         logger.debug("Deactivation request for hotel {} - using versioning approach", hotelId);
+    }
+
+    private Map<String, Object> createPricingConfigSnapshot(HotelPricingConfig config) {
+        return hotelActivityAuditService.createSnapshot(
+                "id", config.getId(),
+                "hotelId", config.getHotel() != null ? config.getHotel().getId() : null,
+                "pricingStrategy", config.getPricingStrategy(),
+                "vatRate", config.getVatRate(),
+                "serviceTaxRate", config.getServiceTaxRate(),
+                "cityTaxRate", config.getCityTaxRate(),
+                "taxInclusivePricing", config.getTaxInclusivePricing(),
+                "peakSeasonMultiplier", config.getPeakSeasonMultiplier(),
+                "offSeasonMultiplier", config.getOffSeasonMultiplier(),
+                "weekendMultiplier", config.getWeekendMultiplier(),
+                "holidayMultiplier", config.getHolidayMultiplier(),
+                "minimumStayNights", config.getMinimumStayNights(),
+                "minimumAdvanceBookingHours", config.getMinimumAdvanceBookingHours(),
+                "maximumAdvanceBookingDays", config.getMaximumAdvanceBookingDays(),
+                "earlyBookingDaysThreshold", config.getEarlyBookingDaysThreshold(),
+                "earlyBookingDiscountRate", config.getEarlyBookingDiscountRate(),
+                "loyaltyDiscountRate", config.getLoyaltyDiscountRate(),
+                "cancellationFeeRate", config.getCancellationFeeRate(),
+                "modificationFeeRate", config.getModificationFeeRate(),
+                "noShowPenaltyRate", config.getNoShowPenaltyRate(),
+                "dynamicPricingEnabled", config.getDynamicPricingEnabled(),
+                "currencyCode", config.getCurrencyCode(),
+                "notes", config.getNotes(),
+                "refundPolicy7PlusDays", config.getRefundPolicy7PlusDays(),
+                "refundPolicy3To7Days", config.getRefundPolicy3To7Days(),
+                "refundPolicy1To2Days", config.getRefundPolicy1To2Days(),
+                "refundPolicySameDay", config.getRefundPolicySameDay(),
+                "version", config.getVersion());
     }
 }

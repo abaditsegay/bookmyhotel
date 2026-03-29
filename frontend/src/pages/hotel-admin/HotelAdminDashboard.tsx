@@ -39,6 +39,7 @@ import HotelImageManagement from './HotelImageManagement';
 import HousekeepingPage from '../housekeeping/HousekeepingPage';
 import { getBookingStatusColor } from '../../utils/statusColors';
 import { COLORS, addAlpha } from '../../theme/themeColors';
+import HotelAuditCenter from '../../components/hotel-admin/HotelAuditCenter';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -77,7 +78,7 @@ const HotelAdminDashboard: React.FC = () => {
   const getInitialTab = () => {
     const tabParam = searchParams.get('tab');
     const tab = tabParam ? parseInt(tabParam, 10) : 0;
-    return isNaN(tab) || tab < 0 || tab > 8 ? 0 : tab; // Fixed: Allow up to tab 8 (including Housekeeping)
+    return isNaN(tab) || tab < 0 || tab > 9 ? 0 : tab;
   };
   
   const [activeTab, setActiveTab] = useState(getInitialTab);
@@ -86,7 +87,7 @@ const HotelAdminDashboard: React.FC = () => {
   useEffect(() => {
     const tabParam = searchParams.get('tab');
     const urlTab = tabParam ? parseInt(tabParam, 10) : 0;
-    const validTab = isNaN(urlTab) || urlTab < 0 || urlTab > 8 ? 0 : urlTab; // Fixed: Allow up to tab 8 (including Housekeeping)
+    const validTab = isNaN(urlTab) || urlTab < 0 || urlTab > 9 ? 0 : urlTab;
     // console.log(`🔗 HotelAdmin: URL tab changed to ${urlTab}, setting valid tab to ${validTab}`);
     setActiveTab(validTab);
   }, [searchParams]); // Remove activeTab from dependencies to prevent circular updates
@@ -226,8 +227,9 @@ const HotelAdminDashboard: React.FC = () => {
     //   newValue === 4 ? t('dashboard.hotelAdmin.tabs.staffSchedules') :
     //   newValue === 5 ? 'Housekeeping' :
     //   newValue === 6 ? t('dashboard.hotelAdmin.tabs.reports') :
-    //   newValue === 7 ? t('dashboard.hotelAdmin.tabs.pricingTax') :
-    //   newValue === 8 ? t('dashboard.hotelAdmin.tabs.offlineBookings') : 'Unknown');
+    //   newValue === 7 ? t('dashboard.hotelAdmin.tabs.audit') :
+    //   newValue === 8 ? t('dashboard.hotelAdmin.tabs.pricingTax') :
+    //   newValue === 9 ? t('dashboard.hotelAdmin.tabs.offlineBookings') : 'Unknown');
     setActiveTab(newValue);
     
     // Update URL parameter to persist tab state
@@ -468,6 +470,7 @@ const HotelAdminDashboard: React.FC = () => {
             <Tab label={t('dashboard.hotelAdmin.tabs.staffSchedules')} />
             <Tab label={t('dashboard.hotelAdmin.tabs.housekeeping')} />
             <Tab label={t('dashboard.hotelAdmin.tabs.reports')} />
+            <Tab label={t('dashboard.hotelAdmin.tabs.audit')} />
             <Tab label={t('dashboard.hotelAdmin.tabs.pricingTax')} />
             <Tab label={t('dashboard.hotelAdmin.tabs.offlineBookings')} />
           </Tabs>
@@ -1856,11 +1859,15 @@ const HotelAdminDashboard: React.FC = () => {
         </TabPanel>
 
         <TabPanel value={activeTab} index={7}>
+          <HotelAuditCenter hotelId={hotel?.id ?? (user?.hotelId ? parseInt(user.hotelId, 10) : undefined)} />
+        </TabPanel>
+
+        <TabPanel value={activeTab} index={8}>
           {/* Pricing & Tax Configuration Tab */}
           <PricingConfiguration />
         </TabPanel>
 
-        <TabPanel value={activeTab} index={8}>
+        <TabPanel value={activeTab} index={9}>
           {/* Offline Bookings Tab */}
           <OfflineWalkInBooking
             hotelId={hotel?.id}

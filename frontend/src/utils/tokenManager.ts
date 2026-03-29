@@ -21,24 +21,62 @@ export interface AuthUser {
   isTenantBound?: boolean;
 }
 
+export interface StoredAuth {
+  token: string;
+  user: AuthUser;
+  refreshToken?: string;
+}
+
 class TokenManager {
   private static readonly TOKEN_KEY = 'auth_token';
   private static readonly USER_KEY = 'auth_user';
+  private static readonly REFRESH_TOKEN_KEY = 'auth_refresh_token';
   private static readonly LEGACY_TOKEN_KEY = 'token'; // For cleanup
+
+  private static decodeTokenPayload(token: string): Record<string, any> | null {
+    try {
+      const payloadPart = token.split('.')[1];
+      if (!payloadPart) return null;
+
+      const normalizedPayload = payloadPart.replace(/-/g, '+').replace(/_/g, '/');
+      const paddedPayload = normalizedPayload.padEnd(Math.ceil(normalizedPayload.length / 4) * 4, '=');
+      return JSON.parse(atob(paddedPayload));
+    } catch (error) {
+      return null;
+    }
+  }
+
+  private static clearExpiredAuth(): void {
+    this.clearAuth();
+  }
 
   /**
    * Get the current authentication token
    */
   static getToken(): string | null {
-    return localStorage.getItem(this.TOKEN_KEY);
+    const token = localStorage.getItem(this.TOKEN_KEY);
+    if (!token) return null;
+
+    if (this.isTokenExpired(token)) {
+      this.clearExpiredAuth();
+      return null;
+    }
+
+    return token;
   }
 
   /**
    * Get the current user data
    */
   static getUser(): AuthUser | null {
+    const token = localStorage.getItem(this.TOKEN_KEY);
     const userData = localStorage.getItem(this.USER_KEY);
     if (!userData) return null;
+
+    if (!token || this.isTokenExpired(token)) {
+      this.clearExpiredAuth();
+      return null;
+    }
     
     try {
       return JSON.parse(userData);
@@ -52,12 +90,39 @@ class TokenManager {
   /**
    * Set authentication token and user data
    */
-  static setAuth(token: string, user: AuthUser): void {
+  static setAuth(token: string, user: AuthUser, refreshToken?: string): void {
     localStorage.setItem(this.TOKEN_KEY, token);
     localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+    if (refreshToken) {
+      localStorage.setItem(this.REFRESH_TOKEN_KEY, refreshToken);
+    } else {
+      localStorage.removeItem(this.REFRESH_TOKEN_KEY);
+    }
     
     // Clean up legacy token storage
     this.clearLegacyTokens();
+  }
+
+  /**
+   * Get the persisted auth bundle if still valid
+   */
+  static getStoredAuth(): StoredAuth | null {
+    const token = this.getToken();
+    const user = this.getUser();
+
+    if (!token || !user) {
+      return null;
+    }
+
+    const refreshToken = localStorage.getItem(this.REFRESH_TOKEN_KEY) || undefined;
+    return { token, user, refreshToken };
+  }
+
+  /**
+   * Get the current refresh token
+   */
+  static getRefreshToken(): string | null {
+    return localStorage.getItem(this.REFRESH_TOKEN_KEY);
   }
 
   /**
@@ -73,6 +138,7 @@ class TokenManager {
   static clearAuth(): void {
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);
+    localStorage.removeItem(this.REFRESH_TOKEN_KEY);
     this.clearLegacyTokens();
   }
 
@@ -105,31 +171,31 @@ class TokenManager {
   /**
    * Check if token is expired
    */
-  static isTokenExpired(): boolean {
-    const token = this.getToken();
-    if (!token) return true;
+  static isTokenExpired(token?: string): boolean {
+    const tokenToCheck = token ?? localStorage.getItem(this.TOKEN_KEY);
+    if (!tokenToCheck) return true;
 
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      const exp = payload.exp * 1000; // Convert to milliseconds
-      const now = Date.now();
-      
-      return now >= exp;
-    } catch (error) {
-      // console.error('Failed to decode token:', error);
+    const payload = this.decodeTokenPayload(tokenToCheck);
+    if (!payload || typeof payload.exp !== 'number') {
       return true;
     }
+
+    const exp = payload.exp * 1000;
+    return Date.now() >= exp;
   }
 
   /**
    * Check if token needs refresh (within 5 minutes of expiry)
    */
   static shouldRefreshToken(): boolean {
-    const token = this.getToken();
+    const token = localStorage.getItem(this.TOKEN_KEY);
     if (!token) return false;
 
     try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
+      const payload = this.decodeTokenPayload(token);
+      if (!payload || typeof payload.exp !== 'number') {
+        return false;
+      }
       const exp = payload.exp * 1000; // Convert to milliseconds
       const now = Date.now();
       const refreshThreshold = 5 * 60 * 1000; // 5 minutes
@@ -146,8 +212,8 @@ class TokenManager {
    * Refresh the authentication token
    */
   static async refreshToken(): Promise<boolean> {
-    const currentToken = this.getToken();
-    if (!currentToken) {
+    const refreshToken = this.getRefreshToken();
+    if (!refreshToken) {
       // console.warn('No token available for refresh');
       return false;
     }
@@ -156,9 +222,9 @@ class TokenManager {
       const response = await fetch('/managemyhotel/api/auth/refresh', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${currentToken}`
-        }
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ refreshToken })
       });
 
       if (response.ok) {
@@ -166,6 +232,9 @@ class TokenManager {
         if (data.token) {
           // Update only the token, keep existing user data
           localStorage.setItem(this.TOKEN_KEY, data.token);
+          if (data.refreshToken) {
+            localStorage.setItem(this.REFRESH_TOKEN_KEY, data.refreshToken);
+          }
           // console.log('Token refreshed successfully');
           return true;
         }

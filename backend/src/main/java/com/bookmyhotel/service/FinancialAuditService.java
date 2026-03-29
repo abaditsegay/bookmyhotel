@@ -4,7 +4,9 @@ import com.bookmyhotel.dto.AuditTrailDto;
 import com.bookmyhotel.dto.DailyFinancialReconciliationDto;
 import com.bookmyhotel.dto.PaymentDiscrepancyDto;
 import com.bookmyhotel.entity.AuditLog;
+import com.bookmyhotel.entity.Hotel;
 import com.bookmyhotel.entity.Reservation;
+import com.bookmyhotel.repository.HotelRepository;
 import com.bookmyhotel.repository.AuditLogRepository;
 import com.bookmyhotel.repository.ReservationRepository;
 import com.bookmyhotel.repository.RoomChargeRepository;
@@ -47,18 +49,33 @@ public class FinancialAuditService {
     private RoomChargeRepository roomChargeRepository;
 
     @Autowired
+    private HotelRepository hotelRepository;
+
+    @Autowired
     private HotelPricingConfigService hotelPricingConfigService;
 
     /**
      * Create an audit log entry
      */
-    public AuditTrailDto createAuditLog(String entityType, Long entityId, String action,
+        public AuditTrailDto createAuditLog(Long hotelId, String entityType, Long entityId, String action,
+            String oldValues, String newValues, String changedFields,
+            Long userId, String userName, String userEmail, String userRole,
+            HttpServletRequest request, String reason, boolean isSensitive,
+            String complianceCategory) {
+        Hotel hotel = hotelRepository.findById(hotelId)
+            .orElseThrow(() -> new IllegalArgumentException("Hotel not found with ID: " + hotelId));
+        return createAuditLog(hotel, entityType, entityId, action, oldValues, newValues, changedFields,
+            userId, userName, userEmail, userRole, request, reason, isSensitive, complianceCategory);
+        }
+
+        public AuditTrailDto createAuditLog(Hotel hotel, String entityType, Long entityId, String action,
             String oldValues, String newValues, String changedFields,
             Long userId, String userName, String userEmail, String userRole,
             HttpServletRequest request, String reason, boolean isSensitive,
             String complianceCategory) {
         try {
             AuditLog auditLog = new AuditLog();
+            auditLog.setHotel(hotel);
             auditLog.setEntityType(entityType);
             auditLog.setEntityId(entityId);
             auditLog.setAction(action);
@@ -72,10 +89,6 @@ public class FinancialAuditService {
             auditLog.setReason(reason);
             auditLog.setSensitive(isSensitive);
             auditLog.setComplianceCategory(complianceCategory);
-
-            // Set tenant context
-            // Tenant is handled through hotel relationship - no need to set directly
-
             // Set request details
             if (request != null) {
                 auditLog.setIpAddress(getClientIpAddress(request));

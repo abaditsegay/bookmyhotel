@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 
 import { API_CONFIG } from '../config/apiConfig';
 import { updateUserProfile, changeUserPassword } from '../services/userApi';
@@ -74,6 +74,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
   const clearError = () => setError(null);
   const clearSessionExpired = () => setSessionExpired(false);
 
+  const clearAuthenticatedState = useCallback((showSessionExpiredMessage = false) => {
+    setUser(null);
+    setToken(null);
+    setSessionExpired(showSessionExpiredMessage);
+    setError(showSessionExpiredMessage ? 'Your session has expired. Please log in again.' : null);
+
+    roomCacheService.stopPeriodicRefresh();
+    apiClient.setToken(null);
+    apiClient.setTenantId(null);
+    TokenManager.clearAuth();
+    onLogout?.();
+  }, [onLogout]);
+
   // Load authentication state from localStorage on startup
   useEffect(() => {
     // Initialize OfflineStorageService early
@@ -89,41 +102,31 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
     
     // Set up API client session expiration callback
     apiClient.setSessionExpiredCallback(() => {
-      setUser(null);
-      setToken(null);
-      
-      // Stop room cache periodic refresh
-      roomCacheService.stopPeriodicRefresh();
-      
-      // Clear localStorage using TokenManager
-      TokenManager.clearAuth();
-      
-      // Clear tenant context
-      onLogout?.();
+      clearAuthenticatedState(true);
     });
     
     // Migrate any legacy tokens
     TokenManager.migrateLegacyTokens();
     
-    const savedToken = TokenManager.getToken();
-    const savedUser = TokenManager.getUser();
+    const savedAuth = TokenManager.getStoredAuth();
     
-    if (savedToken && savedUser) {
+    if (savedAuth) {
       try {
-        setToken(savedToken);
-        setUser(savedUser as User);
+        setToken(savedAuth.token);
+        setUser(savedAuth.user as User);
+        apiClient.setToken(savedAuth.token);
         
         // Notify parent component of token change
-        onTokenChange?.(savedToken);
+        onTokenChange?.(savedAuth.token);
       } catch (error) {
         // console.error('Failed to restore auth state:', error);
-        TokenManager.clearAuth();
+        clearAuthenticatedState(false);
       }
     }
     
     // Set initialization complete after checking localStorage
     setIsInitializing(false);
-  }, [onTokenChange, onLogout]);
+  }, [clearAuthenticatedState, onTokenChange]);
 
   const attemptOfflineLogin = async (email: string, password: string): Promise<boolean> => {
     try {
@@ -191,6 +194,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
       // Set user state
       setUser(offlineUser);
       setToken(cachedSession.token);
+      setSessionExpired(false);
+      apiClient.setToken(cachedSession.token);
       
       // Update session as active and update last activity
       cachedSession.isActive = true;
@@ -270,10 +275,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
 
       setUser(user);
       setToken(loginData.token);
+      setSessionExpired(false);
+      apiClient.setToken(loginData.token);
       
       // Persist to localStorage using TokenManager
       try {
-        TokenManager.setAuth(loginData.token, user as AuthUser);
+        TokenManager.setAuth(loginData.token, user as AuthUser, loginData.refreshToken);
       } catch (storageError) {
         // console.error('Mobile AuthContext: localStorage save failed:', storageError);
       }
@@ -299,7 +306,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
           hotelName: loginData.hotelName,
           tenantId: loginData.tenantId || undefined,
           token: loginData.token,
-          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours from now
+          refreshToken: loginData.refreshToken,
+          expiresAt: new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString(),
           lastActivity: new Date().toISOString(),
           isActive: true
         };
@@ -357,40 +365,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
   };
 
   const logout = () => {
-    setUser(null);
-    setToken(null);
-    setSessionExpired(false); // Clear session expired state on manual logout
+    setSessionExpired(false);
+    setError(null);
     
     // Stop room cache periodic refresh
-    roomCacheService.stopPeriodicRefresh();
-    
-    // Deactivate staff sessions (preserve for offline authentication)
     offlineStorage.deactivateStaffSessions().catch(error => {
       // console.error('Failed to deactivate staff sessions:', error);
     });
-    
-    // Clear localStorage using TokenManager
-    TokenManager.clearAuth();
-    
-    // Clear tenant context
-    onLogout?.();
+
+    clearAuthenticatedState(false);
     
   };
 
   const handleSessionExpired = () => {
-    setSessionExpired(true);
-    setUser(null);
-    setToken(null);
-    setError('Your session has expired. Please log in again.');
-    
-    // Stop room cache periodic refresh
-    roomCacheService.stopPeriodicRefresh();
-    
-    // Clear localStorage using TokenManager
-    TokenManager.clearAuth();
-    
-    // Clear tenant context
-    onLogout?.();
+    clearAuthenticatedState(true);
   };
 
   const updateProfile = async (updates: Partial<User>): Promise<boolean> => {

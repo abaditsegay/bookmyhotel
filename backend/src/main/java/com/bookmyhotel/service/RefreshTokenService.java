@@ -40,8 +40,8 @@ public class RefreshTokenService {
 
     private final SecureRandom secureRandom = new SecureRandom();
 
-    @Value("${jwt.refresh.expiration.time:604800000}")
-    private Long refreshTokenExpirationTime; // 7 days in milliseconds
+    @Value("${jwt.refresh.expiration.time:43200000}")
+    private Long refreshTokenExpirationTime; // 12 hours in milliseconds
 
     @Autowired
     private UserRepository userRepository;

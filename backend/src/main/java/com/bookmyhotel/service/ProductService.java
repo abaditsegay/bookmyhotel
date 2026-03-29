@@ -2,6 +2,7 @@ package com.bookmyhotel.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.bookmyhotel.audit.AuditTaxonomy;
 import com.bookmyhotel.dto.ProductRequest;
 import com.bookmyhotel.dto.ProductResponse;
 import com.bookmyhotel.entity.Hotel;
@@ -33,6 +35,9 @@ public class ProductService {
     @Autowired
     private HotelRepository hotelRepository;
 
+    @Autowired
+    private HotelActivityAuditService hotelActivityAuditService;
+
     /**
      * Create a new product
      */
@@ -40,6 +45,10 @@ public class ProductService {
         // Validate hotel exists
         Hotel hotel = hotelRepository.findById(hotelId)
                 .orElseThrow(() -> new ResourceNotFoundException("Hotel not found with ID: " + hotelId));
+
+        Integer minimumStockLevel = request.getMinimumStockLevel();
+        Boolean active = request.getIsActive();
+        Boolean available = request.getIsAvailable();
 
         // Validate SKU uniqueness if provided
         if (request.getSku() != null && !request.getSku().trim().isEmpty()) {
@@ -56,11 +65,11 @@ public class ProductService {
         product.setCategory(request.getCategory());
         product.setPrice(request.getPrice());
         product.setStockQuantity(request.getStockQuantity());
-        product.setMinimumStockLevel(request.getMinimumStockLevel() != null ? request.getMinimumStockLevel() : 0);
+        product.setMinimumStockLevel(minimumStockLevel != null ? minimumStockLevel : 0);
         product.setSku(request.getSku());
         product.setImageUrl(request.getImageUrl());
-        product.setIsActive(request.getIsActive() != null ? request.getIsActive() : true);
-        product.setIsAvailable(request.getIsAvailable() != null ? request.getIsAvailable() : true);
+        product.setIsActive(active == null || active);
+        product.setIsAvailable(available == null || available);
         product.setWeightKg(request.getWeightKg());
         product.setHotel(hotel);
         product.setCreatedAt(LocalDateTime.now());
@@ -72,6 +81,18 @@ public class ProductService {
         }
 
         Product savedProduct = productRepository.save(product);
+        hotelActivityAuditService.logActivity(
+            savedProduct.getHotel(),
+            AuditTaxonomy.EntityType.PRODUCT,
+            savedProduct.getId(),
+            AuditTaxonomy.Action.CREATE,
+            null,
+            createProductSnapshot(savedProduct),
+            List.of("name", "category", "price", "stockQuantity", "minimumStockLevel", "sku",
+                "isActive", "isAvailable"),
+            "Inventory product created",
+            true,
+            AuditTaxonomy.ComplianceCategory.FINANCIAL);
         return convertToResponse(savedProduct);
     }
 
@@ -96,6 +117,8 @@ public class ProductService {
             }
         }
 
+        Map<String, Object> oldSnapshot = createProductSnapshot(product);
+
         // Update product fields
         product.setName(request.getName());
         product.setDescription(request.getDescription());
@@ -112,6 +135,18 @@ public class ProductService {
         product.setUpdatedAt(LocalDateTime.now());
 
         Product updatedProduct = productRepository.save(product);
+        hotelActivityAuditService.logActivity(
+            updatedProduct.getHotel(),
+            AuditTaxonomy.EntityType.PRODUCT,
+            updatedProduct.getId(),
+            AuditTaxonomy.Action.UPDATE,
+            oldSnapshot,
+            createProductSnapshot(updatedProduct),
+            List.of("name", "description", "category", "price", "stockQuantity", "minimumStockLevel",
+                "sku", "imageUrl", "isActive", "isAvailable", "weightKg"),
+            "Inventory product updated",
+            true,
+            AuditTaxonomy.ComplianceCategory.FINANCIAL);
         return convertToResponse(updatedProduct);
     }
 
@@ -182,6 +217,7 @@ public class ProductService {
     public ProductResponse updateStock(Long hotelId, Long productId, Integer newQuantity) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with ID: " + productId));
+        Map<String, Object> oldSnapshot = createProductSnapshot(product);
 
         // Verify product belongs to hotel
         if (!product.getHotel().getId().equals(hotelId)) {
@@ -196,6 +232,17 @@ public class ProductService {
         product.setUpdatedAt(LocalDateTime.now());
 
         Product updatedProduct = productRepository.save(product);
+        hotelActivityAuditService.logActivity(
+            updatedProduct.getHotel(),
+            AuditTaxonomy.EntityType.PRODUCT,
+            updatedProduct.getId(),
+            AuditTaxonomy.Action.STOCK_UPDATE,
+            oldSnapshot,
+            createProductSnapshot(updatedProduct),
+            List.of("stockQuantity"),
+            "Inventory stock quantity updated",
+            true,
+            AuditTaxonomy.ComplianceCategory.FINANCIAL);
         return convertToResponse(updatedProduct);
     }
 
@@ -205,6 +252,7 @@ public class ProductService {
     public void reduceStock(Long productId, Integer quantity) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with ID: " + productId));
+        Map<String, Object> oldSnapshot = createProductSnapshot(product);
 
         if (product.getStockQuantity() < quantity) {
             throw new BadRequestException("Insufficient stock for product: " + product.getName() +
@@ -213,7 +261,18 @@ public class ProductService {
 
         product.setStockQuantity(product.getStockQuantity() - quantity);
         product.setUpdatedAt(LocalDateTime.now());
-        productRepository.save(product);
+        Product savedProduct = productRepository.save(product);
+        hotelActivityAuditService.logActivity(
+            savedProduct.getHotel(),
+            AuditTaxonomy.EntityType.PRODUCT,
+            savedProduct.getId(),
+            AuditTaxonomy.Action.STOCK_DECREASE,
+            oldSnapshot,
+            createProductSnapshot(savedProduct),
+            List.of("stockQuantity"),
+            "Inventory stock reduced by order processing",
+            true,
+            AuditTaxonomy.ComplianceCategory.FINANCIAL);
     }
 
     /**
@@ -222,10 +281,22 @@ public class ProductService {
     public void restoreStock(Long productId, Integer quantity) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with ID: " + productId));
+        Map<String, Object> oldSnapshot = createProductSnapshot(product);
 
         product.setStockQuantity(product.getStockQuantity() + quantity);
         product.setUpdatedAt(LocalDateTime.now());
-        productRepository.save(product);
+        Product savedProduct = productRepository.save(product);
+        hotelActivityAuditService.logActivity(
+            savedProduct.getHotel(),
+            AuditTaxonomy.EntityType.PRODUCT,
+            savedProduct.getId(),
+            AuditTaxonomy.Action.STOCK_RESTORE,
+            oldSnapshot,
+            createProductSnapshot(savedProduct),
+            List.of("stockQuantity"),
+            "Inventory stock restored",
+            true,
+            AuditTaxonomy.ComplianceCategory.FINANCIAL);
     }
 
     /**
@@ -234,6 +305,7 @@ public class ProductService {
     public ProductResponse toggleActiveStatus(Long hotelId, Long productId) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with ID: " + productId));
+        Map<String, Object> oldSnapshot = createProductSnapshot(product);
 
         // Verify product belongs to hotel
         if (!product.getHotel().getId().equals(hotelId)) {
@@ -244,6 +316,17 @@ public class ProductService {
         product.setUpdatedAt(LocalDateTime.now());
 
         Product updatedProduct = productRepository.save(product);
+        hotelActivityAuditService.logActivity(
+            updatedProduct.getHotel(),
+            AuditTaxonomy.EntityType.PRODUCT,
+            updatedProduct.getId(),
+            AuditTaxonomy.Action.ACTIVE_STATUS_CHANGE,
+            oldSnapshot,
+            createProductSnapshot(updatedProduct),
+            List.of("isActive"),
+            updatedProduct.getIsActive() ? "Product activated" : "Product deactivated",
+            true,
+            AuditTaxonomy.ComplianceCategory.FINANCIAL);
         return convertToResponse(updatedProduct);
     }
 
@@ -253,6 +336,7 @@ public class ProductService {
     public ProductResponse toggleAvailableStatus(Long hotelId, Long productId) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with ID: " + productId));
+        Map<String, Object> oldSnapshot = createProductSnapshot(product);
 
         // Verify product belongs to hotel
         if (!product.getHotel().getId().equals(hotelId)) {
@@ -263,6 +347,17 @@ public class ProductService {
         product.setUpdatedAt(LocalDateTime.now());
 
         Product updatedProduct = productRepository.save(product);
+        hotelActivityAuditService.logActivity(
+            updatedProduct.getHotel(),
+            AuditTaxonomy.EntityType.PRODUCT,
+            updatedProduct.getId(),
+            AuditTaxonomy.Action.AVAILABILITY_CHANGE,
+            oldSnapshot,
+            createProductSnapshot(updatedProduct),
+            List.of("isAvailable"),
+            updatedProduct.getIsAvailable() ? "Product made available" : "Product made unavailable",
+            true,
+            AuditTaxonomy.ComplianceCategory.FINANCIAL);
         return convertToResponse(updatedProduct);
     }
 
@@ -272,6 +367,7 @@ public class ProductService {
     public void deleteProduct(Long hotelId, Long productId) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with ID: " + productId));
+        Map<String, Object> oldSnapshot = createProductSnapshot(product);
 
         // Verify product belongs to hotel
         if (!product.getHotel().getId().equals(hotelId)) {
@@ -279,6 +375,18 @@ public class ProductService {
         }
 
         productRepository.delete(product);
+        hotelActivityAuditService.logActivity(
+            product.getHotel(),
+            AuditTaxonomy.EntityType.PRODUCT,
+            productId,
+            AuditTaxonomy.Action.DELETE,
+            oldSnapshot,
+            null,
+            List.of("name", "category", "price", "stockQuantity", "minimumStockLevel", "sku",
+                "isActive", "isAvailable"),
+            "Inventory product deleted",
+            true,
+            AuditTaxonomy.ComplianceCategory.FINANCIAL);
     }
 
     /**
@@ -377,6 +485,23 @@ public class ProductService {
             long timestamp = System.currentTimeMillis() % 10000;
             return prefix + "-" + categoryPrefix + "-" + timestamp;
         }
+    }
+
+    private Map<String, Object> createProductSnapshot(Product product) {
+        return hotelActivityAuditService.createSnapshot(
+                "id", product.getId(),
+                "hotelId", product.getHotel() != null ? product.getHotel().getId() : null,
+                "name", product.getName(),
+                "description", product.getDescription(),
+                "category", product.getCategory(),
+                "price", product.getPrice(),
+                "stockQuantity", product.getStockQuantity(),
+                "minimumStockLevel", product.getMinimumStockLevel(),
+                "sku", product.getSku(),
+                "imageUrl", product.getImageUrl(),
+                "isActive", product.getIsActive(),
+                "isAvailable", product.getIsAvailable(),
+                "weightKg", product.getWeightKg());
     }
 
     /**

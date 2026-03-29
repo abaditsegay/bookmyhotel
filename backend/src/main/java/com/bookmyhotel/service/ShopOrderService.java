@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -15,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.bookmyhotel.audit.AuditTaxonomy;
 import com.bookmyhotel.dto.ShopOrderItemResponse;
 import com.bookmyhotel.dto.ShopOrderRequest;
 import com.bookmyhotel.dto.ShopOrderResponse;
@@ -63,6 +65,9 @@ public class ShopOrderService {
 
     @Autowired
     private TaxCalculationService taxCalculationService;
+
+    @Autowired
+    private HotelActivityAuditService hotelActivityAuditService;
 
     /**
      * Simple method to demonstrate shop order functionality
@@ -230,12 +235,19 @@ public class ShopOrderService {
 
         // **IMPORTANT: Decrement stock quantities for all ordered products**
         List<Product> productsToUpdate = new ArrayList<>();
+        List<Map<String, Object>> stockChanges = new ArrayList<>();
         for (ShopOrderItem orderItem : savedOrder.getOrderItems()) {
             Product product = orderItem.getProduct();
             int oldStockQuantity = product.getStockQuantity();
             int newStockQuantity = oldStockQuantity - orderItem.getQuantity();
             product.setStockQuantity(newStockQuantity);
             productsToUpdate.add(product);
+            stockChanges.add(hotelActivityAuditService.createSnapshot(
+                    "productId", product.getId(),
+                    "productName", product.getName(),
+                    "quantity", orderItem.getQuantity(),
+                    "oldStockQuantity", oldStockQuantity,
+                    "newStockQuantity", newStockQuantity));
 
             logger.debug("Stock decremented for product '{}' (ID: {}). Old stock: {}, New stock: {}",
                     product.getName(), product.getId(),
@@ -259,6 +271,19 @@ public class ShopOrderService {
                         savedOrder.getId(), e.getMessage(), e);
             }
         }
+
+            hotelActivityAuditService.logActivity(
+                savedOrder.getHotel(),
+                AuditTaxonomy.EntityType.SHOP_ORDER,
+                savedOrder.getId(),
+                AuditTaxonomy.Action.CREATE,
+                null,
+                createOrderSnapshot(savedOrder, stockChanges),
+                List.of("orderNumber", "customerName", "customerEmail", "roomNumber", "status", "totalAmount",
+                    "taxAmount", "paymentMethod", "isPaid", "items", "stockChanges"),
+                "Shop order created",
+                true,
+                AuditTaxonomy.ComplianceCategory.FINANCIAL);
 
         // Convert to response
         return convertToResponse(savedOrder);
@@ -369,6 +394,7 @@ public class ShopOrderService {
         // Find the order and verify it belongs to the hotel
         ShopOrder order = shopOrderRepository.findByIdAndHotelId(orderId, hotelId)
                 .orElseThrow(() -> new IllegalArgumentException("Order not found or doesn't belong to this hotel"));
+        Map<String, Object> oldSnapshot = createOrderSnapshot(order, null);
 
         // Update the status
         order.setStatus(newStatus);
@@ -385,7 +411,19 @@ public class ShopOrderService {
         }
 
         // Save the updated order
-        shopOrderRepository.save(order);
+        order = shopOrderRepository.save(order);
+
+        hotelActivityAuditService.logActivity(
+            order.getHotel(),
+            AuditTaxonomy.EntityType.SHOP_ORDER,
+            order.getId(),
+            AuditTaxonomy.Action.STATUS_CHANGE,
+            oldSnapshot,
+            createOrderSnapshot(order, null),
+            List.of("status", "isPaid", "paidAt", "paymentReference"),
+            "Shop order status updated",
+            true,
+            AuditTaxonomy.ComplianceCategory.FINANCIAL);
 
         // Convert to response DTO
         return convertToResponse(order);
@@ -400,6 +438,8 @@ public class ShopOrderService {
             throw new IllegalArgumentException("Order does not belong to the specified hotel");
         }
 
+        Map<String, Object> oldSnapshot = createOrderSnapshot(order, null);
+
         // Mark as paid
         order.setIsPaid(true);
         order.setPaidAt(LocalDateTime.now());
@@ -411,6 +451,17 @@ public class ShopOrderService {
         order.setStatus(OrderStatus.PAID);
 
         order = shopOrderRepository.save(order);
+        hotelActivityAuditService.logActivity(
+            order.getHotel(),
+            AuditTaxonomy.EntityType.SHOP_ORDER,
+            order.getId(),
+            AuditTaxonomy.Action.MARK_PAID,
+            oldSnapshot,
+            createOrderSnapshot(order, null),
+            List.of("status", "isPaid", "paidAt", "paymentReference"),
+            "Shop order marked as paid",
+            true,
+            AuditTaxonomy.ComplianceCategory.FINANCIAL);
         return convertToResponse(order);
     }
 
@@ -425,6 +476,8 @@ public class ShopOrderService {
         if (!order.getHotel().getId().equals(hotelId)) {
             throw new IllegalArgumentException("Order does not belong to the specified hotel");
         }
+
+        Map<String, Object> oldSnapshot = createOrderSnapshot(order, null);
 
         // Toggle status
         OrderStatus newStatus = order.getStatus().toggle();
@@ -441,6 +494,17 @@ public class ShopOrderService {
         }
 
         order = shopOrderRepository.save(order);
+    hotelActivityAuditService.logActivity(
+        order.getHotel(),
+        AuditTaxonomy.EntityType.SHOP_ORDER,
+        order.getId(),
+        AuditTaxonomy.Action.TOGGLE_STATUS,
+        oldSnapshot,
+        createOrderSnapshot(order, null),
+        List.of("status", "isPaid", "paidAt", "paymentReference"),
+        "Shop order payment status toggled",
+        true,
+        AuditTaxonomy.ComplianceCategory.FINANCIAL);
         return convertToResponse(order);
     }
 
@@ -452,6 +516,8 @@ public class ShopOrderService {
         if (!order.getHotel().getId().equals(hotelId)) {
             throw new IllegalArgumentException("Order does not belong to the specified hotel");
         }
+
+        Map<String, Object> oldSnapshot = createOrderSnapshot(order, null);
 
         // Only allow cancellation if order is not already paid
         if (order.getStatus() == OrderStatus.PAID) {
@@ -469,6 +535,17 @@ public class ShopOrderService {
         }
 
         order = shopOrderRepository.save(order);
+    hotelActivityAuditService.logActivity(
+        order.getHotel(),
+        AuditTaxonomy.EntityType.SHOP_ORDER,
+        order.getId(),
+        AuditTaxonomy.Action.CANCEL,
+        oldSnapshot,
+        createOrderSnapshot(order, null),
+        List.of("status", "isPaid", "paidAt", "paymentReference", "notes"),
+        reason != null && !reason.isBlank() ? reason : "Shop order cancelled",
+        true,
+        AuditTaxonomy.ComplianceCategory.FINANCIAL);
         return convertToResponse(order);
     }
 
@@ -638,6 +715,44 @@ public class ShopOrderService {
         // Return null if no suitable reservation found
         return null;
     }
+
+        private Map<String, Object> createOrderSnapshot(ShopOrder order, List<Map<String, Object>> stockChanges) {
+        List<Map<String, Object>> items = order.getOrderItems() == null ? List.of()
+            : order.getOrderItems().stream()
+                .map(item -> hotelActivityAuditService.createSnapshot(
+                    "productId", item.getProduct() != null ? item.getProduct().getId() : null,
+                    "productName", item.getProductName(),
+                    "quantity", item.getQuantity(),
+                    "unitPrice", item.getUnitPrice(),
+                    "totalPrice", item.getTotalPrice()))
+                .toList();
+
+        return hotelActivityAuditService.createSnapshot(
+            "id", order.getId(),
+            "hotelId", order.getHotel() != null ? order.getHotel().getId() : null,
+            "orderNumber", order.getOrderNumber(),
+            "reservationId", order.getReservation() != null ? order.getReservation().getId() : null,
+            "customerName", order.getCustomerName(),
+            "customerEmail", order.getCustomerEmail(),
+            "customerPhone", order.getCustomerPhone(),
+            "roomNumber", order.getRoomNumber(),
+            "status", order.getStatus(),
+            "totalAmount", order.getTotalAmount(),
+            "taxAmount", order.getTaxAmount(),
+            "vatAmount", order.getVatAmount(),
+            "serviceTaxAmount", order.getServiceTaxAmount(),
+            "paymentMethod", order.getPaymentMethod(),
+            "isPaid", order.getIsPaid(),
+            "paidAt", order.getPaidAt(),
+            "paymentReference", order.getPaymentReference(),
+            "notes", order.getNotes(),
+            "isDelivery", order.getIsDelivery(),
+            "deliveryAddress", order.getDeliveryAddress(),
+            "deliveryTime", order.getDeliveryTime(),
+            "orderDate", order.getOrderDate(),
+            "items", items,
+            "stockChanges", stockChanges);
+        }
 
     /**
      * Inner class for order statistics

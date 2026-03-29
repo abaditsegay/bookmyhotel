@@ -3,6 +3,7 @@ package com.bookmyhotel.service.payment;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -23,10 +24,12 @@ import org.springframework.test.util.ReflectionTestUtils;
 import com.bookmyhotel.dto.payment.PaymentCallbackRequest;
 import com.bookmyhotel.entity.PaymentCallbackEvent;
 import com.bookmyhotel.entity.PaymentStatus;
+import com.bookmyhotel.entity.Hotel;
 import com.bookmyhotel.entity.Reservation;
 import com.bookmyhotel.entity.ReservationStatus;
 import com.bookmyhotel.repository.PaymentCallbackEventRepository;
 import com.bookmyhotel.repository.ReservationRepository;
+import com.bookmyhotel.service.HotelActivityAuditService;
 
 @ExtendWith(MockitoExtension.class)
 class EthiopianMobilePaymentServiceTest {
@@ -37,11 +40,15 @@ class EthiopianMobilePaymentServiceTest {
     @Mock
     private PaymentCallbackEventRepository paymentCallbackEventRepository;
 
+    @Mock
+    private HotelActivityAuditService hotelActivityAuditService;
+
     private EthiopianMobilePaymentService service;
 
     @BeforeEach
     void setUp() {
-        service = new EthiopianMobilePaymentService(reservationRepository, paymentCallbackEventRepository);
+        service = new EthiopianMobilePaymentService(reservationRepository, paymentCallbackEventRepository,
+                hotelActivityAuditService);
         ReflectionTestUtils.setField(service, "callbackMaxSkewSeconds", 300L);
     }
 
@@ -76,7 +83,11 @@ class EthiopianMobilePaymentServiceTest {
         PaymentCallbackRequest callback = callback("txn-3", "SUCCESS");
         callback.setProviderTransactionId("provider-ref-1");
 
+        Hotel hotel = new Hotel();
+        hotel.setId(1L);
         Reservation reservation = new Reservation();
+        reservation.setId(33L);
+        reservation.setHotel(hotel);
         reservation.setPaymentIntentId("txn-3");
         reservation.setStatus(ReservationStatus.PENDING);
         reservation.setPaymentStatus(PaymentStatus.PENDING);
@@ -91,6 +102,17 @@ class EthiopianMobilePaymentServiceTest {
         assertEquals(ReservationStatus.BOOKED, reservation.getStatus());
         assertEquals("provider-ref-1", reservation.getPaymentReference());
         verify(reservationRepository).save(reservation);
+        verify(hotelActivityAuditService).logActivity(
+            eq(hotel),
+            eq("PAYMENT"),
+            eq(33L),
+            eq("PAYMENT_CALLBACK"),
+            any(),
+            any(),
+            any(),
+            eq("Processed TELEBIRR payment callback"),
+            eq(true),
+            eq("FINANCIAL"));
     }
 
     @Test

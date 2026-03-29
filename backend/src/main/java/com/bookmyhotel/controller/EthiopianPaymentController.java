@@ -15,9 +15,13 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.bookmyhotel.audit.AuditTaxonomy;
 import com.bookmyhotel.dto.payment.PaymentCallbackRequest;
 import com.bookmyhotel.dto.payment.PaymentInitiationRequest;
 import com.bookmyhotel.dto.payment.PaymentInitiationResponse;
+import com.bookmyhotel.entity.Reservation;
+import com.bookmyhotel.repository.ReservationRepository;
+import com.bookmyhotel.service.HotelActivityAuditService;
 import com.bookmyhotel.service.payment.EthiopianMobilePaymentService;
 
 import jakarta.validation.Valid;
@@ -33,6 +37,12 @@ public class EthiopianPaymentController {
 
     @Autowired
     private EthiopianMobilePaymentService paymentService;
+
+    @Autowired
+    private ReservationRepository reservationRepository;
+
+    @Autowired
+    private HotelActivityAuditService hotelActivityAuditService;
 
     /**
      * Initiate M-birr payment
@@ -54,18 +64,23 @@ public class EthiopianPaymentController {
             }
 
             PaymentInitiationResponse response = paymentService.initiateMbirrPayment(request);
+            Reservation reservation = findReservation(request.getBookingReference());
 
             if (response.isSuccess()) {
                 logger.info("✅ M-birr payment initiated successfully for booking: {}", request.getBookingReference());
+                logInitiationAudit(reservation, "MBIRR", request, AuditTaxonomy.Action.PAYMENT_INITIATED, response.getTransactionId());
                 return ResponseEntity.ok(response);
             } else {
                 logger.warn("❌ M-birr payment initiation failed for booking: {}", request.getBookingReference());
+                logInitiationAudit(reservation, "MBIRR", request, AuditTaxonomy.Action.PAYMENT_INITIATION_FAILED, null);
                 return ResponseEntity.status(HttpStatus.PAYMENT_REQUIRED)
                         .body(response);
             }
 
         } catch (Exception e) {
             logger.error("❌ Error initiating M-birr payment", e);
+            logInitiationAudit(findReservation(request.getBookingReference()), "MBIRR", request,
+                    AuditTaxonomy.Action.PAYMENT_INITIATION_FAILED, null);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Failed to initiate M-birr payment: " + e.getMessage());
         }
@@ -91,18 +106,23 @@ public class EthiopianPaymentController {
             }
 
             PaymentInitiationResponse response = paymentService.initiateTelebirrPayment(request);
+            Reservation reservation = findReservation(request.getBookingReference());
 
             if (response.isSuccess()) {
                 logger.info("✅ Telebirr payment initiated successfully for booking: {}", request.getBookingReference());
+                logInitiationAudit(reservation, "TELEBIRR", request, AuditTaxonomy.Action.PAYMENT_INITIATED, response.getTransactionId());
                 return ResponseEntity.ok(response);
             } else {
                 logger.warn("❌ Telebirr payment initiation failed for booking: {}", request.getBookingReference());
+                logInitiationAudit(reservation, "TELEBIRR", request, AuditTaxonomy.Action.PAYMENT_INITIATION_FAILED, null);
                 return ResponseEntity.status(HttpStatus.PAYMENT_REQUIRED)
                         .body(response);
             }
 
         } catch (Exception e) {
             logger.error("❌ Error initiating Telebirr payment", e);
+            logInitiationAudit(findReservation(request.getBookingReference()), "TELEBIRR", request,
+                    AuditTaxonomy.Action.PAYMENT_INITIATION_FAILED, null);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Failed to initiate Telebirr payment: " + e.getMessage());
         }
@@ -216,5 +236,42 @@ public class EthiopianPaymentController {
         public String getStatus() {
             return status;
         }
+    }
+
+    private Reservation findReservation(String bookingReference) {
+        if (bookingReference == null || bookingReference.isBlank()) {
+            return null;
+        }
+
+        return reservationRepository.findByConfirmationNumberPublic(bookingReference)
+                .or(() -> reservationRepository.findByPaymentReferencePublic(bookingReference))
+                .orElse(null);
+    }
+
+    private void logInitiationAudit(Reservation reservation,
+            String provider,
+            PaymentInitiationRequest request,
+            String action,
+            String transactionId) {
+        if (reservation == null || reservation.getHotel() == null) {
+            return;
+        }
+
+        hotelActivityAuditService.logActivity(
+                reservation.getHotel(),
+                AuditTaxonomy.EntityType.PAYMENT,
+                reservation.getId(),
+                action,
+                null,
+                hotelActivityAuditService.createSnapshot(
+                        "provider", provider,
+                        "bookingReference", request.getBookingReference(),
+                        "amount", request.getAmount(),
+                        "paymentProvider", request.getPaymentProvider(),
+                        "transactionId", transactionId),
+                java.util.List.of("provider", "bookingReference", "amount", "paymentProvider", "transactionId"),
+                provider + " payment initiation attempt",
+                true,
+                AuditTaxonomy.ComplianceCategory.FINANCIAL);
     }
 }

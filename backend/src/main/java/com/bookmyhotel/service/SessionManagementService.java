@@ -36,10 +36,7 @@ public class SessionManagementService {
     // Scheduled executor for session cleanup
     private final ScheduledExecutorService sessionCleanupExecutor = Executors.newSingleThreadScheduledExecutor();
 
-    @Value("${jwt.expiration.time:86400000}")
-    private Long jwtExpirationTime;
-
-    @Value("${security.session.timeout.minutes:30}")
+    @Value("${security.session.timeout.minutes:720}")
     private Long sessionTimeoutMinutes;
 
     @Value("${security.session.max-concurrent:1}")
