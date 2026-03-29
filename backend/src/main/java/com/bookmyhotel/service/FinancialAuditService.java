@@ -5,12 +5,13 @@ import com.bookmyhotel.dto.DailyFinancialReconciliationDto;
 import com.bookmyhotel.dto.PaymentDiscrepancyDto;
 import com.bookmyhotel.entity.AuditLog;
 import com.bookmyhotel.entity.Hotel;
+import com.bookmyhotel.entity.HotelPricingConfig;
 import com.bookmyhotel.entity.Reservation;
 import com.bookmyhotel.repository.HotelRepository;
 import com.bookmyhotel.repository.AuditLogRepository;
+import com.bookmyhotel.repository.HotelPricingConfigRepository;
 import com.bookmyhotel.repository.ReservationRepository;
 import com.bookmyhotel.repository.RoomChargeRepository;
-import com.bookmyhotel.tenant.TenantContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -38,6 +40,7 @@ import java.util.stream.Collectors;
 public class FinancialAuditService {
 
     private static final Logger logger = LoggerFactory.getLogger(FinancialAuditService.class);
+    private static final BigDecimal DEFAULT_TOTAL_TAX_RATE = new BigDecimal("0.20");
 
     @Autowired
     private AuditLogRepository auditLogRepository;
@@ -52,7 +55,7 @@ public class FinancialAuditService {
     private HotelRepository hotelRepository;
 
     @Autowired
-    private HotelPricingConfigService hotelPricingConfigService;
+    private HotelPricingConfigRepository hotelPricingConfigRepository;
 
     /**
      * Create an audit log entry
@@ -137,7 +140,7 @@ public class FinancialAuditService {
             calculateTaxInformation(reconciliation, reservations, hotelId);
 
             // Find discrepancies
-            List<PaymentDiscrepancyDto> discrepancies = findPaymentDiscrepancies(reservations, hotelId);
+            List<PaymentDiscrepancyDto> discrepancies = findPaymentDiscrepancies(reservations);
             reconciliation.setDiscrepancies(discrepancies);
             reconciliation.setHasDiscrepancies(!discrepancies.isEmpty());
 
@@ -279,7 +282,7 @@ public class FinancialAuditService {
     private void calculateTaxInformation(DailyFinancialReconciliationDto reconciliation,
             List<Reservation> reservations, Long hotelId) {
         try {
-            BigDecimal totalTaxRate = hotelPricingConfigService.getTotalTaxRate(hotelId);
+            BigDecimal totalTaxRate = getTotalTaxRate(hotelId);
             BigDecimal totalTaxCollected = BigDecimal.ZERO;
             BigDecimal expectedTax = BigDecimal.ZERO;
 
@@ -310,10 +313,22 @@ public class FinancialAuditService {
         }
     }
 
+    private BigDecimal getTotalTaxRate(Long hotelId) {
+        Optional<HotelPricingConfig> config = hotelPricingConfigRepository.findByHotelId(hotelId);
+        if (config.isEmpty()) {
+            return DEFAULT_TOTAL_TAX_RATE;
+        }
+
+        BigDecimal vatRate = config.get().getVatRate() != null ? config.get().getVatRate() : BigDecimal.ZERO;
+        BigDecimal serviceRate = config.get().getServiceTaxRate() != null ? config.get().getServiceTaxRate() : BigDecimal.ZERO;
+        BigDecimal cityRate = config.get().getCityTaxRate() != null ? config.get().getCityTaxRate() : BigDecimal.ZERO;
+        return vatRate.add(serviceRate).add(cityRate).setScale(4, RoundingMode.HALF_UP);
+    }
+
     /**
      * Find payment discrepancies
      */
-    private List<PaymentDiscrepancyDto> findPaymentDiscrepancies(List<Reservation> reservations, Long hotelId) {
+    private List<PaymentDiscrepancyDto> findPaymentDiscrepancies(List<Reservation> reservations) {
         List<PaymentDiscrepancyDto> discrepancies = new ArrayList<>();
 
         for (Reservation reservation : reservations) {
