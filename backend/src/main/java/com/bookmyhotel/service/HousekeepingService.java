@@ -1,5 +1,6 @@
 package com.bookmyhotel.service;
 
+import com.bookmyhotel.audit.AuditTaxonomy;
 import com.bookmyhotel.entity.*;
 import com.bookmyhotel.enums.WorkShift;
 import com.bookmyhotel.repository.HousekeepingStaffRepository;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -38,6 +40,9 @@ public class HousekeepingService {
 
     @Autowired
     private HotelRepository hotelRepository;
+
+    @Autowired
+    private HotelActivityAuditService hotelActivityAuditService;
 
     // ===== TASK MANAGEMENT METHODS =====
 
@@ -108,7 +113,20 @@ public class HousekeepingService {
             }
         }
 
-        return housekeepingTaskRepository.save(task);
+        HousekeepingTask savedTask = housekeepingTaskRepository.save(task);
+        hotelActivityAuditService.logActivity(
+            savedTask.getHotel(),
+            AuditTaxonomy.EntityType.HOUSEKEEPING_TASK,
+            savedTask.getId(),
+            AuditTaxonomy.Action.CREATE,
+            null,
+            createTaskSnapshot(savedTask),
+            List.of("roomNumber", "title", "taskType", "status", "priority", "description",
+                "specialInstructions", "estimatedDurationMinutes", "assignedUserId"),
+            "Housekeeping task created",
+            false,
+            null);
+        return savedTask;
     }
 
     /**
@@ -168,6 +186,7 @@ public class HousekeepingService {
     public HousekeepingTask assignTask(Long hotelId, Long taskId, Long userId) {
         HousekeepingTask task = housekeepingTaskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Task not found"));
+        Map<String, Object> oldSnapshot = createTaskSnapshot(task);
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -191,7 +210,19 @@ public class HousekeepingService {
         task.setStatus(HousekeepingTaskStatus.ASSIGNED);
         task.setAssignedAt(LocalDateTime.now());
 
-        return housekeepingTaskRepository.save(task);
+        HousekeepingTask savedTask = housekeepingTaskRepository.save(task);
+        hotelActivityAuditService.logActivity(
+            savedTask.getHotel(),
+            AuditTaxonomy.EntityType.HOUSEKEEPING_TASK,
+            savedTask.getId(),
+            AuditTaxonomy.Action.ASSIGN,
+            oldSnapshot,
+            createTaskSnapshot(savedTask),
+            List.of("assignedUserId", "status", "assignedAt"),
+            "Housekeeping task assigned",
+            false,
+            null);
+        return savedTask;
     }
 
     /**
@@ -200,6 +231,7 @@ public class HousekeepingService {
     public HousekeepingTask startTask(Long hotelId, Long taskId) {
         HousekeepingTask task = housekeepingTaskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Task not found"));
+        Map<String, Object> oldSnapshot = createTaskSnapshot(task);
 
         // Verify task belongs to the specified hotel
         if (!task.getHotel().getId().equals(hotelId)) {
@@ -217,7 +249,19 @@ public class HousekeepingService {
         task.setStatus(HousekeepingTaskStatus.IN_PROGRESS);
         task.setStartedAt(LocalDateTime.now());
 
-        return housekeepingTaskRepository.save(task);
+        HousekeepingTask savedTask = housekeepingTaskRepository.save(task);
+        hotelActivityAuditService.logActivity(
+            savedTask.getHotel(),
+            AuditTaxonomy.EntityType.HOUSEKEEPING_TASK,
+            savedTask.getId(),
+            AuditTaxonomy.Action.START,
+            oldSnapshot,
+            createTaskSnapshot(savedTask),
+            List.of("status", "startedAt"),
+            "Housekeeping task started",
+            false,
+            null);
+        return savedTask;
     }
 
     /**
@@ -226,6 +270,7 @@ public class HousekeepingService {
     public HousekeepingTask completeTask(Long hotelId, Long taskId, String notes, Integer qualityScore) {
         HousekeepingTask task = housekeepingTaskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Task not found"));
+        Map<String, Object> oldSnapshot = createTaskSnapshot(task);
 
         // Verify task belongs to the specified hotel
         if (!task.getHotel().getId().equals(hotelId)) {
@@ -250,7 +295,19 @@ public class HousekeepingService {
             task.setActualDurationMinutes((int) minutes);
         }
 
-        return housekeepingTaskRepository.save(task);
+        HousekeepingTask savedTask = housekeepingTaskRepository.save(task);
+        hotelActivityAuditService.logActivity(
+            savedTask.getHotel(),
+            AuditTaxonomy.EntityType.HOUSEKEEPING_TASK,
+            savedTask.getId(),
+            AuditTaxonomy.Action.COMPLETE,
+            oldSnapshot,
+            createTaskSnapshot(savedTask),
+            List.of("status", "completedAt", "inspectorNotes", "qualityScore", "actualDurationMinutes"),
+            notes != null && !notes.isBlank() ? notes : "Housekeeping task completed",
+            false,
+            null);
+        return savedTask;
     }
 
     /**
@@ -259,6 +316,7 @@ public class HousekeepingService {
     public HousekeepingTask completeTaskWithIssues(Long hotelId, Long taskId, String notes, String issueDescription) {
         HousekeepingTask task = housekeepingTaskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Task not found"));
+        Map<String, Object> oldSnapshot = createTaskSnapshot(task);
 
         // Verify task belongs to the specified hotel
         if (!task.getHotel().getId().equals(hotelId)) {
@@ -280,7 +338,20 @@ public class HousekeepingService {
             task.setActualDurationMinutes((int) minutes);
         }
 
-        return housekeepingTaskRepository.save(task);
+        HousekeepingTask savedTask = housekeepingTaskRepository.save(task);
+        hotelActivityAuditService.logActivity(
+            savedTask.getHotel(),
+            AuditTaxonomy.EntityType.HOUSEKEEPING_TASK,
+            savedTask.getId(),
+            AuditTaxonomy.Action.COMPLETE_WITH_ISSUES,
+            oldSnapshot,
+            createTaskSnapshot(savedTask),
+            List.of("status", "completedAt", "inspectorNotes", "specialInstructions", "actualDurationMinutes"),
+            issueDescription != null && !issueDescription.isBlank() ? issueDescription
+                : "Housekeeping task completed with issues",
+            false,
+            null);
+        return savedTask;
     }
 
     /**
@@ -289,6 +360,7 @@ public class HousekeepingService {
     public HousekeepingTask cancelTask(Long hotelId, Long taskId, String reason) {
         HousekeepingTask task = housekeepingTaskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Task not found"));
+        Map<String, Object> oldSnapshot = createTaskSnapshot(task);
 
         // Verify task belongs to the specified hotel
         if (!task.getHotel().getId().equals(hotelId)) {
@@ -303,7 +375,19 @@ public class HousekeepingService {
         task.setStatus(HousekeepingTaskStatus.CANCELLED);
         task.setInspectorNotes(reason);
 
-        return housekeepingTaskRepository.save(task);
+        HousekeepingTask savedTask = housekeepingTaskRepository.save(task);
+        hotelActivityAuditService.logActivity(
+            savedTask.getHotel(),
+            AuditTaxonomy.EntityType.HOUSEKEEPING_TASK,
+            savedTask.getId(),
+            AuditTaxonomy.Action.CANCEL,
+            oldSnapshot,
+            createTaskSnapshot(savedTask),
+            List.of("status", "inspectorNotes"),
+            reason,
+            false,
+            null);
+        return savedTask;
     }
 
     /**
@@ -312,6 +396,7 @@ public class HousekeepingService {
     public HousekeepingTask updateTask(Long hotelId, Long taskId, HousekeepingTask updatedTask) {
         HousekeepingTask existingTask = housekeepingTaskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Task not found"));
+        Map<String, Object> oldSnapshot = createTaskSnapshot(existingTask);
 
         // Verify task belongs to the specified hotel
         if (!existingTask.getHotel().getId().equals(hotelId)) {
@@ -332,7 +417,19 @@ public class HousekeepingService {
             existingTask.setTaskType(updatedTask.getTaskType());
         }
 
-        return housekeepingTaskRepository.save(existingTask);
+        HousekeepingTask savedTask = housekeepingTaskRepository.save(existingTask);
+        hotelActivityAuditService.logActivity(
+            savedTask.getHotel(),
+            AuditTaxonomy.EntityType.HOUSEKEEPING_TASK,
+            savedTask.getId(),
+            AuditTaxonomy.Action.UPDATE,
+            oldSnapshot,
+            createTaskSnapshot(savedTask),
+            List.of("description", "specialInstructions", "priority", "taskType"),
+            "Housekeeping task updated",
+            false,
+            null);
+        return savedTask;
     }
 
     /**
@@ -341,6 +438,7 @@ public class HousekeepingService {
     public HousekeepingTask updateTaskStatus(Long hotelId, Long taskId, String status, String notes) {
         HousekeepingTask existingTask = housekeepingTaskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Task not found"));
+        Map<String, Object> oldSnapshot = createTaskSnapshot(existingTask);
 
         // Verify task belongs to the specified hotel
         if (!existingTask.getHotel().getId().equals(hotelId)) {
@@ -364,7 +462,19 @@ public class HousekeepingService {
             existingTask.setInspectorNotes(notes);
         }
 
-        return housekeepingTaskRepository.save(existingTask);
+        HousekeepingTask savedTask = housekeepingTaskRepository.save(existingTask);
+        hotelActivityAuditService.logActivity(
+            savedTask.getHotel(),
+            AuditTaxonomy.EntityType.HOUSEKEEPING_TASK,
+            savedTask.getId(),
+            AuditTaxonomy.Action.STATUS_CHANGE,
+            oldSnapshot,
+            createTaskSnapshot(savedTask),
+            List.of("status", "startedAt", "completedAt", "inspectorNotes"),
+            notes != null && !notes.isBlank() ? notes : "Housekeeping task status updated",
+            false,
+            null);
+        return savedTask;
     }
 
     // ===== TASK QUERY METHODS =====
@@ -451,7 +561,19 @@ public class HousekeepingService {
         staff.setEmployeeId(employeeId != null ? employeeId : "EMP" + System.currentTimeMillis());
         staff.setIsActive(true);
 
-        return housekeepingStaffRepository.save(staff);
+        HousekeepingStaff savedStaff = housekeepingStaffRepository.save(staff);
+        hotelActivityAuditService.logActivity(
+            savedStaff.getHotel(),
+            AuditTaxonomy.EntityType.HOUSEKEEPING_STAFF,
+            savedStaff.getId(),
+            AuditTaxonomy.Action.CREATE,
+            null,
+            createStaffSnapshot(savedStaff),
+            List.of("employeeId", "firstName", "lastName", "email", "phone", "shift", "isActive"),
+            "Housekeeping staff created",
+            true,
+            AuditTaxonomy.ComplianceCategory.ACCESS_CONTROL);
+        return savedStaff;
     }
 
     /**
@@ -496,6 +618,7 @@ public class HousekeepingService {
     public HousekeepingStaff updateStaff(Long hotelId, Long staffId, HousekeepingStaff updatedStaff) {
         HousekeepingStaff existingStaff = housekeepingStaffRepository.findById(staffId)
                 .orElseThrow(() -> new RuntimeException("Staff member not found"));
+        Map<String, Object> oldSnapshot = createStaffSnapshot(existingStaff);
 
         // Verify staff belongs to the specified hotel
         if (!existingStaff.getHotel().getId().equals(hotelId)) {
@@ -522,7 +645,19 @@ public class HousekeepingService {
             existingStaff.setPhone(updatedStaff.getPhone());
         }
 
-        return housekeepingStaffRepository.save(existingStaff);
+        HousekeepingStaff savedStaff = housekeepingStaffRepository.save(existingStaff);
+        hotelActivityAuditService.logActivity(
+            savedStaff.getHotel(),
+            AuditTaxonomy.EntityType.HOUSEKEEPING_STAFF,
+            savedStaff.getId(),
+            AuditTaxonomy.Action.UPDATE,
+            oldSnapshot,
+            createStaffSnapshot(savedStaff),
+            List.of("shift", "hourlyRate", "isActive", "firstName", "lastName", "phone"),
+            "Housekeeping staff updated",
+            true,
+            AuditTaxonomy.ComplianceCategory.ACCESS_CONTROL);
+        return savedStaff;
     }
 
     /**
@@ -531,6 +666,7 @@ public class HousekeepingService {
     public HousekeepingStaff deactivateStaff(Long hotelId, Long staffId) {
         HousekeepingStaff staff = housekeepingStaffRepository.findById(staffId)
                 .orElseThrow(() -> new RuntimeException("Staff member not found"));
+        Map<String, Object> oldSnapshot = createStaffSnapshot(staff);
 
         // Verify staff belongs to the specified hotel
         if (!staff.getHotel().getId().equals(hotelId)) {
@@ -538,7 +674,19 @@ public class HousekeepingService {
         }
 
         staff.setIsActive(false);
-        return housekeepingStaffRepository.save(staff);
+        HousekeepingStaff savedStaff = housekeepingStaffRepository.save(staff);
+        hotelActivityAuditService.logActivity(
+            savedStaff.getHotel(),
+            AuditTaxonomy.EntityType.HOUSEKEEPING_STAFF,
+            savedStaff.getId(),
+            AuditTaxonomy.Action.DEACTIVATE,
+            oldSnapshot,
+            createStaffSnapshot(savedStaff),
+            List.of("isActive"),
+            "Housekeeping staff deactivated",
+            true,
+            AuditTaxonomy.ComplianceCategory.ACCESS_CONTROL);
+        return savedStaff;
     }
 
     // ===== STATISTICS AND REPORTING METHODS =====
@@ -647,6 +795,7 @@ public class HousekeepingService {
     public HousekeepingTask assignTaskAutomatically(Long taskId, Long hotelId) {
         HousekeepingTask task = housekeepingTaskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Task not found"));
+        Map<String, Object> oldSnapshot = createTaskSnapshot(task);
 
         // Find available users with HOUSEKEEPING role (simplistic algorithm)
         List<User> availableUsers = userRepository.findByHotelIdAndRole(hotelId, UserRole.HOUSEKEEPING);
@@ -656,9 +805,61 @@ public class HousekeepingService {
             task.setAssignedUser(assignedUser);
             task.setStatus(HousekeepingTaskStatus.IN_PROGRESS);
             task.setStartedAt(LocalDateTime.now());
-            return housekeepingTaskRepository.save(task);
+            HousekeepingTask savedTask = housekeepingTaskRepository.save(task);
+            hotelActivityAuditService.logActivity(
+                    savedTask.getHotel(),
+                    AuditTaxonomy.EntityType.HOUSEKEEPING_TASK,
+                    savedTask.getId(),
+                    AuditTaxonomy.Action.AUTO_ASSIGN,
+                    oldSnapshot,
+                    createTaskSnapshot(savedTask),
+                    List.of("assignedUserId", "status", "startedAt"),
+                    "Housekeeping task auto-assigned",
+                    false,
+                    null);
+            return savedTask;
         } else {
             throw new RuntimeException("No available staff found for automatic assignment");
         }
+    }
+
+    private Map<String, Object> createTaskSnapshot(HousekeepingTask task) {
+        return hotelActivityAuditService.createSnapshot(
+                "id", task.getId(),
+                "hotelId", task.getHotel() != null ? task.getHotel().getId() : null,
+                "roomNumber", task.getRoomNumber(),
+                "title", task.getTitle(),
+                "taskType", task.getTaskType(),
+                "status", task.getStatus(),
+                "priority", task.getPriority(),
+                "description", task.getDescription(),
+                "specialInstructions", task.getSpecialInstructions(),
+                "assignedUserId", task.getAssignedUser() != null ? task.getAssignedUser().getId() : null,
+                "createdAt", task.getCreatedAt(),
+                "assignedAt", task.getAssignedAt(),
+                "startedAt", task.getStartedAt(),
+                "completedAt", task.getCompletedAt(),
+                "estimatedDurationMinutes", task.getEstimatedDurationMinutes(),
+                "actualDurationMinutes", task.getActualDurationMinutes(),
+                "qualityScore", task.getQualityScore(),
+                "inspectorNotes", task.getInspectorNotes());
+    }
+
+    private Map<String, Object> createStaffSnapshot(HousekeepingStaff staff) {
+        return hotelActivityAuditService.createSnapshot(
+                "id", staff.getId(),
+                "hotelId", staff.getHotel() != null ? staff.getHotel().getId() : null,
+                "employeeId", staff.getEmployeeId(),
+                "firstName", staff.getFirstName(),
+                "lastName", staff.getLastName(),
+                "email", staff.getEmail(),
+                "phone", staff.getPhone(),
+                "role", staff.getRole(),
+                "shift", staff.getShift(),
+                "status", staff.getStatus(),
+                "hourlyRate", staff.getHourlyRate(),
+                "isActive", staff.getIsActive(),
+                "currentWorkload", staff.getCurrentWorkload(),
+                "averageRating", staff.getAverageRating());
     }
 }

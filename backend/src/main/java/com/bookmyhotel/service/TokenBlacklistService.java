@@ -8,7 +8,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import jakarta.annotation.PostConstruct;
@@ -28,9 +27,6 @@ public class TokenBlacklistService {
 
     // Scheduled executor for cleanup task
     private final ScheduledExecutorService cleanupExecutor = Executors.newSingleThreadScheduledExecutor();
-
-    @Value("${jwt.expiration.time:86400000}")
-    private Long jwtExpirationTime;
 
     @PostConstruct
     public void init() {

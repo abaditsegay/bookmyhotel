@@ -3,6 +3,7 @@ import {
   ProcessMonitoringEventDto,
   DailyFinancialReconciliationDto,
   AuditTrailDto,
+  AuditTaxonomyDto,
   LiveMonitoringData,
   StaffActivity,
   PatternDetection,
@@ -139,6 +140,14 @@ class ProcessMonitoringService {
     const response = await api.get<DailyFinancialReconciliationDto>(
       `${this.baseUrl}/hotels/${hotelId}/audit/reconciliation?${query}`
     );
+    return response.data;
+  }
+
+  /**
+   * Get supported audit taxonomy values
+   */
+  async getAuditTaxonomy(hotelId: number): Promise<AuditTaxonomyDto> {
+    const response = await api.get<AuditTaxonomyDto>(`${this.baseUrl}/hotels/${hotelId}/audit/taxonomy`);
     return response.data;
   }
 

@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -20,6 +21,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.bookmyhotel.audit.AuditTaxonomy;
 import com.bookmyhotel.config.CacheConfig;
 import com.bookmyhotel.dto.BookingRequest;
 import com.bookmyhotel.dto.BookingResponse;
@@ -78,6 +80,9 @@ public class FrontDeskService {
 
     @Autowired
     private BookingStatusUpdateService bookingStatusUpdateService;
+
+    @Autowired
+    private HotelActivityAuditService hotelActivityAuditService;
 
     // TODO: Temporarily commented out for compilation - will reintegrate after
     // Phase 3.3
@@ -238,7 +243,24 @@ public class FrontDeskService {
         }
 
         logger.info("🎯 Final updatedBy value: {}", updatedBy);
-        return bookingStatusUpdateService.updateBookingStatus(reservationId, status, updatedBy);
+        Reservation reservation = reservationRepository.findById(reservationId)
+            .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
+        Map<String, Object> oldSnapshot = createReservationSnapshot(reservation);
+        BookingResponse response = bookingStatusUpdateService.updateBookingStatus(reservationId, status, updatedBy);
+        Reservation updatedReservation = reservationRepository.findById(reservationId)
+            .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
+        hotelActivityAuditService.logActivity(
+            updatedReservation.getHotel(),
+            AuditTaxonomy.EntityType.RESERVATION,
+            updatedReservation.getId(),
+            AuditTaxonomy.Action.STATUS_CHANGE,
+            oldSnapshot,
+            createReservationSnapshot(updatedReservation),
+            List.of("status"),
+            "Front desk updated booking status",
+            false,
+            null);
+        return response;
     }
 
     /**
@@ -248,9 +270,22 @@ public class FrontDeskService {
     public BookingResponse updateBookingPaymentStatus(Long reservationId, String paymentStatus) {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
+        Map<String, Object> oldSnapshot = createReservationSnapshot(reservation);
 
         reservation.setPaymentStatusFromString(paymentStatus);
         reservation = reservationRepository.save(reservation);
+
+        hotelActivityAuditService.logActivity(
+            reservation.getHotel(),
+            AuditTaxonomy.EntityType.RESERVATION,
+            reservation.getId(),
+            AuditTaxonomy.Action.PAYMENT_STATUS_CHANGE,
+            oldSnapshot,
+            createReservationSnapshot(reservation),
+            List.of("paymentStatus"),
+            "Front desk updated payment status",
+            true,
+            AuditTaxonomy.ComplianceCategory.FINANCIAL);
 
         return convertToBookingResponse(reservation);
     }
@@ -262,9 +297,22 @@ public class FrontDeskService {
     public BookingResponse updateBookingPaymentType(Long reservationId, String paymentType) {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
+        Map<String, Object> oldSnapshot = createReservationSnapshot(reservation);
 
         reservation.setPaymentMethod(paymentType);
         reservation = reservationRepository.save(reservation);
+
+        hotelActivityAuditService.logActivity(
+            reservation.getHotel(),
+            AuditTaxonomy.EntityType.RESERVATION,
+            reservation.getId(),
+            AuditTaxonomy.Action.PAYMENT_METHOD_CHANGE,
+            oldSnapshot,
+            createReservationSnapshot(reservation),
+            List.of("paymentMethod"),
+            "Front desk updated payment method",
+            true,
+            AuditTaxonomy.ComplianceCategory.FINANCIAL);
 
         return convertToBookingResponse(reservation);
     }
@@ -276,6 +324,7 @@ public class FrontDeskService {
     public BookingResponse updateBooking(Long reservationId, BookingRequest request) {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
+        Map<String, Object> oldSnapshot = createReservationSnapshot(reservation);
 
         // Validate that dates are valid
         if (request.getCheckInDate().isAfter(request.getCheckOutDate()) ||
@@ -368,6 +417,19 @@ public class FrontDeskService {
         reservation.setUpdatedAt(LocalDateTime.now());
         reservation = reservationRepository.save(reservation);
 
+        hotelActivityAuditService.logActivity(
+            reservation.getHotel(),
+            AuditTaxonomy.EntityType.RESERVATION,
+            reservation.getId(),
+            AuditTaxonomy.Action.UPDATE,
+            oldSnapshot,
+            createReservationSnapshot(reservation),
+            List.of("checkInDate", "checkOutDate", "guestEmail", "guestPhone", "roomType", "assignedRoomId",
+                "totalAmount", "specialRequests", "numberOfGuests"),
+            "Front desk updated booking details",
+            true,
+            AuditTaxonomy.ComplianceCategory.FINANCIAL);
+
         return convertToBookingResponse(reservation);
     }
 
@@ -377,6 +439,7 @@ public class FrontDeskService {
     public BookingResponse checkInWithRoomAssignment(Long reservationId, Long roomId, String roomType) {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
+        Map<String, Object> oldSnapshot = createReservationSnapshot(reservation);
 
         Room room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new ResourceNotFoundException("Room not found with id: " + roomId));
@@ -420,6 +483,18 @@ public class FrontDeskService {
         roomRepository.save(room);
         reservation = reservationRepository.save(reservation);
 
+        hotelActivityAuditService.logActivity(
+            reservation.getHotel(),
+            AuditTaxonomy.EntityType.RESERVATION,
+            reservation.getId(),
+            AuditTaxonomy.Action.CHECK_IN,
+            oldSnapshot,
+            createReservationSnapshot(reservation),
+            List.of("status", "actualCheckInTime", "assignedRoomId", "roomType"),
+            "Front desk checked in guest with room assignment",
+            true,
+            AuditTaxonomy.ComplianceCategory.FINANCIAL);
+
         return convertToBookingResponse(reservation);
     }
 
@@ -443,6 +518,7 @@ public class FrontDeskService {
     public void deleteBooking(Long reservationId) {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
+        Map<String, Object> oldSnapshot = createReservationSnapshot(reservation);
 
         // Only allow deletion if not checked in
         if (reservation.getStatus() == ReservationStatus.CHECKED_IN) {
@@ -457,6 +533,17 @@ public class FrontDeskService {
         }
 
         reservationRepository.delete(reservation);
+    hotelActivityAuditService.logActivity(
+        reservation.getHotel(),
+        AuditTaxonomy.EntityType.RESERVATION,
+        reservationId,
+        AuditTaxonomy.Action.DELETE,
+        oldSnapshot,
+        null,
+        List.of("status", "checkInDate", "checkOutDate", "assignedRoomId", "paymentStatus", "paymentMethod"),
+        "Front desk deleted booking",
+        true,
+        AuditTaxonomy.ComplianceCategory.FINANCIAL);
     }
 
     /**
@@ -465,6 +552,7 @@ public class FrontDeskService {
     public BookingResponse updateBookingRoomAssignment(Long reservationId, Long newRoomId, String newRoomType) {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
+        Map<String, Object> oldSnapshot = createReservationSnapshot(reservation);
 
         // Allow room assignment updates for booked bookings and checked-in guests
         if (reservation.getStatus() != ReservationStatus.BOOKED &&
@@ -541,6 +629,18 @@ public class FrontDeskService {
 
         roomRepository.save(newRoom);
         reservation = reservationRepository.save(reservation);
+
+        hotelActivityAuditService.logActivity(
+            reservation.getHotel(),
+            AuditTaxonomy.EntityType.RESERVATION,
+            reservation.getId(),
+            AuditTaxonomy.Action.ROOM_ASSIGNMENT_CHANGE,
+            oldSnapshot,
+            createReservationSnapshot(reservation),
+            List.of("assignedRoomId", "roomType", "totalAmount"),
+            "Front desk updated booking room assignment",
+            true,
+            AuditTaxonomy.ComplianceCategory.FINANCIAL);
 
         return convertToBookingResponse(reservation);
     }
@@ -634,6 +734,7 @@ public class FrontDeskService {
     public BookingResponse checkInGuest(Long reservationId) {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
+        Map<String, Object> oldSnapshot = createReservationSnapshot(reservation);
 
         // Validate that check-in is allowed
         if (reservation.getStatus() != ReservationStatus.BOOKED) {
@@ -654,6 +755,18 @@ public class FrontDeskService {
         roomRepository.save(room);
 
         reservation = reservationRepository.save(reservation);
+
+        hotelActivityAuditService.logActivity(
+            reservation.getHotel(),
+            AuditTaxonomy.EntityType.RESERVATION,
+            reservation.getId(),
+            AuditTaxonomy.Action.CHECK_IN,
+            oldSnapshot,
+            createReservationSnapshot(reservation),
+            List.of("status", "actualCheckInTime", "assignedRoomId"),
+            "Front desk checked in guest",
+            true,
+            AuditTaxonomy.ComplianceCategory.FINANCIAL);
 
         // Record check-in in history
         // TODO: Complete history integration after Phase 3.3
@@ -697,6 +810,7 @@ public class FrontDeskService {
     public CheckoutResponse checkOutGuestWithReceipt(Long reservationId) {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
+        Map<String, Object> oldSnapshot = createReservationSnapshot(reservation);
 
         // Validate that check-out is allowed
         if (reservation.getStatus() != ReservationStatus.CHECKED_IN) {
@@ -715,6 +829,18 @@ public class FrontDeskService {
         }
 
         reservation = reservationRepository.save(reservation);
+
+        hotelActivityAuditService.logActivity(
+            reservation.getHotel(),
+            AuditTaxonomy.EntityType.RESERVATION,
+            reservation.getId(),
+            AuditTaxonomy.Action.CHECK_OUT,
+            oldSnapshot,
+            createReservationSnapshot(reservation),
+            List.of("status", "actualCheckOutTime", "assignedRoomId"),
+            "Front desk checked out guest",
+            true,
+            AuditTaxonomy.ComplianceCategory.FINANCIAL);
 
         // Record check-out in history
         // TODO: Complete history integration after Phase 3.3
@@ -790,6 +916,7 @@ public class FrontDeskService {
     public BookingResponse markNoShow(Long reservationId) {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
+        Map<String, Object> oldSnapshot = createReservationSnapshot(reservation);
 
         // Validate that no-show marking is allowed
         if (reservation.getStatus() != ReservationStatus.BOOKED) {
@@ -810,6 +937,18 @@ public class FrontDeskService {
         roomRepository.save(room);
 
         reservation = reservationRepository.save(reservation);
+
+        hotelActivityAuditService.logActivity(
+            reservation.getHotel(),
+            AuditTaxonomy.EntityType.RESERVATION,
+            reservation.getId(),
+            AuditTaxonomy.Action.NO_SHOW,
+            oldSnapshot,
+            createReservationSnapshot(reservation),
+            List.of("status", "assignedRoomId"),
+            "Front desk marked booking as no-show",
+            true,
+            AuditTaxonomy.ComplianceCategory.FINANCIAL);
 
         // Record no-show in history
         // TODO: Complete history integration after Phase 3.3
@@ -837,6 +976,7 @@ public class FrontDeskService {
     public BookingResponse cancelBooking(Long reservationId, String reason) {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
+        Map<String, Object> oldSnapshot = createReservationSnapshot(reservation);
 
         // Validate that cancellation is allowed
         if (reservation.getStatus() == ReservationStatus.CHECKED_OUT) {
@@ -858,6 +998,18 @@ public class FrontDeskService {
         }
 
         reservation = reservationRepository.save(reservation);
+
+        hotelActivityAuditService.logActivity(
+            reservation.getHotel(),
+            AuditTaxonomy.EntityType.RESERVATION,
+            reservation.getId(),
+            AuditTaxonomy.Action.CANCEL,
+            oldSnapshot,
+            createReservationSnapshot(reservation),
+            List.of("status", "cancellationReason", "cancelledAt"),
+            reason != null && !reason.isBlank() ? reason : "Front desk cancelled booking",
+            true,
+            AuditTaxonomy.ComplianceCategory.FINANCIAL);
 
         return convertToBookingResponse(reservation);
     }
@@ -1095,6 +1247,7 @@ public class FrontDeskService {
     public RoomResponse updateRoomStatus(Long roomId, String status, String notes) {
         Room room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new ResourceNotFoundException("Room not found with id: " + roomId));
+        Map<String, Object> oldSnapshot = createRoomSnapshot(room);
 
         try {
             // Convert status string to RoomStatus enum (consistent with Hotel Admin)
@@ -1124,6 +1277,18 @@ public class FrontDeskService {
 
             room = roomRepository.save(room);
 
+                hotelActivityAuditService.logActivity(
+                    room.getHotel(),
+                    AuditTaxonomy.EntityType.ROOM,
+                    room.getId(),
+                    AuditTaxonomy.Action.STATUS_CHANGE,
+                    oldSnapshot,
+                    createRoomSnapshot(room),
+                    List.of("status"),
+                    notes != null && !notes.isBlank() ? notes : "Front desk updated room status",
+                    false,
+                    null);
+
             return convertToRoomResponse(room);
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Invalid room status: " + status);
@@ -1142,6 +1307,7 @@ public class FrontDeskService {
     public RoomResponse toggleRoomAvailability(Long roomId, boolean available, String reason) {
         Room room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new ResourceNotFoundException("Room not found with id: " + roomId));
+        Map<String, Object> oldSnapshot = createRoomSnapshot(room);
 
         // Business rule: Cannot make room unavailable if it has active bookings
         if (!available) {
@@ -1168,6 +1334,19 @@ public class FrontDeskService {
 
         // Invalidate room caches when availability changes
         roomCacheService.evictRoomSpecificCaches(room.getId(), room.getHotel().getId());
+
+        hotelActivityAuditService.logActivity(
+            room.getHotel(),
+            AuditTaxonomy.EntityType.ROOM,
+            room.getId(),
+            AuditTaxonomy.Action.AVAILABILITY_CHANGE,
+            oldSnapshot,
+            createRoomSnapshot(room),
+            List.of("isAvailable"),
+            reason != null && !reason.isBlank() ? reason
+                : (available ? "Front desk made room available" : "Front desk made room unavailable"),
+            false,
+            null);
 
         return convertToRoomResponse(room);
     }
@@ -1324,5 +1503,44 @@ public class FrontDeskService {
         return availableRooms.stream()
                 .map(this::convertToRoomResponse)
                 .collect(Collectors.toList());
+    }
+
+    private Map<String, Object> createReservationSnapshot(Reservation reservation) {
+        return hotelActivityAuditService.createSnapshot(
+                "id", reservation.getId(),
+                "hotelId", reservation.getHotel() != null ? reservation.getHotel().getId() : null,
+                "confirmationNumber", reservation.getConfirmationNumber(),
+                "checkInDate", reservation.getCheckInDate(),
+                "checkOutDate", reservation.getCheckOutDate(),
+                "status", reservation.getStatus(),
+                "paymentStatus", reservation.getPaymentStatus(),
+                "paymentMethod", reservation.getPaymentMethod(),
+                "paymentReference", reservation.getPaymentReference(),
+                "totalAmount", reservation.getTotalAmount(),
+                "pricePerNight", reservation.getPricePerNight(),
+                "roomType", reservation.getRoomType(),
+                "assignedRoomId", reservation.getRoom() != null ? reservation.getRoom().getId() : null,
+                "guestEmail", reservation.getGuestInfo() != null ? reservation.getGuestInfo().getEmail() : null,
+                "guestPhone", reservation.getGuestInfo() != null ? reservation.getGuestInfo().getPhone() : null,
+                "guestName", reservation.getGuestInfo() != null ? reservation.getGuestInfo().getName() : null,
+                "numberOfGuests", reservation.getNumberOfGuests(),
+                "specialRequests", reservation.getSpecialRequests(),
+                "actualCheckInTime", reservation.getActualCheckInTime(),
+                "actualCheckOutTime", reservation.getActualCheckOutTime(),
+                "cancelledAt", reservation.getCancelledAt(),
+                "cancellationReason", reservation.getCancellationReason());
+    }
+
+    private Map<String, Object> createRoomSnapshot(Room room) {
+        return hotelActivityAuditService.createSnapshot(
+                "id", room.getId(),
+                "hotelId", room.getHotel() != null ? room.getHotel().getId() : null,
+                "roomNumber", room.getRoomNumber(),
+                "roomType", room.getRoomType(),
+                "pricePerNight", room.getPricePerNight(),
+                "capacity", room.getCapacity(),
+                "description", room.getDescription(),
+                "isAvailable", room.getIsAvailable(),
+                "status", room.getStatus());
     }
 }

@@ -136,6 +136,12 @@ export interface AuditTrailDto {
   complianceCategory?: string;
 }
 
+export interface AuditTaxonomyDto {
+  entityTypes: string[];
+  actions: string[];
+  complianceCategories: string[];
+}
+
 export interface LiveMonitoringData {
   totalEventsToday: number;
   exceptionsToday?: number;

@@ -10,15 +10,19 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.bookmyhotel.audit.AuditTaxonomy;
 import com.bookmyhotel.dto.auth.LoginRequest;
 import com.bookmyhotel.dto.auth.LoginResponse;
 import com.bookmyhotel.dto.auth.RegisterRequest;
+import com.bookmyhotel.entity.User;
 import com.bookmyhotel.exception.ResourceAlreadyExistsException;
 import com.bookmyhotel.service.AuthService;
 import com.bookmyhotel.service.PasswordResetService;
 import com.bookmyhotel.service.PasswordSecurityService;
 import com.bookmyhotel.service.RefreshTokenService;
 import com.bookmyhotel.service.SessionManagementService;
+import com.bookmyhotel.service.SystemAuditService;
+import com.bookmyhotel.repository.UserRepository;
 import com.bookmyhotel.util.JwtUtil;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -49,6 +53,12 @@ public class AuthController {
     @Autowired
     private PasswordResetService passwordResetService;
 
+    @Autowired
+    private SystemAuditService systemAuditService;
+
+    @Autowired
+    private UserRepository userRepository;
+
     /**
      * User registration endpoint for guest users
      */
@@ -78,11 +88,20 @@ public class AuthController {
             String ipAddress = getClientIpAddress(request);
 
             LoginResponse response = authService.login(loginRequest, userAgent, ipAddress);
+                    logAuthEvent(AuditTaxonomy.Action.LOGIN, response.getId(), response.getEmail(), response.getFirstName(), response.getLastName(),
+                    response.getRoles() != null && !response.getRoles().isEmpty() ? response.getRoles().iterator().next().name() : null,
+                    request,
+                    true,
+                    null);
             return ResponseEntity.ok(response);
         } catch (BadCredentialsException e) {
+                logAuthEvent(AuditTaxonomy.Action.LOGIN_FAILED, null, loginRequest.getEmail(), null, null, null, request, false,
+                    "Invalid email or password");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("Invalid email or password");
         } catch (Exception e) {
+                logAuthEvent(AuditTaxonomy.Action.LOGIN_FAILED, null, loginRequest.getEmail(), null, null, null, request, false,
+                    e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Login failed: " + e.getMessage());
         }
@@ -109,7 +128,7 @@ public class AuthController {
      * User logout endpoint - blacklists the JWT token
      */
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(@RequestHeader("Authorization") String authorizationHeader) {
+    public ResponseEntity<?> logout(@RequestHeader("Authorization") String authorizationHeader, HttpServletRequest request) {
         try {
             // Extract token from Authorization header
             if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
@@ -126,7 +145,20 @@ public class AuthController {
             }
 
             // Invalidate the session (this also blacklists the token)
+                String email = jwtUtil.extractEmail(token);
             sessionManagementService.invalidateSession(token);
+
+                User user = email != null ? userRepository.findByEmail(email).orElse(null) : null;
+                logAuthEvent(
+                    AuditTaxonomy.Action.LOGOUT,
+                    user != null ? user.getId() : null,
+                    email,
+                    user != null ? user.getFirstName() : null,
+                    user != null ? user.getLastName() : null,
+                    user != null && user.getRoles() != null && !user.getRoles().isEmpty() ? user.getRoles().iterator().next().name() : null,
+                    request,
+                    true,
+                    null);
 
             return ResponseEntity.ok()
                     .body("Successfully logged out");
@@ -135,6 +167,37 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Logout failed: " + e.getMessage());
         }
+    }
+
+    private void logAuthEvent(String action,
+            Long userId,
+            String email,
+            String firstName,
+            String lastName,
+            String role,
+            HttpServletRequest request,
+            boolean success,
+            String errorMessage) {
+        String name = email;
+        if (firstName != null || lastName != null) {
+            name = ((firstName != null ? firstName : "") + " " + (lastName != null ? lastName : "")).trim();
+        }
+
+        systemAuditService.log(
+            AuditTaxonomy.EntityType.AUTH,
+                userId,
+                action,
+                "Authentication event: " + action,
+                userId,
+                name,
+                email,
+                role,
+                getClientIpAddress(request),
+                request.getHeader("User-Agent"),
+                request.getRequestURI(),
+                request.getMethod(),
+                success,
+                errorMessage);
     }
 
     /**

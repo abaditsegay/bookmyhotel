@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.bookmyhotel.audit.AuditTaxonomy;
 import com.bookmyhotel.config.CacheConfig;
 import com.bookmyhotel.dto.BookingCancellationRequest;
 import com.bookmyhotel.dto.BookingModificationRequest;
@@ -116,6 +117,9 @@ public class BookingService {
 
     @Autowired
     private HotelRepository hotelRepository;
+
+    @Autowired
+    private HotelActivityAuditService hotelActivityAuditService;
 
     @Value("${stripe.api.key:}")
     private String stripeApiKey;
@@ -257,6 +261,19 @@ public class BookingService {
 
             // Convert to response DTO first (before email)
             BookingResponse bookingResponse = convertToBookingResponse(reservation, paymentInitiationResponse);
+
+                hotelActivityAuditService.logActivity(
+                    reservation.getHotel(),
+                    AuditTaxonomy.EntityType.RESERVATION,
+                    reservation.getId(),
+                    AuditTaxonomy.Action.CREATE,
+                    null,
+                    convertReservationToMap(reservation),
+                    List.of("checkInDate", "checkOutDate", "totalAmount", "status", "paymentStatus",
+                        "paymentMethod", "confirmationNumber", "roomType", "guestEmail", "numberOfGuests"),
+                    "Booking created",
+                    true,
+                    AuditTaxonomy.ComplianceCategory.FINANCIAL);
 
             // Generate management URL for anonymous guests
             if (userEmail == null) {
@@ -449,6 +466,7 @@ public class BookingService {
     public BookingResponse cancelBooking(Long reservationId) {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
+        Map<String, Object> oldSnapshot = convertReservationToMap(reservation);
 
         // Check if cancellation is allowed
         if (reservation.getCheckInDate().isBefore(LocalDateTime.now().toLocalDate().plusDays(1))) {
@@ -509,6 +527,18 @@ public class BookingService {
         reservation.setCancelledAt(LocalDateTime.now());
         reservation.setCancellationReason(cancellationReason);
         reservation = reservationRepository.save(reservation);
+
+        hotelActivityAuditService.logActivity(
+            reservation.getHotel(),
+            AuditTaxonomy.EntityType.RESERVATION,
+            reservation.getId(),
+            AuditTaxonomy.Action.BOOKING_CANCELLED,
+            oldSnapshot,
+            convertReservationToMap(reservation),
+            List.of("status", "cancelledAt", "cancellationReason"),
+            cancellationReason,
+            true,
+            AuditTaxonomy.ComplianceCategory.FINANCIAL);
 
         // Create booking change notification for hotel admin/front desk
         try {
@@ -1691,6 +1721,21 @@ public class BookingService {
             // Save the updated reservation
             reservation = reservationRepository.save(reservation);
 
+                hotelActivityAuditService.logActivity(
+                    reservation.getHotel(),
+                    AuditTaxonomy.EntityType.RESERVATION,
+                    reservation.getId(),
+                    AuditTaxonomy.Action.BOOKING_MODIFIED,
+                        convertBookingResponseToMap(existingBooking),
+                    convertReservationToMap(reservation),
+                    List.of("checkInDate", "checkOutDate", "roomType", "totalAmount", "guestEmail",
+                        "numberOfGuests", "specialRequests"),
+                    request.getReason() != null && !request.getReason().isBlank()
+                        ? request.getReason()
+                        : "Booking modified",
+                    true,
+                    AuditTaxonomy.ComplianceCategory.FINANCIAL);
+
             // Create response
             BookingModificationResponse response = new BookingModificationResponse(true,
                     "Booking successfully modified");
@@ -1815,6 +1860,20 @@ public class BookingService {
 
             // Save the updated reservation
             reservation = reservationRepository.save(reservation);
+
+                hotelActivityAuditService.logActivity(
+                    reservation.getHotel(),
+                    AuditTaxonomy.EntityType.RESERVATION,
+                    reservation.getId(),
+                    AuditTaxonomy.Action.BOOKING_CANCELLED,
+                        convertBookingResponseToMap(existingBooking),
+                    convertReservationToMap(reservation),
+                    List.of("status", "specialRequests"),
+                    request.getCancellationReason() != null && !request.getCancellationReason().isBlank()
+                        ? request.getCancellationReason().trim()
+                        : "Guest cancelled booking",
+                    true,
+                    AuditTaxonomy.ComplianceCategory.FINANCIAL);
 
             // Create response
             BookingModificationResponse response = new BookingModificationResponse(true,
@@ -2552,6 +2611,25 @@ public class BookingService {
             map.put("guestEmail", reservation.getGuestInfo() != null ? reservation.getGuestInfo().getEmail() : null);
         }
         map.put("updatedAt", reservation.getUpdatedAt());
+        return map;
+    }
+
+    private Map<String, Object> convertBookingResponseToMap(BookingResponse bookingResponse) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("id", bookingResponse.getReservationId());
+        map.put("confirmationNumber", bookingResponse.getConfirmationNumber());
+        map.put("checkInDate", bookingResponse.getCheckInDate());
+        map.put("checkOutDate", bookingResponse.getCheckOutDate());
+        map.put("totalAmount", bookingResponse.getTotalAmount());
+        map.put("status", bookingResponse.getStatus());
+        map.put("paymentStatus", bookingResponse.getPaymentStatus());
+        map.put("paymentType", bookingResponse.getPaymentType());
+        map.put("paymentReference", bookingResponse.getPaymentReference());
+        map.put("roomType", bookingResponse.getRoomType());
+        map.put("guestName", bookingResponse.getGuestName());
+        map.put("guestEmail", bookingResponse.getGuestEmail());
+        map.put("numberOfGuests", bookingResponse.getNumberOfGuests());
+        map.put("specialRequests", bookingResponse.getSpecialRequests());
         return map;
     }
 

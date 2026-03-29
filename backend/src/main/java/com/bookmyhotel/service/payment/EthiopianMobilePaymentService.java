@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
+import com.bookmyhotel.audit.AuditTaxonomy;
 import com.bookmyhotel.dto.payment.PaymentCallbackRequest;
 import com.bookmyhotel.dto.payment.MobirrPaymentRequest;
 import com.bookmyhotel.dto.payment.MobirrPaymentResponse;
@@ -39,6 +40,7 @@ import com.bookmyhotel.entity.ReservationStatus;
 import com.bookmyhotel.exception.PaymentException;
 import com.bookmyhotel.repository.PaymentCallbackEventRepository;
 import com.bookmyhotel.repository.ReservationRepository;
+import com.bookmyhotel.service.HotelActivityAuditService;
 
 /**
  * Service for integrating with Ethiopian Mobile Payment providers
@@ -82,12 +84,15 @@ public class EthiopianMobilePaymentService {
     private final RestTemplate restTemplate;
     private final ReservationRepository reservationRepository;
     private final PaymentCallbackEventRepository paymentCallbackEventRepository;
+    private final HotelActivityAuditService hotelActivityAuditService;
 
     public EthiopianMobilePaymentService(ReservationRepository reservationRepository,
-            PaymentCallbackEventRepository paymentCallbackEventRepository) {
+            PaymentCallbackEventRepository paymentCallbackEventRepository,
+            HotelActivityAuditService hotelActivityAuditService) {
         this.restTemplate = new RestTemplate();
         this.reservationRepository = reservationRepository;
         this.paymentCallbackEventRepository = paymentCallbackEventRepository;
+        this.hotelActivityAuditService = hotelActivityAuditService;
     }
 
     /**
@@ -389,6 +394,7 @@ public class EthiopianMobilePaymentService {
                 .findByPaymentIntentIdForUpdate(callbackRequest.getTransactionId())
                 .orElseThrow(() -> new PaymentException(
                         "Reservation not found for transaction ID: " + callbackRequest.getTransactionId()));
+        Map<String, Object> oldSnapshot = createPaymentSnapshot(reservation, provider, callbackRequest.getStatus());
 
         PaymentStatus newPaymentStatus = mapProviderStatus(callbackRequest.getStatus());
 
@@ -418,6 +424,17 @@ public class EthiopianMobilePaymentService {
         }
 
         reservationRepository.save(reservation);
+        hotelActivityAuditService.logActivity(
+            reservation.getHotel(),
+            AuditTaxonomy.EntityType.PAYMENT,
+            reservation.getId(),
+            AuditTaxonomy.Action.PAYMENT_CALLBACK,
+            oldSnapshot,
+            createPaymentSnapshot(reservation, provider, callbackRequest.getStatus()),
+            java.util.List.of("paymentStatus", "status", "paymentReference"),
+            "Processed " + provider + " payment callback",
+            true,
+            AuditTaxonomy.ComplianceCategory.FINANCIAL);
         logger.info("Processed {} payment callback for transaction {} -> paymentStatus={}, reservationStatus={}",
                 provider,
                 callbackRequest.getTransactionId(),
@@ -511,5 +528,18 @@ public class EthiopianMobilePaymentService {
         long providedSeconds = provided > 100_000_000_000L ? provided / 1000 : provided;
         long nowSeconds = Instant.now().getEpochSecond();
         return Math.abs(nowSeconds - providedSeconds) <= callbackMaxSkewSeconds;
+    }
+
+    private Map<String, Object> createPaymentSnapshot(Reservation reservation, String provider, String callbackStatus) {
+        Map<String, Object> snapshot = new HashMap<>();
+        snapshot.put("reservationId", reservation.getId());
+        snapshot.put("confirmationNumber", reservation.getConfirmationNumber());
+        snapshot.put("provider", provider);
+        snapshot.put("callbackStatus", callbackStatus);
+        snapshot.put("paymentStatus", reservation.getPaymentStatus());
+        snapshot.put("reservationStatus", reservation.getStatus());
+        snapshot.put("paymentReference", reservation.getPaymentReference());
+        snapshot.put("paymentIntentId", reservation.getPaymentIntentId());
+        return snapshot;
     }
 }

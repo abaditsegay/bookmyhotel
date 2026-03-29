@@ -39,6 +39,12 @@ class ApiClient {
     this.onSessionExpired = callback;
   }
 
+  private triggerSessionExpired(): void {
+    if (this.onSessionExpired) {
+      setTimeout(() => this.onSessionExpired?.(), 100);
+    }
+  }
+
   /**
    * Set the default tenant ID for all requests
    */
@@ -191,7 +197,7 @@ class ApiClient {
           
           // Only trigger session expiration for users who actually have tokens/sessions
           if (hasToken && this.onSessionExpired) {
-            setTimeout(() => this.onSessionExpired?.(), 100); // Delay to avoid state conflicts
+            this.triggerSessionExpired();
           }
         } else if (response.status === 403) {
           // 403 = Authorization failed
@@ -222,7 +228,7 @@ class ApiClient {
           if (hasToken && (tokenExpired || isAuthEndpoint)) {
             // console.log('Session validation failed (403) - treating as session expiration, triggering logout...');
             if (this.onSessionExpired) {
-              setTimeout(() => this.onSessionExpired?.(), 100);
+              this.triggerSessionExpired();
             }
           } else {
             // console.log('Authorization failed (403) - insufficient permissions for:', requestUrl);
@@ -286,6 +292,15 @@ class ApiClient {
     options: ApiRequestOptions = {}
   ): Promise<ApiResponse<T>> {
     try {
+      if (!options.skipAuth && this.isTokenExpired()) {
+        this.triggerSessionExpired();
+        return {
+          error: 'Authentication token has expired',
+          status: 401,
+          success: false,
+        };
+      }
+
       // Check if we're making an authenticated request without a token
       if (!options.skipAuth && !this.token) {
         // console.warn('API request attempted without token - likely race condition during initialization');

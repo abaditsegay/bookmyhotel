@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.bookmyhotel.audit.AuditTaxonomy;
 import com.bookmyhotel.config.CacheConfig;
 import com.bookmyhotel.dto.BatchRoomCreateRequest;
 import com.bookmyhotel.dto.BatchRoomCreateResponse;
@@ -104,6 +105,9 @@ public class HotelAdminService {
     @Autowired
     private AutomatedRoomStatusService automatedRoomStatusService;
 
+    @Autowired
+    private HotelActivityAuditService hotelActivityAuditService;
+
     /**
      * Get the hotel for the logged-in hotel admin
      */
@@ -129,6 +133,8 @@ public class HotelAdminService {
             throw new RuntimeException("Hotel admin is not associated with any hotel");
         }
 
+        Map<String, Object> oldSnapshot = createHotelSnapshot(hotel);
+
         // Update hotel details
         hotel.setName(hotelDTO.getName());
         hotel.setDescription(hotelDTO.getDescription());
@@ -150,6 +156,19 @@ public class HotelAdminService {
         hotel.setUpdatedAt(LocalDateTime.now());
 
         Hotel saved = hotelRepository.save(hotel);
+    hotelActivityAuditService.logActivity(
+        saved,
+        AuditTaxonomy.EntityType.HOTEL,
+        saved.getId(),
+        AuditTaxonomy.Action.UPDATE,
+        oldSnapshot,
+        createHotelSnapshot(saved),
+        List.of("name", "description", "address", "city", "country", "phone", "mobilePaymentPhone",
+            "mobilePaymentPhone2", "email", "contactPerson", "licenseNumber", "taxId", "websiteUrl",
+            "facilityAmenities", "checkInTime", "checkOutTime", "numberOfRooms"),
+        "Hotel profile updated by hotel admin",
+        false,
+        null);
         return convertToHotelDTO(saved);
     }
 
@@ -283,6 +302,17 @@ public class HotelAdminService {
         newUser.setUpdatedAt(LocalDateTime.now());
 
         User saved = userRepository.save(newUser);
+    hotelActivityAuditService.logActivity(
+        hotel,
+        AuditTaxonomy.EntityType.USER,
+        saved.getId(),
+        AuditTaxonomy.Action.CREATE,
+        null,
+        createUserSnapshot(saved),
+        List.of("email", "firstName", "lastName", "phone", "isActive", "roles"),
+        "Hotel admin created a staff member",
+        true,
+        AuditTaxonomy.ComplianceCategory.ACCESS_CONTROL);
         return convertToUserDTO(saved);
     }
 
@@ -300,6 +330,8 @@ public class HotelAdminService {
         if (!staff.getHotel().getId().equals(hotel.getId())) {
             throw new RuntimeException("Staff member does not belong to your hotel");
         }
+
+        Map<String, Object> oldSnapshot = createUserSnapshot(staff);
 
         // Update user details
         staff.setFirstName(userDTO.getFirstName());
@@ -323,6 +355,17 @@ public class HotelAdminService {
         }
 
         User saved = userRepository.save(staff);
+    hotelActivityAuditService.logActivity(
+        hotel,
+        AuditTaxonomy.EntityType.USER,
+        saved.getId(),
+        AuditTaxonomy.Action.UPDATE,
+        oldSnapshot,
+        createUserSnapshot(saved),
+        List.of("firstName", "lastName", "phone", "roles"),
+        "Hotel admin updated a staff member",
+        true,
+        AuditTaxonomy.ComplianceCategory.ACCESS_CONTROL);
         return convertToUserDTO(saved);
     }
 
@@ -341,7 +384,19 @@ public class HotelAdminService {
             throw new RuntimeException("Staff member does not belong to your hotel");
         }
 
+        Map<String, Object> oldSnapshot = createUserSnapshot(staff);
         userRepository.delete(staff);
+        hotelActivityAuditService.logActivity(
+                hotel,
+            AuditTaxonomy.EntityType.USER,
+                staffId,
+            AuditTaxonomy.Action.DELETE,
+                oldSnapshot,
+                null,
+                List.of("email", "firstName", "lastName", "phone", "roles", "isActive"),
+                "Hotel admin removed a staff member",
+                true,
+                AuditTaxonomy.ComplianceCategory.ACCESS_CONTROL);
     }
 
     /**
@@ -359,10 +414,23 @@ public class HotelAdminService {
             throw new RuntimeException("Staff member does not belong to your hotel");
         }
 
+        Map<String, Object> oldSnapshot = createUserSnapshot(staff);
+
         staff.setIsActive(active);
         staff.setUpdatedAt(LocalDateTime.now());
 
         User saved = userRepository.save(staff);
+        hotelActivityAuditService.logActivity(
+                hotel,
+            AuditTaxonomy.EntityType.USER,
+                saved.getId(),
+            active ? AuditTaxonomy.Action.ACTIVATE : AuditTaxonomy.Action.DEACTIVATE,
+                oldSnapshot,
+                createUserSnapshot(saved),
+                List.of("isActive"),
+                active ? "Hotel admin activated a staff member" : "Hotel admin deactivated a staff member",
+                true,
+                AuditTaxonomy.ComplianceCategory.ACCESS_CONTROL);
         return convertToUserDTO(saved);
     }
 
@@ -505,6 +573,18 @@ public class HotelAdminService {
         newRoom.setUpdatedAt(LocalDateTime.now());
 
         Room saved = roomRepository.save(newRoom);
+    hotelActivityAuditService.logActivity(
+        hotel,
+        AuditTaxonomy.EntityType.ROOM,
+        saved.getId(),
+        AuditTaxonomy.Action.CREATE,
+        null,
+        createRoomSnapshot(saved),
+        List.of("roomNumber", "roomType", "pricePerNight", "capacity", "description", "isAvailable",
+            "status"),
+        "Hotel admin created a room",
+        false,
+        null);
         return convertToRoomDTO(saved);
     }
 
@@ -571,6 +651,23 @@ public class HotelAdminService {
         response.setFailed(failedRooms.size());
         response.setCreatedRooms(createdRooms);
         response.setFailedRooms(failedRooms);
+        hotelActivityAuditService.logActivity(
+            hotel,
+            AuditTaxonomy.EntityType.ROOM_BATCH,
+            null,
+            AuditTaxonomy.Action.CREATE,
+            null,
+            hotelActivityAuditService.createSnapshot(
+                "roomType", request.getRoomType(),
+                "requested", request.getRoomNumbers().size(),
+                "created", createdRooms.size(),
+                "failed", failedRooms.size(),
+                "createdRooms", createdRooms.stream().map(RoomDTO::getRoomNumber).toList(),
+                "failedRooms", failedRooms),
+            List.of("roomNumbers", "roomType", "pricePerNight", "capacity", "description"),
+            "Hotel admin created rooms in batch",
+            false,
+            null);
         return response;
     }
 
@@ -692,6 +789,8 @@ public class HotelAdminService {
             throw new RuntimeException("Room does not belong to your hotel");
         }
 
+        Map<String, Object> oldSnapshot = createRoomSnapshot(room);
+
         // Update room details
         room.setRoomNumber(roomDTO.getRoomNumber());
         room.setRoomType(roomDTO.getRoomType());
@@ -701,6 +800,17 @@ public class HotelAdminService {
         room.setUpdatedAt(LocalDateTime.now());
 
         Room saved = roomRepository.save(room);
+    hotelActivityAuditService.logActivity(
+        hotel,
+        AuditTaxonomy.EntityType.ROOM,
+        saved.getId(),
+        AuditTaxonomy.Action.UPDATE,
+        oldSnapshot,
+        createRoomSnapshot(saved),
+        List.of("roomNumber", "roomType", "pricePerNight", "capacity", "description"),
+        "Hotel admin updated a room",
+        false,
+        null);
         return convertToRoomDTO(saved);
     }
 
@@ -745,6 +855,8 @@ public class HotelAdminService {
             throw new RuntimeException("Room does not belong to your hotel");
         }
 
+        Map<String, Object> oldSnapshot = createRoomSnapshot(room);
+
         // System.out.println("🔥 Checking for active reservations for Room " +
         // room.getRoomNumber() + " (ID: "
         // + room.getId() + ")...");
@@ -780,6 +892,18 @@ public class HotelAdminService {
         // room.getId() + ")...");
         // Now safe to delete the room
         roomRepository.delete(room);
+        hotelActivityAuditService.logActivity(
+            hotel,
+            AuditTaxonomy.EntityType.ROOM,
+            roomId,
+            AuditTaxonomy.Action.DELETE,
+            oldSnapshot,
+            null,
+            List.of("roomNumber", "roomType", "pricePerNight", "capacity", "description", "isAvailable",
+                "status"),
+            "Hotel admin deleted a room",
+            false,
+            null);
         // System.out.println("🔥 SUCCESS: Room " + room.getRoomNumber() + " deleted
         // successfully");
     }
@@ -803,6 +927,8 @@ public class HotelAdminService {
         if (!room.getHotel().getId().equals(hotel.getId())) {
             throw new RuntimeException("Room does not belong to your hotel");
         }
+
+        Map<String, Object> oldSnapshot = createRoomSnapshot(room);
 
         // Business rule: Cannot make a room available if it's in certain statuses
         if (available && (room.getStatus() == RoomStatus.OUT_OF_ORDER ||
@@ -829,6 +955,17 @@ public class HotelAdminService {
         room.setUpdatedAt(LocalDateTime.now());
 
         Room saved = roomRepository.save(room);
+    hotelActivityAuditService.logActivity(
+        hotel,
+        AuditTaxonomy.EntityType.ROOM,
+        saved.getId(),
+        AuditTaxonomy.Action.STATUS_CHANGE,
+        oldSnapshot,
+        createRoomSnapshot(saved),
+        List.of("isAvailable"),
+        available ? "Hotel admin made a room available" : "Hotel admin made a room unavailable",
+        false,
+        null);
         return convertToRoomDTO(saved);
     }
 
@@ -851,6 +988,8 @@ public class HotelAdminService {
         if (!room.getHotel().getId().equals(hotel.getId())) {
             throw new RuntimeException("Room does not belong to your hotel");
         }
+
+        Map<String, Object> oldSnapshot = createRoomSnapshot(room);
 
         // Convert status string to RoomStatus enum
         RoomStatus roomStatus;
@@ -886,6 +1025,17 @@ public class HotelAdminService {
         }
 
         Room saved = roomRepository.save(room);
+    hotelActivityAuditService.logActivity(
+        hotel,
+        AuditTaxonomy.EntityType.ROOM,
+        saved.getId(),
+        AuditTaxonomy.Action.STATUS_CHANGE,
+        oldSnapshot,
+        createRoomSnapshot(saved),
+        List.of("status", "isAvailable"),
+        notes != null && !notes.isBlank() ? notes : "Hotel admin updated room status",
+        false,
+        null);
         return convertToRoomDTO(saved);
     }
 
@@ -1388,7 +1538,24 @@ public class HotelAdminService {
      */
     @Transactional
     public BookingResponse updateBookingStatus(Long reservationId, ReservationStatus newStatus) {
-        return bookingStatusUpdateService.updateBookingStatus(reservationId, newStatus, "hotel admin");
+        Reservation reservation = reservationRepository.findById(reservationId)
+            .orElseThrow(() -> new RuntimeException("Reservation not found with id: " + reservationId));
+        Map<String, Object> oldSnapshot = createReservationSnapshot(reservation);
+        BookingResponse response = bookingStatusUpdateService.updateBookingStatus(reservationId, newStatus, "hotel admin");
+        Reservation updatedReservation = reservationRepository.findById(reservationId)
+            .orElseThrow(() -> new RuntimeException("Reservation not found with id: " + reservationId));
+        hotelActivityAuditService.logActivity(
+            updatedReservation.getHotel(),
+            AuditTaxonomy.EntityType.RESERVATION,
+            reservationId,
+            AuditTaxonomy.Action.STATUS_CHANGE,
+            oldSnapshot,
+            createReservationSnapshot(updatedReservation),
+            List.of("status"),
+            "Hotel admin updated booking status",
+            false,
+            null);
+        return response;
     }
 
     /**
@@ -1399,11 +1566,25 @@ public class HotelAdminService {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new RuntimeException("Reservation not found with id: " + reservationId));
 
+        Map<String, Object> oldSnapshot = createReservationSnapshot(reservation);
+
         // Update payment status using the setter method that handles validation
         reservation.setPaymentStatusFromString(paymentStatus);
 
         // Save the updated reservation
         reservation = reservationRepository.save(reservation);
+
+        hotelActivityAuditService.logActivity(
+            reservation.getHotel(),
+            AuditTaxonomy.EntityType.RESERVATION,
+            reservationId,
+            AuditTaxonomy.Action.PAYMENT_STATUS_CHANGE,
+            oldSnapshot,
+            createReservationSnapshot(reservation),
+            List.of("paymentStatus"),
+            "Hotel admin updated booking payment status",
+            true,
+            AuditTaxonomy.ComplianceCategory.FINANCIAL);
 
         return convertToBookingResponse(reservation);
     }
@@ -1416,8 +1597,22 @@ public class HotelAdminService {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new RuntimeException("Reservation not found with id: " + reservationId));
 
+        Map<String, Object> oldSnapshot = createReservationSnapshot(reservation);
+
         reservation.setPaymentMethod(paymentType);
         reservation = reservationRepository.save(reservation);
+
+        hotelActivityAuditService.logActivity(
+            reservation.getHotel(),
+            AuditTaxonomy.EntityType.RESERVATION,
+            reservationId,
+            AuditTaxonomy.Action.PAYMENT_METHOD_CHANGE,
+            oldSnapshot,
+            createReservationSnapshot(reservation),
+            List.of("paymentMethod"),
+            "Hotel admin updated booking payment method",
+            true,
+            AuditTaxonomy.ComplianceCategory.FINANCIAL);
 
         return convertToBookingResponse(reservation);
     }
@@ -1472,7 +1667,19 @@ public class HotelAdminService {
             throw new RuntimeException("Cannot delete a booking with checked-in status");
         }
 
+        Map<String, Object> oldSnapshot = createReservationSnapshot(reservation);
         reservationRepository.delete(reservation);
+        hotelActivityAuditService.logActivity(
+                reservation.getHotel(),
+            AuditTaxonomy.EntityType.RESERVATION,
+                reservationId,
+            AuditTaxonomy.Action.DELETE,
+                oldSnapshot,
+                null,
+                List.of("status", "checkInDate", "checkOutDate", "paymentStatus", "paymentMethod"),
+                "Hotel admin deleted a booking",
+                true,
+                AuditTaxonomy.ComplianceCategory.FINANCIAL);
     }
 
     /**
@@ -1507,6 +1714,70 @@ public class HotelAdminService {
             // Silently handle guest fetch errors
             return null;
         }
+    }
+
+    private Map<String, Object> createHotelSnapshot(Hotel hotel) {
+        return hotelActivityAuditService.createSnapshot(
+                "id", hotel.getId(),
+                "name", hotel.getName(),
+                "description", hotel.getDescription(),
+                "address", hotel.getAddress(),
+                "city", hotel.getCity(),
+                "country", hotel.getCountry(),
+                "phone", hotel.getPhone(),
+                "mobilePaymentPhone", hotel.getMobilePaymentPhone(),
+                "mobilePaymentPhone2", hotel.getMobilePaymentPhone2(),
+                "email", hotel.getEmail(),
+                "contactPerson", hotel.getContactPerson(),
+                "licenseNumber", hotel.getLicenseNumber(),
+                "taxId", hotel.getTaxId(),
+                "websiteUrl", hotel.getWebsiteUrl(),
+                "facilityAmenities", hotel.getFacilityAmenities(),
+                "checkInTime", hotel.getCheckInTime(),
+                "checkOutTime", hotel.getCheckOutTime(),
+                "numberOfRooms", hotel.getNumberOfRooms());
+    }
+
+    private Map<String, Object> createUserSnapshot(User user) {
+        return hotelActivityAuditService.createSnapshot(
+                "id", user.getId(),
+                "email", user.getEmail(),
+                "firstName", user.getFirstName(),
+                "lastName", user.getLastName(),
+                "phone", user.getPhone(),
+                "isActive", user.getIsActive(),
+                "roles", user.getRoles(),
+                "hotelId", user.getHotel() != null ? user.getHotel().getId() : null);
+    }
+
+    private Map<String, Object> createRoomSnapshot(Room room) {
+        return hotelActivityAuditService.createSnapshot(
+                "id", room.getId(),
+                "roomNumber", room.getRoomNumber(),
+                "roomType", room.getRoomType(),
+                "pricePerNight", room.getPricePerNight(),
+                "capacity", room.getCapacity(),
+                "description", room.getDescription(),
+                "isAvailable", room.getIsAvailable(),
+                "status", room.getStatus(),
+                "hotelId", room.getHotel() != null ? room.getHotel().getId() : null);
+    }
+
+    private Map<String, Object> createReservationSnapshot(Reservation reservation) {
+        return hotelActivityAuditService.createSnapshot(
+                "id", reservation.getId(),
+                "confirmationNumber", reservation.getConfirmationNumber(),
+                "checkInDate", reservation.getCheckInDate(),
+                "checkOutDate", reservation.getCheckOutDate(),
+                "status", reservation.getStatus(),
+                "paymentStatus", reservation.getPaymentStatus(),
+                "paymentMethod", reservation.getPaymentMethod(),
+                "paymentReference", reservation.getPaymentReference(),
+                "totalAmount", reservation.getTotalAmount(),
+                "roomType", reservation.getRoomType(),
+                "assignedRoomId", reservation.getRoom() != null ? reservation.getRoom().getId() : null,
+                "guestEmail", reservation.getGuestInfo() != null ? reservation.getGuestInfo().getEmail() : null,
+                "numberOfGuests", reservation.getNumberOfGuests());
     }
 
     private BookingResponse convertToBookingResponse(Reservation reservation) {

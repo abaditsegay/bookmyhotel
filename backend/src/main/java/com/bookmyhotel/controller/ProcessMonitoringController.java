@@ -1,5 +1,6 @@
 package com.bookmyhotel.controller;
 
+import com.bookmyhotel.audit.AuditTaxonomy;
 import com.bookmyhotel.dto.AuditTrailDto;
 import com.bookmyhotel.dto.DailyFinancialReconciliationDto;
 import com.bookmyhotel.dto.ProcessMonitoringEventDto;
@@ -140,6 +141,19 @@ public class ProcessMonitoringController {
     }
 
     /**
+     * Get supported audit taxonomy values for client validation and filtering
+     */
+    @GetMapping("/hotels/{hotelId}/audit/taxonomy")
+    @PreAuthorize("hasRole('HOTEL_ADMIN')")
+    public ResponseEntity<Map<String, List<String>>> getAuditTaxonomy(@PathVariable Long hotelId) {
+        Map<String, List<String>> taxonomy = Map.of(
+                "entityTypes", AuditTaxonomy.entityTypes(),
+                "actions", AuditTaxonomy.actions(),
+                "complianceCategories", AuditTaxonomy.complianceCategories());
+        return ResponseEntity.ok(taxonomy);
+    }
+
+    /**
      * Get audit trail for specific entity
      */
     @GetMapping("/hotels/{hotelId}/audit/trail")
@@ -149,7 +163,14 @@ public class ProcessMonitoringController {
             @RequestParam String entityType,
             @RequestParam Long entityId) {
 
-        List<AuditTrailDto> auditTrail = financialAuditService.getAuditTrail(hotelId, entityType, entityId);
+        String normalizedEntityType;
+        try {
+            normalizedEntityType = AuditTaxonomy.normalizeEntityType(entityType);
+        } catch (IllegalArgumentException exception) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        List<AuditTrailDto> auditTrail = financialAuditService.getAuditTrail(hotelId, normalizedEntityType, entityId);
         return ResponseEntity.ok(auditTrail);
     }
 
@@ -183,7 +204,15 @@ public class ProcessMonitoringController {
             @PathVariable String category,
             Pageable pageable) {
 
-        Page<AuditTrailDto> complianceReport = financialAuditService.getComplianceReport(hotelId, category, pageable);
+        String normalizedCategory;
+        try {
+            normalizedCategory = AuditTaxonomy.normalizeComplianceCategory(category);
+        } catch (IllegalArgumentException exception) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        Page<AuditTrailDto> complianceReport = financialAuditService.getComplianceReport(hotelId, normalizedCategory,
+                pageable);
         return ResponseEntity.ok(complianceReport);
     }
 
@@ -209,9 +238,20 @@ public class ProcessMonitoringController {
             @RequestParam(required = false) String complianceCategory,
             HttpServletRequest request) {
 
+        String normalizedEntityType;
+        String normalizedAction;
+        String normalizedComplianceCategory;
+        try {
+            normalizedEntityType = AuditTaxonomy.normalizeEntityType(entityType);
+            normalizedAction = AuditTaxonomy.normalizeAction(action);
+            normalizedComplianceCategory = AuditTaxonomy.normalizeComplianceCategory(complianceCategory);
+        } catch (IllegalArgumentException exception) {
+            return ResponseEntity.badRequest().build();
+        }
+
         AuditTrailDto auditLog = financialAuditService.createAuditLog(
-                entityType, entityId, action, oldValues, newValues, changedFields,
-                userId, userName, userEmail, userRole, request, reason, isSensitive, complianceCategory);
+            hotelId, normalizedEntityType, entityId, normalizedAction, oldValues, newValues, changedFields,
+                userId, userName, userEmail, userRole, request, reason, isSensitive, normalizedComplianceCategory);
 
         return ResponseEntity.ok(auditLog);
     }

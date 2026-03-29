@@ -124,8 +124,10 @@ public class HotelPricingConfigController {
         try {
             logger.info("Creating new pricing configuration for hotel: {}", hotelId);
 
-            // Validate the configuration
-            pricingConfigService.validateConfiguration(config);
+            // Validate the configuration payload before the service associates the hotel
+            if (!pricingConfigService.validateConfiguration(config)) {
+                return ResponseEntity.badRequest().build();
+            }
 
             HotelPricingConfig createdConfig = pricingConfigService.createConfiguration(hotelId, config);
 
@@ -159,7 +161,9 @@ public class HotelPricingConfigController {
             logger.info("Updating pricing configuration: {}", configId);
 
             // Validate the updates
-            pricingConfigService.validateConfiguration(updates);
+            if (!pricingConfigService.validateConfiguration(updates)) {
+                return ResponseEntity.badRequest().build();
+            }
 
             HotelPricingConfig updatedConfig = pricingConfigService.updateConfigurationById(configId, updates);
 
@@ -293,7 +297,9 @@ public class HotelPricingConfigController {
             logger.info("Replacing active configuration for hotel: {}", hotelId);
 
             // Validate the new configuration
-            pricingConfigService.validateConfiguration(newConfig);
+            if (!pricingConfigService.validateConfiguration(newConfig)) {
+                return ResponseEntity.badRequest().build();
+            }
 
             // Deactivate existing configurations
             pricingConfigService.deactivateExistingConfigurations(hotelId);
