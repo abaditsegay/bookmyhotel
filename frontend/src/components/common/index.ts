@@ -9,6 +9,8 @@ export { default as StandardError } from './StandardError';
 export { default as DataState } from './DataState';
 export { default as ErrorBoundary } from './ErrorBoundary';
 export { default as NavigationBreadcrumbs } from './NavigationBreadcrumbs';
+export { PageContainer, PageSection, SurfaceCard } from './PageShell';
+export { default as TabPanel } from './TabPanel';
 
 // Phase 2: Enhanced UX Components
 export { default as EnhancedLoading } from './EnhancedLoading';

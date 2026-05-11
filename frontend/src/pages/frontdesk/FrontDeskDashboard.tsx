@@ -23,32 +23,12 @@ import { useAuth } from '../../contexts/AuthContext';
 import { frontDeskApiService, FrontDeskStats } from '../../services/frontDeskApi';
 import BookingManagementTable from '../../components/booking/BookingManagementTable';
 import WalkInBookingModal from '../../components/booking/WalkInBookingModal';
+import TabPanel from '../../components/common/TabPanel';
 import UnifiedRoomManagement from '../../components/common/UnifiedRoomManagement';
 import OfflineWalkInBooking from '../../components/OfflineWalkInBooking';
 import HousekeepingPage from '../housekeeping/HousekeepingPage';
 import { roomCacheService } from '../../services/RoomCacheService';
 import { COLORS } from '../../theme/themeColors';
-
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
-}
-
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`simple-tabpanel-${index}`}
-      aria-labelledby={`simple-tab-${index}`}
-      {...other}
-    >
-      {value === index && <Box sx={{ p: 0 }}>{children}</Box>}
-    </div>
-  );
-}
 
 const FrontDeskDashboard: React.FC = () => {
   const { t } = useTranslation();
@@ -328,7 +308,7 @@ const FrontDeskDashboard: React.FC = () => {
       </Paper>
 
       {/* Comprehensive Booking Management Tab */}
-      <TabPanel value={activeTab} index={0}>
+      <TabPanel value={activeTab} index={0} idPrefix="frontdesk" contentSx={{ p: 0 }}>
         <BookingManagementTable
           mode="front-desk"
           title=""
@@ -348,7 +328,7 @@ const FrontDeskDashboard: React.FC = () => {
       </TabPanel>
 
       {/* Room Management Tab */}
-      <TabPanel value={activeTab} index={1}>
+      <TabPanel value={activeTab} index={1} idPrefix="frontdesk" contentSx={{ p: 0 }}>
         <UnifiedRoomManagement
           mode="front-desk"
           onRoomUpdate={(room: any) => {
@@ -367,12 +347,12 @@ const FrontDeskDashboard: React.FC = () => {
       </TabPanel>
 
       {/* Housekeeping Tab */}
-      <TabPanel value={activeTab} index={2}>
+      <TabPanel value={activeTab} index={2} idPrefix="frontdesk" contentSx={{ p: 0 }}>
         <HousekeepingPage />
       </TabPanel>
 
       {/* Offline Bookings Tab */}
-      <TabPanel value={activeTab} index={3}>
+      <TabPanel value={activeTab} index={3} idPrefix="frontdesk" contentSx={{ p: 0 }}>
         <OfflineWalkInBooking
           onBookingComplete={(booking) => {
             // console.log('Offline booking created:', booking);

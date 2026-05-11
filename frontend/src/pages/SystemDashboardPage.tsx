@@ -60,32 +60,7 @@ import {
   getAllEndpoints
 } from '../data/apiDocumentation';
 import AuditLogTab from './admin/AuditLogTab';
-
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
-}
-
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`system-dashboard-tabpanel-${index}`}
-      aria-labelledby={`system-dashboard-tab-${index}`}
-      {...other}
-    >
-      {value === index && (
-        <Box sx={{ py: 3 }}>
-          {children}
-        </Box>
-      )}
-    </div>
-  );
-}
+import TabPanel from '../components/common/TabPanel';
 
 /**
  * Dashboard page for system-wide users (ADMIN and CUSTOMER roles)
@@ -328,7 +303,7 @@ export const SystemDashboardPage: React.FC = () => {
       </Box>
 
       {/* Tab Panels */}
-      <TabPanel value={activeTab} index={0}>
+      <TabPanel value={activeTab} index={0} idPrefix="system-dashboard" contentSx={{ py: 3 }}>
         {/* Overview Tab - Original Dashboard Content */}
 
         {/* Business Onboarding URL — share with businesses to submit hotel registration */}
@@ -533,7 +508,7 @@ export const SystemDashboardPage: React.FC = () => {
 
       {/* Analytics Tab */}
       {isSystemAdmin && (
-        <TabPanel value={activeTab} index={1}>
+        <TabPanel value={activeTab} index={1} idPrefix="system-dashboard" contentSx={{ py: 3 }}>
           <Typography variant="h5" sx={{ mb: 3, fontWeight: 'bold' }}>
             {t('dashboard.system.analyticsVisualization')}
           </Typography>
@@ -616,14 +591,14 @@ export const SystemDashboardPage: React.FC = () => {
 
       {/* Audit Log Tab */}
       {isSystemAdmin && (
-        <TabPanel value={activeTab} index={3}>
+        <TabPanel value={activeTab} index={3} idPrefix="system-dashboard" contentSx={{ py: 3 }}>
           <AuditLogTab />
         </TabPanel>
       )}
 
       {/* API Documentation Tab */}
       {isSystemAdmin && (
-        <TabPanel value={activeTab} index={2}>
+        <TabPanel value={activeTab} index={2} idPrefix="system-dashboard" contentSx={{ py: 3 }}>
           <Grid container spacing={3}>
             {/* API Documentation Card */}
             <Grid item xs={12}>

@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  alpha,
   Box,
   List,
   ListItem,
@@ -26,7 +27,6 @@ import {
 } from '@mui/icons-material';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { COLORS } from '../../theme/themeColors';
 
 const SIDEBAR_WIDTH = 260;
 
@@ -97,8 +97,8 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
-        bgcolor: COLORS.PRIMARY,
-        color: '#fff',
+        bgcolor: 'primary.main',
+        color: 'common.white',
       }}
     >
       {/* Sidebar Header */}
@@ -109,7 +109,7 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           gap: 1.5,
           px: 2.5,
           py: 2,
-          borderBottom: `1px solid rgba(255,255,255,0.12)`,
+          borderBottom: `1px solid ${alpha(theme.palette.common.white, 0.12)}`,
         }}
       >
         <AdminPanelSettings sx={{ fontSize: 28 }} />
@@ -119,7 +119,7 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         {isMobile && (
           <IconButton
             onClick={() => setMobileOpen(false)}
-            sx={{ ml: 'auto', color: '#fff' }}
+            sx={{ ml: 'auto', color: 'common.white' }}
             size="small"
           >
             <ChevronLeftIcon />
@@ -127,7 +127,7 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         )}
       </Box>
 
-      <Divider sx={{ borderColor: 'rgba(255,255,255,0.12)' }} />
+      <Divider sx={{ borderColor: alpha(theme.palette.common.white, 0.12) }} />
 
       {/* Navigation Items */}
       <List sx={{ flex: 1, pt: 1 }}>
@@ -141,13 +141,13 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                   borderRadius: 1.5,
                   py: 1.2,
                   px: 2,
-                  color: active ? '#fff' : 'rgba(255,255,255,0.7)',
-                  bgcolor: active ? 'rgba(255,255,255,0.15)' : 'transparent',
+                  color: active ? 'common.white' : alpha(theme.palette.common.white, 0.7),
+                  bgcolor: active ? alpha(theme.palette.common.white, 0.15) : 'transparent',
                   '&:hover': {
                     bgcolor: active
-                      ? 'rgba(255,255,255,0.2)'
-                      : 'rgba(255,255,255,0.08)',
-                    color: '#fff',
+                      ? alpha(theme.palette.common.white, 0.2)
+                      : alpha(theme.palette.common.white, 0.08),
+                    color: 'common.white',
                   },
                 }}
               >
@@ -185,10 +185,10 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             top: 72,
             left: 8,
             zIndex: theme.zIndex.appBar - 1,
-            bgcolor: COLORS.PRIMARY,
-            color: '#fff',
+            bgcolor: 'primary.main',
+            color: 'common.white',
             boxShadow: 2,
-            '&:hover': { bgcolor: COLORS.PRIMARY_HOVER },
+            '&:hover': { bgcolor: 'primary.dark' },
           }}
           size="small"
         >

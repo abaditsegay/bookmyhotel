@@ -1,10 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { COLORS, addAlpha, getGradient } from '../theme/themeColors';
 import { 
   Box, 
   Button, 
-  Card, 
-  CardContent, 
   Container, 
   Typography, 
   Alert, 
@@ -12,12 +9,14 @@ import {
   useMediaQuery,
   Stack,
 } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import {
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, useLocation, Link as RouterLink } from 'react-router-dom';
 import { API_CONFIG } from '../config/apiConfig';
+import { PageContainer, SurfaceCard } from '../components/common';
 import PremiumTextField from '../components/common/PremiumTextField';
 
 const LoginPage: React.FC = () => {
@@ -200,9 +199,9 @@ const LoginPage: React.FC = () => {
     <Box
       sx={{
         minHeight: '100vh',
-        background: theme.palette.mode === 'dark' 
+        background: theme.palette.mode === 'dark'
           ? `linear-gradient(135deg, ${theme.palette.background.default} 0%, ${theme.palette.grey[900]} 100%)`
-          : getGradient('white'),
+          : `linear-gradient(180deg, ${alpha(theme.palette.primary.main, 0.05)} 0%, ${theme.palette.background.default} 42%, ${theme.palette.background.paper} 100%)`,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -210,7 +209,7 @@ const LoginPage: React.FC = () => {
         py: 4,
       }}
     >
-      <Container maxWidth="lg">
+      <PageContainer maxWidth="lg" sx={{ justifyContent: 'center', minHeight: '100vh', py: 4, pb: 4 }}>
         <Box
           sx={{
             display: 'flex',
@@ -222,8 +221,8 @@ const LoginPage: React.FC = () => {
           }}
         >
         {/* Main Login Form */}
-        <Card 
-          elevation={8}
+        <SurfaceCard
+          elevation={0}
           sx={{ 
             maxWidth: 500, 
             width: '100%', 
@@ -233,9 +232,8 @@ const LoginPage: React.FC = () => {
             borderRadius: 4,
             boxShadow: theme.shadows[8],
           }}
+          contentSx={{ p: isMobile ? 3 : 5 }}
         >
-          <CardContent sx={{ p: isMobile ? 3 : 5 }}>
-
             
             {bookingData && (
               <Alert severity="info" sx={{ mb: 3 }}>
@@ -311,7 +309,7 @@ const LoginPage: React.FC = () => {
                     variant="text"
                     size="small"
                     sx={{ 
-                      color: COLORS.PRIMARY,
+                      color: 'primary.main',
                       textTransform: 'none',
                       fontWeight: 500,
                       p: 0,
@@ -336,10 +334,10 @@ const LoginPage: React.FC = () => {
                     fontSize: '1.1rem',
                     fontWeight: 'bold',
                     background: 'primary.main',
-                    boxShadow: `0 4px 15px ${addAlpha(COLORS.PRIMARY, 0.3)}`,
+                    boxShadow: `0 4px 15px ${alpha(theme.palette.primary.main, 0.3)}`,
                     '&:hover': {
                       background: 'primary.dark',
-                      boxShadow: `0 6px 20px ${addAlpha(COLORS.PRIMARY, 0.4)}`,
+                      boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.4)}`,
                       transform: 'translateY(-1px)',
                     },
                     '&:active': {
@@ -421,10 +419,10 @@ const LoginPage: React.FC = () => {
                     fontSize: '1.1rem',
                     fontWeight: 'bold',
                     background: 'secondary.main',
-                    boxShadow: `0 4px 15px ${addAlpha(COLORS.SECONDARY, 0.3)}`,
+                    boxShadow: `0 4px 15px ${alpha(theme.palette.secondary.main, 0.3)}`,
                     '&:hover': {
                       background: 'secondary.dark',
-                      boxShadow: `0 6px 20px ${addAlpha(COLORS.SECONDARY, 0.4)}`,
+                      boxShadow: `0 6px 20px ${alpha(theme.palette.secondary.main, 0.4)}`,
                       transform: 'translateY(-1px)',
                     },
                     '&:active': {
@@ -463,11 +461,10 @@ const LoginPage: React.FC = () => {
               )}
             </Typography>
 
-          </CardContent>
-        </Card>
+        </SurfaceCard>
 
         </Box>
-      </Container>
+      </PageContainer>
     </Box>
   );
 };

@@ -224,6 +224,30 @@ export const designSystem = {
     xl: 1920
   },
 
+  // Shared page-shell rhythm for consistent layouts
+  layout: {
+    pagePaddingY: {
+      xs: 2,
+      md: 3
+    },
+    pagePaddingX: {
+      xs: 2,
+      md: 3
+    },
+    pagePaddingBottom: {
+      xs: 10,
+      md: 12
+    },
+    sectionGap: {
+      xs: 2,
+      md: 3
+    },
+    cardPadding: {
+      xs: 2,
+      md: 3
+    }
+  },
+
   // Z-index scale
   zIndex: {
     mobileStepper: 1000,

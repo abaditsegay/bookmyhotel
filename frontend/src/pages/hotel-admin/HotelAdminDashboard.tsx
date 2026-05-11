@@ -37,35 +37,10 @@ import { roomCacheService } from '../../services/RoomCacheService';
 import PricingConfiguration from '../../components/PricingConfiguration';
 import HotelImageManagement from './HotelImageManagement';
 import HousekeepingPage from '../housekeeping/HousekeepingPage';
+import TabPanel from '../../components/common/TabPanel';
 import { getBookingStatusColor } from '../../utils/statusColors';
 import { COLORS, addAlpha } from '../../theme/themeColors';
 import HotelAuditCenter from '../../components/hotel-admin/HotelAuditCenter';
-
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
-}
-
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`simple-tabpanel-${index}`}
-      aria-labelledby={`simple-tab-${index}`}
-      {...other}
-    >
-      {value === index && (
-        <Box sx={{ p: 3 }}>
-          {children}
-        </Box>
-      )}
-    </div>
-  );
-}
 
 const HotelAdminDashboard: React.FC = () => {
   const theme = useTheme();
@@ -476,7 +451,7 @@ const HotelAdminDashboard: React.FC = () => {
           </Tabs>
         </Box>
 
-        <TabPanel value={activeTab} index={0}>
+        <TabPanel value={activeTab} index={0} idPrefix="hotel-admin" contentSx={{ p: 3 }}>
           {/* Hotel Details Tab with nested tabs */}
           <Box>
             {/* Nested tabs for Hotel Details */}
@@ -946,12 +921,12 @@ const HotelAdminDashboard: React.FC = () => {
           </Box>
         </TabPanel>
 
-        <TabPanel value={activeTab} index={1}>
+        <TabPanel value={activeTab} index={1} idPrefix="hotel-admin" contentSx={{ p: 3 }}>
           {/* Staff Management Tab */}
           <StaffManagement onNavigateToStaff={handleStaffNavigation} />
         </TabPanel>
 
-        <TabPanel value={activeTab} index={2}>
+        <TabPanel value={activeTab} index={2} idPrefix="hotel-admin" contentSx={{ p: 3 }}>
           {/* Room Management Tab */}
           <UnifiedRoomManagement 
             mode="hotel-admin"
@@ -959,7 +934,7 @@ const HotelAdminDashboard: React.FC = () => {
           />
         </TabPanel>
 
-        <TabPanel value={activeTab} index={3}>
+        <TabPanel value={activeTab} index={3} idPrefix="hotel-admin" contentSx={{ p: 3 }}>
           {/* Bookings Tab */}
           <BookingManagementTable
             mode="hotel-admin"
@@ -980,16 +955,16 @@ const HotelAdminDashboard: React.FC = () => {
           />
         </TabPanel>
 
-        <TabPanel value={activeTab} index={4}>
+        <TabPanel value={activeTab} index={4} idPrefix="hotel-admin" contentSx={{ p: 3 }}>
           <StaffScheduleManagement />
         </TabPanel>
 
-        <TabPanel value={activeTab} index={5}>
+        <TabPanel value={activeTab} index={5} idPrefix="hotel-admin" contentSx={{ p: 3 }}>
           {/* Housekeeping Tab */}
           <HousekeepingPage />
         </TabPanel>
 
-        <TabPanel value={activeTab} index={6}>
+        <TabPanel value={activeTab} index={6} idPrefix="hotel-admin" contentSx={{ p: 3 }}>
           {/* Reports Tab - Enhanced with More Data */}
           <Box>
             <Box 
@@ -1858,16 +1833,16 @@ const HotelAdminDashboard: React.FC = () => {
           </Box>
         </TabPanel>
 
-        <TabPanel value={activeTab} index={7}>
+        <TabPanel value={activeTab} index={7} idPrefix="hotel-admin" contentSx={{ p: 3 }}>
           <HotelAuditCenter hotelId={hotel?.id ?? (user?.hotelId ? parseInt(user.hotelId, 10) : undefined)} />
         </TabPanel>
 
-        <TabPanel value={activeTab} index={8}>
+        <TabPanel value={activeTab} index={8} idPrefix="hotel-admin" contentSx={{ p: 3 }}>
           {/* Pricing & Tax Configuration Tab */}
           <PricingConfiguration />
         </TabPanel>
 
-        <TabPanel value={activeTab} index={9}>
+        <TabPanel value={activeTab} index={9} idPrefix="hotel-admin" contentSx={{ p: 3 }}>
           {/* Offline Bookings Tab */}
           <OfflineWalkInBooking
             hotelId={hotel?.id}
