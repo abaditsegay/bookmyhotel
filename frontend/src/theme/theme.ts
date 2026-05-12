@@ -1,9 +1,8 @@
 // Enhanced Material-UI Theme Configuration
 // Integrates our design system with Material-UI components
 
-import { createTheme, ThemeOptions } from '@mui/material/styles';
+import { alpha, createTheme, ThemeOptions } from '@mui/material/styles';
 import { designSystem, animations } from './designSystem';
-import { COLORS, addAlpha } from './themeColors';
 
 const themeOptions: ThemeOptions = {
   palette: {
@@ -98,22 +97,22 @@ const themeOptions: ThemeOptions = {
           transition: `all ${animations.duration.standard}ms ${animations.easing.easeInOut}`
         },
         contained: {
-          background: `linear-gradient(135deg, ${COLORS.PRIMARY} 0%, ${COLORS.PRIMARY_PRESSED} 100%)`,
-          boxShadow: `0 4px 15px ${addAlpha(COLORS.PRIMARY, 0.25)}`,
+          background: `linear-gradient(135deg, ${designSystem.colors.primary.main} 0%, ${designSystem.colors.primary.dark} 100%)`,
+          boxShadow: `0 4px 15px ${alpha(designSystem.colors.primary.main, 0.25)}`,
           '&:hover': {
-            background: `linear-gradient(135deg, ${COLORS.PRIMARY_HOVER} 0%, ${COLORS.PRIMARY} 100%)`,
-            boxShadow: `0 6px 20px ${addAlpha(COLORS.PRIMARY, 0.35)}`,
+            background: `linear-gradient(135deg, ${designSystem.colors.primary.dark} 0%, ${designSystem.colors.primary.main} 100%)`,
+            boxShadow: `0 6px 20px ${alpha(designSystem.colors.primary.main, 0.35)}`,
             transform: 'translateY(-2px)'
           },
           '&:active': {
             transform: 'translateY(0)',
-            boxShadow: `0 2px 8px ${addAlpha(COLORS.PRIMARY, 0.25)}`
+            boxShadow: `0 2px 8px ${alpha(designSystem.colors.primary.main, 0.25)}`
           },
           '&.Mui-disabled': {
-            background: COLORS.BG_DEFAULT,
-            color: COLORS.TEXT_DISABLED,
+            background: designSystem.colors.background.default,
+            color: designSystem.colors.text.disabled,
             boxShadow: 'none',
-            border: `2px solid ${COLORS.SECONDARY}`,
+            border: `2px solid ${designSystem.colors.secondary.main}`,
           }
         },
         outlined: {
@@ -121,13 +120,13 @@ const themeOptions: ThemeOptions = {
           borderColor: designSystem.colors.primary.main,
           '&:hover': {
             borderWidth: '2px',
-            backgroundColor: addAlpha(COLORS.PRIMARY, 0.04),
+            backgroundColor: alpha(designSystem.colors.primary.main, 0.04),
             transform: 'translateY(-1px)'
           }
         },
         text: {
           '&:hover': {
-            backgroundColor: addAlpha(COLORS.PRIMARY, 0.04)
+            backgroundColor: alpha(designSystem.colors.primary.main, 0.04)
           }
         }
       }
@@ -139,10 +138,10 @@ const themeOptions: ThemeOptions = {
         root: {
           borderRadius: designSystem.borderRadius.lg,
           border: 'none',
-          boxShadow: `0 4px 20px ${addAlpha(COLORS.BLACK, 0.08)}`,
+          boxShadow: `0 4px 20px ${alpha('#000000', 0.08)}`,
           transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           '&:hover': {
-            boxShadow: `0 8px 30px ${addAlpha(COLORS.BLACK, 0.12)}`,
+            boxShadow: `0 8px 30px ${alpha('#000000', 0.12)}`,
             transform: 'translateY(-4px)'
           }
         }
@@ -155,10 +154,10 @@ const themeOptions: ThemeOptions = {
         root: {
           '& .MuiOutlinedInput-root': {
             borderRadius: designSystem.borderRadius.md,
-            backgroundColor: COLORS.WHITE,
+            backgroundColor: designSystem.colors.background.paper,
             transition: `all ${animations.duration.standard}ms ${animations.easing.easeInOut}`,
             '& fieldset': {
-              borderColor: COLORS.BORDER_LIGHT,
+              borderColor: designSystem.colors.divider,
               borderWidth: '1.5px'
             },
             '&:hover fieldset': {
@@ -168,7 +167,7 @@ const themeOptions: ThemeOptions = {
             '&.Mui-focused fieldset': {
               borderColor: designSystem.colors.primary.main,
               borderWidth: '2px',
-              boxShadow: `0 0 0 3px ${addAlpha(COLORS.PRIMARY, 0.1)}`
+              boxShadow: `0 0 0 3px ${alpha(designSystem.colors.primary.main, 0.1)}`
             }
           },
           '& .MuiInputLabel-root.Mui-focused': {
@@ -184,10 +183,10 @@ const themeOptions: ThemeOptions = {
         root: {
           '& .MuiOutlinedInput-root': {
             borderRadius: designSystem.borderRadius.md,
-            backgroundColor: COLORS.WHITE,
+            backgroundColor: designSystem.colors.background.paper,
             transition: `all ${animations.duration.standard}ms ${animations.easing.easeInOut}`,
             '& fieldset': {
-              borderColor: COLORS.BORDER_LIGHT,
+              borderColor: designSystem.colors.divider,
               borderWidth: '1.5px'
             },
             '&:hover fieldset': {
@@ -197,7 +196,7 @@ const themeOptions: ThemeOptions = {
             '&.Mui-focused fieldset': {
               borderColor: designSystem.colors.primary.main,
               borderWidth: '2px',
-              boxShadow: `0 0 0 3px ${addAlpha(COLORS.PRIMARY, 0.1)}`
+              boxShadow: `0 0 0 3px ${alpha(designSystem.colors.primary.main, 0.1)}`
             }
           },
           '& .MuiInputLabel-root.Mui-focused': {
@@ -212,8 +211,8 @@ const themeOptions: ThemeOptions = {
       styleOverrides: {
         paper: {
           borderRadius: designSystem.borderRadius.xl,
-          boxShadow: `0 20px 60px ${addAlpha(COLORS.BLACK, 0.25)}`,
-          backgroundColor: COLORS.WHITE
+          boxShadow: `0 20px 60px ${alpha('#000000', 0.25)}`,
+          backgroundColor: designSystem.colors.background.paper
         }
       }
     },

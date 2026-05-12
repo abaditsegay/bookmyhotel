@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { API_CONFIG } from '../../config/apiConfig';
-import { COLORS, addAlpha } from '../../theme/themeColors';
 import {
+  alpha,
+  useTheme,
   Typography,
   Box,
   Button,
@@ -35,7 +34,6 @@ import {
   Divider
 } from '@mui/material';
 import { 
-  ArrowBack as ArrowBackIcon, 
   Visibility as ViewIcon,
   Edit as EditIcon, 
   ToggleOn as ToggleOnIcon, 
@@ -69,7 +67,7 @@ interface RegistrationStatistics {
 }
 
 const HotelManagementAdmin: React.FC = () => {
-  const navigate = useNavigate();
+  const theme = useTheme();
   const { token } = useAuth();
 
   // Tab state
@@ -113,11 +111,9 @@ const HotelManagementAdmin: React.FC = () => {
   // Approval/Rejection form state
   const [approvalComments, setApprovalComments] = useState('');
   const [rejectionReason, setRejectionReason] = useState('');
-  const [tenantId, setTenantId] = useState('');
 
   // Tenant management state
   const [tenants, setTenants] = useState<TenantDTO[]>([]);
-  const [tenantsLoading, setTenantsLoading] = useState(false);
 
   // Registration form state
   const [registrationForm, setRegistrationForm] = useState({
@@ -228,13 +224,10 @@ const HotelManagementAdmin: React.FC = () => {
   // Load active tenants for dropdown
   const loadTenants = useCallback(async () => {
     try {
-      setTenantsLoading(true);
       const response = await adminApiService.getActiveTenants();
       setTenants(response);
     } catch (err) {
       // console.error('Error loading tenants:', err);
-    } finally {
-      setTenantsLoading(false);
     }
   }, []);
 
@@ -401,7 +394,6 @@ const HotelManagementAdmin: React.FC = () => {
     // Reset approval/rejection fields
     setApprovalComments('');
     setRejectionReason('');
-    setTenantId('');
     // Initialize edit form with registration data
     setEditRegistrationForm({
       hotelName: registration.hotelName || '',
@@ -515,7 +507,6 @@ const HotelManagementAdmin: React.FC = () => {
   const openApprovalDialog = (registration: HotelRegistrationResponse) => {
     setSelectedRegistration(registration);
     setApprovalComments('');
-    setTenantId('');
     setApproveDialogOpen(true);
   };
 
@@ -601,6 +592,74 @@ const HotelManagementAdmin: React.FC = () => {
     APPROVED: 'success',
     REJECTED: 'error',
     CANCELLED: 'default',
+  } as const;
+
+  const adminTableHeaderSx = {
+    background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(theme.palette.primary.main, 0.16)} 100%)`,
+    borderBottom: `2px solid ${theme.palette.primary.main}`,
+    '& .MuiTableCell-head': {
+      color: 'primary.main',
+      fontWeight: 600,
+      fontSize: '0.95rem',
+      letterSpacing: '0.5px',
+      textTransform: 'uppercase',
+      border: 'none',
+      padding: '20px 16px',
+      position: 'relative'
+    }
+  } as const;
+
+  const adminDialogTitleSx = {
+    borderBottom: `2px solid ${theme.palette.secondary.main}`,
+    pb: 2,
+    fontWeight: 600,
+    color: 'primary.main'
+  } as const;
+
+  const adminSectionTitleSx = {
+    mb: 1,
+    color: 'primary.main',
+    fontWeight: 600,
+  } as const;
+
+  const adminSectionTitleWithTopSpacingSx = {
+    ...adminSectionTitleSx,
+    mt: 1,
+  } as const;
+
+  const adminInfoPanelSx = {
+    border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`,
+    borderRadius: 2,
+    p: 2,
+    backgroundColor: alpha(theme.palette.info.main, 0.08),
+    mt: 1,
+  } as const;
+
+  const adminOutlinedActionSx = {
+    borderColor: 'primary.main',
+    color: 'primary.main',
+    '&:hover': {
+      borderColor: 'primary.dark',
+      backgroundColor: alpha(theme.palette.primary.main, 0.08),
+    },
+  } as const;
+
+  const adminDangerOutlinedActionSx = {
+    borderColor: 'error.main',
+    '&:hover': {
+      backgroundColor: alpha(theme.palette.error.main, 0.08),
+      borderColor: 'error.main',
+    },
+  } as const;
+
+  const adminPrimaryContainedActionSx = {
+    backgroundColor: 'primary.main',
+    '&:hover': {
+      backgroundColor: 'primary.dark',
+    },
+    '&:disabled': {
+      backgroundColor: theme.palette.action.disabledBackground,
+    },
   } as const;
 
   // Helper function to get tenant name by tenant ID
@@ -704,7 +763,7 @@ const HotelManagementAdmin: React.FC = () => {
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
           <Typography variant="h5" component="h1" sx={{ 
             flexGrow: 1,
-            color: COLORS.PRIMARY,
+            color: 'primary.main',
             fontWeight: 600,
             letterSpacing: '0.5px'
           }}>
@@ -789,22 +848,7 @@ const HotelManagementAdmin: React.FC = () => {
             <TableContainer component={Paper}>
               <Table>
                 <TableHead>
-                  <TableRow
-                    sx={{
-                      background: `linear-gradient(135deg, ${addAlpha(COLORS.PRIMARY, 0.08)} 0%, ${addAlpha(COLORS.PRIMARY, 0.16)} 100%)`,
-                      borderBottom: `2px solid ${COLORS.PRIMARY}`,
-                      '& .MuiTableCell-head': {
-                        color: COLORS.PRIMARY,
-                        fontWeight: 600,
-                        fontSize: '0.95rem',
-                        letterSpacing: '0.5px',
-                        textTransform: 'uppercase',
-                        border: 'none',
-                        padding: '20px 16px',
-                        position: 'relative'
-                      }
-                    }}
-                  >
+                  <TableRow sx={adminTableHeaderSx}>
                     <TableCell>Hotel Name</TableCell>
                     <TableCell>Location</TableCell>
                     <TableCell>Tenant</TableCell>
@@ -973,7 +1017,7 @@ const HotelManagementAdmin: React.FC = () => {
                       <Typography color="textSecondary" gutterBottom>
                         Approved
                       </Typography>
-                      <Typography variant="h4" sx={{ color: COLORS.PRIMARY }}>
+                      <Typography variant="h4" sx={{ color: 'primary.main' }}>
                         {registrationStats.approved}
                       </Typography>
                     </CardContent>
@@ -998,22 +1042,7 @@ const HotelManagementAdmin: React.FC = () => {
             <TableContainer component={Paper}>
               <Table>
                 <TableHead>
-                  <TableRow
-                    sx={{
-                      background: `linear-gradient(135deg, ${addAlpha(COLORS.PRIMARY, 0.08)} 0%, ${addAlpha(COLORS.PRIMARY, 0.16)} 100%)`,
-                      borderBottom: `2px solid ${COLORS.PRIMARY}`,
-                      '& .MuiTableCell-head': {
-                        color: COLORS.PRIMARY,
-                        fontWeight: 600,
-                        fontSize: '0.95rem',
-                        letterSpacing: '0.5px',
-                        textTransform: 'uppercase',
-                        border: 'none',
-                        padding: '20px 16px',
-                        position: 'relative'
-                      }
-                    }}
-                  >
+                  <TableRow sx={adminTableHeaderSx}>
                     <TableCell>Hotel Name</TableCell>
                     <TableCell>Contact Person</TableCell>
                     <TableCell>Email</TableCell>
@@ -1051,14 +1080,7 @@ const HotelManagementAdmin: React.FC = () => {
                           variant="outlined"
                           startIcon={<ReviewIcon />}
                           onClick={() => viewRegistration(registration)}
-                          sx={{
-                            borderColor: COLORS.PRIMARY,
-                            color: COLORS.PRIMARY,
-                            '&:hover': {
-                              borderColor: COLORS.PRIMARY_PRESSED,
-                              backgroundColor: COLORS.SLATE_50
-                            }
-                          }}
+                          sx={adminOutlinedActionSx}
                         >
                           Review
                         </Button>
@@ -1151,14 +1173,8 @@ const HotelManagementAdmin: React.FC = () => {
 
               {/* Phone Numbers Section with grouped styling */}
               <Grid item xs={12}>
-                <Box sx={{ 
-                  border: `1px solid ${COLORS.BG_INFO_LIGHT}`, 
-                  borderRadius: 2, 
-                  p: 2, 
-                  backgroundColor: COLORS.BG_INFO_LIGHT,
-                  mt: 1
-                }}>
-                  <Typography variant="subtitle1" sx={{ mb: 2, color: COLORS.PRIMARY, fontWeight: 600 }}>
+                <Box sx={adminInfoPanelSx}>
+                  <Typography variant="subtitle1" sx={{ ...adminSectionTitleSx, mb: 2 }}>
                     Phone Numbers
                   </Typography>
                   <Grid container spacing={2}>
@@ -1282,12 +1298,7 @@ const HotelManagementAdmin: React.FC = () => {
         {/* Registration View Dialog - 2-Step Wizard */}
         <Dialog open={registrationViewDialogOpen} onClose={() => setRegistrationViewDialogOpen(false)} maxWidth="md" fullWidth>
           <DialogTitle
-            sx={{
-              borderBottom: `2px solid ${COLORS.SECONDARY}`,
-              pb: 2,
-              fontWeight: 600,
-              color: COLORS.PRIMARY
-            }}
+            sx={adminDialogTitleSx}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <span>Review Hotel Registration</span>
@@ -1319,7 +1330,7 @@ const HotelManagementAdmin: React.FC = () => {
                 {registrationWizardStep === 0 && (
                   <Grid container spacing={2}>
                     <Grid item xs={12}>
-                      <Typography variant="subtitle1" fontWeight={600} color="primary" sx={{ mb: 1 }}>
+                      <Typography variant="subtitle1" sx={adminSectionTitleSx}>
                         Hotel Information
                       </Typography>
                       <Divider sx={{ mb: 2 }} />
@@ -1401,7 +1412,7 @@ const HotelManagementAdmin: React.FC = () => {
                     )}
 
                     <Grid item xs={12}>
-                      <Typography variant="subtitle1" fontWeight={600} color="primary" sx={{ mt: 1, mb: 1 }}>
+                      <Typography variant="subtitle1" sx={adminSectionTitleWithTopSpacingSx}>
                         Registered Hotel Admin
                       </Typography>
                       <Divider sx={{ mb: 2 }} />
@@ -1440,7 +1451,7 @@ const HotelManagementAdmin: React.FC = () => {
                 {registrationWizardStep === 1 && (
                   <Grid container spacing={2}>
                     <Grid item xs={12}>
-                      <Typography variant="subtitle1" fontWeight={600} color="primary" sx={{ mb: 1 }}>
+                      <Typography variant="subtitle1" sx={adminSectionTitleSx}>
                         Business Details
                       </Typography>
                       <Divider sx={{ mb: 2 }} />
@@ -1483,7 +1494,7 @@ const HotelManagementAdmin: React.FC = () => {
                     </Grid>
 
                     <Grid item xs={12}>
-                      <Typography variant="subtitle1" fontWeight={600} color="primary" sx={{ mt: 1, mb: 1 }}>
+                      <Typography variant="subtitle1" sx={adminSectionTitleWithTopSpacingSx}>
                         Payment Information
                       </Typography>
                       <Divider sx={{ mb: 2 }} />
@@ -1506,7 +1517,7 @@ const HotelManagementAdmin: React.FC = () => {
                     </Grid>
 
                     <Grid item xs={12}>
-                      <Typography variant="subtitle1" fontWeight={600} color="primary" sx={{ mt: 1, mb: 1 }}>
+                      <Typography variant="subtitle1" sx={adminSectionTitleWithTopSpacingSx}>
                         Tax & License
                       </Typography>
                       <Divider sx={{ mb: 2 }} />
@@ -1529,7 +1540,7 @@ const HotelManagementAdmin: React.FC = () => {
                     </Grid>
 
                     <Grid item xs={12}>
-                      <Typography variant="subtitle1" fontWeight={600} color="primary" sx={{ mt: 1, mb: 1 }}>
+                      <Typography variant="subtitle1" sx={adminSectionTitleWithTopSpacingSx}>
                         Facility Information
                       </Typography>
                       <Divider sx={{ mb: 2 }} />
@@ -1594,7 +1605,7 @@ const HotelManagementAdmin: React.FC = () => {
               </Box>
             )}
           </DialogContent>
-          <DialogActions sx={{ px: 3, py: 2, borderTop: `1px solid ${COLORS.BORDER_LIGHT}` }}>
+          <DialogActions sx={{ px: 3, py: 2, borderTop: `1px solid ${theme.palette.divider}` }}>
             {registrationEditMode ? (
               <>
                 <Button onClick={handleCancelRegistrationEdit}>Cancel</Button>
@@ -1630,7 +1641,7 @@ const HotelManagementAdmin: React.FC = () => {
                 <>
                   <Button 
                     onClick={() => setRegistrationViewDialogOpen(false)}
-                    sx={{ color: COLORS.TEXT_SECONDARY }}
+                    sx={{ color: 'text.secondary' }}
                   >
                     Cancel
                   </Button>
@@ -1654,7 +1665,7 @@ const HotelManagementAdmin: React.FC = () => {
                   <Box sx={{ flex: 1 }} />
                   <Button 
                     onClick={() => setRegistrationViewDialogOpen(false)}
-                    sx={{ color: COLORS.TEXT_SECONDARY }}
+                    sx={{ color: 'text.secondary' }}
                   >
                     Cancel
                   </Button>
@@ -1665,13 +1676,7 @@ const HotelManagementAdmin: React.FC = () => {
                         color="error"
                         startIcon={<RejectIcon />}
                         onClick={() => openRejectionDialog(selectedRegistration)}
-                        sx={{
-                          borderColor: COLORS.ERROR,
-                          '&:hover': {
-                            backgroundColor: COLORS.BG_ERROR_LIGHT,
-                            borderColor: COLORS.ERROR
-                          }
-                        }}
+                        sx={adminDangerOutlinedActionSx}
                       >
                         Reject
                       </Button>
@@ -1938,12 +1943,7 @@ const HotelManagementAdmin: React.FC = () => {
           fullWidth
         >
           <DialogTitle
-            sx={{
-              borderBottom: `2px solid ${COLORS.SECONDARY}`,
-              pb: 2,
-              fontWeight: 600,
-              color: COLORS.PRIMARY
-            }}
+            sx={adminDialogTitleSx}
           >
             Approve Hotel Registration
           </DialogTitle>
@@ -1973,16 +1973,7 @@ const HotelManagementAdmin: React.FC = () => {
             <Button
               onClick={handleApproveRegistration}
               variant="contained"
-              sx={{
-                  backgroundColor: COLORS.PRIMARY,
-                '&:hover': {
-                  backgroundColor: COLORS.PRIMARY,
-                  filter: 'brightness(0.9)'
-                },
-                '&:disabled': {
-                    backgroundColor: addAlpha(COLORS.BLACK, 0.12)
-                }
-              }}
+              sx={adminPrimaryContainedActionSx}
             >
               Approve Registration
             </Button>
@@ -1997,12 +1988,7 @@ const HotelManagementAdmin: React.FC = () => {
           fullWidth
         >
           <DialogTitle
-            sx={{
-              borderBottom: `2px solid ${COLORS.SECONDARY}`,
-              pb: 2,
-              fontWeight: 600,
-              color: COLORS.PRIMARY
-            }}
+            sx={adminDialogTitleSx}
           >
             Reject Hotel Registration
           </DialogTitle>

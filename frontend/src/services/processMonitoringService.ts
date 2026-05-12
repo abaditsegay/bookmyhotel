@@ -1,9 +1,6 @@
 import enhancedApi from './enhancedApi';
 import {
   ProcessMonitoringEventDto,
-  DailyFinancialReconciliationDto,
-  AuditTrailDto,
-  AuditTaxonomyDto,
   LiveMonitoringData,
   StaffActivity,
   PatternDetection,
@@ -124,116 +121,6 @@ class ProcessMonitoringService {
     const response = await api.get<StaffPerformance>(
       `${this.baseUrl}/hotels/${hotelId}/monitoring/staff/${staffId}/performance?${query}`
     );
-    return response.data;
-  }
-
-  // ========== Financial Audit ==========
-
-  /**
-   * Generate daily financial reconciliation
-   */
-  async getDailyReconciliation(
-    hotelId: number,
-    date: string
-  ): Promise<DailyFinancialReconciliationDto> {
-    const query = buildQueryString({ date });
-    const response = await api.get<DailyFinancialReconciliationDto>(
-      `${this.baseUrl}/hotels/${hotelId}/audit/reconciliation?${query}`
-    );
-    return response.data;
-  }
-
-  /**
-   * Get supported audit taxonomy values
-   */
-  async getAuditTaxonomy(hotelId: number): Promise<AuditTaxonomyDto> {
-    const response = await api.get<AuditTaxonomyDto>(`${this.baseUrl}/hotels/${hotelId}/audit/taxonomy`);
-    return response.data;
-  }
-
-  /**
-   * Get audit trail for specific entity
-   */
-  async getAuditTrail(
-    hotelId: number,
-    entityType: string,
-    entityId: number
-  ): Promise<AuditTrailDto[]> {
-    const query = buildQueryString({ entityType, entityId });
-    const response = await api.get<AuditTrailDto[]>(`${this.baseUrl}/hotels/${hotelId}/audit/trail?${query}`);
-    return response.data;
-  }
-
-  /**
-   * Get all audit logs with pagination
-   */
-  async getAuditLogs(
-    hotelId: number,
-    page: number = 0,
-    size: number = 20,
-    sort: string = 'timestamp,desc'
-  ): Promise<PaginatedResponse<AuditTrailDto>> {
-    const query = buildQueryString({ page, size, sort });
-    const response = await api.get<PaginatedResponse<AuditTrailDto>>(
-      `${this.baseUrl}/hotels/${hotelId}/audit/logs?${query}`
-    );
-    return response.data;
-  }
-
-  /**
-   * Get sensitive audit logs (admin only)
-   */
-  async getSensitiveAuditLogs(
-    hotelId: number,
-    page: number = 0,
-    size: number = 20
-  ): Promise<PaginatedResponse<AuditTrailDto>> {
-    const query = buildQueryString({ page, size });
-    const response = await api.get<PaginatedResponse<AuditTrailDto>>(
-      `${this.baseUrl}/hotels/${hotelId}/audit/logs/sensitive?${query}`
-    );
-    return response.data;
-  }
-
-  /**
-   * Get compliance report
-   */
-  async getComplianceReport(
-    hotelId: number,
-    category: string,
-    page: number = 0,
-    size: number = 20
-  ): Promise<PaginatedResponse<AuditTrailDto>> {
-    const query = buildQueryString({ page, size });
-    const response = await api.get<PaginatedResponse<AuditTrailDto>>(
-      `${this.baseUrl}/hotels/${hotelId}/audit/compliance/${category}?${query}`
-    );
-    return response.data;
-  }
-
-  /**
-   * Create manual audit log entry
-   */
-  async createAuditLog(
-    hotelId: number,
-    auditData: {
-      entityType: string;
-      entityId: number;
-      action: string;
-      oldValues?: string;
-      newValues?: string;
-      changedFields?: string;
-      userId: number;
-      userName: string;
-      userEmail: string;
-      userRole: string;
-      reason?: string;
-      isSensitive?: boolean;
-      complianceCategory?: string;
-    }
-  ): Promise<AuditTrailDto> {
-    const query = buildQueryString(auditData);
-    const response = await api.post<AuditTrailDto>(`${this.baseUrl}/hotels/${hotelId}/audit/logs?${query}`, null);
     return response.data;
   }
 

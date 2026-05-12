@@ -22,13 +22,13 @@ import {
   SelectChangeEvent,
   MenuItem,
   Card,
-  CardContent
+  CardContent,
+  useTheme,
 } from '@mui/material';
 import { useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { hotelAdminApi, RoomResponse } from '../../services/hotelAdminApi';
 import { ROOM_TYPE_VALUES } from '../../constants/roomTypes';
-import { COLORS } from '../../theme/themeColors';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
@@ -59,6 +59,7 @@ interface BookingData {
 }
 
 const BookingViewEdit: React.FC = () => {
+  const theme = useTheme();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -579,7 +580,7 @@ const BookingViewEdit: React.FC = () => {
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Typography variant="h4" component="h1" sx={{
-              color: COLORS.PRIMARY,
+              color: theme.palette.primary.main,
               fontWeight: 600
             }}>
               Booking Details

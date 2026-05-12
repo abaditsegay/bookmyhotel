@@ -1089,7 +1089,7 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
         open={paymentDialogOpen}
         onClose={handlePaymentDialogClose}
         onPaymentComplete={handlePaymentComplete}
-        totalAmount={createdOrder ? (createdOrder.totalAmount + (createdOrder.taxAmount || 0)) : getGrandTotal()}
+        totalAmount={createdOrder ? createdOrder.totalAmount : getGrandTotal()}
         selectedPaymentMethod={paymentMethod}
         showSuccess={paymentSuccess}
       />

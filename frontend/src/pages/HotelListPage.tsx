@@ -5,17 +5,16 @@ import {
   Box,
   Alert,
   Snackbar,
-  Container,
   Grid,
   useTheme,
   useMediaQuery,
   Button,
 } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import { useNavigate, useLocation } from 'react-router-dom';
 import HotelListCard from '../components/hotel/HotelListCard';
-import { DataState } from '../components/common';
+import { DataState, PageContainer } from '../components/common';
 import { PageHeader, SurfaceCard } from '../components/ui';
-import { COLORS, addAlpha, getGradient } from '../theme/themeColors';
 import { PublicHotelSearchLocationState, usePublicHotelSearchResults, formatHotelSearchSummary } from '../hooks/usePublicHotelSearchResults';
 
 const HotelListPage: React.FC = () => {
@@ -80,13 +79,13 @@ const HotelListPage: React.FC = () => {
   }
 
   return (
-    <Container 
+    <PageContainer
       maxWidth="lg" 
       sx={{ 
         py: isMobile ? 2 : 4,
         px: isMobile ? 1 : 3,
         minHeight: '100vh',
-        background: getGradient('white'),
+        background: `linear-gradient(180deg, ${alpha(theme.palette.primary.main, 0.04)} 0%, ${theme.palette.background.default} 42%, ${theme.palette.background.paper} 100%)`,
       }}
     >
       {/* Combined Header and Actions Section */}
@@ -94,7 +93,7 @@ const HotelListPage: React.FC = () => {
         variantStyle="elevated"
         sx={{ 
           mb: isMobile ? 3 : 4,
-          boxShadow: `0 4px 12px ${addAlpha(COLORS.PRIMARY, 0.15)}`,
+          boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.15)}`,
         }}
         contentSx={{ p: { xs: 2, md: 2.5 } }}
       >
@@ -120,14 +119,14 @@ const HotelListPage: React.FC = () => {
                 variant="body2" 
                 sx={{ 
                   display: 'inline-block',
-                  bgcolor: addAlpha(COLORS.PRIMARY, 0.1),
-                  color: COLORS.PRIMARY,
+                  bgcolor: alpha(theme.palette.primary.main, 0.1),
+                  color: 'primary.main',
                   px: 2,
                   py: 0.75,
                   borderRadius: 1,
                   fontSize: '0.875rem',
                   fontWeight: 600,
-                  border: `1px solid ${COLORS.SECONDARY}`,
+                  border: `1px solid ${theme.palette.secondary.main}`,
                 }}
               >
                 {hotels.length === 1
@@ -140,17 +139,17 @@ const HotelListPage: React.FC = () => {
                 sx={{ 
                   py: 1,
                   px: 2.5,
-                  bgcolor: COLORS.WHITE,
-                  color: COLORS.PRIMARY,
-                  border: `1px solid ${COLORS.SECONDARY}`,
+                  bgcolor: 'common.white',
+                  color: 'primary.main',
+                  border: `1px solid ${theme.palette.secondary.main}`,
                   borderRadius: 1,
                   fontWeight: 600,
                   textTransform: 'none',
                   fontSize: '0.875rem',
                   minWidth: 'auto',
                   '&:hover': {
-                    bgcolor: addAlpha(COLORS.SECONDARY, 0.1),
-                    borderColor: COLORS.SECONDARY_HOVER,
+                    bgcolor: alpha(theme.palette.secondary.main, 0.1),
+                    borderColor: theme.palette.secondary.dark,
                   },
                 }}
               >
@@ -206,7 +205,7 @@ const HotelListPage: React.FC = () => {
           {successMessage}
         </Alert>
       </Snackbar>
-    </Container>
+    </PageContainer>
   );
 };
 

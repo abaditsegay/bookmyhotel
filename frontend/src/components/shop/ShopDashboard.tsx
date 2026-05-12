@@ -14,6 +14,7 @@ import {
 } from '@mui/material';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { TabPanel } from '../common';
 import { useAuth } from '../../contexts/AuthContext';
 import { shopApiService } from '../../services/shopApi';
 import { formatCurrencyWithDecimals } from '../../utils/currencyUtils';
@@ -25,26 +26,6 @@ import LowStockProducts from './LowStockProducts';
 import { StatCardSkeleton } from '../common/SkeletonLoaders';
 import { premiumTabsPaperSx, premiumTabsSx } from './premiumStyles';
 import { COLORS, addAlpha } from '../../theme/themeColors';
-
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
-}
-
-function TabPanel({ children, value, index, ...other }: TabPanelProps) {
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`shop-tabpanel-${index}`}
-      aria-labelledby={`shop-tab-${index}`}
-      {...other}
-    >
-      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
-    </div>
-  );
-}
 
 const ShopDashboard: React.FC = () => {
   const { t } = useTranslation();
@@ -414,19 +395,19 @@ const ShopDashboard: React.FC = () => {
       </Paper>
 
       {/* Tab Panels */}
-      <TabPanel value={currentTab} index={0}>
+      <TabPanel value={currentTab} index={0} idPrefix="shop" contentSx={{ p: 3 }}>
         <OrderCreation onOrderComplete={loadDashboardData} />
       </TabPanel>
 
-      <TabPanel value={currentTab} index={1}>
+      <TabPanel value={currentTab} index={1} idPrefix="shop" contentSx={{ p: 3 }}>
         <ProductManagement />
       </TabPanel>
 
-      <TabPanel value={currentTab} index={2}>
+      <TabPanel value={currentTab} index={2} idPrefix="shop" contentSx={{ p: 3 }}>
         <LowStockProducts />
       </TabPanel>
 
-      <TabPanel value={currentTab} index={3}>
+      <TabPanel value={currentTab} index={3} idPrefix="shop" contentSx={{ p: 3 }}>
         <OrderManagement />
       </TabPanel>
     </Box>

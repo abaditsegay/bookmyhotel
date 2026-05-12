@@ -28,7 +28,6 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { adminApiService, CreateUserRequest, TenantDTO, HotelDTO } from '../../services/adminApi';
 import { useAuth } from '../../contexts/AuthContext';
 import { HOTEL_SCOPED_ROLES } from '../../constants/roles';
-import { COLORS } from '../../theme/themeColors';
 import PremiumTextField from '../../components/common/PremiumTextField';
 
 interface UserFormData {
@@ -506,8 +505,8 @@ const UserRegistrationForm: React.FC = () => {
     return (
       <Container maxWidth="md" sx={{ py: 4 }}>
         <Paper sx={{ p: 4, textAlign: 'center' }}>
-          <PersonAdd sx={{ fontSize: 80, color: COLORS.PRIMARY, mb: 2 }} />
-          <Typography variant="h4" gutterBottom sx={{ color: COLORS.PRIMARY }}>
+          <PersonAdd sx={{ fontSize: 80, color: 'primary.main', mb: 2 }} />
+          <Typography variant="h4" gutterBottom sx={{ color: 'primary.main' }}>
             User Created Successfully!
           </Typography>
           <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>

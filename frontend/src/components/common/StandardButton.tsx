@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button, ButtonProps, CircularProgress } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import { designSystem } from '../../theme/designSystem';
-import { COLORS, addAlpha } from '../../theme/themeColors';
 
 interface StandardButtonProps extends Omit<ButtonProps, 'size'> {
   buttonSize?: 'small' | 'medium' | 'large';
@@ -130,13 +130,13 @@ const StandardButton: React.FC<StandardButtonProps> = ({
           borderWidth: '2px',
           '&:hover': {
             borderWidth: '2px',
-            backgroundColor: addAlpha(COLORS.BLACK, 0.04),
+            backgroundColor: (theme) => alpha(theme.palette.common.black, 0.04),
           },
         }),
         
         ...(variant === 'text' && {
           '&:hover': {
-            backgroundColor: addAlpha(COLORS.BLACK, 0.04),
+            backgroundColor: (theme) => alpha(theme.palette.common.black, 0.04),
           },
         }),
         

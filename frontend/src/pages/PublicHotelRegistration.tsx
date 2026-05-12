@@ -2,15 +2,14 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
-  Container,
   Typography,
   Box,
   Button,
-  Paper,
   Alert,
   Grid,
 } from '@mui/material';
 import { Login, CheckCircle } from '@mui/icons-material';
+import { PageContainer, SurfaceCard } from '../components/common';
 import PremiumTextField from '../components/common/PremiumTextField';
 import { API_CONFIG } from '../config/apiConfig';
 
@@ -90,7 +89,7 @@ const PublicHotelRegistration: React.FC = () => {
     registrationForm.city.trim() !== '';
 
   return (
-    <Container maxWidth="sm">
+    <PageContainer maxWidth="sm" sx={{ minHeight: '100vh', py: 4 }}>
       <Box sx={{ py: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom>
           {t('publicHotelRegistration.title')}
@@ -103,7 +102,7 @@ const PublicHotelRegistration: React.FC = () => {
         )}
 
         {submitted ? (
-          <Paper sx={{ p: 4, textAlign: 'center' }}>
+          <SurfaceCard contentSx={{ p: 4, textAlign: 'center' }}>
             <CheckCircle sx={{ fontSize: 64, color: 'success.main', mb: 2 }} />
             <Typography variant="h5" gutterBottom sx={{ fontWeight: 600 }}>
               {t('publicHotelRegistration.success.title')}
@@ -136,9 +135,9 @@ const PublicHotelRegistration: React.FC = () => {
             >
               {t('publicHotelRegistration.actions.goToLogin')}
             </Button>
-          </Paper>
+          </SurfaceCard>
         ) : (
-          <Paper sx={{ p: 4 }}>
+          <SurfaceCard contentSx={{ p: 4 }}>
             <Typography variant="h6" gutterBottom>
               {t('publicHotelRegistration.form.title')}
             </Typography>
@@ -242,10 +241,10 @@ const PublicHotelRegistration: React.FC = () => {
                 <Typography variant="body2">4. {t('publicHotelRegistration.nextSteps.step4')}</Typography>
               </Box>
             </Box>
-          </Paper>
+          </SurfaceCard>
         )}
       </Box>
-    </Container>
+    </PageContainer>
   );
 };
 

@@ -66,6 +66,19 @@ const OrderManagement: React.FC = () => {
   const [viewOrderDialog, setViewOrderDialog] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<ShopOrder | null>(null);
 
+  const getOrderGrandTotal = (order: ShopOrder) => {
+    const subtotal = (order.items || []).reduce((sum, item) => {
+      const lineTotal = item.totalPrice ?? ((item.unitPrice || 0) * (item.quantity || 0));
+      return sum + lineTotal;
+    }, 0);
+
+    if (subtotal > 0) {
+      return subtotal + (order.taxAmount || 0);
+    }
+
+    return order.totalAmount || 0;
+  };
+
   // Get hotel ID from authenticated user
   const hotelId = user?.hotelId ? parseInt(user.hotelId) : null;
 
@@ -340,7 +353,7 @@ const OrderManagement: React.FC = () => {
                 </TableCell>
                 <TableCell>
                   <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>
-                    {formatCurrencyWithDecimals(order.totalAmount || 0)}
+                    {formatCurrencyWithDecimals(getOrderGrandTotal(order))}
                   </Typography>
                 </TableCell>
                 <TableCell>
@@ -485,7 +498,7 @@ const OrderManagement: React.FC = () => {
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <Typography variant="h6">Total:</Typography>
                       <Typography variant="h6" color="primary">
-                        {formatCurrencyWithDecimals(selectedOrder.totalAmount || 0)}
+                        {formatCurrencyWithDecimals(getOrderGrandTotal(selectedOrder))}
                       </Typography>
                     </Box>
                   </CardContent>

@@ -2,9 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   Box,
   Button,
-  Card,
-  CardContent,
-  Container,
   Typography,
   Alert,
   Tabs,
@@ -14,33 +11,11 @@ import {
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import PremiumTextField from '../components/common/PremiumTextField';
+import { PageContainer, SurfaceCard, TabPanel } from '../components/common';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { API_CONFIG } from '../config/apiConfig';
 import { useTheme, alpha } from '@mui/material/styles';
-import { COLORS, addAlpha, getGradient } from '../theme/themeColors';
-
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
-}
-
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`auth-tabpanel-${index}`}
-      aria-labelledby={`auth-tab-${index}`}
-      {...other}
-    >
-      {value === index && <Box sx={{ pt: 3 }}>{children}</Box>}
-    </div>
-  );
-}
 
 const GuestAuthPage: React.FC = () => {
   const theme = useTheme();
@@ -224,7 +199,7 @@ const GuestAuthPage: React.FC = () => {
   // Show loading state while checking authentication from localStorage
   if (isInitializing) {
     return (
-      <Container maxWidth="sm">
+      <PageContainer maxWidth="sm" sx={{ justifyContent: 'center', minHeight: '100vh', py: 4, pb: 4 }}>
         <Box
           sx={{
             minHeight: '100vh',
@@ -237,12 +212,12 @@ const GuestAuthPage: React.FC = () => {
         >
           <Typography variant="h6">{t('auth.login.loading')}</Typography>
         </Box>
-      </Container>
+      </PageContainer>
     );
   }
 
   return (
-    <Container maxWidth="sm">
+    <PageContainer maxWidth="sm" sx={{ justifyContent: 'center', minHeight: '100vh', py: 4, pb: 4 }}>
       <Box
         sx={{
           minHeight: '100vh',
@@ -250,18 +225,18 @@ const GuestAuthPage: React.FC = () => {
           alignItems: 'center',
           justifyContent: 'center',
           py: 4,
-          background: theme.palette.mode === 'light' 
-            ? getGradient('white')
+          background: theme.palette.mode === 'light'
+            ? `linear-gradient(180deg, ${alpha(theme.palette.primary.main, 0.04)} 0%, ${theme.palette.background.default} 44%, ${theme.palette.background.paper} 100%)`
             : `linear-gradient(135deg, ${alpha(theme.palette.primary.dark, 0.1)} 0%, transparent 100%)`,
         }}
       >
-        <Card 
+        <SurfaceCard
           elevation={theme.palette.mode === 'light' ? 8 : 4}
           sx={{ 
             width: '100%', 
             maxWidth: 500,
             boxShadow: theme.palette.mode === 'light' 
-              ? `0 2px 8px ${addAlpha(COLORS.SECONDARY, 0.1)}`
+              ? `0 2px 8px ${alpha(theme.palette.secondary.main, 0.1)}`
               : `0 8px 32px -4px ${alpha(theme.palette.primary.main, 0.25)}`,
             borderRadius: 3,
             overflow: 'hidden',
@@ -273,12 +248,12 @@ const GuestAuthPage: React.FC = () => {
               left: 0,
               right: 0,
               height: 4,
-              background: `linear-gradient(90deg, ${COLORS.SECONDARY} 0%, ${COLORS.SECONDARY_HOVER} 100%)`,
+              background: `linear-gradient(90deg, ${theme.palette.secondary.main} 0%, ${theme.palette.secondary.dark} 100%)`,
               zIndex: 1,
             },
           }}
+          contentSx={{ p: 4 }}
         >
-          <CardContent sx={{ p: 4 }}>
             <Typography 
               variant="h4" 
               component="h1" 
@@ -286,7 +261,7 @@ const GuestAuthPage: React.FC = () => {
               align="center"
               sx={{
                 fontWeight: 'bold',
-                color: COLORS.PRIMARY,
+                color: 'primary.main',
                 mb: 1,
               }}
             >
@@ -312,10 +287,10 @@ const GuestAuthPage: React.FC = () => {
 
             <Box 
               sx={{ 
-                borderBottom: `2px solid ${COLORS.SECONDARY}`, 
+                borderBottom: `2px solid ${theme.palette.secondary.main}`, 
                 mt: 3,
                 '& .MuiTabs-indicator': {
-                  backgroundColor: COLORS.SECONDARY,
+                  backgroundColor: 'secondary.main',
                   height: 3,
                 },
               }}
@@ -332,12 +307,12 @@ const GuestAuthPage: React.FC = () => {
                     fontSize: '1rem',
                     color: theme.palette.text.secondary,
                     '&:hover': {
-                      color: COLORS.PRIMARY,
-                      backgroundColor: COLORS.BG_LIGHT,
+                      color: 'primary.main',
+                      backgroundColor: alpha(theme.palette.secondary.main, 0.08),
                     },
                   },
                   '& .Mui-selected': {
-                    color: COLORS.PRIMARY,
+                    color: 'primary.main',
                     fontWeight: 700,
                   },
                 }}
@@ -360,7 +335,7 @@ const GuestAuthPage: React.FC = () => {
             )}
 
             {/* Login Tab */}
-            <TabPanel value={tabValue} index={0}>
+            <TabPanel value={tabValue} index={0} idPrefix="auth" contentSx={{ pt: 3 }}>
               <Box component="form" onSubmit={handleLogin}>
                 <PremiumTextField
                   fullWidth
@@ -410,10 +385,10 @@ const GuestAuthPage: React.FC = () => {
                     fontWeight: 600,
                     textTransform: 'none',
                     borderRadius: 2,
-                    backgroundColor: COLORS.PRIMARY,
-                    color: COLORS.WHITE,
+                    backgroundColor: 'primary.main',
+                    color: 'common.white',
                     '&:hover': {
-                      backgroundColor: COLORS.PRIMARY_HOVER,
+                      backgroundColor: 'primary.dark',
                       transform: 'translateY(-1px)',
                     },
                     '&:active': {
@@ -443,10 +418,10 @@ const GuestAuthPage: React.FC = () => {
                     textTransform: 'none',
                     borderRadius: 2,
                     border: 'none',
-                    backgroundColor: addAlpha(COLORS.SECONDARY, 0.08),
-                    color: COLORS.PRIMARY,
+                    backgroundColor: alpha(theme.palette.secondary.main, 0.08),
+                    color: 'primary.main',
                     '&:hover': {
-                      backgroundColor: addAlpha(COLORS.SECONDARY, 0.14),
+                      backgroundColor: alpha(theme.palette.secondary.main, 0.14),
                       transform: 'translateY(-1px)',
                     },
                     '&:active': {
@@ -468,7 +443,7 @@ const GuestAuthPage: React.FC = () => {
             </TabPanel>
 
             {/* Registration Tab */}
-            <TabPanel value={tabValue} index={1}>
+            <TabPanel value={tabValue} index={1} idPrefix="auth" contentSx={{ pt: 3 }}>
               <Box component="form" onSubmit={handleRegister}>
                 <PremiumTextField
                   fullWidth
@@ -567,10 +542,10 @@ const GuestAuthPage: React.FC = () => {
                     fontWeight: 600,
                     textTransform: 'none',
                     borderRadius: 2,
-                    backgroundColor: COLORS.PRIMARY,
-                    color: COLORS.WHITE,
+                    backgroundColor: 'primary.main',
+                    color: 'common.white',
                     '&:hover': {
-                      backgroundColor: COLORS.PRIMARY_HOVER,
+                      backgroundColor: 'primary.dark',
                       transform: 'translateY(-1px)',
                     },
                     '&:active': {
@@ -597,14 +572,14 @@ const GuestAuthPage: React.FC = () => {
                   component="button" 
                   onClick={() => setTabValue(1)}
                   sx={{
-                    color: COLORS.PRIMARY,
+                    color: 'primary.main',
                     fontWeight: 600,
                     textDecoration: 'underline',
-                    textDecorationColor: COLORS.SECONDARY,
+                    textDecorationColor: 'secondary.main',
                     transition: 'all 0.2s ease',
                     '&:hover': {
-                      textDecorationColor: COLORS.SECONDARY_HOVER,
-                      color: COLORS.PRIMARY_HOVER,
+                      textDecorationColor: 'secondary.dark',
+                      color: 'primary.dark',
                     },
                   }}
                 >
@@ -615,14 +590,14 @@ const GuestAuthPage: React.FC = () => {
                   component="button" 
                   onClick={() => setTabValue(0)}
                   sx={{
-                    color: COLORS.PRIMARY,
+                    color: 'primary.main',
                     fontWeight: 600,
                     textDecoration: 'underline',
-                    textDecorationColor: COLORS.SECONDARY,
+                    textDecorationColor: 'secondary.main',
                     transition: 'all 0.2s ease',
                     '&:hover': {
-                      textDecorationColor: COLORS.SECONDARY_HOVER,
-                      color: COLORS.PRIMARY_HOVER,
+                      textDecorationColor: 'secondary.dark',
+                      color: 'primary.dark',
                     },
                   }}
                 >
@@ -631,10 +606,9 @@ const GuestAuthPage: React.FC = () => {
               )}{' '}
               {t('auth.login.manageReservationsSuffix')}
             </Typography>
-          </CardContent>
-        </Card>
+        </SurfaceCard>
       </Box>
-    </Container>
+    </PageContainer>
   );
 };
 

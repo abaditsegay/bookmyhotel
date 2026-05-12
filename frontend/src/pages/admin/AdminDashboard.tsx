@@ -1,13 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { COLORS, addAlpha, getGradient } from '../../theme/themeColors';
 import {
+  alpha,
   Typography,
   Button,
   Box,
   Chip,
   Tabs,
   Tab,
-  Paper,
   Table,
   TableBody,
   TableCell,
@@ -20,6 +19,7 @@ import {
   TablePagination,
   MenuItem,
   CircularProgress,
+  useTheme,
 } from '@mui/material';
 import {
   Hotel,
@@ -40,6 +40,7 @@ import PremiumSelect from '../../components/common/PremiumSelect';
 import { formatDateForDisplay } from '../../utils/dateUtils';
 
 const AdminDashboard: React.FC = () => {
+  const theme = useTheme();
   const navigate = useNavigate();
   const { token } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -224,7 +225,7 @@ const AdminDashboard: React.FC = () => {
       {/* Page Header */}
       <Box sx={{ mb: 3 }}>
         <Typography variant="h4" component="h1" sx={{ 
-          color: COLORS.PRIMARY,
+          color: 'primary.main',
           fontWeight: 600,
           letterSpacing: '0.5px'
         }}>
@@ -320,16 +321,16 @@ const AdminDashboard: React.FC = () => {
                 <TableHead>
                   <TableRow 
                     sx={{
-                      background: getGradient('slate'),
+                      background: `linear-gradient(135deg, ${theme.palette.grey[900]} 0%, ${theme.palette.grey[800]} 100%)`,
                       '& .MuiTableCell-head': {
-                        color: COLORS.WHITE,
+                        color: 'common.white',
                         fontWeight: 600,
                         fontSize: '0.95rem',
                         letterSpacing: '0.5px',
                         border: 'none',
                         padding: '20px 16px',
                         position: 'relative',
-                        textShadow: `0 1px 2px ${addAlpha(COLORS.BLACK, 0.1)}`,
+                        textShadow: `0 1px 2px ${alpha(theme.palette.common.black, 0.1)}`,
                         '&::after': {
                           content: '""',
                           position: 'absolute',
@@ -337,7 +338,7 @@ const AdminDashboard: React.FC = () => {
                           left: 0,
                           right: 0,
                           height: '3px',
-                          background: getGradient('white')
+                          background: `linear-gradient(90deg, ${alpha(theme.palette.common.white, 0.6)} 0%, ${alpha(theme.palette.common.white, 0.85)} 50%, ${alpha(theme.palette.common.white, 0.6)} 100%)`
                         }
                       }
                     }}
@@ -395,8 +396,8 @@ const AdminDashboard: React.FC = () => {
                           label="Active"
                           size="small"
                           sx={{ 
-                            backgroundColor: COLORS.PRIMARY,
-                            color: COLORS.WHITE
+                            backgroundColor: 'primary.main',
+                            color: 'common.white'
                           }}
                         />
                       </TableCell>
@@ -513,9 +514,9 @@ const AdminDashboard: React.FC = () => {
                 <TableHead>
                   <TableRow 
                     sx={{
-                      background: getGradient('slate'),
+                      background: `linear-gradient(135deg, ${theme.palette.grey[900]} 0%, ${theme.palette.grey[800]} 100%)`,
                       '& .MuiTableCell-head': {
-                        color: COLORS.WHITE,
+                        color: 'common.white',
                         fontWeight: 600,
                         fontSize: '0.95rem',
                         letterSpacing: '0.5px',
@@ -523,7 +524,7 @@ const AdminDashboard: React.FC = () => {
                         border: 'none',
                         padding: '20px 16px',
                         position: 'relative',
-                        textShadow: `0 1px 2px ${addAlpha(COLORS.BLACK, 0.1)}`,
+                        textShadow: `0 1px 2px ${alpha(theme.palette.common.black, 0.1)}`,
                         '&::after': {
                           content: '""',
                           position: 'absolute',
@@ -531,7 +532,7 @@ const AdminDashboard: React.FC = () => {
                           left: 0,
                           right: 0,
                           height: '3px',
-                          background: getGradient('white')
+                          background: `linear-gradient(90deg, ${alpha(theme.palette.common.white, 0.6)} 0%, ${alpha(theme.palette.common.white, 0.85)} 50%, ${alpha(theme.palette.common.white, 0.6)} 100%)`
                         }
                       }
                     }}

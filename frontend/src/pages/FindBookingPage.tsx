@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
-import { COLORS, addAlpha, getGradient } from '../theme/themeColors';
 import {
-  Container,
   Typography,
   Box,
   Alert,
@@ -11,10 +9,12 @@ import {
   useMediaQuery,
   Stack,
 } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import PremiumTextField from '../components/common/PremiumTextField';
 import { useTranslation } from 'react-i18next';
 import StandardCard from '../components/common/StandardCard';
 import StandardButton from '../components/common/StandardButton';
+import { PageContainer } from '../components/common';
 // Icons removed for neutral design
 import { useNavigate } from 'react-router-dom';
 import { hotelApiService } from '../services/hotelApi';
@@ -132,13 +132,13 @@ const FindBookingPage: React.FC = () => {
     <Box
       sx={{
         minHeight: '100vh',
-        background: theme.palette.mode === 'dark' 
-          ? getGradient('dark')
-          : getGradient('white'),
+        background: theme.palette.mode === 'dark'
+          ? `linear-gradient(135deg, ${theme.palette.background.default} 0%, ${theme.palette.grey[900]} 100%)`
+          : `linear-gradient(180deg, ${alpha(theme.palette.primary.main, 0.04)} 0%, ${theme.palette.background.default} 42%, ${theme.palette.background.paper} 100%)`,
         py: 4,
       }}
     >
-      <Container maxWidth="lg">
+      <PageContainer maxWidth="lg" sx={{ py: 4, pb: 4 }}>
       {/* Professional Search Form */}
       <StandardCard 
         cardVariant="elevated"
@@ -154,7 +154,7 @@ const FindBookingPage: React.FC = () => {
               p: 2,
               background: theme.palette.background.default,
               borderRadius: 0,
-              border: `1px solid ${addAlpha(COLORS.BORDER_LIGHT, 0.3)}`,
+              border: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
             }}
           >
             <Typography 
@@ -201,8 +201,8 @@ const FindBookingPage: React.FC = () => {
                   mt: 3,
                   borderRadius: 0,
                   backgroundColor: theme.palette.mode === 'dark' 
-                    ? addAlpha(COLORS.ERROR, 0.1)
-                    : addAlpha(COLORS.ERROR, 0.04),
+                    ? alpha(theme.palette.error.main, 0.1)
+                    : alpha(theme.palette.error.main, 0.04),
                 }}
               >
                 {error}
@@ -248,7 +248,7 @@ const FindBookingPage: React.FC = () => {
                 p: 2,
                 background: theme.palette.background.default,
                 borderRadius: 0,
-                border: `1px solid ${addAlpha(COLORS.BORDER_LIGHT, 0.3)}`,
+                border: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
               }}
             >
               <Box>
@@ -256,7 +256,7 @@ const FindBookingPage: React.FC = () => {
                   variant="h4" 
                   sx={{ 
                     fontWeight: 'bold',
-                    color: COLORS.PRIMARY,
+                    color: 'primary.main',
                     mb: 1,
                   }}
                 >
@@ -296,7 +296,7 @@ const FindBookingPage: React.FC = () => {
                     p: 2,
                     borderRadius: 0,
                     background: theme.palette.background.paper,
-                    border: `1px solid ${addAlpha(COLORS.BORDER_LIGHT, 0.3)}`,
+                    border: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
                     boxShadow: 'none',
                   }}
                 >
@@ -313,7 +313,7 @@ const FindBookingPage: React.FC = () => {
                     p: 2,
                     borderRadius: 0,
                     background: theme.palette.background.paper,
-                    border: `1px solid ${addAlpha(COLORS.BORDER_LIGHT, 0.3)}`,
+                    border: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
                     boxShadow: 'none',
                   }}
                 >
@@ -330,7 +330,7 @@ const FindBookingPage: React.FC = () => {
                     p: 2,
                     borderRadius: 0,
                     background: theme.palette.background.paper,
-                    border: `1px solid ${addAlpha(COLORS.BORDER_LIGHT, 0.3)}`,
+                    border: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
                     boxShadow: 'none',
                   }}
                 >
@@ -353,7 +353,7 @@ const FindBookingPage: React.FC = () => {
                     p: 2,
                     borderRadius: 0,
                     background: theme.palette.background.paper,
-                    border: `1px solid ${addAlpha(COLORS.BORDER_LIGHT, 0.3)}`,
+                    border: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
                     boxShadow: 'none',
                   }}
                 >
@@ -370,7 +370,7 @@ const FindBookingPage: React.FC = () => {
                     p: 2,
                     borderRadius: 0,
                     background: theme.palette.background.paper,
-                    border: `1px solid ${addAlpha(COLORS.BORDER_LIGHT, 0.3)}`,
+                    border: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
                     boxShadow: 'none',
                   }}
                 >
@@ -394,7 +394,7 @@ const FindBookingPage: React.FC = () => {
                       p: 2,
                       borderRadius: 0,
                       background: theme.palette.background.paper,
-                      border: `1px solid ${addAlpha(COLORS.BORDER_LIGHT, 0.3)}`,
+                      border: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
                       boxShadow: 'none',
                     }}
                   >
@@ -445,7 +445,7 @@ const FindBookingPage: React.FC = () => {
               p: 2,
               background: theme.palette.background.default,
               borderRadius: 0,
-              border: `1px solid ${addAlpha(COLORS.BORDER_LIGHT, 0.3)}`,
+              border: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
             }}
           >
             <Typography 
@@ -463,7 +463,7 @@ const FindBookingPage: React.FC = () => {
           </Typography>
         </Box>
       </StandardCard>
-      </Container>
+      </PageContainer>
     </Box>
   );
 };

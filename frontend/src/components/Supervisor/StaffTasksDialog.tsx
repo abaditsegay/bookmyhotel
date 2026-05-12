@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { alpha } from '@mui/material/styles';
 import {
   Dialog,
   DialogTitle,
@@ -16,11 +17,11 @@ import {
   Typography,
   Box,
   Alert,
-  CircularProgress
+  CircularProgress,
+  useTheme
 } from '@mui/material';
 import { operationsSupervisorApi } from '../../services/operationsSupervisorApi';
 import { HousekeepingTask, HousekeepingStaff, StaffPerformance } from '../../types/operations';
-import { COLORS, addAlpha } from '../../theme/themeColors';
 
 interface StaffTasksDialogProps {
   open: boolean;
@@ -33,6 +34,7 @@ const StaffTasksDialog: React.FC<StaffTasksDialogProps> = ({
   onClose,
   staff
 }) => {
+  const theme = useTheme();
   const [tasks, setTasks] = useState<HousekeepingTask[]>([]);
   const [performance, setPerformance] = useState<StaffPerformance | null>(null);
   const [loading, setLoading] = useState(false);
@@ -80,7 +82,7 @@ const StaffTasksDialog: React.FC<StaffTasksDialogProps> = ({
     <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
       <DialogTitle sx={{ 
         textAlign: 'center', 
-        color: COLORS.PRIMARY,
+        color: 'primary.main',
         borderBottom: '1px solid',
         borderColor: 'divider'
       }}>
@@ -102,7 +104,7 @@ const StaffTasksDialog: React.FC<StaffTasksDialogProps> = ({
             {/* Performance Summary */}
             {performance && (
               <Box sx={{ mb: 3 }}>
-                <Typography variant="h6" gutterBottom sx={{ color: COLORS.PRIMARY }}>
+                <Typography variant="h6" gutterBottom sx={{ color: 'primary.main' }}>
                   Performance Summary
                 </Typography>
                 <Box sx={{ 
@@ -110,10 +112,10 @@ const StaffTasksDialog: React.FC<StaffTasksDialogProps> = ({
                   gap: 3, 
                   mb: 2,
                   p: 2,
-                  backgroundColor: addAlpha(COLORS.PRIMARY, 0.05),
+                  backgroundColor: alpha(theme.palette.primary.main, 0.05),
                   borderRadius: 1,
                   border: '1px solid',
-                  borderColor: addAlpha(COLORS.PRIMARY, 0.2)
+                  borderColor: alpha(theme.palette.primary.main, 0.2)
                 }}>
                   <Typography variant="body2">
                     <strong>Tasks Completed:</strong> {performance.tasksCompleted}
@@ -132,7 +134,7 @@ const StaffTasksDialog: React.FC<StaffTasksDialogProps> = ({
             )}
 
             {/* Tasks Table */}
-            <Typography variant="h6" gutterBottom sx={{ color: COLORS.PRIMARY }}>
+            <Typography variant="h6" gutterBottom sx={{ color: 'primary.main' }}>
               Recent Tasks
             </Typography>
             <TableContainer component={Paper}>
@@ -140,10 +142,10 @@ const StaffTasksDialog: React.FC<StaffTasksDialogProps> = ({
                 <TableHead>
                   <TableRow
                     sx={{
-                      background: COLORS.GRADIENT_SLATE,
-                      boxShadow: `0 4px 12px ${addAlpha(COLORS.SLATE_500, 0.15)}`,
+                      background: `linear-gradient(135deg, ${theme.palette.grey[900]} 0%, ${theme.palette.grey[800]} 100%)`,
+                      boxShadow: `0 4px 12px ${alpha(theme.palette.grey[500], 0.15)}`,
                       '& .MuiTableCell-head': {
-                        color: COLORS.WHITE,
+                        color: 'common.white',
                         fontWeight: 600,
                         fontSize: '0.95rem',
                         letterSpacing: '0.5px',
@@ -151,7 +153,7 @@ const StaffTasksDialog: React.FC<StaffTasksDialogProps> = ({
                         border: 'none',
                         padding: '20px 16px',
                         position: 'relative',
-                        textShadow: `0 1px 2px ${addAlpha(COLORS.BLACK, 0.1)}`,
+                        textShadow: `0 1px 2px ${alpha(theme.palette.common.black, 0.1)}`,
                         '&::after': {
                           content: '""',
                           position: 'absolute',
@@ -159,7 +161,7 @@ const StaffTasksDialog: React.FC<StaffTasksDialogProps> = ({
                           left: 0,
                           right: 0,
                           height: '3px',
-                          background: `linear-gradient(90deg, ${addAlpha(COLORS.WHITE, 0.6)} 0%, ${addAlpha(COLORS.WHITE, 0.8)} 50%, ${addAlpha(COLORS.WHITE, 0.6)} 100%)`
+                          background: `linear-gradient(90deg, ${alpha(theme.palette.common.white, 0.6)} 0%, ${alpha(theme.palette.common.white, 0.8)} 50%, ${alpha(theme.palette.common.white, 0.6)} 100%)`
                         }
                       }
                     }}
@@ -219,11 +221,11 @@ const StaffTasksDialog: React.FC<StaffTasksDialogProps> = ({
           onClick={onClose}
           variant="outlined"
           sx={{
-            borderColor: COLORS.PRIMARY,
-            color: COLORS.PRIMARY,
+            borderColor: 'primary.main',
+            color: 'primary.main',
             '&:hover': {
-              backgroundColor: addAlpha(COLORS.PRIMARY, 0.1),
-              borderColor: COLORS.PRIMARY
+              backgroundColor: alpha(theme.palette.primary.main, 0.1),
+              borderColor: 'primary.main'
             }
           }}
         >

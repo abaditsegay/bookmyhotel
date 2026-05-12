@@ -80,7 +80,7 @@ class EnhancedApiService {
       ...fetchOptions
     } = options;
 
-    const url = `${this.baseUrl}${endpoint}`;
+    const url = this.buildUrl(endpoint);
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);
 
@@ -131,7 +131,9 @@ class EnhancedApiService {
 
           // Handle regular response
           if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            const httpError = new Error(`HTTP ${response.status}: ${response.statusText}`) as Error & { status?: number };
+            httpError.status = response.status;
+            throw httpError;
           }
 
           const result = await response.json();
@@ -152,7 +154,7 @@ class EnhancedApiService {
           lastError = error;
           
           // Don't retry if request was aborted or if it's the last attempt
-          if (error.name === 'AbortError' || attempt === retries) {
+          if (error.name === 'AbortError' || !this.shouldRetry(error) || attempt === retries) {
             throw error;
           }
           
@@ -167,6 +169,37 @@ class EnhancedApiService {
       clearTimeout(timeoutId);
       this.setLoading(loadingKey, false);
     }
+  }
+
+  /**
+   * Build a safe request URL regardless of whether callers pass slash-prefixed endpoints.
+   */
+  private buildUrl(endpoint: string): string {
+    if (/^https?:\/\//i.test(endpoint)) {
+      return endpoint;
+    }
+
+    const normalizedBaseUrl = this.baseUrl.endsWith('/')
+      ? this.baseUrl.slice(0, -1)
+      : this.baseUrl;
+    const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+
+    return `${normalizedBaseUrl}${normalizedEndpoint}`;
+  }
+
+  /**
+   * Retry only transient failures; authorization and validation errors should fail immediately.
+   */
+  private shouldRetry(error: unknown): boolean {
+    const status = typeof error === 'object' && error !== null && 'status' in error
+      ? Number((error as { status?: number }).status)
+      : undefined;
+
+    if (typeof status === 'number' && !Number.isNaN(status)) {
+      return status === 408 || status === 429 || status >= 500;
+    }
+
+    return true;
   }
 
   /**

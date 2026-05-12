@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { COLORS } from '../../theme/themeColors';
 import {
   Paper,
   Table,
@@ -24,6 +23,7 @@ import {
   MenuItem,
   Grid,
   Avatar,
+  useTheme,
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -54,6 +54,7 @@ interface TenantFilters {
 }
 
 const TenantManagementAdmin: React.FC = () => {
+  const theme = useTheme();
   const { token } = useAuth();
   const navigate = useNavigate();
   const [tenants, setTenants] = useState<TenantDTO[]>([]);
@@ -265,6 +266,21 @@ const TenantManagementAdmin: React.FC = () => {
     setPage(0);
   };
 
+  const adminTableHeaderSx = {
+    background: `linear-gradient(135deg, ${theme.palette.background.default} 0%, ${theme.palette.grey[50]} 100%)`,
+    borderBottom: `2px solid ${theme.palette.secondary.main}`,
+    '& .MuiTableCell-head': {
+      color: 'primary.main',
+      fontWeight: 700,
+      fontSize: '0.875rem',
+      letterSpacing: '0.5px',
+      textTransform: 'uppercase',
+      border: 'none',
+      padding: '20px 16px',
+      position: 'relative',
+    },
+  } as const;
+
   if (!token) {
     return (
       <Box sx={{ width: '100%', p: 3 }}>
@@ -281,7 +297,7 @@ const TenantManagementAdmin: React.FC = () => {
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
           <Typography variant="h5" component="h1" sx={{ 
             flexGrow: 1,
-            color: COLORS.PRIMARY,
+            color: 'primary.main',
             fontWeight: 600,
             letterSpacing: '0.5px'
           }}>
@@ -357,22 +373,7 @@ const TenantManagementAdmin: React.FC = () => {
           <TableContainer>
             <Table>
               <TableHead>
-                <TableRow
-                  sx={{
-                    background: `linear-gradient(135deg, ${COLORS.BG_DEFAULT} 0%, ${COLORS.BG_LIGHT} 100%)`,
-                    borderBottom: `2px solid ${COLORS.SECONDARY}`,
-                    '& .MuiTableCell-head': {
-                      color: COLORS.PRIMARY,
-                      fontWeight: 700,
-                      fontSize: '0.875rem',
-                      letterSpacing: '0.5px',
-                      textTransform: 'uppercase',
-                      border: 'none',
-                      padding: '20px 16px',
-                      position: 'relative'
-                    }
-                  }}
-                >
+                <TableRow sx={adminTableHeaderSx}>
                   <TableCell>Tenant</TableCell>
                   <TableCell>Subdomain</TableCell>
                   <TableCell>Description</TableCell>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { COLORS } from '../../theme/themeColors';
 import { formatEthiopianPhone } from '../../utils/phoneUtils';
 import {
+  alpha,
   Box,
   Paper,
   Typography,
@@ -25,6 +25,7 @@ import {
   Grid,
   Tooltip,
   Snackbar,
+  useTheme,
 } from '@mui/material';
 import {
   Edit as EditIcon,
@@ -32,12 +33,10 @@ import {
   Add as AddIcon,
   FilterList as FilterListIcon,
   LockReset as LockResetIcon,
-  ArrowBack as ArrowBackIcon,
   ToggleOn as ToggleOnIcon,
   ToggleOff as ToggleOffIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
 import { 
   adminApiService, 
   UserManagementResponse, 
@@ -56,8 +55,8 @@ interface UserFilters {
 }
 
 const UserManagementAdmin: React.FC = () => {
+  const theme = useTheme();
   const { token, user: currentUser } = useAuth();
-  const navigate = useNavigate();
   const [users, setUsers] = useState<UserManagementResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -391,7 +390,7 @@ const UserManagementAdmin: React.FC = () => {
       <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
         <Typography variant="h4" component="h1" sx={{ 
           flexGrow: 1,
-          color: COLORS.PRIMARY,
+          color: 'primary.main',
           fontWeight: 600,
           letterSpacing: '0.5px'
         }}>
@@ -467,16 +466,17 @@ const UserManagementAdmin: React.FC = () => {
             <TableHead>
               <TableRow
                 sx={{
-                  background: `linear-gradient(135deg, ${COLORS.BG_DEFAULT} 0%, ${COLORS.BG_LIGHT} 50%, ${COLORS.BG_DEFAULT} 100%)`,
-                  borderBottom: `2px solid ${COLORS.SECONDARY}`,
+                  background: `linear-gradient(135deg, ${theme.palette.background.default} 0%, ${theme.palette.grey[50]} 50%, ${theme.palette.background.default} 100%)`,
+                  borderBottom: `2px solid ${theme.palette.secondary.main}`,
                   '& .MuiTableCell-head': {
-                    color: COLORS.PRIMARY,
+                    color: 'primary.main',
                     fontWeight: 700,
                     fontSize: '0.95rem',
                     letterSpacing: '0.5px',
                     textTransform: 'uppercase',
                     border: 'none',
                     padding: '20px 16px',
+                    boxShadow: `inset 0 -1px 0 ${alpha(theme.palette.primary.main, 0.08)}`,
                   }
                 }}
               >

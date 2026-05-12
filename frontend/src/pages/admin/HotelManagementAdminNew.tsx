@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
+  alpha,
   Container,
   Typography,
   Box,
   Button,
   Paper,
-  TextField,
   Grid,
   Table,
   TableBody,
@@ -19,7 +18,6 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogContentText,
   DialogActions,
   Alert,
   CircularProgress,
@@ -28,10 +26,10 @@ import {
   Tabs,
   Tab,
   Card,
-  CardContent
+  CardContent,
+  useTheme,
 } from '@mui/material';
 import { 
-  ArrowBack as ArrowBackIcon, 
   Visibility as ViewIcon, 
   Edit as EditIcon, 
   ToggleOn as ToggleOnIcon, 
@@ -46,7 +44,6 @@ import { adminApiService, HotelDTO, UpdateHotelRequest } from '../../services/ad
 import HotelEditDialog from '../../components/hotel/HotelEditDialog';
 import PremiumTextField from '../../components/common/PremiumTextField';
 import PremiumSelect from '../../components/common/PremiumSelect';
-import { COLORS, addAlpha, getGradient } from '../../theme/themeColors';
 
 interface Hotel extends HotelDTO {}
 
@@ -87,7 +84,7 @@ interface RegistrationStatistics {
 }
 
 const HotelManagementAdmin: React.FC = () => {
-  const navigate = useNavigate();
+  const theme = useTheme();
   const { token } = useAuth();
 
   // Tab state
@@ -437,6 +434,58 @@ const HotelManagementAdmin: React.FC = () => {
     CANCELLED: 'default',
   } as const;
 
+  const adminTableHeaderSx = {
+    background: `linear-gradient(135deg, ${theme.palette.grey[900]} 0%, ${theme.palette.grey[700]} 100%)`,
+    boxShadow: `0 4px 12px ${alpha(theme.palette.grey[900], 0.15)}`,
+    '& .MuiTableCell-head': {
+      color: theme.palette.common.white,
+      fontWeight: 600,
+      fontSize: '0.95rem',
+      letterSpacing: '0.5px',
+      textTransform: 'uppercase',
+      border: 'none',
+      padding: '20px 16px',
+      position: 'relative',
+      textShadow: `0 1px 2px ${alpha(theme.palette.common.black, 0.1)}`,
+      '&::after': {
+        content: '""',
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: '3px',
+        background: `linear-gradient(90deg, ${alpha(theme.palette.common.white, 0.6)} 0%, ${alpha(theme.palette.common.white, 0.8)} 50%, ${alpha(theme.palette.common.white, 0.6)} 100%)`
+      }
+    }
+  };
+
+  const reviewActionSx = {
+    borderColor: theme.palette.primary.main,
+    color: theme.palette.primary.main,
+    '&:hover': {
+      borderColor: theme.palette.primary.dark,
+      backgroundColor: alpha(theme.palette.primary.main, 0.08)
+    }
+  };
+
+  const reviewDialogTitleSx = {
+    borderBottom: `2px solid ${theme.palette.secondary.main}`,
+    pb: 2,
+    fontWeight: 600,
+    color: theme.palette.primary.main,
+  };
+
+  const sectionTitleSx = {
+    color: theme.palette.primary.main,
+    fontWeight: 600,
+  };
+
+  const dialogActionsSx = {
+    px: 3,
+    py: 2,
+    borderTop: `1px solid ${alpha(theme.palette.divider, 0.9)}`,
+  };
+
   // View hotel details
   const handleViewHotel = (hotel: Hotel) => {
     setSelectedHotel(hotel);
@@ -587,32 +636,7 @@ const HotelManagementAdmin: React.FC = () => {
             <TableContainer component={Paper}>
               <Table>
                 <TableHead>
-                  <TableRow
-                    sx={{
-                      background: getGradient('slate'),
-                      boxShadow: `0 4px 12px ${addAlpha(COLORS.SLATE_500, 0.15)}`,
-                      '& .MuiTableCell-head': {
-                        color: COLORS.WHITE,
-                        fontWeight: 600,
-                        fontSize: '0.95rem',
-                        letterSpacing: '0.5px',
-                        textTransform: 'uppercase',
-                        border: 'none',
-                        padding: '20px 16px',
-                        position: 'relative',
-                        textShadow: `0 1px 2px ${addAlpha(COLORS.BLACK, 0.1)}`,
-                        '&::after': {
-                          content: '""',
-                          position: 'absolute',
-                          bottom: 0,
-                          left: 0,
-                          right: 0,
-                          height: '3px',
-                          background: `linear-gradient(90deg, ${addAlpha(COLORS.WHITE, 0.6)} 0%, ${addAlpha(COLORS.WHITE, 0.8)} 50%, ${addAlpha(COLORS.WHITE, 0.6)} 100%)`
-                        }
-                      }
-                    }}
-                  >
+                  <TableRow sx={adminTableHeaderSx}>
                     <TableCell>Hotel Name</TableCell>
                     <TableCell>Location</TableCell>
                     <TableCell>Contact</TableCell>
@@ -790,32 +814,7 @@ const HotelManagementAdmin: React.FC = () => {
             <TableContainer component={Paper}>
               <Table>
                 <TableHead>
-                  <TableRow
-                    sx={{
-                      background: getGradient('slate'),
-                      boxShadow: `0 4px 12px ${addAlpha(COLORS.SLATE_500, 0.15)}`,
-                      '& .MuiTableCell-head': {
-                        color: COLORS.WHITE,
-                        fontWeight: 600,
-                        fontSize: '0.95rem',
-                        letterSpacing: '0.5px',
-                        textTransform: 'uppercase',
-                        border: 'none',
-                        padding: '20px 16px',
-                        position: 'relative',
-                        textShadow: `0 1px 2px ${addAlpha(COLORS.BLACK, 0.1)}`,
-                        '&::after': {
-                          content: '""',
-                          position: 'absolute',
-                          bottom: 0,
-                          left: 0,
-                          right: 0,
-                          height: '3px',
-                          background: `linear-gradient(90deg, ${addAlpha(COLORS.WHITE, 0.6)} 0%, ${addAlpha(COLORS.WHITE, 0.8)} 50%, ${addAlpha(COLORS.WHITE, 0.6)} 100%)`
-                        }
-                      }
-                    }}
-                  >
+                  <TableRow sx={adminTableHeaderSx}>
                     <TableCell>Hotel Name</TableCell>
                     <TableCell>Contact Person</TableCell>
                     <TableCell>Email</TableCell>
@@ -853,14 +852,7 @@ const HotelManagementAdmin: React.FC = () => {
                           variant="outlined"
                           startIcon={<ReviewIcon />}
                           onClick={() => viewRegistration(registration)}
-                          sx={{
-                            borderColor: COLORS.PRIMARY,
-                            color: COLORS.PRIMARY,
-                            '&:hover': {
-                              borderColor: COLORS.PRIMARY_PRESSED,
-                              backgroundColor: COLORS.SLATE_50
-                            }
-                          }}
+                          sx={reviewActionSx}
                         >
                           Review
                         </Button>
@@ -1044,21 +1036,14 @@ const HotelManagementAdmin: React.FC = () => {
 
         {/* Registration Review Dialog */}
         <Dialog open={registrationViewDialogOpen} onClose={() => setRegistrationViewDialogOpen(false)} maxWidth="md" fullWidth>
-          <DialogTitle
-            sx={{
-              borderBottom: `2px solid ${COLORS.SECONDARY}`,
-              pb: 2,
-              fontWeight: 600,
-              color: COLORS.PRIMARY
-            }}
-          >
+          <DialogTitle sx={reviewDialogTitleSx}>
             Review Hotel Registration
           </DialogTitle>
           <DialogContent>
             {selectedRegistration && (
               <Grid container spacing={2} sx={{ mt: 1 }}>
                 <Grid item xs={12}>
-                  <Typography variant="subtitle2" sx={{ color: COLORS.PRIMARY, fontWeight: 600, mb: 2 }}>
+                  <Typography variant="subtitle2" sx={{ ...sectionTitleSx, mb: 2 }}>
                     Hotel Information
                   </Typography>
                 </Grid>
@@ -1237,7 +1222,7 @@ const HotelManagementAdmin: React.FC = () => {
                 {selectedRegistration.status === 'PENDING' && (
                   <>
                     <Grid item xs={12}>
-                      <Typography variant="subtitle2" sx={{ color: COLORS.PRIMARY, fontWeight: 600, mt: 2, mb: 1 }}>
+                      <Typography variant="subtitle2" sx={{ ...sectionTitleSx, mt: 2, mb: 1 }}>
                         Review Actions
                       </Typography>
                     </Grid>
@@ -1280,10 +1265,10 @@ const HotelManagementAdmin: React.FC = () => {
               </Grid>
             )}
           </DialogContent>
-          <DialogActions sx={{ px: 3, py: 2, borderTop: `1px solid ${COLORS.BORDER_LIGHT}` }}>
+          <DialogActions sx={dialogActionsSx}>
             <Button 
               onClick={() => setRegistrationViewDialogOpen(false)}
-              sx={{ color: COLORS.TEXT_SECONDARY }}
+              sx={{ color: 'text.secondary' }}
             >
               Close
             </Button>
@@ -1296,10 +1281,10 @@ const HotelManagementAdmin: React.FC = () => {
                   onClick={handleRejectRegistration}
                   disabled={!rejectionReason.trim()}
                   sx={{
-                    borderColor: COLORS.ERROR,
+                    borderColor: 'error.main',
                     '&:hover': {
-                      backgroundColor: COLORS.BG_ERROR_LIGHT,
-                      borderColor: COLORS.ERROR
+                      backgroundColor: (buttonTheme) => alpha(buttonTheme.palette.error.main, 0.08),
+                      borderColor: 'error.main'
                     }
                   }}
                 >

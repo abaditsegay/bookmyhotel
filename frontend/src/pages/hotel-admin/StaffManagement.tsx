@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { COLORS } from '../../theme/themeColors';
 import {
+  alpha,
   Paper,
   Table,
   TableBody,
@@ -27,6 +27,7 @@ import {
   FormControlLabel,
   Checkbox,
   FormGroup,
+  useTheme,
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -51,6 +52,7 @@ interface StaffManagementProps {
 }
 
 const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) => {
+  const theme = useTheme();
   const { token } = useAuth();
   const navigate = useNavigate();
   const [staff, setStaff] = useState<StaffResponse[]>([]);
@@ -349,12 +351,14 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
               <TableHead>
                 <TableRow
                   sx={{
-                    background: `linear-gradient(135deg, ${COLORS.BG_DEFAULT} 0%, ${COLORS.BG_LIGHT} 50%, ${COLORS.BG_DEFAULT} 100%)`,
-                    borderBottom: `2px solid ${COLORS.SECONDARY}`,
+                    background: `linear-gradient(135deg, ${theme.palette.background.default} 0%, ${theme.palette.grey[50]} 50%, ${theme.palette.background.default} 100%)`,
+                    borderBottom: `2px solid ${theme.palette.secondary.main}`,
                     '& .MuiTableCell-head': {
-                      color: COLORS.PRIMARY,
+                      color: 'primary.main',
                       fontWeight: 700,
                       textTransform: 'uppercase',
+                      letterSpacing: '0.4px',
+                      boxShadow: `inset 0 -1px 0 ${alpha(theme.palette.primary.main, 0.08)}`,
                     }
                   }}
                 >

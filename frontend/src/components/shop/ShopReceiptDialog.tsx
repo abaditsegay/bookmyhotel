@@ -97,12 +97,15 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
     })}`;
   };
 
-  const subtotalAmount = order.totalAmount || 0;
+  const subtotalAmount = (order.items || []).reduce((sum, item) => {
+    const lineTotal = item.totalPrice ?? ((item.unitPrice || 0) * (item.quantity || 0));
+    return sum + lineTotal;
+  }, 0);
   const vatAmount = order.vatAmount || 0;
   const serviceTaxAmount = order.serviceTaxAmount || 0;
   const taxAmount = order.taxAmount != null ? order.taxAmount : vatAmount + serviceTaxAmount;
   const cityTaxAmount = Math.max(0, taxAmount - vatAmount - serviceTaxAmount);
-  const totalWithTax = subtotalAmount + taxAmount;
+  const totalWithTax = subtotalAmount > 0 ? subtotalAmount + taxAmount : (order.totalAmount || 0);
 
   const calculateRatePercent = (amount: number) => {
     if (subtotalAmount <= 0) {

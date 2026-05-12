@@ -8,6 +8,7 @@ import {
   useMediaQuery,
   Divider,
 } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import {
   Hotel as HotelIcon,
   Search as SearchIcon,
@@ -27,7 +28,6 @@ import StandardButton from '../components/common/StandardButton';
 import { StandardLoading, StandardError, ErrorBoundary } from '../components/common';
 import { hotelApiService } from '../services/hotelApi';
 import { HotelSearchRequest } from '../types/hotel';
-import { COLORS, addAlpha, getGradient } from '../theme/themeColors';
 
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
@@ -79,15 +79,15 @@ const LandingPage: React.FC = () => {
       sx={{
         minHeight: '100vh',
         background: theme.palette.mode === 'dark'
-          ? getGradient('dark')
-          : getGradient('white'),
+          ? `linear-gradient(135deg, ${theme.palette.background.default} 0%, ${theme.palette.grey[900]} 100%)`
+          : `linear-gradient(180deg, ${alpha(theme.palette.primary.main, 0.04)} 0%, ${theme.palette.background.default} 42%, ${theme.palette.background.paper} 100%)`,
       }}
     >
       {/* Hero Section */}
       <Box
         sx={{
-          background: getGradient('primary'),
-          color: '#fff',
+          background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+          color: 'common.white',
           py: isMobile ? 5 : 8,
           position: 'relative',
           overflow: 'hidden',
@@ -195,11 +195,11 @@ const LandingPage: React.FC = () => {
                 overflow: 'hidden',
                 border: 'none',
                 borderRadius: 4,
-                background: `linear-gradient(145deg, ${COLORS.PRIMARY} 0%, ${COLORS.PRIMARY_HOVER} 50%, #1a3a5c 100%)`,
+                background: `linear-gradient(145deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 50%, ${alpha(theme.palette.primary.dark, 0.94)} 100%)`,
                 transition: 'transform 0.3s ease, box-shadow 0.3s ease',
                 '&:hover': {
                   transform: 'translateY(-4px)',
-                  boxShadow: `0 12px 40px ${addAlpha(COLORS.PRIMARY, 0.4)}`,
+                  boxShadow: `0 12px 40px ${alpha(theme.palette.primary.main, 0.4)}`,
                 },
               }}
             >
@@ -222,14 +222,14 @@ const LandingPage: React.FC = () => {
                     mb: 2.5,
                   }}
                 >
-                  <HandshakeIcon sx={{ fontSize: 40, color: COLORS.WHITE }} />
+                  <HandshakeIcon sx={{ fontSize: 40, color: 'common.white' }} />
                 </Box>
 
-                <Typography variant="h5" sx={{ fontWeight: 800, color: COLORS.WHITE, mb: 2 }}>
+                <Typography variant="h5" sx={{ fontWeight: 800, color: 'common.white', mb: 2 }}>
                   {t('landing.partner.title')}
                 </Typography>
 
-                <Typography variant="body1" sx={{ mb: 4, lineHeight: 1.7, color: addAlpha(COLORS.WHITE, 0.85), maxWidth: 400 }}>
+                <Typography variant="body1" sx={{ mb: 4, lineHeight: 1.7, color: alpha(theme.palette.common.white, 0.85), maxWidth: 400 }}>
                   {t('landing.partner.description')}
                 </Typography>
 
@@ -243,15 +243,15 @@ const LandingPage: React.FC = () => {
                     px: 5,
                     fontWeight: 700,
                     fontSize: '0.95rem',
-                    backgroundColor: `${COLORS.WHITE} !important`,
-                    color: `${COLORS.PRIMARY} !important`,
+                    backgroundColor: `${theme.palette.common.white} !important`,
+                    color: `${theme.palette.primary.main} !important`,
                     backgroundImage: 'none !important',
                     borderRadius: 3,
-                    boxShadow: `0 4px 16px ${addAlpha(COLORS.BLACK, 0.15)}`,
+                    boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.15)}`,
                     '&:hover': {
-                      backgroundColor: `${addAlpha(COLORS.WHITE, 0.9)} !important`,
+                      backgroundColor: `${alpha(theme.palette.common.white, 0.9)} !important`,
                       backgroundImage: 'none !important',
-                      boxShadow: `0 6px 24px ${addAlpha(COLORS.BLACK, 0.2)}`,
+                      boxShadow: `0 6px 24px ${alpha(theme.palette.common.black, 0.2)}`,
                     },
                   }}
                 >
@@ -268,8 +268,8 @@ const LandingPage: React.FC = () => {
               sx={{
                 height: '100%',
                 background: theme.palette.mode === 'dark'
-                  ? addAlpha(COLORS.SECONDARY, 0.08)
-                  : addAlpha(COLORS.SECONDARY, 0.03),
+                  ? alpha(theme.palette.secondary.main, 0.08)
+                  : alpha(theme.palette.secondary.main, 0.03),
               }}
             >
               <Box sx={{ p: isMobile ? 3 : 4 }}>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { alpha } from '@mui/material/styles';
 import {
   Box,
   Grid,
@@ -28,7 +29,8 @@ import {
   MenuItem,
   TablePagination,
   LinearProgress,
-  Alert
+  Alert,
+  useTheme
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -47,7 +49,6 @@ import {
 } from '@mui/icons-material';
 import TokenManager from '../../utils/tokenManager';
 import { API_CONFIG } from '../../config/apiConfig';
-import { COLORS, addAlpha } from '../../theme/themeColors';
 
 const API_BASE_URL = API_CONFIG.SERVER_URL;
 
@@ -71,6 +72,7 @@ interface StaffDashboardProps {
 }
 
 const StaffDashboard: React.FC<StaffDashboardProps> = ({ currentUserRole = 'OPERATIONAL_ADMIN' }) => {
+  const theme = useTheme();
   const [staffMembers, setStaffMembers] = useState<StaffMember[]>([]);
   const [filteredStaff, setFilteredStaff] = useState<StaffMember[]>([]);
   const [loading, setLoading] = useState(true);
@@ -352,9 +354,9 @@ const StaffDashboard: React.FC<StaffDashboardProps> = ({ currentUserRole = 'OPER
               <TableHead>
                 <TableRow
                   sx={{
-                    background: COLORS.GRADIENT_SLATE,
+                    background: `linear-gradient(135deg, ${theme.palette.grey[900]} 0%, ${theme.palette.grey[800]} 100%)`,
                     '& .MuiTableCell-head': {
-                      color: COLORS.WHITE,
+                      color: 'common.white',
                       fontWeight: 600,
                       fontSize: '0.95rem',
                       letterSpacing: '0.5px',
@@ -362,7 +364,7 @@ const StaffDashboard: React.FC<StaffDashboardProps> = ({ currentUserRole = 'OPER
                       border: 'none',
                       padding: '20px 16px',
                       position: 'relative',
-                      textShadow: `0 1px 2px ${addAlpha(COLORS.BLACK, 0.1)}`,
+                      textShadow: `0 1px 2px ${alpha(theme.palette.common.black, 0.1)}`,
                       '&::after': {
                         content: '""',
                         position: 'absolute',
@@ -370,7 +372,7 @@ const StaffDashboard: React.FC<StaffDashboardProps> = ({ currentUserRole = 'OPER
                         left: 0,
                         right: 0,
                         height: '3px',
-                        background: `linear-gradient(90deg, ${addAlpha(COLORS.WHITE, 0.6)} 0%, ${addAlpha(COLORS.WHITE, 0.8)} 50%, ${addAlpha(COLORS.WHITE, 0.6)} 100%)`
+                        background: `linear-gradient(90deg, ${alpha(theme.palette.common.white, 0.6)} 0%, ${alpha(theme.palette.common.white, 0.8)} 50%, ${alpha(theme.palette.common.white, 0.6)} 100%)`
                       }
                     }
                   }}

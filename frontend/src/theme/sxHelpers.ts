@@ -1,7 +1,6 @@
-import { SxProps, Theme } from '@mui/material/styles';
+import { alpha, SxProps, Theme } from '@mui/material/styles';
 
 import { designSystem } from './designSystem';
-import { COLORS, addAlpha } from './themeColors';
 
 export type AppSx = SxProps<Theme>;
 
@@ -27,7 +26,7 @@ export const surfaceCardSx = (variant: 'default' | 'subtle' | 'elevated' = 'defa
       boxShadow: 'none',
     },
     subtle: {
-      backgroundColor: addAlpha(COLORS.WHITE, 0.9),
+      backgroundColor: alpha(designSystem.colors.background.paper, 0.9),
       boxShadow: 'none',
     },
     elevated: {
@@ -50,7 +49,7 @@ export const surfaceCardContentSx: AppSx = {
 export const infoPanelSx: AppSx = {
   p: 2,
   borderRadius: designSystem.borderRadius.lg,
-  backgroundColor: addAlpha(COLORS.PRIMARY, 0.04),
+  backgroundColor: alpha(designSystem.colors.primary.main, 0.04),
 };
 
 export const sectionTitleRowSx: AppSx = {

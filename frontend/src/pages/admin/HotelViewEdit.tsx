@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import {
+  alpha,
   Container,
   Typography,
   Button,
@@ -23,6 +24,7 @@ import {
   Avatar,
   Stack,
   Badge,
+  useTheme,
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
@@ -45,7 +47,6 @@ import {
   AttachMoney as CurrencyIcon,
   Public as PublicIcon,
 } from '@mui/icons-material';
-import { COLORS, addAlpha } from '../../theme/themeColors';
 import { useAuthenticatedApi } from '../../hooks/useAuthenticatedApi';
 import { useTenant } from '../../contexts/TenantContext';
 import PremiumDisplayField from '../../components/common/PremiumDisplayField';
@@ -77,6 +78,7 @@ interface HotelData {
 }
 
 const HotelViewEdit: React.FC = () => {
+  const theme = useTheme();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -218,37 +220,43 @@ const HotelViewEdit: React.FC = () => {
 
   const currentHotel = isEditing ? editedHotel : hotel;
 
+  const infoBorderColor = alpha(theme.palette.info.main, 0.2);
+  const heroWhiteSoft = alpha(theme.palette.common.white, 0.1);
+  const heroWhiteMedium = alpha(theme.palette.common.white, 0.2);
+  const heroWhiteStrong = alpha(theme.palette.common.white, 0.5);
+  const heroWhiteHover = alpha(theme.palette.common.white, 0.9);
+  const heroPattern = `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='${theme.palette.common.white.replace('#', '%23')}' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`;
+
   // Helper function to get status icon and color
   const getStatusInfo = (status: string) => {
     switch (status?.toUpperCase()) {
       case 'ACTIVE':
-        return { icon: <VerifiedIcon />, color: 'success' as const, bgColor: COLORS.BG_SUCCESS_LIGHT };
+        return { icon: <VerifiedIcon />, color: 'success' as const, bgColor: alpha(theme.palette.success.main, 0.12) };
       case 'PENDING':
-        return { icon: <PendingIcon />, color: 'warning' as const, bgColor: COLORS.BG_WARNING_LIGHT };
+        return { icon: <PendingIcon />, color: 'warning' as const, bgColor: alpha(theme.palette.warning.main, 0.12) };
       case 'INACTIVE':
-        return { icon: <InactiveIcon />, color: 'default' as const, bgColor: COLORS.BG_DEFAULT_LIGHT };
+        return { icon: <InactiveIcon />, color: 'default' as const, bgColor: alpha(theme.palette.text.secondary, 0.12) };
       case 'SUSPENDED':
-        return { icon: <SuspendedIcon />, color: 'error' as const, bgColor: COLORS.BG_ERROR_LIGHT };
+        return { icon: <SuspendedIcon />, color: 'error' as const, bgColor: alpha(theme.palette.error.main, 0.12) };
       default:
-        return { icon: <VerifiedIcon />, color: 'success' as const, bgColor: COLORS.BG_SUCCESS_LIGHT };
+        return { icon: <VerifiedIcon />, color: 'success' as const, bgColor: alpha(theme.palette.success.main, 0.12) };
     }
   };
 
   const statusInfo = getStatusInfo(currentHotel?.status || 'ACTIVE');
-  const heroPattern = `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='${COLORS.WHITE.replace('#', '%23')}' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`;
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: COLORS.BG_DEFAULT }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
       <Container maxWidth="xl" sx={{ py: 4 }}>
         {/* Enhanced Header with Hero Section */}
         <Paper 
           elevation={0}
           sx={{ 
-            background: `linear-gradient(135deg, ${COLORS.PRIMARY} 0%, ${COLORS.PRIMARY_HOVER} 100%)`,
+            background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
             borderRadius: 3,
             p: 4,
             mb: 4,
-            color: COLORS.WHITE,
+            color: 'common.white',
             position: 'relative',
             overflow: 'hidden'
           }}
@@ -273,8 +281,8 @@ const HotelViewEdit: React.FC = () => {
                   onClick={handleBackToAdmin} 
                   sx={{ 
                     mr: 2, 
-                    color: COLORS.WHITE,
-                    '&:hover': { bgcolor: addAlpha(COLORS.WHITE, 0.1) }
+                    color: 'common.white',
+                    '&:hover': { bgcolor: heroWhiteSoft }
                   }}
                 >
                   <ArrowBackIcon />
@@ -283,7 +291,7 @@ const HotelViewEdit: React.FC = () => {
                   sx={{ 
                     width: 64, 
                     height: 64, 
-                    bgcolor: addAlpha(COLORS.WHITE, 0.2), 
+                    bgcolor: heroWhiteMedium, 
                     mr: 3 
                   }}
                 >
@@ -293,7 +301,7 @@ const HotelViewEdit: React.FC = () => {
                   <Typography variant="h3" sx={{ 
                     fontWeight: 700, 
                     mb: 1,
-                    color: COLORS.PRIMARY
+                    color: 'common.white'
                   }}>
                     {currentHotel?.name || 'Hotel Details'}
                   </Typography>
@@ -302,9 +310,9 @@ const HotelViewEdit: React.FC = () => {
                       icon={statusInfo.icon}
                       label={currentHotel?.status || 'ACTIVE'}
                       sx={{
-                        color: COLORS.WHITE,
-                        bgcolor: addAlpha(COLORS.WHITE, 0.2),
-                        '& .MuiChip-icon': { color: COLORS.WHITE }
+                        color: 'common.white',
+                        bgcolor: heroWhiteMedium,
+                        '& .MuiChip-icon': { color: 'common.white' }
                       }}
                     />
                     {currentHotel?.city && (
@@ -328,11 +336,11 @@ const HotelViewEdit: React.FC = () => {
                       onClick={handleCancelEdit}
                       disabled={saving}
                       sx={{
-                        color: COLORS.WHITE,
-                        borderColor: addAlpha(COLORS.WHITE, 0.5),
+                        color: 'common.white',
+                        borderColor: heroWhiteStrong,
                         '&:hover': { 
-                          borderColor: COLORS.WHITE,
-                          bgcolor: addAlpha(COLORS.WHITE, 0.1)
+                          borderColor: 'common.white',
+                          bgcolor: heroWhiteSoft
                         }
                       }}
                     >
@@ -344,9 +352,9 @@ const HotelViewEdit: React.FC = () => {
                       onClick={handleSave}
                       disabled={saving}
                       sx={{
-                        bgcolor: COLORS.WHITE,
+                        bgcolor: 'common.white',
                         color: 'primary.main',
-                        '&:hover': { bgcolor: addAlpha(COLORS.WHITE, 0.9) }
+                        '&:hover': { bgcolor: heroWhiteHover }
                       }}
                     >
                       {saving ? 'Saving...' : 'Save Changes'}
@@ -358,9 +366,9 @@ const HotelViewEdit: React.FC = () => {
                     startIcon={<EditIcon />}
                     onClick={handleEdit}
                     sx={{
-                      bgcolor: COLORS.WHITE,
+                      bgcolor: 'common.white',
                       color: 'primary.main',
-                      '&:hover': { bgcolor: addAlpha(COLORS.WHITE, 0.9) }
+                      '&:hover': { bgcolor: heroWhiteHover }
                     }}
                   >
                     Edit Hotel
@@ -384,7 +392,7 @@ const HotelViewEdit: React.FC = () => {
               <Grid item xs={12} sm={3}>
                 <Box sx={{ textAlign: 'center' }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <StarIcon sx={{ mr: 0.5, color: COLORS.GOLD }} />
+                    <StarIcon sx={{ mr: 0.5, color: 'warning.light' }} />
                     <Typography variant="h4" sx={{ fontWeight: 700 }}>
                       {currentHotel?.rating || 'N/A'}
                     </Typography>
@@ -426,7 +434,7 @@ const HotelViewEdit: React.FC = () => {
             {/* Main Content Area */}
             <Grid item xs={12} lg={8}>
               {/* Basic Information Card */}
-              <Card elevation={0} sx={{ mb: 4, border: `1px solid ${COLORS.BG_INFO_LIGHT}`, borderRadius: 3 }}>
+              <Card elevation={0} sx={{ mb: 4, border: `1px solid ${infoBorderColor}`, borderRadius: 3 }}>
                 <CardContent sx={{ p: 4 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
                     <Avatar sx={{ bgcolor: 'primary.main', mr: 2 }}>
@@ -492,7 +500,7 @@ const HotelViewEdit: React.FC = () => {
               </Card>
 
               {/* Location Information Card */}
-              <Card elevation={0} sx={{ mb: 4, border: '1px solid COLORS.BG_INFO_LIGHT', borderRadius: 3 }}>
+              <Card elevation={0} sx={{ mb: 4, border: `1px solid ${infoBorderColor}`, borderRadius: 3 }}>
                 <CardContent sx={{ p: 4 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
                     <Avatar sx={{ bgcolor: 'secondary.main', mr: 2 }}>
@@ -558,7 +566,7 @@ const HotelViewEdit: React.FC = () => {
               </Card>
 
               {/* Operations & Settings Card */}
-              <Card elevation={0} sx={{ border: '1px solid COLORS.BG_INFO_LIGHT', borderRadius: 3 }}>
+              <Card elevation={0} sx={{ border: `1px solid ${infoBorderColor}`, borderRadius: 3 }}>
                 <CardContent sx={{ p: 4 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
                     <Avatar sx={{ bgcolor: 'info.main', mr: 2 }}>
@@ -645,7 +653,7 @@ const HotelViewEdit: React.FC = () => {
             {/* Sidebar */}
             <Grid item xs={12} lg={4}>
               {/* Status Management Card */}
-              <Card elevation={0} sx={{ mb: 4, border: '1px solid COLORS.BG_INFO_LIGHT', borderRadius: 3 }}>
+              <Card elevation={0} sx={{ mb: 4, border: `1px solid ${infoBorderColor}`, borderRadius: 3 }}>
                 <CardContent sx={{ p: 4 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
                     <Avatar sx={{ bgcolor: statusInfo.bgColor, mr: 2 }}>
@@ -704,7 +712,7 @@ const HotelViewEdit: React.FC = () => {
               </Card>
 
               {/* Analytics Card */}
-              <Card elevation={0} sx={{ mb: 4, border: '1px solid COLORS.BG_INFO_LIGHT', borderRadius: 3 }}>
+              <Card elevation={0} sx={{ mb: 4, border: `1px solid ${infoBorderColor}`, borderRadius: 3 }}>
                 <CardContent sx={{ p: 4 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
                     <Avatar sx={{ bgcolor: 'success.main', mr: 2 }}>
@@ -718,7 +726,7 @@ const HotelViewEdit: React.FC = () => {
                   <Stack spacing={3}>
                     <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'warning.50', borderRadius: 2 }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
-                        <StarIcon sx={{ color: COLORS.GOLD, mr: 1 }} />
+                        <StarIcon sx={{ color: 'warning.main', mr: 1 }} />
                         <Typography variant="h3" sx={{ fontWeight: 700, color: 'warning.main' }}>
                           {currentHotel.rating || 'N/A'}
                         </Typography>
@@ -753,7 +761,7 @@ const HotelViewEdit: React.FC = () => {
               </Card>
 
               {/* System Information Card */}
-              <Card elevation={0} sx={{ border: '1px solid COLORS.BG_INFO_LIGHT', borderRadius: 3 }}>
+              <Card elevation={0} sx={{ border: `1px solid ${infoBorderColor}`, borderRadius: 3 }}>
                 <CardContent sx={{ p: 4 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
                     <Avatar sx={{ bgcolor: 'info.main', mr: 2 }}>
@@ -831,22 +839,6 @@ const HotelViewEdit: React.FC = () => {
             </Grid>
           </Grid>
         )}
-
-      {/* Cancel Confirmation Dialog */}
-      <Dialog open={showCancelDialog} onClose={() => setShowCancelDialog(false)}>
-        <DialogTitle>Discard Changes?</DialogTitle>
-        <DialogContent>
-          <Typography>
-            You have unsaved changes. Are you sure you want to discard them?
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setShowCancelDialog(false)}>Keep Editing</Button>
-          <Button onClick={cancelEdit} color="error">
-            Discard Changes
-          </Button>
-        </DialogActions>
-      </Dialog>
 
         {/* Professional Footer */}
         <Box sx={{ mt: 6, pt: 4, textAlign: 'center' }}>

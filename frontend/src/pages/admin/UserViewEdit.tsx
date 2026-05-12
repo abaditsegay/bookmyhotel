@@ -23,6 +23,7 @@ import {
   Switch,
   FormControlLabel,
   IconButton,
+  useTheme,
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
@@ -32,7 +33,6 @@ import {
   Person as PersonIcon,
   Badge as BadgeIcon,
 } from '@mui/icons-material';
-import { COLORS } from '../../theme/themeColors';
 import { useAuthenticatedApi } from '../../hooks/useAuthenticatedApi';
 import PremiumDisplayField from '../../components/common/PremiumDisplayField';
 
@@ -50,6 +50,7 @@ interface UserData {
 }
 
 const UserViewEdit: React.FC = () => {
+  const theme = useTheme();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -223,7 +224,7 @@ const UserViewEdit: React.FC = () => {
               fontWeight: 'bold', 
               display: 'flex', 
               alignItems: 'center',
-              color: COLORS.PRIMARY
+              color: theme.palette.primary.main
             }}>
               <PersonIcon sx={{ mr: 1 }} />
               {isEditing ? 'Edit User' : 'User Details'}

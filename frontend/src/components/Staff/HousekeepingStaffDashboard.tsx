@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { alpha } from '@mui/material/styles';
 import {
   Box,
   Grid,
@@ -48,7 +49,6 @@ import {
   Flag as FlagIcon,
   Refresh as RefreshIcon
 } from '@mui/icons-material';
-import { COLORS, addAlpha } from '../../theme/themeColors';
 import { staffApi } from '../../services/staffApi';
 import { HousekeepingTask } from '../../types/operations';
 
@@ -160,11 +160,11 @@ const HousekeepingStaffDashboard: React.FC = () => {
       sx={{ 
         mb: 2, 
         cursor: 'pointer',
-        boxShadow: `0 1px 4px ${addAlpha(COLORS.BLACK, 0.05)}`,
+        boxShadow: `0 1px 4px ${alpha(theme.palette.common.black, 0.05)}`,
         borderRadius: 2,
         transition: 'all 0.2s ease',
         '&:hover': { 
-          boxShadow: `0 4px 12px ${addAlpha(COLORS.BLACK, 0.08)}`,
+          boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.08)}`,
         }
       }}
       onClick={() => openTaskDetails(task)}
@@ -191,7 +191,7 @@ const HousekeepingStaffDashboard: React.FC = () => {
             size="small"
             sx={{
               fontWeight: 600,
-              boxShadow: `0 2px 6px ${addAlpha(COLORS.BLACK, 0.1)}`
+              boxShadow: `0 2px 6px ${alpha(theme.palette.common.black, 0.1)}`
             }}
           />
         </Box>
@@ -216,7 +216,7 @@ const HousekeepingStaffDashboard: React.FC = () => {
               size="small"
               sx={{
                 fontWeight: 600,
-                boxShadow: `0 2px 6px ${addAlpha(COLORS.BLACK, 0.1)}`
+                boxShadow: `0 2px 6px ${alpha(theme.palette.common.black, 0.1)}`
               }}
             />
             <Chip
@@ -226,7 +226,7 @@ const HousekeepingStaffDashboard: React.FC = () => {
               icon={<FlagIcon />}
               sx={{
                 fontWeight: 600,
-                boxShadow: `0 2px 6px ${addAlpha(COLORS.BLACK, 0.1)}`
+                boxShadow: `0 2px 6px ${alpha(theme.palette.common.black, 0.1)}`
               }}
             />
           </Box>
@@ -402,10 +402,10 @@ const HousekeepingStaffDashboard: React.FC = () => {
                 sx={{ 
                   height: '100%',
                   backgroundColor: 'background.paper',
-                  boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.04)}`,
+                  boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.04)}`,
                   transition: 'all 0.2s ease-in-out',
                   '&:hover': {
-                    boxShadow: `0 4px 16px ${addAlpha(COLORS.BLACK, 0.08)}`,
+                    boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.08)}`,
                   }
                 }}
               >
@@ -454,10 +454,10 @@ const HousekeepingStaffDashboard: React.FC = () => {
                 sx={{ 
                   height: '100%',
                   backgroundColor: 'background.paper',
-                  boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.04)}`,
+                  boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.04)}`,
                   transition: 'all 0.2s ease-in-out',
                   '&:hover': {
-                    boxShadow: `0 4px 16px ${addAlpha(COLORS.BLACK, 0.08)}`,
+                    boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.08)}`,
                   }
                 }}
               >
@@ -506,10 +506,10 @@ const HousekeepingStaffDashboard: React.FC = () => {
                 sx={{ 
                   height: '100%',
                   backgroundColor: 'background.paper',
-                  boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.04)}`,
+                  boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.04)}`,
                   transition: 'all 0.2s ease-in-out',
                   '&:hover': {
-                    boxShadow: `0 4px 16px ${addAlpha(COLORS.BLACK, 0.08)}`,
+                    boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.08)}`,
                   }
                 }}
               >
@@ -558,10 +558,10 @@ const HousekeepingStaffDashboard: React.FC = () => {
                 sx={{ 
                   height: '100%',
                   backgroundColor: 'background.paper',
-                  boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.04)}`,
+                  boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.04)}`,
                   transition: 'all 0.2s ease-in-out',
                   '&:hover': {
-                    boxShadow: `0 4px 16px ${addAlpha(COLORS.BLACK, 0.08)}`,
+                    boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.08)}`,
                   }
                 }}
               >
@@ -613,7 +613,7 @@ const HousekeepingStaffDashboard: React.FC = () => {
             severity="error" 
             sx={{ 
               mb: 3,
-              boxShadow: `0 4px 12px ${addAlpha(COLORS.ERROR, 0.15)}`,
+              boxShadow: `0 4px 12px ${alpha(theme.palette.error.main, 0.15)}`,
               borderRadius: 2
             }} 
             onClose={() => setError(null)}
@@ -625,7 +625,7 @@ const HousekeepingStaffDashboard: React.FC = () => {
         {/* Elegant Tasks Section */}
         <Card 
           sx={{ 
-            boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.04)}`,
+            boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.04)}`,
             borderRadius: 2,
             overflow: 'hidden',
           }}
@@ -714,7 +714,7 @@ const HousekeepingStaffDashboard: React.FC = () => {
                             borderBottom: '1px solid',
                             borderColor: 'divider',
                             '& .MuiTableCell-head': {
-                              color: COLORS.SLATE_800,
+                              color: 'text.primary',
                               fontWeight: 700,
                               fontSize: '0.6875rem',
                               letterSpacing: '0.5px',
@@ -920,9 +920,9 @@ const HousekeepingStaffDashboard: React.FC = () => {
               bottom: 16, 
               right: 16,
               zIndex: 1000,
-              boxShadow: `0 4px 12px ${addAlpha(COLORS.BLACK, 0.15)}`,
+              boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.15)}`,
               '&:hover': {
-                boxShadow: `0 6px 20px ${addAlpha(COLORS.BLACK, 0.2)}`,
+                boxShadow: `0 6px 20px ${alpha(theme.palette.common.black, 0.2)}`,
               }
             }}
             onClick={loadMyTasks}
