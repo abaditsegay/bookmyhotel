@@ -54,6 +54,7 @@ import com.bookmyhotel.support.MySqlIntegrationTestSupport;
         "spring.sql.init.schema-locations=classpath:schema-booking-concurrency-test.sql"
 })
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@SuppressWarnings("removal")
 class BookingServiceConcurrencyIntegrationTest extends MySqlIntegrationTestSupport {
 
     @Container

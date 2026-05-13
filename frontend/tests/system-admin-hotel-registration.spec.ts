@@ -441,7 +441,7 @@ test.describe('System Admin - Hotel Registration', () => {
     await page.waitForLoadState('networkidle');
     
     // Verify we're logged in as system admin
-    await expect(page.locator('[data-testid="user-role"]')).toContainText('System Admin', { timeout: 10000 });
+    await expect(page.locator('[data-testid="user-role"]')).toContainText('Super Administrator', { timeout: 10000 });
     
     // Navigate to hotel management - use button text
     await page.waitForSelector('button:has-text("Manage Hotels")', { state: 'visible', timeout: 30000 });

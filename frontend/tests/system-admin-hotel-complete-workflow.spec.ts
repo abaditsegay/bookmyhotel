@@ -38,7 +38,7 @@ class HotelWorkflowPage {
     await this.page.waitForLoadState('networkidle');
     
     // Verify login success
-    await expect(this.page.locator('[data-testid="user-role"]')).toContainText('System Admin');
+    await expect(this.page.locator('[data-testid="user-role"]')).toContainText('Super Administrator');
   }
 
   async registerHotel(hotelName: string) {

@@ -109,7 +109,7 @@ public class RoomChargeController {
             return ResponseEntity.badRequest().build();
         }
 
-        List<RoomChargeResponse> roomCharges = roomChargeService.getRoomChargesForReservation(reservationId, hotelId);
+        List<RoomChargeResponse> roomCharges = roomChargeService.getRoomChargesForReservation(hotelId, reservationId);
         return ResponseEntity.ok(roomCharges);
     }
 
@@ -134,8 +134,8 @@ public class RoomChargeController {
             return ResponseEntity.badRequest().build();
         }
 
-        List<RoomChargeResponse> unpaidCharges = roomChargeService.getUnpaidChargesForReservation(reservationId,
-                hotelId);
+        List<RoomChargeResponse> unpaidCharges = roomChargeService.getUnpaidChargesForReservation(hotelId,
+            reservationId);
         return ResponseEntity.ok(unpaidCharges);
     }
 
@@ -160,7 +160,7 @@ public class RoomChargeController {
             return ResponseEntity.badRequest().build();
         }
 
-        BigDecimal totalUnpaid = roomChargeService.getTotalUnpaidAmount(reservationId, hotelId);
+        BigDecimal totalUnpaid = roomChargeService.getTotalUnpaidAmount(hotelId, reservationId);
         return ResponseEntity.ok(totalUnpaid);
     }
 
@@ -186,7 +186,7 @@ public class RoomChargeController {
             return ResponseEntity.badRequest().build();
         }
 
-        RoomChargeResponse response = roomChargeService.markChargeAsPaid(chargeId, hotelId, paymentReference);
+        RoomChargeResponse response = roomChargeService.markChargeAsPaid(hotelId, chargeId, paymentReference);
         return ResponseEntity.ok(response);
     }
 
@@ -211,7 +211,7 @@ public class RoomChargeController {
             return ResponseEntity.badRequest().build();
         }
 
-        RoomChargeResponse response = roomChargeService.markChargeAsUnpaid(chargeId, hotelId);
+        RoomChargeResponse response = roomChargeService.markChargeAsUnpaid(hotelId, chargeId);
         return ResponseEntity.ok(response);
     }
 
@@ -236,7 +236,7 @@ public class RoomChargeController {
             return ResponseEntity.badRequest().build();
         }
 
-        roomChargeService.deleteRoomCharge(chargeId, hotelId);
+        roomChargeService.deleteRoomCharge(hotelId, chargeId);
         return ResponseEntity.noContent().build();
     }
 
