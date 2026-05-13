@@ -1,28 +1,22 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('BookMyHotel App', () => {
-  test('homepage loads successfully', async ({ page }) => {
+test.describe('Public Landing Page', () => {
+  test('homepage loads with search and partner CTA', async ({ page }) => {
     await page.goto('/');
-    
-    // Wait for the page to load
-    await page.waitForLoadState('networkidle');
-    
-    // Check if the page title contains expected text
+
     await expect(page).toHaveTitle(/BookMyHotel|Hotel/i);
-    
-    // You can add more specific assertions based on your app structure
-    // For example:
-    // await expect(page.locator('h1')).toBeVisible();
-    // await expect(page.locator('[data-testid="login-button"]')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'BookMyHotel', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Find Your Perfect Stay' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Partner With Us' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Register Your Business' })).toBeVisible();
   });
 
-  test('navigation works', async ({ page }) => {
+  test('partner CTA opens public hotel registration', async ({ page }) => {
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
-    
-    // Add tests for navigation based on your app structure
-    // For example:
-    // await page.click('[data-testid="hotels-link"]');
-    // await expect(page).toHaveURL(/.*hotels/);
+
+    await page.getByRole('button', { name: 'Register Your Business' }).click();
+
+    await expect(page).toHaveURL(/\/register-hotel$/);
+    await expect(page.getByRole('heading', { name: 'Register Your Hotel' })).toBeVisible();
   });
 });

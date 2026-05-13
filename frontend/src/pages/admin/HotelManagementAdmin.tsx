@@ -49,6 +49,7 @@ import {
   PublicOff as UnpublishIcon
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
+import { API_CONFIG } from '../../config/apiConfig';
 import { adminApiService, HotelDTO, UpdateHotelRequest, TenantDTO, ApproveRegistrationRequest, HotelRegistrationResponse } from '../../services/adminApi';
 import PremiumTextField from '../../components/common/PremiumTextField';
 import PremiumDisplayField from '../../components/common/PremiumDisplayField';
@@ -757,7 +758,7 @@ const HotelManagementAdmin: React.FC = () => {
   };
 
   return (
-    <Box sx={{ width: '100%', p: 3 }}>
+    <Box sx={{ width: '100%', p: 3 }} data-testid="hotel-management-page">
       <Box sx={{ py: 4 }}>
         {/* Header */}
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
@@ -780,6 +781,7 @@ const HotelManagementAdmin: React.FC = () => {
               }
             }}
             sx={{ mr: 2 }}
+            data-testid="hotel-management-refresh-button"
           >
             Refresh
           </Button>
@@ -788,6 +790,7 @@ const HotelManagementAdmin: React.FC = () => {
             startIcon={<AddIcon />}
             onClick={handleRegisterHotel}
             sx={{ mr: 2 }}
+            data-testid="hotel-management-register-button"
           >
             Register Hotel
           </Button>
@@ -795,22 +798,22 @@ const HotelManagementAdmin: React.FC = () => {
 
         {/* Error and Success Messages */}
         {error && (
-          <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+          <Alert data-testid="hotel-management-error-alert" severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
             {error}
           </Alert>
         )}
 
         {success && (
-          <Alert severity="success" sx={{ mb: 2 }} onClose={() => setSuccess(null)}>
+          <Alert data-testid="hotel-management-success-alert" severity="success" sx={{ mb: 2 }} onClose={() => setSuccess(null)}>
             {success}
           </Alert>
         )}
 
         {/* Tabs */}
-        <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
+        <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }} data-testid="hotel-management-tabs">
           <Tabs value={activeTab} onChange={handleTabChange}>
-            <Tab label="Existing Hotels" />
-            <Tab label="Hotel Registrations" />
+            <Tab label="Existing Hotels" data-testid="hotel-management-existing-hotels-tab" />
+            <Tab label="Hotel Registrations" data-testid="hotel-management-registrations-tab" />
           </Tabs>
         </Box>
 
@@ -1094,7 +1097,13 @@ const HotelManagementAdmin: React.FC = () => {
         )}
 
         {/* Hotel Registration Dialog */}
-        <Dialog open={registerDialogOpen} onClose={() => setRegisterDialogOpen(false)} maxWidth="md" fullWidth>
+        <Dialog
+          open={registerDialogOpen}
+          onClose={() => setRegisterDialogOpen(false)}
+          maxWidth="md"
+          fullWidth
+          PaperProps={{ 'data-testid': 'hotel-registration-dialog' }}
+        >
           <DialogTitle>Register New Hotel</DialogTitle>
           <DialogContent>
             <Grid container spacing={2} sx={{ mt: 1 }}>
@@ -1105,6 +1114,7 @@ const HotelManagementAdmin: React.FC = () => {
                   required
                   value={registrationForm.hotelName}
                   onChange={(e) => handleRegistrationFormChange('hotelName', e.target.value)}
+                  inputProps={{ 'data-testid': 'hotel-registration-hotel-name-input' }}
                 />
               </Grid>
               
@@ -1115,6 +1125,7 @@ const HotelManagementAdmin: React.FC = () => {
                   required
                   value={registrationForm.contactPerson}
                   onChange={(e) => handleRegistrationFormChange('contactPerson', e.target.value)}
+                  inputProps={{ 'data-testid': 'hotel-registration-contact-person-input' }}
                 />
               </Grid>
               
@@ -1126,6 +1137,7 @@ const HotelManagementAdmin: React.FC = () => {
                   fullWidth
                   value={registrationForm.description}
                   onChange={(e) => handleRegistrationFormChange('description', e.target.value)}
+                  inputProps={{ 'data-testid': 'hotel-registration-description-input' }}
                 />
               </Grid>
               
@@ -1136,6 +1148,7 @@ const HotelManagementAdmin: React.FC = () => {
                   required
                   value={registrationForm.address}
                   onChange={(e) => handleRegistrationFormChange('address', e.target.value)}
+                  inputProps={{ 'data-testid': 'hotel-registration-address-input' }}
                 />
               </Grid>
               
@@ -1146,6 +1159,7 @@ const HotelManagementAdmin: React.FC = () => {
                   required
                   value={registrationForm.city}
                   onChange={(e) => handleRegistrationFormChange('city', e.target.value)}
+                  inputProps={{ 'data-testid': 'hotel-registration-city-input' }}
                 />
               </Grid>
               
@@ -1156,6 +1170,7 @@ const HotelManagementAdmin: React.FC = () => {
                   required
                   value={registrationForm.country}
                   onChange={(e) => handleRegistrationFormChange('country', e.target.value)}
+                  inputProps={{ 'data-testid': 'hotel-registration-country-input' }}
                 />
               </Grid>
               
@@ -1168,6 +1183,7 @@ const HotelManagementAdmin: React.FC = () => {
                   required
                   value={registrationForm.contactEmail}
                   onChange={(e) => handleRegistrationFormChange('contactEmail', e.target.value)}
+                  inputProps={{ 'data-testid': 'hotel-registration-contact-email-input' }}
                 />
               </Grid>
 
@@ -1186,6 +1202,7 @@ const HotelManagementAdmin: React.FC = () => {
                         value={registrationForm.phone}
                         onChange={(e) => handleRegistrationFormChange('phone', e.target.value)}
                         helperText="Primary phone for general communication"
+                        inputProps={{ 'data-testid': 'hotel-registration-phone-input' }}
                       />
                     </Grid>
                     <Grid item xs={12} sm={6}>
@@ -1198,6 +1215,7 @@ const HotelManagementAdmin: React.FC = () => {
                         value={registrationForm.mobilePaymentPhone}
                         onChange={(e) => handleRegistrationFormChange('mobilePaymentPhone', e.target.value)}
                         helperText="Primary mobile money account for payments"
+                        inputProps={{ 'data-testid': 'hotel-registration-mobile-payment-phone-input' }}
                       />
                     </Grid>
                     <Grid item xs={12} sm={6}>
@@ -1207,6 +1225,7 @@ const HotelManagementAdmin: React.FC = () => {
                         value={registrationForm.mobilePaymentPhone2}
                         onChange={(e) => handleRegistrationFormChange('mobilePaymentPhone2', e.target.value)}
                         helperText="Optional secondary mobile money account"
+                        inputProps={{ 'data-testid': 'hotel-registration-mobile-payment-phone-2-input' }}
                       />
                     </Grid>
                   </Grid>
@@ -1219,6 +1238,7 @@ const HotelManagementAdmin: React.FC = () => {
                   fullWidth
                   value={registrationForm.licenseNumber}
                   onChange={(e) => handleRegistrationFormChange('licenseNumber', e.target.value)}
+                  inputProps={{ 'data-testid': 'hotel-registration-license-number-input' }}
                 />
               </Grid>
 
@@ -1228,6 +1248,7 @@ const HotelManagementAdmin: React.FC = () => {
                   fullWidth
                   value={registrationForm.taxId}
                   onChange={(e) => handleRegistrationFormChange('taxId', e.target.value)}
+                  inputProps={{ 'data-testid': 'hotel-registration-tax-id-input' }}
                 />
               </Grid>
 
@@ -1237,6 +1258,7 @@ const HotelManagementAdmin: React.FC = () => {
                   fullWidth
                   value={registrationForm.websiteUrl}
                   onChange={(e) => handleRegistrationFormChange('websiteUrl', e.target.value)}
+                  inputProps={{ 'data-testid': 'hotel-registration-website-url-input' }}
                 />
               </Grid>
 
@@ -1249,6 +1271,7 @@ const HotelManagementAdmin: React.FC = () => {
                   value={registrationForm.facilityAmenities}
                   onChange={(e) => handleRegistrationFormChange('facilityAmenities', e.target.value)}
                   placeholder="WiFi, Pool, Spa, Restaurant, etc."
+                  inputProps={{ 'data-testid': 'hotel-registration-facility-amenities-input' }}
                 />
               </Grid>
 
@@ -1259,6 +1282,7 @@ const HotelManagementAdmin: React.FC = () => {
                   value={registrationForm.numberOfRooms}
                   onChange={(e) => handleRegistrationFormChange('numberOfRooms', e.target.value)}
                   placeholder="Enter number of rooms"
+                  inputProps={{ 'data-testid': 'hotel-registration-number-of-rooms-input' }}
                 />
               </Grid>
 
@@ -1269,6 +1293,7 @@ const HotelManagementAdmin: React.FC = () => {
                   fullWidth
                   value={registrationForm.checkInTime}
                   onChange={(e) => handleRegistrationFormChange('checkInTime', e.target.value)}
+                  inputProps={{ 'data-testid': 'hotel-registration-check-in-time-input' }}
                 />
               </Grid>
 
@@ -1279,16 +1304,18 @@ const HotelManagementAdmin: React.FC = () => {
                   fullWidth
                   value={registrationForm.checkOutTime}
                   onChange={(e) => handleRegistrationFormChange('checkOutTime', e.target.value)}
+                  inputProps={{ 'data-testid': 'hotel-registration-check-out-time-input' }}
                 />
               </Grid>
             </Grid>
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setRegisterDialogOpen(false)}>Cancel</Button>
+            <Button onClick={() => setRegisterDialogOpen(false)} data-testid="hotel-registration-cancel-button">Cancel</Button>
             <Button 
               variant="contained" 
               onClick={handleRegistrationSubmit}
               disabled={!registrationForm.hotelName || !registrationForm.contactPerson || !registrationForm.contactEmail}
+              data-testid="hotel-registration-submit-button"
             >
               Submit Registration
             </Button>

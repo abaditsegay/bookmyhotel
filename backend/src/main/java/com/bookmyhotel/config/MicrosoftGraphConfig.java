@@ -16,6 +16,9 @@ import jakarta.annotation.PostConstruct;
 public class MicrosoftGraphConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(MicrosoftGraphConfig.class);
+    private static final String PLACEHOLDER_CLIENT_ID = "your-client-id";
+    private static final String PLACEHOLDER_CLIENT_SECRET = "your-client-secret";
+    private static final String PLACEHOLDER_TENANT_ID = "your-tenant-id";
 
     private String clientId;
     private String clientSecret;
@@ -25,10 +28,8 @@ public class MicrosoftGraphConfig {
     @PostConstruct
     public void validateConfiguration() {
         logger.info("Validating Microsoft Graph OAuth2 configuration...");
-        
-        boolean isConfigured = StringUtils.hasText(clientId) && 
-                              StringUtils.hasText(clientSecret) && 
-                              StringUtils.hasText(tenantId);
+
+        boolean isConfigured = isConfigured();
         
         if (isConfigured) {
             logger.info("✅ Microsoft Graph OAuth2 is properly configured");
@@ -46,9 +47,13 @@ public class MicrosoftGraphConfig {
     }
 
     public boolean isConfigured() {
-        return StringUtils.hasText(clientId) && 
-               StringUtils.hasText(clientSecret) && 
-               StringUtils.hasText(tenantId);
+        return isMeaningfulValue(clientId, PLACEHOLDER_CLIENT_ID)
+                && isMeaningfulValue(clientSecret, PLACEHOLDER_CLIENT_SECRET)
+                && isMeaningfulValue(tenantId, PLACEHOLDER_TENANT_ID);
+    }
+
+    private boolean isMeaningfulValue(String value, String placeholderValue) {
+        return StringUtils.hasText(value) && !placeholderValue.equalsIgnoreCase(value.trim());
     }
 
     // Getters and Setters
