@@ -15,7 +15,10 @@ import com.bookmyhotel.dto.auth.LoginRequest;
 import com.bookmyhotel.dto.auth.LoginResponse;
 import com.bookmyhotel.dto.auth.RegisterRequest;
 import com.bookmyhotel.entity.User;
+import com.bookmyhotel.exception.ErrorResponse;
+import com.bookmyhotel.exception.RateLimitExceededException;
 import com.bookmyhotel.exception.ResourceAlreadyExistsException;
+import com.bookmyhotel.service.AuthRateLimitService;
 import com.bookmyhotel.service.AuthService;
 import com.bookmyhotel.service.PasswordResetService;
 import com.bookmyhotel.service.PasswordSecurityService;
@@ -59,20 +62,35 @@ public class AuthController {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private AuthRateLimitService authRateLimitService;
+
     /**
      * User registration endpoint for guest users
      */
     @PostMapping("/register")
-    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest registerRequest) {
+    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest registerRequest, HttpServletRequest request) {
         try {
             LoginResponse response = authService.register(registerRequest);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (ResourceAlreadyExistsException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body("User with this email already exists");
+                    .body(buildErrorResponse(
+                            HttpStatus.CONFLICT,
+                            "Resource Already Exists",
+                            "Registration could not be completed",
+                            "User with this email already exists",
+                            "An account with this email already exists.",
+                            request.getRequestURI()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Registration failed: " + e.getMessage());
+                    .body(buildErrorResponse(
+                            HttpStatus.INTERNAL_SERVER_ERROR,
+                            "Registration Error",
+                            "Registration failed",
+                            e.getMessage(),
+                            "We could not complete registration right now. Please try again later.",
+                            request.getRequestURI()));
         }
     }
 
@@ -82,28 +100,55 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest,
             HttpServletRequest request) {
+        String ipAddress = getClientIpAddress(request);
+
         try {
             // Extract user agent and IP address for session management
             String userAgent = request.getHeader("User-Agent");
-            String ipAddress = getClientIpAddress(request);
 
+            authRateLimitService.assertLoginAllowed(loginRequest.getEmail(), ipAddress);
             LoginResponse response = authService.login(loginRequest, userAgent, ipAddress);
+            authRateLimitService.recordSuccessfulLogin(loginRequest.getEmail(), ipAddress);
                     logAuthEvent(AuditTaxonomy.Action.LOGIN, response.getId(), response.getEmail(), response.getFirstName(), response.getLastName(),
                     response.getRoles() != null && !response.getRoles().isEmpty() ? response.getRoles().iterator().next().name() : null,
                     request,
                     true,
                     null);
             return ResponseEntity.ok(response);
+        } catch (RateLimitExceededException e) {
+            logAuthEvent(AuditTaxonomy.Action.LOGIN_FAILED, null, loginRequest.getEmail(), null, null, null, request, false,
+                    e.getMessage());
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                    .header("Retry-After", String.valueOf(Math.max(1, e.getRetryAfterSeconds())))
+                    .body(buildErrorResponse(HttpStatus.TOO_MANY_REQUESTS,
+                            "Too Many Requests",
+                            "Request rate limit exceeded",
+                            e.getMessage(),
+                            e.getMessage(),
+                            request.getRequestURI()));
         } catch (BadCredentialsException e) {
+            authRateLimitService.recordFailedLogin(loginRequest.getEmail(), ipAddress);
                 logAuthEvent(AuditTaxonomy.Action.LOGIN_FAILED, null, loginRequest.getEmail(), null, null, null, request, false,
                     "Invalid email or password");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("Invalid email or password");
+                .body(buildErrorResponse(
+                    HttpStatus.UNAUTHORIZED,
+                    "Authentication Failed",
+                    "Login failed",
+                    "Invalid email or password",
+                    "The email or password you entered is incorrect. Please try again.",
+                    request.getRequestURI()));
         } catch (Exception e) {
                 logAuthEvent(AuditTaxonomy.Action.LOGIN_FAILED, null, loginRequest.getEmail(), null, null, null, request, false,
                     e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Login failed: " + e.getMessage());
+                .body(buildErrorResponse(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Authentication Error",
+                    "Login failed",
+                    e.getMessage(),
+                    "We could not sign you in right now. Please try again later.",
+                    request.getRequestURI()));
         }
     }
 
@@ -133,7 +178,13 @@ public class AuthController {
             // Extract token from Authorization header
             if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
                 return ResponseEntity.badRequest()
-                        .body("Missing or invalid Authorization header");
+                        .body(buildErrorResponse(
+                                HttpStatus.BAD_REQUEST,
+                                "Invalid Authorization Header",
+                                "Logout request is missing a valid bearer token",
+                                "Missing or invalid Authorization header",
+                                "Provide a valid bearer token to log out.",
+                                request.getRequestURI()));
             }
 
             String token = authorizationHeader.substring(7); // Remove "Bearer " prefix
@@ -141,7 +192,13 @@ public class AuthController {
             // Validate token format before blacklisting
             if (!jwtUtil.isTokenValid(token)) {
                 return ResponseEntity.badRequest()
-                        .body("Invalid or expired token");
+                    .body(buildErrorResponse(
+                        HttpStatus.BAD_REQUEST,
+                        "Invalid Token",
+                        "Logout request contains an invalid or expired token",
+                        "Invalid or expired token",
+                        "Your session token is no longer valid. Please sign in again.",
+                        request.getRequestURI()));
             }
 
             // Invalidate the session (this also blacklists the token)
@@ -165,7 +222,13 @@ public class AuthController {
 
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Logout failed: " + e.getMessage());
+                    .body(buildErrorResponse(
+                            HttpStatus.INTERNAL_SERVER_ERROR,
+                            "Logout Error",
+                            "Logout failed",
+                            e.getMessage(),
+                            "We could not complete logout right now. Please try again later.",
+                            request.getRequestURI()));
         }
     }
 
@@ -205,12 +268,19 @@ public class AuthController {
      * valid
      */
     @PostMapping("/session-status")
-    public ResponseEntity<?> checkSessionStatus(@RequestHeader("Authorization") String authorizationHeader) {
+    public ResponseEntity<?> checkSessionStatus(@RequestHeader("Authorization") String authorizationHeader,
+            HttpServletRequest request) {
         try {
             // Extract token from Authorization header
             if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
                 return ResponseEntity.badRequest()
-                        .body("Missing or invalid Authorization header");
+                        .body(buildErrorResponse(
+                                HttpStatus.BAD_REQUEST,
+                                "Invalid Authorization Header",
+                                "Session status request is missing a valid bearer token",
+                                "Missing or invalid Authorization header",
+                                "Provide a valid bearer token to check session status.",
+                                request.getRequestURI()));
             }
 
             String token = authorizationHeader.substring(7); // Remove "Bearer " prefix
@@ -235,7 +305,13 @@ public class AuthController {
 
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Session status check failed: " + e.getMessage());
+                    .body(buildErrorResponse(
+                            HttpStatus.INTERNAL_SERVER_ERROR,
+                            "Session Error",
+                            "Session status check failed",
+                            e.getMessage(),
+                            "We could not verify your session right now. Please try again later.",
+                            request.getRequestURI()));
         }
     }
 
@@ -250,7 +326,13 @@ public class AuthController {
 
             if (refreshToken == null || refreshToken.isEmpty()) {
                 return ResponseEntity.badRequest()
-                        .body("Refresh token is required");
+                    .body(buildErrorResponse(
+                        HttpStatus.BAD_REQUEST,
+                        "Missing Refresh Token",
+                        "Refresh token is required",
+                        "Refresh token is required",
+                        "Provide a refresh token to request a new access token.",
+                        httpRequest.getRequestURI()));
             }
 
             // Extract user agent and IP address
@@ -262,7 +344,13 @@ public class AuthController {
 
             if (newAccessToken == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body("Invalid or expired refresh token");
+                    .body(buildErrorResponse(
+                        HttpStatus.UNAUTHORIZED,
+                        "Invalid Refresh Token",
+                        "Refresh token is invalid or expired",
+                        "Invalid or expired refresh token",
+                        "Your refresh token is no longer valid. Please sign in again.",
+                        httpRequest.getRequestURI()));
             }
 
             return ResponseEntity.ok(java.util.Map.of(
@@ -272,7 +360,13 @@ public class AuthController {
 
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Token refresh failed: " + e.getMessage());
+                    .body(buildErrorResponse(
+                            HttpStatus.INTERNAL_SERVER_ERROR,
+                            "Token Refresh Error",
+                            "Token refresh failed",
+                            e.getMessage(),
+                            "We could not refresh your session right now. Please try again later.",
+                            httpRequest.getRequestURI()));
         }
     }
 
@@ -280,13 +374,20 @@ public class AuthController {
      * Check password strength and validation
      */
     @PostMapping("/password/validate")
-    public ResponseEntity<?> validatePassword(@RequestBody java.util.Map<String, String> request) {
+    public ResponseEntity<?> validatePassword(@RequestBody java.util.Map<String, String> request,
+            HttpServletRequest httpRequest) {
         try {
             String password = request.get("password");
 
             if (password == null) {
                 return ResponseEntity.badRequest()
-                        .body("Password is required");
+                        .body(buildErrorResponse(
+                                HttpStatus.BAD_REQUEST,
+                                "Missing Password",
+                                "Password is required",
+                                "Password is required",
+                                "Provide a password to validate its strength.",
+                                httpRequest.getRequestURI()));
             }
 
             // Validate password
@@ -305,7 +406,13 @@ public class AuthController {
 
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Password validation failed: " + e.getMessage());
+                    .body(buildErrorResponse(
+                            HttpStatus.INTERNAL_SERVER_ERROR,
+                            "Password Validation Error",
+                            "Password validation failed",
+                            e.getMessage(),
+                            "We could not validate the password right now. Please try again later.",
+                            httpRequest.getRequestURI()));
         }
     }
 
@@ -313,26 +420,56 @@ public class AuthController {
      * Request a password reset email
      */
     @PostMapping("/forgot-password")
-    public ResponseEntity<?> forgotPassword(@RequestBody java.util.Map<String, String> request) {
+    public ResponseEntity<?> forgotPassword(@RequestBody java.util.Map<String, String> request,
+            HttpServletRequest httpRequest) {
         try {
             String email = request.get("email");
             if (email == null || email.isBlank()) {
-                return ResponseEntity.badRequest().body("Email is required");
+                return ResponseEntity.badRequest().body(buildErrorResponse(
+                        HttpStatus.BAD_REQUEST,
+                        "Missing Email",
+                        "Email is required",
+                        "Email is required",
+                        "Provide an email address to request a password reset.",
+                        httpRequest.getRequestURI()));
             }
+
+            authRateLimitService.checkPasswordResetRequestAllowed(email, getClientIpAddress(httpRequest));
 
             passwordResetService.requestPasswordReset(email.trim().toLowerCase());
 
             // Always return success to prevent email enumeration
             return ResponseEntity.ok(java.util.Map.of(
                     "message", "If an account with that email exists, a password reset link has been sent."));
+            } catch (RateLimitExceededException e) {
+                return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                    .header("Retry-After", String.valueOf(Math.max(1, e.getRetryAfterSeconds())))
+                    .body(buildErrorResponse(
+                        HttpStatus.TOO_MANY_REQUESTS,
+                        "Too Many Requests",
+                        "Password reset request limit exceeded",
+                        e.getMessage(),
+                        e.getMessage(),
+                        httpRequest.getRequestURI()));
         } catch (IllegalStateException e) {
             // Email service not configured
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(java.util.Map.of("message",
-                            "Email service is currently unavailable. Please contact support."));
+                    .body(buildErrorResponse(
+                        HttpStatus.INTERNAL_SERVER_ERROR,
+                        "Password Reset Error",
+                        "Password reset email service is unavailable",
+                        e.getMessage(),
+                        "Email service is currently unavailable. Please contact support.",
+                        httpRequest.getRequestURI()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(java.util.Map.of("message", "An error occurred. Please try again later."));
+                    .body(buildErrorResponse(
+                        HttpStatus.INTERNAL_SERVER_ERROR,
+                        "Password Reset Error",
+                        "Password reset request failed",
+                        e.getMessage(),
+                        "An error occurred. Please try again later.",
+                        httpRequest.getRequestURI()));
         }
     }
 
@@ -340,37 +477,85 @@ public class AuthController {
      * Validate a password reset token
      */
     @PostMapping("/validate-reset-token")
-    public ResponseEntity<?> validateResetToken(@RequestBody java.util.Map<String, String> request) {
-        String token = request.get("token");
-        if (token == null || token.isBlank()) {
-            return ResponseEntity.badRequest().body(java.util.Map.of("valid", false));
-        }
+    public ResponseEntity<?> validateResetToken(@RequestBody java.util.Map<String, String> request,
+            HttpServletRequest httpRequest) {
+        try {
+            String token = request.get("token");
+            if (token == null || token.isBlank()) {
+                return ResponseEntity.badRequest().body(buildErrorResponse(
+                        HttpStatus.BAD_REQUEST,
+                        "Missing Reset Token",
+                        "Reset token is required",
+                        "Reset token is required",
+                        "Provide a reset token to validate it.",
+                        httpRequest.getRequestURI()));
+            }
 
-        boolean valid = passwordResetService.validateToken(token);
-        return ResponseEntity.ok(java.util.Map.of("valid", valid));
+            authRateLimitService.checkResetTokenValidationAllowed(getClientIpAddress(httpRequest));
+
+            boolean valid = passwordResetService.validateToken(token);
+            return ResponseEntity.ok(java.util.Map.of("valid", valid));
+        } catch (RateLimitExceededException e) {
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                    .header("Retry-After", String.valueOf(Math.max(1, e.getRetryAfterSeconds())))
+                    .body(buildErrorResponse(
+                            HttpStatus.TOO_MANY_REQUESTS,
+                            "Too Many Requests",
+                            "Reset token validation limit exceeded",
+                            e.getMessage(),
+                            e.getMessage(),
+                            httpRequest.getRequestURI()));
+        }
     }
 
     /**
      * Reset password using a valid token
      */
     @PostMapping("/reset-password")
-    public ResponseEntity<?> resetPassword(@RequestBody java.util.Map<String, String> request) {
-        String token = request.get("token");
-        String newPassword = request.get("newPassword");
+    public ResponseEntity<?> resetPassword(@RequestBody java.util.Map<String, String> request,
+            HttpServletRequest httpRequest) {
+        try {
+            String token = request.get("token");
+            String newPassword = request.get("newPassword");
 
-        if (token == null || token.isBlank() || newPassword == null || newPassword.isBlank()) {
-            return ResponseEntity.badRequest()
-                    .body(java.util.Map.of("message", "Token and new password are required"));
-        }
+            if (token == null || token.isBlank() || newPassword == null || newPassword.isBlank()) {
+                return ResponseEntity.badRequest()
+                    .body(buildErrorResponse(
+                        HttpStatus.BAD_REQUEST,
+                        "Missing Reset Data",
+                        "Token and new password are required",
+                        "Token and new password are required",
+                        "Provide both the reset token and a new password.",
+                        httpRequest.getRequestURI()));
+            }
 
-        PasswordResetService.ResetResult result = passwordResetService.resetPassword(token, newPassword);
+            authRateLimitService.checkPasswordResetAllowed(getClientIpAddress(httpRequest));
 
-        if (result.isSuccessful()) {
-            return ResponseEntity.ok(java.util.Map.of(
-                    "message", "Password has been reset successfully. You can now sign in with your new password."));
-        } else {
-            return ResponseEntity.badRequest()
-                    .body(java.util.Map.of("message", result.getMessage()));
+            PasswordResetService.ResetResult result = passwordResetService.resetPassword(token, newPassword);
+
+            if (result.isSuccessful()) {
+                return ResponseEntity.ok(java.util.Map.of(
+                        "message", "Password has been reset successfully. You can now sign in with your new password."));
+            } else {
+                return ResponseEntity.badRequest()
+                        .body(buildErrorResponse(
+                                HttpStatus.BAD_REQUEST,
+                                "Password Reset Failed",
+                                "Password reset could not be completed",
+                                result.getMessage(),
+                                result.getMessage(),
+                                httpRequest.getRequestURI()));
+            }
+        } catch (RateLimitExceededException e) {
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                    .header("Retry-After", String.valueOf(Math.max(1, e.getRetryAfterSeconds())))
+                    .body(buildErrorResponse(
+                            HttpStatus.TOO_MANY_REQUESTS,
+                            "Too Many Requests",
+                            "Password reset limit exceeded",
+                            e.getMessage(),
+                            e.getMessage(),
+                            httpRequest.getRequestURI()));
         }
     }
 
@@ -378,11 +563,18 @@ public class AuthController {
      * Debug endpoint to check current user's authorities and roles
      */
     @PostMapping("/debug/authorities")
-    public ResponseEntity<?> debugUserAuthorities(org.springframework.security.core.Authentication auth) {
+    public ResponseEntity<?> debugUserAuthorities(org.springframework.security.core.Authentication auth,
+            HttpServletRequest request) {
         try {
             if (auth == null || !auth.isAuthenticated()) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body("Not authenticated");
+                        .body(buildErrorResponse(
+                                HttpStatus.UNAUTHORIZED,
+                                "Authentication Required",
+                                "Authentication is required",
+                                "Not authenticated",
+                                "Sign in before accessing this debug endpoint.",
+                                request.getRequestURI()));
             }
 
             java.util.Map<String, Object> debugInfo = new java.util.HashMap<>();
@@ -406,7 +598,29 @@ public class AuthController {
 
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Debug failed: " + e.getMessage());
+                    .body(buildErrorResponse(
+                            HttpStatus.INTERNAL_SERVER_ERROR,
+                            "Debug Error",
+                            "Debug request failed",
+                            e.getMessage(),
+                            "We could not complete the debug request right now.",
+                            request.getRequestURI()));
         }
+    }
+
+    private ErrorResponse buildErrorResponse(HttpStatus status,
+            String error,
+            String message,
+            String details,
+            String userFriendlyMessage,
+            String path) {
+        return ErrorResponse.builder()
+                .status(status.value())
+                .error(error)
+                .message(message)
+                .details(details)
+                .path(path)
+                .userFriendlyMessage(userFriendlyMessage)
+                .build();
     }
 }

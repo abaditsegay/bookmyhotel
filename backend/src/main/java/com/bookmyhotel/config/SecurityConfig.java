@@ -36,6 +36,11 @@ public class SecurityConfig {
         }
 
         @Bean
+        public RequestCorrelationFilter requestCorrelationFilter() {
+                return new RequestCorrelationFilter();
+        }
+
+        @Bean
         public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
                 http
                                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
@@ -140,6 +145,7 @@ public class SecurityConfig {
                                                 .anyRequest().authenticated())
 
                                 // JWT Authentication Filter
+                                                .addFilterBefore(requestCorrelationFilter(), UsernamePasswordAuthenticationFilter.class)
                                 .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 
                 return http.build();

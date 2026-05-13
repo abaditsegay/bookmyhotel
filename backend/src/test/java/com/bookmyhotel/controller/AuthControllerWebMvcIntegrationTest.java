@@ -2,6 +2,7 @@ package com.bookmyhotel.controller;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -23,6 +24,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import com.bookmyhotel.dto.auth.LoginResponse;
 import com.bookmyhotel.entity.UserRole;
 import com.bookmyhotel.repository.UserRepository;
+import com.bookmyhotel.service.AuthRateLimitService;
 import com.bookmyhotel.service.AuthService;
 import com.bookmyhotel.service.PasswordResetService;
 import com.bookmyhotel.service.PasswordSecurityService;
@@ -59,6 +61,9 @@ class AuthControllerWebMvcIntegrationTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private AuthRateLimitService authRateLimitService;
+
     private MockMvc mockMvc;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -74,6 +79,7 @@ class AuthControllerWebMvcIntegrationTest {
         ReflectionTestUtils.setField(controller, "passwordResetService", passwordResetService);
         ReflectionTestUtils.setField(controller, "systemAuditService", systemAuditService);
         ReflectionTestUtils.setField(controller, "userRepository", userRepository);
+        ReflectionTestUtils.setField(controller, "authRateLimitService", authRateLimitService);
 
         mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
     }
@@ -118,8 +124,26 @@ class AuthControllerWebMvcIntegrationTest {
                                 "email", "guest@example.com",
                                 "password", "wrong"))))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$").value("Invalid email or password"));
+                .andExpect(jsonPath("$.error").value("Authentication Failed"))
+                .andExpect(jsonPath("$.details").value("Invalid email or password"))
+                .andExpect(jsonPath("$.path").value("/api/auth/login"));
     }
+
+            @Test
+            void loginShouldReturnTooManyRequestsWhenRateLimitExceeded() throws Exception {
+            doThrow(new com.bookmyhotel.exception.RateLimitExceededException(
+                "Too many login attempts. Please try again later.",
+                60)).when(authRateLimitService).assertLoginAllowed(any(), any());
+
+            mockMvc.perform(post("/api/auth/login")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(java.util.Map.of(
+                        "email", "guest@example.com",
+                        "password", "wrong"))))
+                .andExpect(status().isTooManyRequests())
+                .andExpect(jsonPath("$.error").value("Too Many Requests"))
+                .andExpect(jsonPath("$.details").value("Too many login attempts. Please try again later."));
+            }
 
     @Test
     void refreshShouldRejectMissingRefreshToken() throws Exception {
@@ -127,7 +151,9 @@ class AuthControllerWebMvcIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(java.util.Map.of())))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$").value("Refresh token is required"));
+                .andExpect(jsonPath("$.error").value("Missing Refresh Token"))
+                .andExpect(jsonPath("$.details").value("Refresh token is required"))
+                .andExpect(jsonPath("$.path").value("/api/auth/refresh"));
     }
 
     @Test
@@ -135,6 +161,19 @@ class AuthControllerWebMvcIntegrationTest {
         mockMvc.perform(post("/api/auth/logout")
                         .header("Authorization", "Token not-a-bearer"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$").value("Missing or invalid Authorization header"));
+                .andExpect(jsonPath("$.error").value("Invalid Authorization Header"))
+                .andExpect(jsonPath("$.details").value("Missing or invalid Authorization header"))
+                .andExpect(jsonPath("$.path").value("/api/auth/logout"));
+    }
+
+    @Test
+    void forgotPasswordShouldReturnStructuredErrorWhenEmailMissing() throws Exception {
+        mockMvc.perform(post("/api/auth/forgot-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(java.util.Map.of())))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Missing Email"))
+                .andExpect(jsonPath("$.details").value("Email is required"))
+                .andExpect(jsonPath("$.path").value("/api/auth/forgot-password"));
     }
 }

@@ -13,19 +13,19 @@ import org.springframework.stereotype.Service;
 @Service
 public class PasswordSecurityService {
 
-    @Value("${security.password.min-length:6}")
+    @Value("${security.password.min-length:8}")
     private int minLength;
 
-    @Value("${security.password.require-uppercase:false}")
+    @Value("${security.password.require-uppercase:true}")
     private boolean requireUppercase;
 
-    @Value("${security.password.require-lowercase:false}")
+    @Value("${security.password.require-lowercase:true}")
     private boolean requireLowercase;
 
-    @Value("${security.password.require-digits:false}")
+    @Value("${security.password.require-digits:true}")
     private boolean requireDigits;
 
-    @Value("${security.password.require-special-chars:false}")
+    @Value("${security.password.require-special-chars:true}")
     private boolean requireSpecialChars;
 
     @Value("${security.password.max-length:128}")
@@ -94,15 +94,15 @@ public class PasswordSecurityService {
             isValid = false;
         }
 
-        // Check against common weak passwords - DISABLED for less restrictive policy
-        // String lowerPassword = password.toLowerCase();
-        // for (String weakPassword : COMMON_WEAK_PASSWORDS) {
-        // if (lowerPassword.contains(weakPassword)) {
-        // errors.add("Password contains common weak patterns and is not secure");
-        // isValid = false;
-        // break;
-        // }
-        // }
+        // Reject common weak passwords even when the rest of the policy passes.
+        String lowerPassword = password.toLowerCase();
+        for (String weakPassword : COMMON_WEAK_PASSWORDS) {
+            if (lowerPassword.contains(weakPassword)) {
+                errors.add("Password contains common weak patterns and is not secure");
+                isValid = false;
+                break;
+            }
+        }
 
         // Check for repeating characters - DISABLED for less restrictive policy
         // if (hasRepeatingCharacters(password, 4)) {

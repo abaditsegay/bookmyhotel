@@ -183,6 +183,28 @@ public class GlobalExceptionHandler {
         }
 
         /**
+         * Handle payment exceptions with a client-visible payment failure response
+         */
+        @ExceptionHandler(PaymentException.class)
+        public ResponseEntity<ErrorResponse> handlePaymentException(
+                        PaymentException ex, WebRequest request) {
+
+                ErrorResponse errorResponse = ErrorResponse.builder()
+                                .timestamp(LocalDateTime.now())
+                                .status(HttpStatus.PAYMENT_REQUIRED.value())
+                                .error("Payment Error")
+                                .message("Payment processing failed")
+                                .details(ex.getMessage())
+                                .path(getPath(request))
+                                .userFriendlyMessage(ex.getMessage())
+                                .build();
+
+                logger.warn("Payment error for request {}: {}", getPath(request), ex.getMessage());
+
+                return ResponseEntity.status(HttpStatus.PAYMENT_REQUIRED).body(errorResponse);
+        }
+
+        /**
          * Handle resource already exists exceptions
          */
         @ExceptionHandler(ResourceAlreadyExistsException.class)
@@ -306,6 +328,30 @@ public class GlobalExceptionHandler {
                 logger.warn("Business rule violation for request {}: {}", getPath(request), ex.getMessage());
 
                 return ResponseEntity.badRequest().body(errorResponse);
+        }
+
+        /**
+         * Handle endpoint throttling and temporary lockout responses.
+         */
+        @ExceptionHandler(RateLimitExceededException.class)
+        public ResponseEntity<ErrorResponse> handleRateLimitExceededException(
+                        RateLimitExceededException ex, WebRequest request) {
+
+                ErrorResponse errorResponse = ErrorResponse.builder()
+                                .timestamp(LocalDateTime.now())
+                                .status(HttpStatus.TOO_MANY_REQUESTS.value())
+                                .error("Too Many Requests")
+                                .message("Request rate limit exceeded")
+                                .details(ex.getMessage())
+                                .path(getPath(request))
+                                .userFriendlyMessage(ex.getMessage())
+                                .build();
+
+                logger.warn("Rate limit exceeded for request {}: {}", getPath(request), ex.getMessage());
+
+                return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                                .header("Retry-After", String.valueOf(Math.max(1, ex.getRetryAfterSeconds())))
+                                .body(errorResponse);
         }
 
         /**

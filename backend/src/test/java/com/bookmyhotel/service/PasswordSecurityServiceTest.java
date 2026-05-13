@@ -82,6 +82,21 @@ class PasswordSecurityServiceTest {
     }
 
     @Test
+    void validatePasswordShouldRejectCommonWeakPatternsEvenWhenComplexityRulesPass() {
+        ReflectionTestUtils.setField(passwordSecurityService, "minLength", 8);
+        ReflectionTestUtils.setField(passwordSecurityService, "requireUppercase", true);
+        ReflectionTestUtils.setField(passwordSecurityService, "requireLowercase", true);
+        ReflectionTestUtils.setField(passwordSecurityService, "requireDigits", true);
+        ReflectionTestUtils.setField(passwordSecurityService, "requireSpecialChars", true);
+
+        PasswordSecurityService.PasswordValidationResult result = passwordSecurityService
+                .validatePassword("Password123!");
+
+        assertFalse(result.isValid());
+        assertIterableEquals(List.of("Password contains common weak patterns and is not secure"), result.getErrors());
+    }
+
+    @Test
     void calculatePasswordStrengthShouldRewardComplexPasswordsWithHighScore() {
         int score = passwordSecurityService.calculatePasswordStrength("Ab9$kLm2#Qr7!");
 
