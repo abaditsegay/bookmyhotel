@@ -38,6 +38,35 @@ public class UatController {
         return ResponseEntity.ok(uatService.getWorkspaceHotel(authentication));
     }
 
+    @GetMapping("/checklist")
+    public ResponseEntity<UatChecklistResponse> getChecklist(Authentication authentication) {
+        return ResponseEntity.ok(uatService.getChecklist(authentication));
+    }
+
+    @PutMapping("/checklist")
+    public ResponseEntity<UatChecklistResponse> upsertChecklist(@Valid @RequestBody UatChecklistRequest request,
+            Authentication authentication) {
+        return ResponseEntity.ok(uatService.upsertChecklist(request, authentication));
+    }
+
+    @GetMapping("/defects")
+    public ResponseEntity<List<UatDefectResponse>> getDefects(Authentication authentication) {
+        return ResponseEntity.ok(uatService.getDefects(authentication));
+    }
+
+    @PostMapping("/defects")
+    public ResponseEntity<UatDefectResponse> createDefect(@Valid @RequestBody UatDefectRequest request,
+            Authentication authentication) {
+        return ResponseEntity.ok(uatService.createDefect(request, authentication));
+    }
+
+    @PutMapping("/defects/{defectId}")
+    public ResponseEntity<UatDefectResponse> updateDefect(@PathVariable Long defectId,
+            @Valid @RequestBody UatDefectRequest request,
+            Authentication authentication) {
+        return ResponseEntity.ok(uatService.updateDefect(defectId, request, authentication));
+    }
+
     @GetMapping("/hotels/{hotelId}/checklist")
     public ResponseEntity<UatChecklistResponse> getChecklist(@PathVariable Long hotelId, Authentication authentication) {
         return ResponseEntity.ok(uatService.getChecklist(hotelId, authentication));

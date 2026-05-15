@@ -22,8 +22,11 @@ public class UatDefect extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "workspace_key", nullable = false, length = 64)
+    private String workspaceKey;
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "hotel_id", nullable = false)
+    @JoinColumn(name = "hotel_id")
     private Hotel hotel;
 
     @Column(name = "summary", nullable = false, length = 255)
@@ -66,6 +69,14 @@ public class UatDefect extends BaseEntity {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getWorkspaceKey() {
+        return workspaceKey;
+    }
+
+    public void setWorkspaceKey(String workspaceKey) {
+        this.workspaceKey = workspaceKey;
     }
 
     public Hotel getHotel() {

@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS uat_checklists (
     id BIGINT NOT NULL AUTO_INCREMENT,
-    hotel_id BIGINT NOT NULL,
+    workspace_key VARCHAR(64) NOT NULL,
+    hotel_id BIGINT NULL,
     tester_name VARCHAR(255) NULL,
     test_environment VARCHAR(255) NULL,
     test_date DATE NULL,
@@ -15,13 +16,15 @@ CREATE TABLE IF NOT EXISTS uat_checklists (
     created_at DATETIME NOT NULL,
     updated_at DATETIME NULL,
     PRIMARY KEY (id),
-    CONSTRAINT uk_uat_checklist_hotel UNIQUE (hotel_id),
-    CONSTRAINT fk_uat_checklists_hotel FOREIGN KEY (hotel_id) REFERENCES hotels (id) ON DELETE CASCADE
+    CONSTRAINT uk_uat_checklist_workspace UNIQUE (workspace_key),
+    CONSTRAINT fk_uat_checklists_hotel FOREIGN KEY (hotel_id) REFERENCES hotels (id) ON DELETE SET NULL,
+    INDEX idx_uat_checklists_hotel (hotel_id)
 );
 
 CREATE TABLE IF NOT EXISTS uat_defects (
     id BIGINT NOT NULL AUTO_INCREMENT,
-    hotel_id BIGINT NOT NULL,
+    workspace_key VARCHAR(64) NOT NULL,
+    hotel_id BIGINT NULL,
     summary VARCHAR(255) NOT NULL,
     tester_detail LONGTEXT NULL,
     severity VARCHAR(32) NOT NULL,
@@ -35,9 +38,10 @@ CREATE TABLE IF NOT EXISTS uat_defects (
     created_at DATETIME NOT NULL,
     updated_at DATETIME NULL,
     PRIMARY KEY (id),
-    CONSTRAINT fk_uat_defects_hotel FOREIGN KEY (hotel_id) REFERENCES hotels (id) ON DELETE CASCADE,
+    CONSTRAINT fk_uat_defects_hotel FOREIGN KEY (hotel_id) REFERENCES hotels (id) ON DELETE SET NULL,
     CONSTRAINT fk_uat_defects_created_by FOREIGN KEY (created_by_user_id) REFERENCES users (id) ON DELETE SET NULL,
     CONSTRAINT fk_uat_defects_updated_by FOREIGN KEY (updated_by_user_id) REFERENCES users (id) ON DELETE SET NULL,
+    INDEX idx_uat_defects_workspace (workspace_key),
     INDEX idx_uat_defects_hotel (hotel_id),
     INDEX idx_uat_defects_status (status),
     INDEX idx_uat_defects_severity (severity)

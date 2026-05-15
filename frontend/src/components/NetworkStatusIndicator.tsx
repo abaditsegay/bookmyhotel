@@ -169,7 +169,7 @@ export const NetworkStatusIndicator: React.FC<NetworkStatusIndicatorProps> = ({
 
         {/* Menu Button */}
         <Tooltip title="Network options">
-          <IconButton size="small" onClick={handleMenuOpen}>
+          <IconButton size="small" onClick={handleMenuOpen} sx={{ color: COLORS.WHITE }}>
             <MoreVertIcon />
           </IconButton>
         </Tooltip>
@@ -290,7 +290,7 @@ export const NetworkStatusIndicator: React.FC<NetworkStatusIndicatorProps> = ({
           </Tooltip>
 
           {/* Menu */}
-          <IconButton color="inherit" onClick={handleMenuOpen} size="small">
+          <IconButton color="inherit" onClick={handleMenuOpen} size="small" sx={{ color: COLORS.WHITE }}>
             <MoreVertIcon />
           </IconButton>
         </Box>

@@ -17,7 +17,7 @@ import jakarta.persistence.UniqueConstraint;
 
 @Entity
 @Table(name = "uat_checklists", uniqueConstraints = {
-        @UniqueConstraint(name = "uk_uat_checklist_hotel", columnNames = "hotel_id")
+    @UniqueConstraint(name = "uk_uat_checklist_workspace", columnNames = "workspace_key")
 })
 public class UatChecklist extends BaseEntity {
 
@@ -25,8 +25,11 @@ public class UatChecklist extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "workspace_key", nullable = false, length = 64)
+    private String workspaceKey;
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "hotel_id", nullable = false)
+    @JoinColumn(name = "hotel_id")
     private Hotel hotel;
 
     @Column(name = "tester_name", length = 255)
@@ -69,6 +72,14 @@ public class UatChecklist extends BaseEntity {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getWorkspaceKey() {
+        return workspaceKey;
+    }
+
+    public void setWorkspaceKey(String workspaceKey) {
+        this.workspaceKey = workspaceKey;
     }
 
     public Hotel getHotel() {

@@ -42,7 +42,6 @@ import {
   UatDefectSeverity,
   UatDefectStatus,
   UatFinalDecision,
-  UatWorkspaceHotel,
 } from '../services/uatApi';
 
 type ChecklistSection = {
@@ -152,8 +151,6 @@ const UatTestingPage: React.FC = () => {
   const isPlatformAdmin = hasAnyRole(['ADMIN', 'SUPER_ADMIN']);
 
   const [activeTab, setActiveTab] = useState(0);
-  const [selectedHotelId, setSelectedHotelId] = useState<number | ''>('');
-  const [workspaceHotel, setWorkspaceHotel] = useState<UatWorkspaceHotel | null>(null);
   const [checklist, setChecklist] = useState<UatChecklist | null>(null);
   const [defects, setDefects] = useState<UatDefect[]>([]);
   const [loading, setLoading] = useState(false);
@@ -191,27 +188,12 @@ const UatTestingPage: React.FC = () => {
       return;
     }
 
-    uatApi.getWorkspaceHotel(token)
-      .then(result => {
-        setWorkspaceHotel(result);
-        setSelectedHotelId(result.hotelId);
-      })
-      .catch(fetchError => {
-        setError(fetchError instanceof Error ? fetchError.message : 'Failed to resolve shared UAT hotel');
-      });
-  }, [token]);
-
-  useEffect(() => {
-    if (!token || !selectedHotelId) {
-      return;
-    }
-
     setLoading(true);
     setError(null);
 
     Promise.all([
-      uatApi.getChecklist(token, Number(selectedHotelId)),
-      uatApi.getDefects(token, Number(selectedHotelId)),
+      uatApi.getChecklist(token),
+      uatApi.getDefects(token),
     ])
       .then(([checklistResponse, defectResponse]) => {
         setChecklist(checklistResponse);
@@ -236,14 +218,14 @@ const UatTestingPage: React.FC = () => {
       .finally(() => {
         setLoading(false);
       });
-  }, [token, selectedHotelId]);
+  }, [token]);
 
   const refreshDefects = async () => {
-    if (!token || !selectedHotelId) {
+    if (!token) {
       return;
     }
 
-    const updatedDefects = await uatApi.getDefects(token, Number(selectedHotelId));
+    const updatedDefects = await uatApi.getDefects(token);
     setDefects(updatedDefects);
   };
 
@@ -258,13 +240,13 @@ const UatTestingPage: React.FC = () => {
   };
 
   const handleChecklistSave = async () => {
-    if (!token || !selectedHotelId) {
+    if (!token) {
       return;
     }
 
     try {
       setSavingChecklist(true);
-      const savedChecklist = await uatApi.saveChecklist(token, Number(selectedHotelId), formState);
+      const savedChecklist = await uatApi.saveChecklist(token, formState);
       setChecklist(savedChecklist);
       setSuccess('UAT checklist saved');
     } catch (saveError) {
@@ -303,15 +285,15 @@ const UatTestingPage: React.FC = () => {
   };
 
   const handleDefectSave = async () => {
-    if (!token || !selectedHotelId) {
+    if (!token) {
       return;
     }
 
     try {
       if (editingDefect) {
-        await uatApi.updateDefect(token, Number(selectedHotelId), editingDefect.id, defectForm);
+        await uatApi.updateDefect(token, editingDefect.id, defectForm);
       } else {
-        await uatApi.createDefect(token, Number(selectedHotelId), defectForm);
+        await uatApi.createDefect(token, defectForm);
       }
       await refreshDefects();
       setDefectDialogOpen(false);
@@ -321,7 +303,8 @@ const UatTestingPage: React.FC = () => {
     }
   };
 
-  const selectedHotelIdNumber = selectedHotelId ? Number(selectedHotelId) : null;
+  const selectedHotelIdNumber = checklist?.hotelId ?? null;
+  const workspaceLoaded = Boolean(checklist);
 
   return (
     <Box sx={{ width: '100%', p: 3 }}>
@@ -331,11 +314,11 @@ const UatTestingPage: React.FC = () => {
             UAT Testing Workspace
           </Typography>
           <Typography variant="body1" color="text.secondary">
-            Use the sign-off checklist during UAT and track open defects, admin notes, fix details, and closure state for the shared platform test hotel.
+            Use the sign-off checklist during UAT and track open defects, admin notes, fix details, and closure state for the shared platform UAT workspace.
           </Typography>
         </Box>
         {selectedHotelIdNumber && (
-          <Chip color="primary" label={workspaceHotel?.hotelName || checklist?.hotelName || `Hotel ${selectedHotelIdNumber}`} />
+          <Chip color="primary" label={checklist?.hotelName || `Hotel ${selectedHotelIdNumber}`} />
         )}
       </Box>
 
@@ -351,28 +334,13 @@ const UatTestingPage: React.FC = () => {
         </Alert>
       )}
 
-      {workspaceHotel && (
-        <Paper sx={{ p: 2, mb: 3 }}>
-          <Typography variant="subtitle2" color="text.secondary">Shared UAT Hotel</Typography>
-          <Typography variant="h6">{workspaceHotel.hotelName}</Typography>
-          <Typography variant="body2" color="text.secondary">
-            {workspaceHotel.city ? `${workspaceHotel.city}${workspaceHotel.country ? `, ${workspaceHotel.country}` : ''}` : 'Platform-wide UAT workspace'}
-          </Typography>
-          {isPlatformAdmin && (
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-              Admin access uses this single shared hotel for all UAT execution. Hotel switching is intentionally disabled here.
-            </Typography>
-          )}
-        </Paper>
-      )}
-
-      {!selectedHotelId && !loading && (
+      {!workspaceLoaded && !loading && !error && (
         <Alert severity="info">
-          Waiting for the shared UAT hotel to be resolved.
+          Waiting for the UAT workspace to load.
         </Alert>
       )}
 
-      {selectedHotelId && (
+      {workspaceLoaded && (
         <Paper>
           <Tabs value={activeTab} onChange={(_, value) => setActiveTab(value)}>
             <Tab icon={<FactCheck />} iconPosition="start" label="UAT Sign-Off Checklist" />

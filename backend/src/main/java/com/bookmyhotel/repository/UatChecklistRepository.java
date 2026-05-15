@@ -11,4 +11,6 @@ import com.bookmyhotel.entity.UatChecklist;
 public interface UatChecklistRepository extends JpaRepository<UatChecklist, Long> {
 
     Optional<UatChecklist> findByHotelId(Long hotelId);
+
+    Optional<UatChecklist> findByWorkspaceKey(String workspaceKey);
 }

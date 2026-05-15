@@ -228,7 +228,8 @@ CREATE TABLE IF NOT EXISTS payment_callback_events (
 
     CREATE TABLE IF NOT EXISTS uat_checklists (
         id BIGINT NOT NULL AUTO_INCREMENT,
-        hotel_id BIGINT NOT NULL,
+        workspace_key VARCHAR(64) NOT NULL,
+        hotel_id BIGINT NULL,
         tester_name VARCHAR(255) NULL,
         test_environment VARCHAR(255) NULL,
         test_date DATE NULL,
@@ -243,13 +244,15 @@ CREATE TABLE IF NOT EXISTS payment_callback_events (
         created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         PRIMARY KEY (id),
-        UNIQUE KEY uk_uat_checklist_hotel (hotel_id),
-        CONSTRAINT fk_uat_checklists_hotel FOREIGN KEY (hotel_id) REFERENCES hotels (id) ON DELETE CASCADE
+        UNIQUE KEY uk_uat_checklist_workspace (workspace_key),
+        KEY idx_uat_checklists_hotel (hotel_id),
+        CONSTRAINT fk_uat_checklists_hotel FOREIGN KEY (hotel_id) REFERENCES hotels (id) ON DELETE SET NULL
     );
 
     CREATE TABLE IF NOT EXISTS uat_defects (
         id BIGINT NOT NULL AUTO_INCREMENT,
-        hotel_id BIGINT NOT NULL,
+        workspace_key VARCHAR(64) NOT NULL,
+        hotel_id BIGINT NULL,
         summary VARCHAR(255) NOT NULL,
         tester_detail LONGTEXT NULL,
         severity VARCHAR(32) NOT NULL,
@@ -263,13 +266,136 @@ CREATE TABLE IF NOT EXISTS payment_callback_events (
         created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         PRIMARY KEY (id),
-        CONSTRAINT fk_uat_defects_hotel FOREIGN KEY (hotel_id) REFERENCES hotels (id) ON DELETE CASCADE,
+        CONSTRAINT fk_uat_defects_hotel FOREIGN KEY (hotel_id) REFERENCES hotels (id) ON DELETE SET NULL,
         CONSTRAINT fk_uat_defects_created_by FOREIGN KEY (created_by_user_id) REFERENCES users (id) ON DELETE SET NULL,
         CONSTRAINT fk_uat_defects_updated_by FOREIGN KEY (updated_by_user_id) REFERENCES users (id) ON DELETE SET NULL,
+        INDEX idx_uat_defects_workspace (workspace_key),
         INDEX idx_uat_defects_hotel (hotel_id),
         INDEX idx_uat_defects_status (status),
         INDEX idx_uat_defects_severity (severity)
     );
+
+    SET @schema_name = DATABASE();
+
+    SET @has_uat_checklist_workspace = (
+        SELECT COUNT(*) FROM information_schema.COLUMNS
+        WHERE TABLE_SCHEMA = @schema_name AND TABLE_NAME = 'uat_checklists' AND COLUMN_NAME = 'workspace_key'
+    );
+    SET @sql = IF(@has_uat_checklist_workspace = 0,
+        'ALTER TABLE uat_checklists ADD COLUMN workspace_key VARCHAR(64) NULL AFTER hotel_id',
+        'SELECT 1');
+    PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+    SET @has_uat_checklist_fk = (
+        SELECT COUNT(*) FROM information_schema.TABLE_CONSTRAINTS
+        WHERE TABLE_SCHEMA = @schema_name AND TABLE_NAME = 'uat_checklists' AND CONSTRAINT_NAME = 'fk_uat_checklists_hotel'
+    );
+    SET @sql = IF(@has_uat_checklist_fk > 0,
+        'ALTER TABLE uat_checklists DROP FOREIGN KEY fk_uat_checklists_hotel',
+        'SELECT 1');
+    PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+    SET @has_uat_checklist_unique = (
+        SELECT COUNT(*) FROM information_schema.STATISTICS
+        WHERE TABLE_SCHEMA = @schema_name AND TABLE_NAME = 'uat_checklists' AND INDEX_NAME = 'uk_uat_checklist_hotel'
+    );
+    SET @sql = IF(@has_uat_checklist_unique > 0,
+        'ALTER TABLE uat_checklists DROP INDEX uk_uat_checklist_hotel',
+        'SELECT 1');
+    PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+    SET @uat_checklist_hotel_not_null = (
+        SELECT COUNT(*) FROM information_schema.COLUMNS
+        WHERE TABLE_SCHEMA = @schema_name AND TABLE_NAME = 'uat_checklists' AND COLUMN_NAME = 'hotel_id' AND IS_NULLABLE = 'NO'
+    );
+    SET @sql = IF(@uat_checklist_hotel_not_null > 0,
+        'ALTER TABLE uat_checklists MODIFY hotel_id BIGINT NULL',
+        'SELECT 1');
+    PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+    UPDATE uat_checklists SET workspace_key = 'PLATFORM' WHERE workspace_key IS NULL OR workspace_key = '';
+    UPDATE uat_checklists uc
+    LEFT JOIN hotels h ON h.id = uc.hotel_id
+    SET uc.hotel_id = NULL
+    WHERE uc.hotel_id IS NOT NULL AND h.id IS NULL;
+
+    SET @uat_checklist_workspace_not_null = (
+        SELECT COUNT(*) FROM information_schema.COLUMNS
+        WHERE TABLE_SCHEMA = @schema_name AND TABLE_NAME = 'uat_checklists' AND COLUMN_NAME = 'workspace_key' AND IS_NULLABLE = 'YES'
+    );
+    SET @sql = IF(@uat_checklist_workspace_not_null > 0,
+        'ALTER TABLE uat_checklists MODIFY workspace_key VARCHAR(64) NOT NULL',
+        'SELECT 1');
+    PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+    SET @has_uat_checklist_workspace_unique = (
+        SELECT COUNT(*) FROM information_schema.STATISTICS
+        WHERE TABLE_SCHEMA = @schema_name AND TABLE_NAME = 'uat_checklists' AND INDEX_NAME = 'uk_uat_checklist_workspace'
+    );
+    SET @sql = IF(@has_uat_checklist_workspace_unique = 0,
+        'ALTER TABLE uat_checklists ADD CONSTRAINT uk_uat_checklist_workspace UNIQUE (workspace_key)',
+        'SELECT 1');
+    PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+    SET @has_uat_checklists_hotel_index = (
+        SELECT COUNT(*) FROM information_schema.STATISTICS
+        WHERE TABLE_SCHEMA = @schema_name AND TABLE_NAME = 'uat_checklists' AND INDEX_NAME = 'idx_uat_checklists_hotel'
+    );
+    SET @sql = IF(@has_uat_checklists_hotel_index = 0,
+        'ALTER TABLE uat_checklists ADD INDEX idx_uat_checklists_hotel (hotel_id)',
+        'SELECT 1');
+    PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+    SET @has_uat_checklist_fk = (
+        SELECT COUNT(*) FROM information_schema.TABLE_CONSTRAINTS
+        WHERE TABLE_SCHEMA = @schema_name AND TABLE_NAME = 'uat_checklists' AND CONSTRAINT_NAME = 'fk_uat_checklists_hotel'
+    );
+    SET @sql = IF(@has_uat_checklist_fk = 0,
+        'ALTER TABLE uat_checklists ADD CONSTRAINT fk_uat_checklists_hotel FOREIGN KEY (hotel_id) REFERENCES hotels (id) ON DELETE SET NULL',
+        'SELECT 1');
+    PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+    SET @has_uat_defects_workspace = (
+        SELECT COUNT(*) FROM information_schema.COLUMNS
+        WHERE TABLE_SCHEMA = @schema_name AND TABLE_NAME = 'uat_defects' AND COLUMN_NAME = 'workspace_key'
+    );
+    SET @sql = IF(@has_uat_defects_workspace = 0,
+        'ALTER TABLE uat_defects ADD COLUMN workspace_key VARCHAR(64) NULL AFTER hotel_id',
+        'SELECT 1');
+    PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+    SET @uat_defects_hotel_not_null = (
+        SELECT COUNT(*) FROM information_schema.COLUMNS
+        WHERE TABLE_SCHEMA = @schema_name AND TABLE_NAME = 'uat_defects' AND COLUMN_NAME = 'hotel_id' AND IS_NULLABLE = 'NO'
+    );
+    SET @sql = IF(@uat_defects_hotel_not_null > 0,
+        'ALTER TABLE uat_defects MODIFY hotel_id BIGINT NULL',
+        'SELECT 1');
+    PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+    UPDATE uat_defects SET workspace_key = 'PLATFORM' WHERE workspace_key IS NULL OR workspace_key = '';
+    UPDATE uat_defects ud
+    LEFT JOIN hotels h ON h.id = ud.hotel_id
+    SET ud.hotel_id = NULL
+    WHERE ud.hotel_id IS NOT NULL AND h.id IS NULL;
+
+    SET @uat_defects_workspace_not_null = (
+        SELECT COUNT(*) FROM information_schema.COLUMNS
+        WHERE TABLE_SCHEMA = @schema_name AND TABLE_NAME = 'uat_defects' AND COLUMN_NAME = 'workspace_key' AND IS_NULLABLE = 'YES'
+    );
+    SET @sql = IF(@uat_defects_workspace_not_null > 0,
+        'ALTER TABLE uat_defects MODIFY workspace_key VARCHAR(64) NOT NULL',
+        'SELECT 1');
+    PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+    SET @has_uat_defects_workspace_index = (
+        SELECT COUNT(*) FROM information_schema.STATISTICS
+        WHERE TABLE_SCHEMA = @schema_name AND TABLE_NAME = 'uat_defects' AND INDEX_NAME = 'idx_uat_defects_workspace'
+    );
+    SET @sql = IF(@has_uat_defects_workspace_index = 0,
+        'ALTER TABLE uat_defects ADD INDEX idx_uat_defects_workspace (workspace_key)',
+        'SELECT 1');
+    PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 SQL
 
 echo "✅ Database schema patch applied successfully"
@@ -319,7 +445,7 @@ done
 # Final status
 print_status "🎉 Backend deployment completed successfully!"
 print_status "Backend URL: http://$LIGHTSAIL_IP/api/"
-print_status "Health Check: http://$LIGHTSAIL_IP/actuator/health"
+print_status "Health Check: http://$LIGHTSAIL_IP/managemyhotel/actuator/health"
 print_status ""
 print_status "To view logs: ssh $SSH_OPTS $LIGHTSAIL_USER@$LIGHTSAIL_IP 'sudo journalctl -u bookmyhotel-backend.service -f'"
 print_status "To restart service: ssh $SSH_OPTS $LIGHTSAIL_USER@$LIGHTSAIL_IP 'sudo systemctl restart bookmyhotel-backend.service'"

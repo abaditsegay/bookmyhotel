@@ -56,7 +56,7 @@ export interface PaginatedResponse<T> {
   empty: boolean;
 }
 
-export const useNotifications = () => {
+export const useNotifications = (enabled: boolean = true) => {
   const { token, isInitializing, hasRole } = useAuth();
   const [notifications, setNotifications] = useState<BookingNotification[]>([]);
   const [stats, setStats] = useState<NotificationStats>({ 
@@ -80,6 +80,14 @@ export const useNotifications = () => {
   };
 
   const loadNotifications = useCallback(async () => {
+    if (!enabled) {
+      setNotifications([]);
+      setStats({ totalUnread: 0, unreadCancellations: 0, unreadModifications: 0 });
+      setLoading(false);
+      setError(null);
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
@@ -118,7 +126,7 @@ export const useNotifications = () => {
     } finally {
       setLoading(false);
     }
-  }, [hasRole]);
+  }, [enabled, hasRole]);
 
   const markAsRead = async (notificationId: number) => {
     // Skip for super admin or users without proper roles
@@ -232,6 +240,12 @@ export const useNotifications = () => {
 
   // Load notifications on hook initialization and when user changes
   useEffect(() => {
+    if (!enabled) {
+      setLoading(false);
+      setError(null);
+      return;
+    }
+
     // Wait for auth initialization to complete and ensure we have a token
     if (!isInitializing && token) {
       loadNotifications();
@@ -240,10 +254,14 @@ export const useNotifications = () => {
       setLoading(false);
       setError('Authentication required');
     }
-  }, [loadNotifications, isInitializing, token]);
+  }, [enabled, loadNotifications, isInitializing, token]);
 
   // Event-based refresh: Refresh when user returns to the page/tab
   useEffect(() => {
+    if (!enabled) {
+      return;
+    }
+
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible' && !loading && token) {
         // Refresh notifications when user returns to the tab
@@ -265,7 +283,7 @@ export const useNotifications = () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('focus', handleFocus);
     };
-  }, [loadNotifications, loading, token]);
+  }, [enabled, loadNotifications, loading, token]);
 
   return {
     notifications,

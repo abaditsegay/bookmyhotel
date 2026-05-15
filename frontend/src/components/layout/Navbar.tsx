@@ -45,7 +45,8 @@ const Navbar: React.FC = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
   const { user, logout } = useAuth();
-  const { stats } = useNotifications();
+  const shouldLoadNotifications = user?.role === 'HOTEL_ADMIN' || user?.role === 'FRONTDESK';
+  const { stats } = useNotifications(shouldLoadNotifications);
   
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);

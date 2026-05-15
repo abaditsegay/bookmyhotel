@@ -64,6 +64,9 @@ interface OfflineWalkInBookingProps {
   onBookingComplete?: (booking: OfflineBooking) => void;
 }
 
+const DEFAULT_VAT_RATE = 0.15;
+const DEFAULT_SERVICE_TAX_RATE = 0.05;
+
 // Room types and payment methods for dropdowns (can be added back if needed for future features)
 
 const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
@@ -120,8 +123,8 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
   const [pendingSyncCount, setPendingSyncCount] = useState(0);
   const [cachedRooms, setCachedRooms] = useState<CachedRoom[]>([]);
   const [roomsLoaded, setRoomsLoaded] = useState(false);
-  const [hotelVatRate, setHotelVatRate] = useState<number>(0);
-  const [hotelServiceTaxRate, setHotelServiceTaxRate] = useState<number>(0);
+  const [hotelVatRate, setHotelVatRate] = useState<number>(DEFAULT_VAT_RATE);
+  const [hotelServiceTaxRate, setHotelServiceTaxRate] = useState<number>(DEFAULT_SERVICE_TAX_RATE);
 
   const resolvedHotelId = hotelId || (user?.hotelId ? parseInt(user.hotelId) : null);
 
@@ -163,8 +166,8 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
 
   useEffect(() => {
     if (!resolvedHotelId) {
-      setHotelVatRate(0);
-      setHotelServiceTaxRate(0);
+      setHotelVatRate(DEFAULT_VAT_RATE);
+      setHotelServiceTaxRate(DEFAULT_SERVICE_TAX_RATE);
       return;
     }
 
@@ -174,12 +177,15 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
       const cachedTaxRates = localStorage.getItem(cacheKey);
       if (cachedTaxRates) {
         const parsedRates = JSON.parse(cachedTaxRates) as { vatRate?: number; serviceTaxRate?: number };
-        setHotelVatRate(parsedRates.vatRate || 0);
-        setHotelServiceTaxRate(parsedRates.serviceTaxRate || 0);
+        setHotelVatRate(parsedRates.vatRate ?? DEFAULT_VAT_RATE);
+        setHotelServiceTaxRate(parsedRates.serviceTaxRate ?? DEFAULT_SERVICE_TAX_RATE);
+      } else {
+        setHotelVatRate(DEFAULT_VAT_RATE);
+        setHotelServiceTaxRate(DEFAULT_SERVICE_TAX_RATE);
       }
     } catch {
-      setHotelVatRate(0);
-      setHotelServiceTaxRate(0);
+      setHotelVatRate(DEFAULT_VAT_RATE);
+      setHotelServiceTaxRate(DEFAULT_SERVICE_TAX_RATE);
     }
 
     if (!isOnline || !token) {
@@ -205,8 +211,8 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
         }
 
         const taxData = await response.json();
-        const vatRate = taxData.vatRate || 0;
-        const serviceTaxRate = taxData.serviceTaxRate || 0;
+        const vatRate = taxData.vatRate ?? DEFAULT_VAT_RATE;
+        const serviceTaxRate = taxData.serviceTaxRate ?? DEFAULT_SERVICE_TAX_RATE;
 
         setHotelVatRate(vatRate);
         setHotelServiceTaxRate(serviceTaxRate);

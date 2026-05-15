@@ -6,7 +6,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -28,6 +27,7 @@ import com.bookmyhotel.entity.BookingNotification;
 import com.bookmyhotel.entity.DiscountType;
 import com.bookmyhotel.entity.GuestInfo;
 import com.bookmyhotel.entity.Hotel;
+import com.bookmyhotel.entity.HotelPricingConfig;
 import com.bookmyhotel.entity.HousekeepingTask;
 import com.bookmyhotel.entity.HousekeepingTaskStatus;
 import com.bookmyhotel.entity.HousekeepingTaskType;
@@ -58,6 +58,7 @@ import com.bookmyhotel.enums.NotificationType;
 import com.bookmyhotel.repository.BookingHistoryRepository;
 import com.bookmyhotel.repository.BookingNotificationRepository;
 import com.bookmyhotel.repository.HotelRepository;
+import com.bookmyhotel.repository.HotelPricingConfigRepository;
 import com.bookmyhotel.repository.HousekeepingTaskRepository;
 import com.bookmyhotel.repository.MaintenanceTaskRepository;
 import com.bookmyhotel.repository.ProductRepository;
@@ -84,9 +85,13 @@ public class EthiopianDemoDatasetSeeder {
             RoomType.FAMILY, new BigDecimal("5600.00"),
             RoomType.ACCESSIBLE, new BigDecimal("3500.00"),
             RoomType.PRESIDENTIAL, new BigDecimal("12000.00"));
+        private static final BigDecimal DEFAULT_VAT_RATE = new BigDecimal("0.1500");
+        private static final BigDecimal DEFAULT_SERVICE_TAX_RATE = new BigDecimal("0.0500");
+        private static final BigDecimal DEFAULT_CITY_TAX_RATE = new BigDecimal("0.0200");
 
     private final TenantRepository tenantRepository;
     private final HotelRepository hotelRepository;
+        private final HotelPricingConfigRepository hotelPricingConfigRepository;
     private final UserRepository userRepository;
     private final RoomRepository roomRepository;
     private final RoomTypePricingRepository roomTypePricingRepository;
@@ -124,6 +129,7 @@ public class EthiopianDemoDatasetSeeder {
 
     public EthiopianDemoDatasetSeeder(TenantRepository tenantRepository,
             HotelRepository hotelRepository,
+            HotelPricingConfigRepository hotelPricingConfigRepository,
             UserRepository userRepository,
             RoomRepository roomRepository,
             RoomTypePricingRepository roomTypePricingRepository,
@@ -141,6 +147,7 @@ public class EthiopianDemoDatasetSeeder {
             JdbcTemplate jdbcTemplate) {
         this.tenantRepository = tenantRepository;
         this.hotelRepository = hotelRepository;
+        this.hotelPricingConfigRepository = hotelPricingConfigRepository;
         this.userRepository = userRepository;
         this.roomRepository = roomRepository;
         this.roomTypePricingRepository = roomTypePricingRepository;
@@ -228,15 +235,24 @@ public class EthiopianDemoDatasetSeeder {
     private void resetBusinessData(String preservedSuperAdminEmail) {
         jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 0");
         try {
+            deleteIfTableExists("booking_modification_history");
             deleteIfTableExists("booking_notifications");
             deleteIfTableExists("booking_history");
             deleteIfTableExists("room_charges");
             deleteIfTableExists("shop_order_items");
             deleteIfTableExists("shop_orders");
+            deleteIfTableExists("seasonal_rates");
+            deleteIfTableExists("pricing_strategies");
+            deleteIfTableExists("hotel_pricing_config");
             deleteIfTableExists("housekeeping_tasks");
+            deleteIfTableExists("housekeeping_staff");
             deleteIfTableExists("maintenance_tasks");
+            deleteIfTableExists("maintenance_requests");
             deleteIfTableExists("staff_schedules");
             deleteIfTableExists("promotional_codes");
+            deleteIfTableExists("todos");
+            deleteIfTableExists("uat_defects");
+            deleteIfTableExists("uat_checklists");
             deleteIfTableExists("products");
             deleteIfTableExists("room_type_pricing");
             deleteIfTableExists("reservations");
@@ -286,12 +302,13 @@ public class EthiopianDemoDatasetSeeder {
 
     private SeedContext seedHotel(Tenant tenant, EthiopianDemoDatasetCatalog.HotelSeedSpec spec, int seedIndex, Random random) {
         Hotel hotel = createHotel(tenant, spec, seedIndex);
+        HotelPricingConfig pricingConfig = createHotelPricingConfig(hotel, seedIndex);
         List<RoomTypePricing> pricing = createRoomTypePricing(hotel);
         List<Room> rooms = createRooms(hotel, spec.roomCount(), random);
         StaffBundle staff = createStaff(hotel, spec, seedIndex, random);
         List<User> customers = createCustomers(spec, seedIndex, random);
         List<Product> products = createProducts(hotel, spec, seedIndex);
-        List<Reservation> reservations = createReservations(hotel, rooms, customers, spec, seedIndex, random);
+        List<Reservation> reservations = createReservations(hotel, rooms, customers, pricingConfig, spec, seedIndex, random);
 
         createShopOrders(hotel, reservations, products, customers, spec, seedIndex, random);
         createRoomCharges(hotel, reservations, spec, staff.hotelAdmin(), random);
@@ -302,7 +319,7 @@ public class EthiopianDemoDatasetSeeder {
         createBookingHistory(reservations, staff.hotelAdmin(), random);
         createBookingNotifications(reservations, random);
 
-        return new SeedContext(hotel, rooms, pricing, staff, customers, reservations, products);
+        return new SeedContext(hotel, pricingConfig, rooms, pricing, staff, customers, reservations, products);
     }
 
     private Hotel createHotel(Tenant tenant, EthiopianDemoDatasetCatalog.HotelSeedSpec spec, int index) {
@@ -328,6 +345,40 @@ public class EthiopianDemoDatasetSeeder {
         hotel.setIsActive(true);
         hotel.setIsPubliclyListed(true);
         return hotelRepository.save(hotel);
+    }
+
+    private HotelPricingConfig createHotelPricingConfig(Hotel hotel, int index) {
+        HotelPricingConfig config = new HotelPricingConfig();
+        config.setHotel(hotel);
+        config.setPricingStrategy(HotelPricingConfig.PricingStrategy.SEASONAL);
+        config.setVatRate(DEFAULT_VAT_RATE);
+        config.setServiceTaxRate(DEFAULT_SERVICE_TAX_RATE);
+        config.setCityTaxRate(DEFAULT_CITY_TAX_RATE);
+        config.setDynamicPricingEnabled(Boolean.TRUE);
+        config.setPeakSeasonMultiplier(new BigDecimal("1.18"));
+        config.setOffSeasonMultiplier(new BigDecimal("0.92"));
+        config.setWeekendMultiplier(new BigDecimal("1.08"));
+        config.setHolidayMultiplier(new BigDecimal("1.12"));
+        config.setCancellationFeeRate(new BigDecimal("0.3500"));
+        config.setRefundPolicy7PlusDays(new BigDecimal("1.0000"));
+        config.setRefundPolicy3To7Days(new BigDecimal("0.6500"));
+        config.setRefundPolicy1To2Days(new BigDecimal("0.3000"));
+        config.setRefundPolicySameDay(BigDecimal.ZERO);
+        config.setModificationFeeRate(new BigDecimal("0.0500"));
+        config.setNoShowPenaltyRate(new BigDecimal("1.0000"));
+        config.setCurrencyCode("ETB");
+        config.setTaxInclusivePricing(Boolean.FALSE);
+        config.setMinimumStayNights(1);
+        config.setMaximumAdvanceBookingDays(365);
+        config.setMinimumAdvanceBookingHours(2);
+        config.setLoyaltyDiscountRate(new BigDecimal("0.0500"));
+        config.setEarlyBookingDiscountRate(new BigDecimal("0.0800"));
+        config.setEarlyBookingDaysThreshold(21);
+        config.setVersion(1);
+        config.setCreatedBy("seed-system");
+        config.setUpdatedBy("seed-system");
+        config.setNotes("Seeded Ethiopian demo pricing and tax configuration for hotel booking operations.");
+        return hotelPricingConfigRepository.save(config);
     }
 
     private List<RoomTypePricing> createRoomTypePricing(Hotel hotel) {
@@ -473,8 +524,8 @@ public class EthiopianDemoDatasetSeeder {
         return product;
     }
 
-    private List<Reservation> createReservations(Hotel hotel, List<Room> rooms, List<User> customers,
-            EthiopianDemoDatasetCatalog.HotelSeedSpec spec, int hotelIndex, Random random) {
+        private List<Reservation> createReservations(Hotel hotel, List<Room> rooms, List<User> customers,
+            HotelPricingConfig pricingConfig, EthiopianDemoDatasetCatalog.HotelSeedSpec spec, int hotelIndex, Random random) {
         List<Reservation> reservations = new ArrayList<>();
         LocalDate baseDate = LocalDate.now().minusDays(40);
 
@@ -491,7 +542,7 @@ public class EthiopianDemoDatasetSeeder {
             reservation.setCheckOutDate(checkIn.plusDays(nights));
             reservation.setRoomType(room.getRoomType());
             reservation.setPricePerNight(room.getPricePerNight());
-            reservation.setTotalAmount(room.getPricePerNight().multiply(BigDecimal.valueOf(nights)));
+            reservation.setTotalAmount(calculateBookingTotal(room.getPricePerNight(), nights, pricingConfig));
             reservation.setNumberOfGuests(Math.min(room.getCapacity(), 1 + (i % room.getCapacity())));
             reservation.setConfirmationNumber(String.format(Locale.ROOT, "ETH%02d%04d", hotelIndex + 1, i + 1));
             reservation.setSpecialRequests(i % 5 == 0 ? "Airport pickup and early coffee ceremony setup" : null);
@@ -523,6 +574,14 @@ public class EthiopianDemoDatasetSeeder {
         }
 
         return reservationRepository.saveAll(reservations);
+    }
+
+    private BigDecimal calculateBookingTotal(BigDecimal pricePerNight, int nights, HotelPricingConfig pricingConfig) {
+        BigDecimal subtotal = pricePerNight.multiply(BigDecimal.valueOf(nights));
+        BigDecimal totalTaxRate = pricingConfig.getVatRate()
+                .add(pricingConfig.getServiceTaxRate())
+                .add(pricingConfig.getCityTaxRate());
+        return subtotal.multiply(BigDecimal.ONE.add(totalTaxRate)).setScale(2, RoundingMode.HALF_UP);
     }
 
     private void createShopOrders(Hotel hotel, List<Reservation> reservations, List<Product> products, List<User> customers,
@@ -855,6 +914,7 @@ public class EthiopianDemoDatasetSeeder {
 
     private record SeedContext(
             Hotel hotel,
+            HotelPricingConfig pricingConfig,
             List<Room> rooms,
             List<RoomTypePricing> pricing,
             StaffBundle staff,
