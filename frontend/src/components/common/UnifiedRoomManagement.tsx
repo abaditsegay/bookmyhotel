@@ -41,6 +41,8 @@ import {
   Edit as EditIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
+import { useDebounce } from '../../hooks/useDebounce';
 import { formatCurrency } from '../../utils/currencyUtils';
 import { buildApiUrl } from '../../config/apiConfig';
 import { hotelAdminApi, RoomCreateRequest, RoomLimitInfo } from '../../services/hotelAdminApi';
@@ -50,6 +52,7 @@ import PremiumTextField from './PremiumTextField';
 import PremiumSelect from './PremiumSelect';
 import StandardButton from './StandardButton';
 import { COLORS, addAlpha } from '../../theme/themeColors';
+import { getEffectiveSearchTerm } from '../../utils/search';
 
 // Import hotel admin specific components conditionally
 let RoomTypePricing: any = null;
@@ -89,6 +92,7 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
 }) => {
   const { t } = useTranslation();
   const { token } = useAuth();
+  const { showSubmissionError } = useSubmissionError();
   
   // Determine translation key prefix based on mode
   const translationPrefix = mode === 'hotel-admin' 
@@ -99,6 +103,8 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, searchTerm.trim() ? 300 : 0);
+  const effectiveSearchTerm = getEffectiveSearchTerm(debouncedSearchTerm);
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [roomTypeFilter, setRoomTypeFilter] = useState<string>('ALL');
   const [page, setPage] = useState(0);
@@ -135,6 +141,10 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
     if (!token) return;
 
     try {
+      if (effectiveSearchTerm === null) {
+        return;
+      }
+
       setLoading(true);
       setError(null);
 
@@ -144,7 +154,7 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
             token,
             page,
             rowsPerPage,
-            searchTerm || undefined,
+            effectiveSearchTerm || undefined,
             roomTypeFilter && roomTypeFilter !== 'ALL' ? roomTypeFilter : undefined,
             statusFilter && statusFilter !== 'ALL' ? statusFilter : undefined
           )
@@ -152,7 +162,7 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
             token,
             page,
             rowsPerPage,
-            searchTerm || undefined,
+            effectiveSearchTerm || undefined,
             undefined, // roomNumber filter
             roomTypeFilter && roomTypeFilter !== 'ALL' ? roomTypeFilter : undefined,
             statusFilter && statusFilter !== 'ALL' ? statusFilter : undefined
@@ -199,7 +209,7 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
     } finally {
       setLoading(false);
     }
-  }, [token, page, rowsPerPage, searchTerm, statusFilter, roomTypeFilter, mode]);
+  }, [token, page, rowsPerPage, effectiveSearchTerm, statusFilter, roomTypeFilter, mode]);
 
   const loadRoomLimit = useCallback(async () => {
     if (!token || mode !== 'hotel-admin') return;
@@ -224,8 +234,13 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
-    setPage(0);
   };
+
+  useEffect(() => {
+    if (effectiveSearchTerm !== null) {
+      setPage(0);
+    }
+  }, [effectiveSearchTerm]);
 
   const handleStatusFilterChange = (event: SelectChangeEvent) => {
     setStatusFilter(event.target.value);
@@ -276,7 +291,9 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
       }
     } catch (error) {
       // console.error('Failed to update room status:', error);
-      setError('Failed to update room status');
+      showSubmissionError(error, {
+        fallbackMessage: 'Failed to update room status',
+      });
     }
   };
 
@@ -305,7 +322,9 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
       }
     } catch (error) {
       // console.error('Failed to update room availability:', error);
-      setError('Failed to update room availability');
+      showSubmissionError(error, {
+        fallbackMessage: 'Failed to update room availability',
+      });
     }
   };
 
@@ -340,7 +359,9 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
           await loadRoomLimit();
           setError(null);
         } else {
-          setError(response.message || 'Failed to create room. Please check the room number is unique.');
+          showSubmissionError(response.message || 'Failed to create room. Please check the room number is unique.', {
+            fallbackMessage: 'Failed to create room. Please check the room number is unique.',
+          });
         }
       } else {
         // Multiple rooms — use batch endpoint
@@ -360,16 +381,20 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
             setError(null);
           } else {
             const failedList = data.failedRooms.map(f => `${f.roomNumber}: ${f.error}`).join(', ');
-            setError(`${data.created} room(s) created. ${data.failed} failed: ${failedList}`);
+            showSubmissionError(`${data.created} room(s) created. ${data.failed} failed: ${failedList}`);
           }
           await loadRooms();
           await loadRoomLimit();
         } else {
-          setError(response.message || 'Failed to create rooms.');
+          showSubmissionError(response.message || 'Failed to create rooms.', {
+            fallbackMessage: 'Failed to create rooms.',
+          });
         }
       }
     } catch (err) {
-      setError('Failed to create room(s). Please try again.');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to create room(s). Please try again.',
+      });
     } finally {
       setLoading(false);
     }

@@ -34,6 +34,7 @@ import {
   Badge as BadgeIcon,
 } from '@mui/icons-material';
 import { useAuthenticatedApi } from '../../hooks/useAuthenticatedApi';
+import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
 import PremiumDisplayField from '../../components/common/PremiumDisplayField';
 
 interface UserData {
@@ -55,6 +56,7 @@ const UserViewEdit: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { adminApiService } = useAuthenticatedApi();
+  const { showSubmissionError } = useSubmissionError();
   
   const [user, setUser] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -149,7 +151,9 @@ const UserViewEdit: React.FC = () => {
       navigate(`/admin/users/${id}`);
     } catch (error) {
       // console.error('Error updating user:', error);
-      setError('Failed to update user');
+      showSubmissionError(error, {
+        fallbackMessage: 'Failed to update user',
+      });
     } finally {
       setSaving(false);
     }

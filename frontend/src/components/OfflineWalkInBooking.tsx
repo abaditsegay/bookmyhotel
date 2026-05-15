@@ -33,7 +33,7 @@ import { formatDateCalendarAware } from '../utils/dateUtils';
 import { useAuth } from '../contexts/AuthContext';
 import { useTenant } from '../contexts/TenantContext';
 import { useTranslation } from 'react-i18next';
-import { API_CONFIG } from '../config/apiConfig';
+import { API_CONFIG, buildApiUrl } from '../config/apiConfig';
 import { offlineStorage, OfflineBooking, GuestInfo, CachedRoom } from '../services/OfflineStorageService';
 import { syncManager } from '../services/SyncManager';
 import { roomCacheService } from '../services/RoomCacheService';
@@ -120,6 +120,10 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
   const [pendingSyncCount, setPendingSyncCount] = useState(0);
   const [cachedRooms, setCachedRooms] = useState<CachedRoom[]>([]);
   const [roomsLoaded, setRoomsLoaded] = useState(false);
+  const [hotelVatRate, setHotelVatRate] = useState<number>(0);
+  const [hotelServiceTaxRate, setHotelServiceTaxRate] = useState<number>(0);
+
+  const resolvedHotelId = hotelId || (user?.hotelId ? parseInt(user.hotelId) : null);
 
   // Load room data from cache
   const loadRoomsFromCache = useCallback(async () => {
@@ -140,7 +144,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
       // console.log(`✅ Loaded ${rooms.length} cached rooms`);
       
       // If no cached rooms, try to fetch fresh data
-      if (rooms.length === 0 && navigator.onLine && token) {
+      if (rooms.length === 0 && isOnline && token) {
         // console.log('🔄 No cached rooms found, fetching fresh data...');
         try {
           const freshRooms = await roomCacheService.fetchAndCacheRooms(resolvedHotelId);
@@ -155,7 +159,65 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
       setError('Failed to load room data. Please check your connection and try again.');
       setRoomsLoaded(true); // Still mark as loaded to prevent infinite loading
     }
-  }, [hotelId, token, user?.hotelId]);
+  }, [hotelId, isOnline, token, user?.hotelId]);
+
+  useEffect(() => {
+    if (!resolvedHotelId) {
+      setHotelVatRate(0);
+      setHotelServiceTaxRate(0);
+      return;
+    }
+
+    const cacheKey = `offline_hotel_tax_rates_${resolvedHotelId}`;
+
+    try {
+      const cachedTaxRates = localStorage.getItem(cacheKey);
+      if (cachedTaxRates) {
+        const parsedRates = JSON.parse(cachedTaxRates) as { vatRate?: number; serviceTaxRate?: number };
+        setHotelVatRate(parsedRates.vatRate || 0);
+        setHotelServiceTaxRate(parsedRates.serviceTaxRate || 0);
+      }
+    } catch {
+      setHotelVatRate(0);
+      setHotelServiceTaxRate(0);
+    }
+
+    if (!isOnline || !token) {
+      return;
+    }
+
+    const fetchTaxRates = async () => {
+      try {
+        const headers: Record<string, string> = {
+          'Authorization': `Bearer ${token}`,
+        };
+
+        if (tenantId) {
+          headers['X-Tenant-ID'] = tenantId;
+        }
+
+        const response = await fetch(buildApiUrl(`/hotels/${resolvedHotelId}/tax-rate`), {
+          headers,
+        });
+
+        if (!response.ok) {
+          return;
+        }
+
+        const taxData = await response.json();
+        const vatRate = taxData.vatRate || 0;
+        const serviceTaxRate = taxData.serviceTaxRate || 0;
+
+        setHotelVatRate(vatRate);
+        setHotelServiceTaxRate(serviceTaxRate);
+        localStorage.setItem(cacheKey, JSON.stringify({ vatRate, serviceTaxRate }));
+      } catch {
+        // Keep cached tax rates if available.
+      }
+    };
+
+    fetchTaxRates();
+  }, [resolvedHotelId, isOnline, tenantId, token]);
 
   // Initialize room caching when component loads
   useEffect(() => {
@@ -228,12 +290,35 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
     setActiveStep((prevStep) => prevStep - 1);
   };
 
+  const calculatePricingBreakdown = () => {
+    if (!selectedRoom) {
+      return {
+        nights: 0,
+        subtotal: 0,
+        vatAmount: 0,
+        serviceTaxAmount: 0,
+        total: 0,
+      };
+    }
+
+    const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24));
+    const subtotal = selectedRoom.pricePerNight * nights;
+    const vatAmount = subtotal * hotelVatRate;
+    const serviceTaxAmount = subtotal * hotelServiceTaxRate;
+    const total = subtotal + vatAmount + serviceTaxAmount;
+
+    return {
+      nights,
+      subtotal,
+      vatAmount,
+      serviceTaxAmount,
+      total,
+    };
+  };
+
   // Calculate total amount (matching online component)
   const calculateTotalAmount = () => {
-    if (!selectedRoom) return 0;
-    
-    const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24));
-    return selectedRoom.pricePerNight * nights;
+    return calculatePricingBreakdown().total;
   };
 
   // Render step content (EXACTLY matching online component)
@@ -742,15 +827,34 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                     }}>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                         <Typography variant="body1">
-                          {(() => {
-                            const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24));
-                            return `${formatCurrency(selectedRoom?.pricePerNight || 0)}/night × ${nights} ${nights !== 1 ? 'nights' : 'night'}`;
-                          })()}
+                          {`${formatCurrency(selectedRoom?.pricePerNight || 0)}/night × ${calculatePricingBreakdown().nights} ${calculatePricingBreakdown().nights !== 1 ? 'nights' : 'night'}`}
                         </Typography>
                         <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                          {formatCurrency(calculateTotalAmount() || 0)}
+                          {formatCurrency(calculatePricingBreakdown().subtotal || 0)}
                         </Typography>
                       </Box>
+
+                      {hotelVatRate > 0 && (
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                            VAT ({(hotelVatRate * 100).toFixed(0)}%)
+                          </Typography>
+                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                            {formatCurrency(calculatePricingBreakdown().vatAmount || 0)}
+                          </Typography>
+                        </Box>
+                      )}
+
+                      {hotelServiceTaxRate > 0 && (
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                            Service Tax ({(hotelServiceTaxRate * 100).toFixed(0)}%)
+                          </Typography>
+                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                            {formatCurrency(calculatePricingBreakdown().serviceTaxAmount || 0)}
+                          </Typography>
+                        </Box>
+                      )}
                     </Box>
                     
                     <Divider sx={{ my: 2 }} />
@@ -860,6 +964,9 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
           // console.log('Cannot load rooms - missing hotelId or token:', { hotelId: resolvedHotelId, hasToken: !!token });
           // Fall back to cached room data
           // console.log('💾 Using cached room data due to missing hotelId or token');
+          rooms = cachedRooms.filter(room => room.capacity >= guests);
+          dataSource = 'cached';
+        } else if (!isOnline) {
           rooms = cachedRooms.filter(room => room.capacity >= guests);
           dataSource = 'cached';
         } else {
@@ -1015,7 +1122,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
         }
         
         // If we still have no rooms and we're online, try to refresh the cache
-        if (rooms.length === 0 && resolvedHotelId && navigator.onLine) {
+        if (rooms.length === 0 && resolvedHotelId && isOnline) {
           // console.log('🔄 No rooms found anywhere, attempting to fetch and cache fresh data...');
           try {
             const freshRooms = await roomCacheService.fetchAndCacheRooms(resolvedHotelId);
@@ -1087,7 +1194,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
     if (activeStep === 1 && checkInDate && checkOutDate) {
       loadAvailableRooms();
     }
-  }, [activeStep, checkInDate, checkOutDate, guests, cachedRooms, hotelId, token, tenantId, user?.role, user?.roles, user?.hotelId, API_BASE_URL, t]);
+  }, [activeStep, checkInDate, checkOutDate, guests, cachedRooms, hotelId, isOnline, token, tenantId, user?.role, user?.roles, user?.hotelId, API_BASE_URL, t]);
 
   // Monitor online/offline status
   useEffect(() => {
@@ -1132,13 +1239,9 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
     setError(null);
 
     try {
-      // Calculate total amount
-      const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24));
-      const totalAmount = nights * selectedRoom.pricePerNight;
+      const totalAmount = calculatePricingBreakdown().total;
 
       // Save offline booking (matching online component structure)
-      const resolvedHotelId = hotelId || (user?.hotelId ? parseInt(user.hotelId) : null);
-      
       if (!resolvedHotelId) {
         setError('Hotel ID is required for booking creation');
         return;
@@ -1174,6 +1277,19 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
           bookingData.checkInDate,
           bookingData.checkOutDate
         );
+        setCachedRooms(previousRooms => previousRooms.map(room =>
+          room.id === selectedRoom.id
+            ? {
+                ...room,
+                isAvailable: false,
+                offlineStatus: 'occupied',
+                occupiedBy: bookingId,
+                occupiedFrom: bookingData.checkInDate,
+                occupiedTo: bookingData.checkOutDate,
+              }
+            : room
+        ));
+        setAvailableRooms(previousRooms => previousRooms.filter(room => room.id !== selectedRoom.id));
         // console.log('✅ Room marked as occupied for offline booking:', selectedRoom.roomNumber);
       } catch (roomMarkError) {
         // console.warn('⚠️ Failed to mark room as occupied:', roomMarkError);

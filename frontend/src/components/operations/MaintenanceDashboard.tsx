@@ -42,6 +42,7 @@ import {
   CheckCircle as CompleteIcon
 } from '@mui/icons-material';
 import { COLORS, addAlpha } from '../../theme/themeColors';
+import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
 
 interface MaintenanceTask {
   id: number;
@@ -106,6 +107,7 @@ const MAINTENANCE_TASK_TYPES = [
 const PRIORITIES = ['LOW', 'NORMAL', 'HIGH', 'URGENT', 'CRITICAL'];
 
 const MaintenanceDashboard: React.FC = () => {
+  const { showSubmissionError } = useSubmissionError();
   const [tasks, setTasks] = useState<MaintenanceTask[]>([]);
   const [staff, setStaff] = useState<MaintenanceStaff[]>([]);
   const [activeTab, setActiveTab] = useState(0);
@@ -298,12 +300,12 @@ const MaintenanceDashboard: React.FC = () => {
       
       // Validate required data
       if (!hotelId) {
-        setError('No hotel ID available in user profile');
+        showSubmissionError('No hotel ID available in user profile');
         return;
       }
       
       if (!currentUser?.id) {
-        setError('User authentication required');
+        showSubmissionError('User authentication required');
         return;
       }
       
@@ -332,7 +334,7 @@ const MaintenanceDashboard: React.FC = () => {
       if (!response.ok) {
         const errorText = await response.text();
         // console.error('Error response:', errorText);
-        setError(`Failed to create maintenance task: ${errorText}`);
+        showSubmissionError(`Failed to create maintenance task: ${errorText}`);
         return;
       }
       
@@ -350,10 +352,12 @@ const MaintenanceDashboard: React.FC = () => {
         });
         await loadTasks();
       } else {
-        setError('Failed to create maintenance task');
+        showSubmissionError('Failed to create maintenance task');
       }
     } catch (err) {
-      setError('Failed to create maintenance task');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to create maintenance task',
+      });
     }
   };
 
@@ -372,10 +376,12 @@ const MaintenanceDashboard: React.FC = () => {
         setSelectedStaffId('');
         await loadTasks();
       } else {
-        setError('Failed to assign maintenance task');
+        showSubmissionError('Failed to assign maintenance task');
       }
     } catch (err) {
-      setError('Failed to assign maintenance task');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to assign maintenance task',
+      });
     }
   };
 
@@ -389,10 +395,12 @@ const MaintenanceDashboard: React.FC = () => {
       if (response.ok) {
         await loadTasks();
       } else {
-        setError('Failed to start maintenance task');
+        showSubmissionError('Failed to start maintenance task');
       }
     } catch (err) {
-      setError('Failed to start maintenance task');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to start maintenance task',
+      });
     }
   };
 
@@ -421,10 +429,12 @@ const MaintenanceDashboard: React.FC = () => {
         setActualCost('');
         await loadTasks();
       } else {
-        setError('Failed to complete maintenance task');
+        showSubmissionError('Failed to complete maintenance task');
       }
     } catch (err) {
-      setError('Failed to complete maintenance task');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to complete maintenance task',
+      });
     }
   };
 

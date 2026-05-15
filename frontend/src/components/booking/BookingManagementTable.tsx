@@ -44,6 +44,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useTenant } from '../../contexts/TenantContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
 import { useTheme as useCustomTheme } from '../../contexts/ThemeContext';
 import { hotelAdminApi } from '../../services/hotelAdminApi';
 import { frontDeskApiService, CheckoutResponse } from '../../services/frontDeskApi';
@@ -52,6 +53,8 @@ import CheckInDialog from './CheckInDialog';
 import { Booking } from '../../types/booking-shared';
 import { formatDateForDisplay } from '../../utils/dateUtils';
 import BookingNotificationEvents from '../../utils/bookingNotificationEvents';
+import { useDebounce } from '../../hooks/useDebounce';
+import { getEffectiveSearchTerm } from '../../utils/search';
 import { TableRowSkeleton } from '../common/SkeletonLoaders';
 import { NoBookings } from '../common/EmptyState';
 import PremiumTextField from '../common/PremiumTextField';
@@ -81,6 +84,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
   const { t } = useTranslation();
   const { tenant, tenantId } = useTenant();
   const { token } = useAuth();
+  const { showSubmissionError } = useSubmissionError();
   const { themeMode } = useCustomTheme();
   const muiTheme = useTheme();
   const navigate = useNavigate();
@@ -104,7 +108,6 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
   const [size, setSize] = useState(10);
   const [totalElements, setTotalElements] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   // Delete functionality removed
   const [snackbar, setSnackbar] = useState({ 
     open: false, 
@@ -134,6 +137,8 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
   const [bookingForCheckIn, setBookingForCheckIn] = useState<Booking | null>(null);
   const [checkoutConfirmOpen, setCheckoutConfirmOpen] = useState(false);
   const [bookingForCheckout, setBookingForCheckout] = useState<Booking | null>(null);
+  const debouncedSearchTerm = useDebounce(searchTerm, searchTerm.trim() ? 300 : 0);
+  const effectiveSearchTerm = getEffectiveSearchTerm(debouncedSearchTerm);
 
   // Manual refresh function (used by refresh button)
   const loadBookings = React.useCallback(async () => {
@@ -167,7 +172,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
           token,
           page,
           size,
-          searchTerm,
+            effectiveSearchTerm ?? '',
           tenant?.id || null
         );
       } else {
@@ -175,7 +180,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
           token,
           page,
           size,
-          searchTerm
+            effectiveSearchTerm ?? ''
         );
       }
 
@@ -211,7 +216,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
     } finally {
       setLoading(false);
     }
-  }, [token, mode, page, size, searchTerm, tenant, tenantId]);
+  }, [token, mode, page, size, effectiveSearchTerm, tenant, tenantId]);
 
   // Centralized booking loading logic
   useEffect(() => {
@@ -305,25 +310,23 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
       }
     };
 
-    // console.log('BookingManagementTable: useEffect triggered - loading bookings');
+    if (effectiveSearchTerm === null) {
+      return;
+    }
+
     loadData();
-  }, [page, size, token, mode, debouncedSearchTerm, tenant, tenantId]);
+  }, [page, size, token, mode, debouncedSearchTerm, effectiveSearchTerm, tenant, tenantId]);
 
   // Debug: Log bookings data when it changes
   useEffect(() => {
     // Track bookings data changes
   }, [bookings]);
 
-  // Handle search with debounce - only reset page when search changes
   useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      // console.log('BookingManagementTable: Search term changed, updating debounced search and resetting page');
-      setDebouncedSearchTerm(searchTerm);
+    if (effectiveSearchTerm !== null) {
       setPage(0);
-    }, 500);
-
-    return () => clearTimeout(timeoutId);
-  }, [searchTerm]);
+    }
+  }, [effectiveSearchTerm]);
 
   // Handle refresh trigger - when this prop changes, refresh the data
   useEffect(() => {
@@ -556,18 +559,14 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
           guestName: '' 
         });
       } else {
-        setSnackbar({
-          open: true,
-          message: result.message || 'Failed to update payment status',
-          severity: 'error'
+        showSubmissionError(result.message || 'Failed to update payment status', {
+          fallbackMessage: 'Failed to update payment status',
         });
       }
     } catch (error) {
       // console.error('Error updating payment status:', error);
-      setSnackbar({
-        open: true,
-        message: 'Failed to update payment status',
-        severity: 'error'
+      showSubmissionError(error, {
+        fallbackMessage: 'Failed to update payment status',
       });
     } finally {
       setUpdatingPaymentStatus(false);

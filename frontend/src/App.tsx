@@ -10,6 +10,7 @@ import { ErrorBoundary } from './components/common';
 import { NotificationProvider } from './components/common';
 import ProtectedRoute from './components/ProtectedRoute';
 import { useAuth } from './contexts/AuthContext';
+import { SubmissionErrorProvider } from './contexts/SubmissionErrorContext';
 // Eager-loaded components (small or critical)
 import NotFoundPage from './pages/NotFoundPage';
 import { SystemDashboardPage } from './pages/SystemDashboardPage';
@@ -263,17 +264,18 @@ function App() {
         autoHideDuration={3000}
       >
         <NotificationProvider>
-          <ErrorBoundary 
-            level="critical"
-            showDetails={process.env.NODE_ENV === 'development'}
-            onError={(error, errorInfo) => {
-              // console.error('Critical App Error:', error, errorInfo);
-              // In production, send to error tracking service
-            }}
-          >
-          <EnhancedLayout hideSidebar={!isAuthenticated} maxWidth={isFullWidthRoute ? false : 'xl'}>
-          <Suspense fallback={<PageLoader />}>
-          <Routes>
+          <SubmissionErrorProvider>
+            <ErrorBoundary 
+              level="critical"
+              showDetails={process.env.NODE_ENV === 'development'}
+              onError={(error, errorInfo) => {
+                // console.error('Critical App Error:', error, errorInfo);
+                // In production, send to error tracking service
+              }}
+            >
+            <EnhancedLayout hideSidebar={!isAuthenticated} maxWidth={isFullWidthRoute ? false : 'xl'}>
+            <Suspense fallback={<PageLoader />}>
+            <Routes>
         <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <LandingPage />} />
         <Route path="/dashboard" element={<RoleBasedRouter />} />
         <Route path="/home" element={<LandingPage />} />
@@ -646,6 +648,7 @@ function App() {
       */}
         </EnhancedLayout>
       </ErrorBoundary>
+      </SubmissionErrorProvider>
       </NotificationProvider>
       </SnackbarProvider>
     </>

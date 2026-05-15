@@ -49,6 +49,7 @@ import {
 } from '@mui/icons-material';
 import { useAuthenticatedApi } from '../../hooks/useAuthenticatedApi';
 import { useTenant } from '../../contexts/TenantContext';
+import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
 import PremiumDisplayField from '../../components/common/PremiumDisplayField';
 import PremiumTextField from '../../components/common/PremiumTextField';
 import PremiumSelect from '../../components/common/PremiumSelect';
@@ -84,6 +85,7 @@ const HotelViewEdit: React.FC = () => {
   const [searchParams] = useSearchParams();
   const { adminApiService } = useAuthenticatedApi();
   const { tenantId } = useTenant();
+  const { showSubmissionError } = useSubmissionError();
   
   const [hotel, setHotel] = useState<HotelData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -173,7 +175,9 @@ const HotelViewEdit: React.FC = () => {
       navigate(`/admin/hotels/${id}`);
     } catch (error) {
       // console.error('Error updating hotel:', error);
-      setError('Failed to update hotel');
+      showSubmissionError(error, {
+        fallbackMessage: 'Failed to update hotel',
+      });
     } finally {
       setSaving(false);
     }

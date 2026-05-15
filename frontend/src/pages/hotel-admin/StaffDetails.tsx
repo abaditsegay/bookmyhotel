@@ -26,6 +26,7 @@ import {
 } from '@mui/icons-material';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
 import { hotelAdminApi, StaffResponse } from '../../services/hotelAdminApi';
 import PremiumTextField from '../../components/common/PremiumTextField';
 
@@ -34,6 +35,7 @@ const StaffDetails: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { token } = useAuth();
+  const { showSubmissionError } = useSubmissionError();
   
   const [staff, setStaff] = useState<StaffResponse | null>(null);
   const [editedStaff, setEditedStaff] = useState<StaffResponse | null>(null);
@@ -120,11 +122,15 @@ const StaffDetails: React.FC = () => {
         setSuccess('Staff updated successfully');
         return true;
       } else {
-        setError(result.message || 'Failed to update staff');
+        showSubmissionError(result.message || 'Failed to update staff', {
+          fallbackMessage: 'Failed to update staff',
+        });
         return false;
       }
     } catch (err) {
-      setError('Failed to update staff');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to update staff',
+      });
       // console.error('Error updating staff:', err);
       return false;
     }
@@ -175,10 +181,14 @@ const StaffDetails: React.FC = () => {
         setEditedStaff({ ...result.data });
         setSuccess(`Staff ${newStatus ? 'activated' : 'deactivated'} successfully`);
       } else {
-        setError(result.message || 'Failed to update staff status');
+        showSubmissionError(result.message || 'Failed to update staff status', {
+          fallbackMessage: 'Failed to update staff status',
+        });
       }
     } catch (err) {
-      setError('Failed to update staff status');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to update staff status',
+      });
       // console.error('Error updating staff status:', err);
     }
   };

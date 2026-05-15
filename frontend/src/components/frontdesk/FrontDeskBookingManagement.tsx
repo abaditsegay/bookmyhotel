@@ -38,6 +38,8 @@ import {
 import { useAuth } from '../../contexts/AuthContext';
 import { useTenant } from '../../contexts/TenantContext';
 import { frontDeskApiService, FrontDeskBooking } from '../../services/frontDeskApi';
+import { useDebounce } from '../../hooks/useDebounce';
+import { getEffectiveSearchTerm } from '../../utils/search';
 import BookingNotificationEvents from '../../utils/bookingNotificationEvents';
 
 interface FrontDeskBookingManagementProps {
@@ -57,6 +59,8 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
   const [selectedBooking, setSelectedBooking] = useState<FrontDeskBooking | null>(null);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
+  const debouncedSearch = useDebounce(search, search.trim() ? 300 : 0);
+  const effectiveSearch = getEffectiveSearchTerm(debouncedSearch);
 
   // Memoize search handler to prevent input focus loss
   const handleSearchInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -72,7 +76,7 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
     setError(null);
     
     try {
-      const result = await frontDeskApiService.getAllBookings(token, page, size, search, tenantId);
+      const result = await frontDeskApiService.getAllBookings(token, page, size, effectiveSearch ?? '', tenantId);
       
       if (result.success && result.data) {
         // console.log('🏨 FrontDeskBookingManagement - Raw API data:', result.data.content);
@@ -91,12 +95,16 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
     } finally {
       setLoading(false);
     }
-  }, [token, page, size, search, tenantId]);
+  }, [token, page, size, effectiveSearch, tenantId]);
 
   // Load bookings on component mount and when dependencies change
   useEffect(() => {
+    if (effectiveSearch === null) {
+      return;
+    }
+
     loadBookings();
-  }, [loadBookings]);
+  }, [loadBookings, effectiveSearch]);
 
   // Add window focus listener to refresh bookings when returning from other pages
   useEffect(() => {
@@ -127,6 +135,10 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
 
   // Handle search
   const handleSearchSubmit = () => {
+    if (effectiveSearch === null) {
+      return;
+    }
+
     if (page === 0) {
       // If already on page 0, trigger reload manually
       loadBookings();
@@ -141,6 +153,12 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
       handleSearchSubmit();
     }
   };
+
+  useEffect(() => {
+    if (effectiveSearch !== null) {
+      setPage(0);
+    }
+  }, [effectiveSearch]);
 
   // Handle page change
   const handlePageChange = (event: React.ChangeEvent<unknown> | null, newPage: number) => {

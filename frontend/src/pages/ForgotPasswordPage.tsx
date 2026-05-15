@@ -15,26 +15,26 @@ import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { API_CONFIG } from '../config/apiConfig';
 import { COLORS, addAlpha, getGradient } from '../theme/themeColors';
 import PremiumTextField from '../components/common/PremiumTextField';
+import { useSubmissionError } from '../contexts/SubmissionErrorContext';
 
 const ForgotPasswordPage: React.FC = () => {
   const { t } = useTranslation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const navigate = useNavigate();
+  const { showSubmissionError } = useSubmissionError();
 
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
-  const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
     setSuccess('');
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      setError(t('auth.forgotPassword.invalidEmail'));
+      showSubmissionError(t('auth.forgotPassword.invalidEmail'));
       return;
     }
 
@@ -52,10 +52,14 @@ const ForgotPasswordPage: React.FC = () => {
       if (response.ok) {
         setSuccess(t('auth.forgotPassword.successMessage'));
       } else {
-        setError(data.message || t('auth.forgotPassword.errorMessage'));
+        showSubmissionError(data.message || t('auth.forgotPassword.errorMessage'), {
+          fallbackMessage: t('auth.forgotPassword.errorMessage'),
+        });
       }
     } catch {
-      setError(t('auth.forgotPassword.errorMessage'));
+      showSubmissionError(t('auth.forgotPassword.errorMessage'), {
+        fallbackMessage: t('auth.forgotPassword.errorMessage'),
+      });
     } finally {
       setLoading(false);
     }
@@ -97,12 +101,6 @@ const ForgotPasswordPage: React.FC = () => {
           </Box>
 
           <CardContent sx={{ p: isMobile ? 3 : 4 }}>
-            {error && (
-              <Alert severity="error" sx={{ mb: 2 }}>
-                {error}
-              </Alert>
-            )}
-
             {success ? (
               <Box sx={{ textAlign: 'center', py: 2 }}>
                 <Alert severity="success" sx={{ mb: 3 }}>

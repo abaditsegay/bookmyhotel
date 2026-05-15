@@ -100,6 +100,7 @@ public class ShopOrderItem {
 
         // Store product details at time of order
         if (product != null) {
+            this.productId = product.getId();
             this.productName = product.getName();
             this.productDescription = product.getDescription();
             this.productSku = product.getSku();

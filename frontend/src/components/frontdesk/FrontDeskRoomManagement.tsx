@@ -40,6 +40,7 @@ import {
   Report as DirtyIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
 import { buildApiUrl } from '../../config/apiConfig';
 import { roomCacheService } from '../../services/RoomCacheService';
 import { CachedRoom } from '../../services/OfflineStorageService';
@@ -213,6 +214,7 @@ interface FrontDeskRoomManagementProps {
 const FrontDeskRoomManagement: React.FC<FrontDeskRoomManagementProps> = ({ onRoomUpdate }) => {
   const { t } = useTranslation();
   const { token } = useAuth();
+  const { showSubmissionError } = useSubmissionError();
 
   const ROOM_STATUS_OPTIONS = [
     { value: 'AVAILABLE', label: t('dashboard.frontDesk.roomManagement.roomStatuses.available'), color: 'success' as const },
@@ -405,11 +407,15 @@ const FrontDeskRoomManagement: React.FC<FrontDeskRoomManagementProps> = ({ onRoo
         handleStatusDialogClose();
         onRoomUpdate?.(result.data);
       } else {
-        setError(result.message || 'Failed to update room status');
+        showSubmissionError(result.message || 'Failed to update room status', {
+          fallbackMessage: 'Failed to update room status',
+        });
       }
     } catch (error) {
       // console.error('Failed to update room status:', error);
-      setError('Failed to update room status');
+      showSubmissionError(error, {
+        fallbackMessage: 'Failed to update room status',
+      });
     } finally {
       setStatusUpdating(false);
     }
@@ -437,11 +443,15 @@ const FrontDeskRoomManagement: React.FC<FrontDeskRoomManagementProps> = ({ onRoo
         
         onRoomUpdate?.(result.data);
       } else {
-        setError(result.message || 'Failed to toggle room availability');
+        showSubmissionError(result.message || 'Failed to toggle room availability', {
+          fallbackMessage: 'Failed to toggle room availability',
+        });
       }
     } catch (error) {
       // console.error('Failed to toggle room availability:', error);
-      setError('Failed to toggle room availability');
+      showSubmissionError(error, {
+        fallbackMessage: 'Failed to toggle room availability',
+      });
     } finally {
       setAvailabilityUpdating(prev => ({ ...prev, [room.id]: false }));
     }

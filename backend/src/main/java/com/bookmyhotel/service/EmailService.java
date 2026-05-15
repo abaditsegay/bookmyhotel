@@ -158,6 +158,35 @@ public class EmailService {
     }
 
     /**
+     * Send startup bootstrap credentials to the platform super admin.
+     */
+    public void sendSuperAdminBootstrapEmail(String email, String firstName, String tempPassword) {
+        if (!microsoftGraphEmailService.isConfigured()) {
+            logger.warn("Microsoft Graph OAuth2 is not configured. Cannot send startup super admin email to: {}",
+                    email);
+            throw new IllegalStateException(
+                    "Email service is not configured. Microsoft Graph OAuth2 credentials are required.");
+        }
+
+        try {
+            Map<String, Object> templateData = new HashMap<>();
+            templateData.put("email", email);
+            templateData.put("firstName", firstName);
+            templateData.put("tempPassword", tempPassword);
+            templateData.put("appName", appName);
+            templateData.put("loginUrl", appUrl + "/login");
+
+            String htmlContent = templateEngine.process("super-admin-bootstrap", createContext(templateData));
+            String subject = String.format("%s Super Admin Access", appName);
+
+            microsoftGraphEmailService.sendEmail(email, subject, htmlContent);
+        } catch (Exception e) {
+            logger.error("Failed to send startup super admin email via Microsoft Graph", e);
+            throw new RuntimeException("Failed to send startup super admin email", e);
+        }
+    }
+
+    /**
      * Send hotel registration approval email with login credentials
      */
     public void sendHotelRegistrationApprovalEmail(String email, String firstName, String hotelName,

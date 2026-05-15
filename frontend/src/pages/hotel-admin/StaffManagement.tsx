@@ -37,6 +37,7 @@ import {
 } from '@mui/icons-material';
 import { hotelAdminApi, StaffResponse, StaffCreateRequest } from '../../services/hotelAdminApi';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
 import PremiumTextField from '../../components/common/PremiumTextField';
 import PremiumSelect from '../../components/common/PremiumSelect';
 import { useNavigate } from 'react-router-dom';
@@ -54,6 +55,7 @@ interface StaffManagementProps {
 const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) => {
   const theme = useTheme();
   const { token } = useAuth();
+  const { showSubmissionError } = useSubmissionError();
   const navigate = useNavigate();
   const [staff, setStaff] = useState<StaffResponse[]>([]);
   const [loading, setLoading] = useState(true);
@@ -167,17 +169,17 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
     
     // Validate form data before submitting
     if (!staffForm.email || !staffForm.password || !staffForm.firstName || !staffForm.lastName) {
-      setError('Please fill in all required fields.');
+      showSubmissionError('Please fill in all required fields.');
       return;
     }
     
     if (staffForm.password.length < 8) {
-      setError('Password must be at least 8 characters long.');
+      showSubmissionError('Password must be at least 8 characters long.');
       return;
     }
     
     if (staffForm.roles.length === 0) {
-      setError('Please select at least one role.');
+      showSubmissionError('Please select at least one role.');
       return;
     }
     
@@ -197,11 +199,15 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
         await loadStaff();
         setError(null);
       } else {
-        setError(response.message || 'Failed to create staff member. Please check the email is unique.');
+        showSubmissionError(response.message || 'Failed to create staff member. Please check the email is unique.', {
+          fallbackMessage: 'Failed to create staff member. Please check the email is unique.',
+        });
       }
     } catch (err) {
       // console.error('Error creating staff:', err);
-      setError('Failed to create staff member. Please check the email is unique.');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to create staff member. Please check the email is unique.',
+      });
     } finally {
       setLoading(false);
     }
@@ -220,11 +226,15 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
         await loadStaff();
         setError(null);
       } else {
-        setError(response.message || 'Failed to update staff status');
+        showSubmissionError(response.message || 'Failed to update staff status', {
+          fallbackMessage: 'Failed to update staff status',
+        });
       }
     } catch (err) {
       // console.error('Error toggling staff status:', err);
-      setError('Failed to update staff status.');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to update staff status.',
+      });
     } finally {
       setLoading(false);
     }

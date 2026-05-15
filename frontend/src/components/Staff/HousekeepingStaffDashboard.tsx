@@ -51,9 +51,11 @@ import {
 } from '@mui/icons-material';
 import { staffApi } from '../../services/staffApi';
 import { HousekeepingTask } from '../../types/operations';
+import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
 
 const HousekeepingStaffDashboard: React.FC = () => {
   const theme = useTheme();
+  const { showSubmissionError } = useSubmissionError();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
   
@@ -115,7 +117,9 @@ const HousekeepingStaffDashboard: React.FC = () => {
       await loadMyTasks();
       await loadStats();
     } catch (err) {
-      setError('Failed to update task status');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to update task status',
+      });
       // console.error('Error updating task:', err);
     }
   };
@@ -126,7 +130,9 @@ const HousekeepingStaffDashboard: React.FC = () => {
       await loadMyTasks();
       await loadStats();
     } catch (err) {
-      setError('Failed to start task');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to start task',
+      });
       // console.error('Error starting task:', err);
     }
   };
@@ -137,7 +143,9 @@ const HousekeepingStaffDashboard: React.FC = () => {
       await loadMyTasks();
       await loadStats();
     } catch (err) {
-      setError('Failed to complete task');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to complete task',
+      });
       // console.error('Error completing task:', err);
     }
   };

@@ -34,6 +34,7 @@ import {
   Info as InfoIcon
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
+import { useSubmissionError } from '../contexts/SubmissionErrorContext';
 
 // Utility functions for converting between percentage (0-100) and decimal (0.0-1.0) values
 const toDecimal = (percentage: number): number => {
@@ -121,6 +122,7 @@ interface PricingConfiguration {
 
 const PricingConfigurationComponent: React.FC = () => {
   const { user, token } = useAuth();
+  const { showSubmissionError } = useSubmissionError();
   const { t } = useTranslation();
   const theme = useTheme();
   const [config, setConfig] = useState<PricingConfiguration | null>(null);
@@ -242,7 +244,9 @@ const PricingConfigurationComponent: React.FC = () => {
       }
     } catch (err) {
       // console.error('Error saving configuration:', err);
-      setError('Failed to save pricing configuration');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to save pricing configuration',
+      });
     } finally {
       setSaving(false);
     }

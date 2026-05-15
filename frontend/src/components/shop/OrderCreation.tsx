@@ -37,6 +37,8 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useDebounce } from '../../hooks/useDebounce';
+import { getEffectiveSearchTerm } from '../../utils/search';
 import PremiumTextField from '../common/PremiumTextField';
 import { useAuth } from '../../contexts/AuthContext';
 import { shopApiService } from '../../services/shopApi';
@@ -66,6 +68,8 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, searchTerm.trim() ? 300 : 0);
+  const effectiveSearchTerm = getEffectiveSearchTerm(debouncedSearchTerm);
   const [categoryFilter, setCategoryFilter] = useState<string>('ALL');
 
   // Order form data - simplified for purchase types
@@ -419,8 +423,9 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
   };
 
   const filteredProducts = products.filter(product => {
-    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         product.sku.toLowerCase().includes(searchTerm.toLowerCase());
+    const appliedSearchTerm = effectiveSearchTerm ?? '';
+    const matchesSearch = product.name.toLowerCase().includes(appliedSearchTerm.toLowerCase()) ||
+                         product.sku.toLowerCase().includes(appliedSearchTerm.toLowerCase());
     const matchesCategory = categoryFilter === 'ALL' || product.category === categoryFilter;
     return matchesSearch && matchesCategory;
   });

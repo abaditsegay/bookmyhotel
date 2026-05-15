@@ -23,6 +23,7 @@ import {
 } from '@mui/icons-material';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
 import PremiumDatePicker from '../../components/common/PremiumDatePicker';
 import PremiumTextField from '../../components/common/PremiumTextField';
 import PremiumSelect from '../../components/common/PremiumSelect';
@@ -56,6 +57,7 @@ const FrontDeskBookingDetails: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { token } = useAuth();
+  const { showSubmissionError } = useSubmissionError();
   
   const [booking, setBooking] = useState<BookingData | null>(null);
   const [editedBooking, setEditedBooking] = useState<BookingData | null>(null);
@@ -219,7 +221,9 @@ const FrontDeskBookingDetails: React.FC = () => {
       }
       return true;
     } catch (err) {
-      setError('Failed to update booking');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to update booking',
+      });
       // console.error('Error updating booking:', err);
       return false;
     }

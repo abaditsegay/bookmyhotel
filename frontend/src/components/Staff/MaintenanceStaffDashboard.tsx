@@ -39,8 +39,10 @@ import {
 import { COLORS, addAlpha } from '../../theme/themeColors';
 import { staffApi } from '../../services/staffApi';
 import { MaintenanceTask } from '../../types/operations';
+import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
 
 const MaintenanceStaffDashboard: React.FC = () => {
+  const { showSubmissionError } = useSubmissionError();
   const [tasks, setTasks] = useState<MaintenanceTask[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -95,7 +97,9 @@ const MaintenanceStaffDashboard: React.FC = () => {
       await loadMyTasks();
       await loadStats();
     } catch (err) {
-      setError('Failed to update task status');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to update task status',
+      });
       // console.error('Error updating task:', err);
     }
   };
@@ -106,7 +110,9 @@ const MaintenanceStaffDashboard: React.FC = () => {
       await loadMyTasks();
       await loadStats();
     } catch (err) {
-      setError('Failed to start task');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to start task',
+      });
       // console.error('Error starting task:', err);
     }
   };
@@ -117,7 +123,9 @@ const MaintenanceStaffDashboard: React.FC = () => {
       await loadMyTasks();
       await loadStats();
     } catch (err) {
-      setError('Failed to complete task');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to complete task',
+      });
       // console.error('Error completing task:', err);
     }
   };

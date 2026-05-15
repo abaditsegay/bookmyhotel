@@ -47,6 +47,8 @@ import {
   Build,
   SupervisorAccount
 } from '@mui/icons-material';
+import { useDebounce } from '../../hooks/useDebounce';
+import { getEffectiveSearchTerm } from '../../utils/search';
 import TokenManager from '../../utils/tokenManager';
 import { API_CONFIG } from '../../config/apiConfig';
 
@@ -78,6 +80,8 @@ const StaffDashboard: React.FC<StaffDashboardProps> = ({ currentUserRole = 'OPER
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, searchTerm.trim() ? 300 : 0);
+  const effectiveSearchTerm = getEffectiveSearchTerm(debouncedSearchTerm);
   const [roleFilter, setRoleFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [page, setPage] = useState(0);
@@ -95,10 +99,10 @@ const StaffDashboard: React.FC<StaffDashboardProps> = ({ currentUserRole = 'OPER
     const filterStaff = () => {
       let filtered = staffMembers;
       
-      if (searchTerm) {
+      if (effectiveSearchTerm) {
         filtered = filtered.filter(staff => 
-          staff.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          staff.email?.toLowerCase().includes(searchTerm.toLowerCase())
+          staff.name.toLowerCase().includes(effectiveSearchTerm.toLowerCase()) ||
+          staff.email?.toLowerCase().includes(effectiveSearchTerm.toLowerCase())
         );
       }
       
@@ -114,7 +118,7 @@ const StaffDashboard: React.FC<StaffDashboardProps> = ({ currentUserRole = 'OPER
     };
     
     filterStaff();
-  }, [staffMembers, searchTerm, roleFilter, statusFilter]);
+  }, [staffMembers, effectiveSearchTerm, roleFilter, statusFilter]);
 
   const loadStaffData = async () => {
     try {

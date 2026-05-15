@@ -37,6 +37,7 @@ import {
   ToggleOff as ToggleOffIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
 import { 
   adminApiService, 
   UserManagementResponse, 
@@ -57,6 +58,7 @@ interface UserFilters {
 const UserManagementAdmin: React.FC = () => {
   const theme = useTheme();
   const { token, user: currentUser } = useAuth();
+  const { showSubmissionError } = useSubmissionError();
   const [users, setUsers] = useState<UserManagementResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -108,6 +110,15 @@ const UserManagementAdmin: React.FC = () => {
   const [loadingTenants, setLoadingTenants] = useState(false);
   const [loadingHotels, setLoadingHotels] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const debouncedSearch = useDebounce(filters.search, filters.search.trim() ? 300 : 0);
+  const effectiveSearch = getEffectiveSearchTerm(debouncedSearch);
+
+  const canViewHotelColumn = Boolean(
+    currentUser?.roles?.includes('SUPER_ADMIN') ||
+    currentUser?.roles?.includes('ADMIN') ||
+    currentUser?.role === 'SUPER_ADMIN' ||
+    currentUser?.role === 'ADMIN'
+  );
 
   const allRoleOptions = ['SUPER_ADMIN', 'ADMIN', 'HOTEL_ADMIN', 'OPERATIONAL_ADMIN', 'FRONTDESK', 'HOUSEKEEPING', 'MAINTENANCE', 'TESTER', 'CUSTOMER'];
 
@@ -145,9 +156,13 @@ const UserManagementAdmin: React.FC = () => {
       let response;
       
       // Determine which API to call based on filters
-      if (filters.search) {
+      if (effectiveSearch === null) {
+        return;
+      }
+
+      if (effectiveSearch) {
         // Search has highest priority
-        response = await adminApiService.searchUsers(filters.search, page, rowsPerPage);
+        response = await adminApiService.searchUsers(effectiveSearch, page, rowsPerPage);
       } else if (filters.role) {
         // Role filter
         response = await adminApiService.getUsersByRole(filters.role, page, rowsPerPage);
@@ -183,7 +198,7 @@ const UserManagementAdmin: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [token, page, rowsPerPage, filters]);
+  }, [token, page, rowsPerPage, filters.role, filters.status, effectiveSearch]);
 
   // Memoized filter change handlers to prevent input focus loss
   const handleFilterChange = React.useCallback((filterName: keyof UserFilters, value: string) => {
@@ -197,6 +212,12 @@ const UserManagementAdmin: React.FC = () => {
   useEffect(() => {
     loadUsers();
   }, [loadUsers]);
+
+  useEffect(() => {
+    if (effectiveSearch !== null) {
+      setPage(0);
+    }
+  }, [effectiveSearch]);
 
   // Load tenants when component mounts
   const loadTenants = useCallback(async () => {
@@ -301,7 +322,9 @@ const UserManagementAdmin: React.FC = () => {
       loadUsers();
     } catch (err) {
       // console.error('Error updating user:', err);
-      setError('Failed to update user');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to update user',
+      });
     }
   };
 
@@ -315,7 +338,9 @@ const UserManagementAdmin: React.FC = () => {
       loadUsers();
     } catch (err) {
       // console.error('Error toggling user status:', err);
-      setError('Failed to toggle user status');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to toggle user status',
+      });
     }
   };
 
@@ -328,7 +353,9 @@ const UserManagementAdmin: React.FC = () => {
       setSelectedUser(null);
       setSuccessMessage('A new password has been generated and sent to the user\'s email.');
     } catch (err) {
-      setError('Failed to reset password');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to reset password',
+      });
     } finally {
       setLoading(false);
     }
@@ -483,6 +510,7 @@ const UserManagementAdmin: React.FC = () => {
                 <TableCell>Name</TableCell>
                 <TableCell>Email</TableCell>
                 <TableCell>Phone</TableCell>
+                {canViewHotelColumn && <TableCell>Hotel</TableCell>}
                 <TableCell>Role</TableCell>
                 <TableCell>Status</TableCell>
                 <TableCell>Created</TableCell>
@@ -498,6 +526,9 @@ const UserManagementAdmin: React.FC = () => {
                   </TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>{user.phone ? formatEthiopianPhone(user.phone) : ''}</TableCell>
+                  {canViewHotelColumn && (
+                    <TableCell>{user.hotelName || 'System-wide'}</TableCell>
+                  )}
                   <TableCell>
                     <Chip
                       label={user.roles.length > 0 ? user.roles[0].replace('_', ' ') : 'No Role'}

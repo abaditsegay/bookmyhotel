@@ -40,10 +40,13 @@ import {
   Cancel as RejectIcon
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
+import { useDebounce } from '../../hooks/useDebounce';
 import { adminApiService, HotelDTO, UpdateHotelRequest } from '../../services/adminApi';
 import HotelEditDialog from '../../components/hotel/HotelEditDialog';
 import PremiumTextField from '../../components/common/PremiumTextField';
 import PremiumSelect from '../../components/common/PremiumSelect';
+import { getEffectiveSearchTerm } from '../../utils/search';
 
 interface Hotel extends HotelDTO {}
 
@@ -86,6 +89,7 @@ interface RegistrationStatistics {
 const HotelManagementAdmin: React.FC = () => {
   const theme = useTheme();
   const { token } = useAuth();
+  const { showSubmissionError } = useSubmissionError();
 
   // Tab state
   const [activeTab, setActiveTab] = useState(0);
@@ -142,16 +146,8 @@ const HotelManagementAdmin: React.FC = () => {
     checkOutTime: '11:00'
   });
 
-  // Debounced search
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm);
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, [searchTerm]);
+  const debouncedSearchTerm = useDebounce(searchTerm, searchTerm.trim() ? 300 : 0);
+  const effectiveSearchTerm = getEffectiveSearchTerm(debouncedSearchTerm);
 
   // Set token in API service when component mounts
   useEffect(() => {
@@ -225,9 +221,10 @@ const HotelManagementAdmin: React.FC = () => {
   // Filter hotels based on search term and status
   const filteredHotels = useMemo(() => {
     return hotels.filter(hotel => {
-      const matchesSearch = (hotel.name?.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) || false) ||
-                           (hotel.city?.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) || false) ||
-                           (hotel.email && hotel.email.toLowerCase().includes(debouncedSearchTerm.toLowerCase()));
+      const appliedSearchTerm = effectiveSearchTerm ?? '';
+      const matchesSearch = (hotel.name?.toLowerCase().includes(appliedSearchTerm.toLowerCase()) || false) ||
+                           (hotel.city?.toLowerCase().includes(appliedSearchTerm.toLowerCase()) || false) ||
+                           (hotel.email && hotel.email.toLowerCase().includes(appliedSearchTerm.toLowerCase()));
       
       const matchesStatus = statusFilter === 'all' || 
                            (statusFilter === 'active' && hotel.isActive) ||
@@ -235,7 +232,7 @@ const HotelManagementAdmin: React.FC = () => {
 
       return matchesSearch && matchesStatus;
     });
-  }, [hotels, debouncedSearchTerm, statusFilter]);
+  }, [hotels, effectiveSearchTerm, statusFilter]);
 
   // Pagination handlers
   const handleChangePage = (event: unknown, newPage: number) => {
@@ -318,7 +315,9 @@ const HotelManagementAdmin: React.FC = () => {
       }
     } catch (err) {
       // console.error('Error submitting registration:', err);
-      setError('Failed to submit hotel registration. Please try again.');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to submit hotel registration. Please try again.',
+      });
     }
   };
 
@@ -339,8 +338,7 @@ const HotelManagementAdmin: React.FC = () => {
 
   const handleApproveRegistration = async () => {
     if (!selectedRegistration || !tenantId.trim()) {
-      setError('Tenant ID is required for approval');
-      setTimeout(() => setError(null), 3000);
+      showSubmissionError('Tenant ID is required for approval');
       return;
     }
 
@@ -373,15 +371,15 @@ const HotelManagementAdmin: React.FC = () => {
         throw new Error('Failed to approve registration');
       }
     } catch (err) {
-      setError('Failed to approve registration. Please try again.');
-      setTimeout(() => setError(null), 3000);
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to approve registration. Please try again.',
+      });
     }
   };
 
   const handleRejectRegistration = async () => {
     if (!selectedRegistration || !rejectionReason.trim()) {
-      setError('Rejection reason is required');
-      setTimeout(() => setError(null), 3000);
+      showSubmissionError('Rejection reason is required');
       return;
     }
 
@@ -411,8 +409,9 @@ const HotelManagementAdmin: React.FC = () => {
         throw new Error('Failed to reject registration');
       }
     } catch (err) {
-      setError('Failed to reject hotel registration. Please try again.');
-      setTimeout(() => setError(null), 3000);
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to reject hotel registration. Please try again.',
+      });
     }
   };
 
@@ -526,7 +525,9 @@ const HotelManagementAdmin: React.FC = () => {
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
       // console.error('Error updating hotel:', err);
-      setError('Failed to update hotel. Please try again.');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to update hotel. Please try again.',
+      });
     }
   };
 
@@ -546,7 +547,9 @@ const HotelManagementAdmin: React.FC = () => {
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
       // console.error('Error toggling hotel status:', err);
-      setError('Failed to update hotel status. Please try again.');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to update hotel status. Please try again.',
+      });
     } finally {
       setLoading(false);
     }

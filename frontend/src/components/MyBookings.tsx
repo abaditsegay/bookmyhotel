@@ -44,6 +44,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { addDays, format } from 'date-fns';
 import PremiumDatePicker from './common/PremiumDatePicker';
 import { useAuth } from '../contexts/AuthContext';
+import { useSubmissionError } from '../contexts/SubmissionErrorContext';
 import { BookingService } from '../services/BookingService';
 import { BookingResponse, BookingModificationRequest } from '../types/booking';
 import { StandardLoading, StandardError } from './common';
@@ -53,6 +54,7 @@ import { formatDateForDisplay, formatDateTimeForDisplay } from '../utils/dateUti
 const MyBookings: React.FC = () => {
   const { t } = useTranslation();
   const { user, token } = useAuth();
+  const { showSubmissionError } = useSubmissionError();
   const theme = useTheme();
   const [bookings, setBookings] = useState<BookingResponse[]>([]);
   const [loading, setLoading] = useState(true);
@@ -133,7 +135,7 @@ const MyBookings: React.FC = () => {
       }
       
       if (Object.keys(modificationRequest).length === 0) {
-        setError(t('booking.myBookingsPage.errors.noChanges'));
+        showSubmissionError(t('booking.myBookingsPage.errors.noChanges'));
         return;
       }
       
@@ -145,10 +147,14 @@ const MyBookings: React.FC = () => {
         setSelectedBooking(null);
         resetModifyForm();
       } else {
-        setError(response.message || t('booking.myBookingsPage.errors.modifyFailed'));
+        showSubmissionError(response.message || t('booking.myBookingsPage.errors.modifyFailed'), {
+          fallbackMessage: t('booking.myBookingsPage.errors.modifyFailed'),
+        });
       }
     } catch (err: any) {
-      setError(err.message || t('booking.myBookingsPage.errors.modifyFailedWithSupport'));
+      showSubmissionError(err, {
+        fallbackMessage: t('booking.myBookingsPage.errors.modifyFailedWithSupport'),
+      });
       // console.error('Error modifying booking:', err);
     } finally {
       setModifying(false);

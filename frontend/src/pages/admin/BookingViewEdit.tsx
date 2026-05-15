@@ -27,6 +27,7 @@ import {
 } from '@mui/material';
 import { useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
 import { hotelAdminApi, RoomResponse } from '../../services/hotelAdminApi';
 import { ROOM_TYPE_VALUES } from '../../constants/roomTypes';
 import EditIcon from '@mui/icons-material/Edit';
@@ -65,6 +66,7 @@ const BookingViewEdit: React.FC = () => {
   const [searchParams] = useSearchParams();
   const location = useLocation();
   const { token } = useAuth();
+  const { showSubmissionError } = useSubmissionError();
   
   const [booking, setBooking] = useState<BookingData | null>(null);
   const [editedBooking, setEditedBooking] = useState<BookingData | null>(null);
@@ -168,7 +170,7 @@ const BookingViewEdit: React.FC = () => {
 
     // Check if booking can be modified based on its status
     if (!canModifyBooking(booking.status)) {
-      setError(`Cannot modify booking with status: ${booking.status}. Only confirmed, pending, or checked-in bookings can be modified.`);
+      showSubmissionError(`Cannot modify booking with status: ${booking.status}. Only confirmed, pending, or checked-in bookings can be modified.`);
       return false;
     }
 
@@ -299,7 +301,9 @@ const BookingViewEdit: React.FC = () => {
       setIsEditing(false);
       return true;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update booking');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to update booking',
+      });
       // console.error('Error updating booking:', err);
       return false;
     } finally {

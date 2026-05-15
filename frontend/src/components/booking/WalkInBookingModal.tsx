@@ -27,7 +27,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useTenant } from '../../contexts/TenantContext';
 import { hotelApiService } from '../../services/hotelApi';
 import { hotelAdminApi } from '../../services/hotelAdminApi';
-import { frontDeskApiService } from '../../services/frontDeskApi';
+import { buildWalkInBookingRequest, frontDeskApiService } from '../../services/frontDeskApi';
 import { formatCurrency, formatCurrencyWithDecimals } from '../../utils/currencyUtils';
 import { API_CONFIG, buildApiUrl } from '../../config/apiConfig';
 import PremiumTextField from '../common/PremiumTextField';
@@ -35,6 +35,7 @@ import PremiumDatePicker from '../common/PremiumDatePicker';
 import NumberStepper from '../common/NumberStepper';
 import { COLORS, addAlpha } from '../../theme/themeColors';
 import { extractBookingErrorMessage } from '../../utils/errorHandling';
+import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
 
 // API base URL for backend calls
 const API_BASE_URL = API_CONFIG.SERVER_URL;
@@ -73,6 +74,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
   const { t } = useTranslation();
   const { token, user } = useAuth();
   const { tenantId } = useTenant();
+  const { showSubmissionError } = useSubmissionError();
   const theme = useTheme();
   
   // Get translated steps
@@ -369,17 +371,17 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
     if (activeStep === 0) {
       // Validate guest information
       if (!guestInfo.firstName || !guestInfo.lastName || !guestInfo.email || !guestInfo.phone) {
-        setError(t('walkInBooking.validationErrors.fillAllFields'));
+        showSubmissionError(t('walkInBooking.validationErrors.fillAllFields'));
         return;
       }
       if (!guestInfo.email.includes('@')) {
-        setError(t('walkInBooking.validationErrors.invalidEmail'));
+        showSubmissionError(t('walkInBooking.validationErrors.invalidEmail'));
         return;
       }
     } else if (activeStep === 1) {
       // Validate room selection
       if (!selectedRoom) {
-        setError(t('walkInBooking.validationErrors.selectRoom'));
+        showSubmissionError(t('walkInBooking.validationErrors.selectRoom'));
         return;
       }
     }
@@ -400,19 +402,18 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
     setError(null);
     
     try {
-      const bookingRequest = {
+      const bookingRequest = buildWalkInBookingRequest({
         hotelId: hotelId,
         roomType: selectedRoom.roomType,
         roomId: selectedRoom.id, // Add specific room ID for immediate assignment
         checkInDate: format(checkInDate, 'yyyy-MM-dd'),
         checkOutDate: format(checkOutDate, 'yyyy-MM-dd'),
         guests: guests,
-        specialRequests: specialRequests || undefined,
-        paymentMethodId: 'pay_at_frontdesk', // Special indicator for front desk payments
+        specialRequests,
         guestName: `${guestInfo.firstName} ${guestInfo.lastName}`,
         guestEmail: guestInfo.email,
         guestPhone: guestInfo.phone,
-      };
+      });
 
       let response;
       
@@ -450,7 +451,9 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
       
       // Use the centralized error handling utility
       const errorMessage = extractBookingErrorMessage(error);
-      setError(errorMessage);
+      showSubmissionError(errorMessage, {
+        fallbackMessage: 'Failed to create booking. Please try again.',
+      });
     } finally {
       setLoading(false);
     }

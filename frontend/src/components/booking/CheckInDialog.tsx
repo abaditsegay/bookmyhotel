@@ -37,6 +37,8 @@ import { useTenant } from '../../contexts/TenantContext';
 import { Booking, Room } from '../../types/booking-shared';
 import { buildApiUrl } from '../../config/apiConfig';
 import { COLORS, addAlpha } from '../../theme/themeColors';
+import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
+import { formatDateForInput } from '../../utils/dateUtils';
 
 interface CheckInDialogProps {
   open: boolean;
@@ -55,6 +57,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
 }) => {
   const { token, user } = useAuth();
   const { tenant } = useTenant();
+  const { showSubmissionError } = useSubmissionError();
   const theme = useTheme();
   const primaryMain = theme.palette.primary.main;
   const primaryLight = theme.palette.primary.light;
@@ -299,11 +302,20 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
         // Clear any previous errors
         setError(null);
       } else {
-        setError(result.message || 'Failed to assign room');
+        closeThenShowSubmissionError(result.message || 'Failed to assign room', 'Failed to assign room');
       }
     } catch (error) {
-      setError('Failed to assign room');
+      closeThenShowSubmissionError(error, 'Failed to assign room');
     }
+  };
+
+  const closeThenShowSubmissionError = (submissionError: unknown, fallbackMessage: string) => {
+    handleClose();
+    window.setTimeout(() => {
+      showSubmissionError(submissionError, {
+        fallbackMessage,
+      });
+    }, 0);
   };
 
   const handleCheckIn = async () => {
@@ -317,7 +329,25 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
 
     // For bookings with assigned rooms, proceed with check-in process
     if (!currentRoomNumber || currentRoomNumber === 'To be assigned') {
-      setError('No room assigned. Please assign a room before checking in.');
+      closeThenShowSubmissionError(
+        'No room assigned. Please assign a room before checking in.',
+        'No room assigned. Please assign a room before checking in.'
+      );
+      return;
+    }
+
+    const bookingCheckInDate = formatDateForInput(booking.checkInDate);
+    const utcToday = new Date();
+    const utcTomorrow = new Date(Date.UTC(utcToday.getUTCFullYear(), utcToday.getUTCMonth(), utcToday.getUTCDate() + 1));
+    const utcTomorrowDate = `${utcTomorrow.getUTCFullYear()}-${String(utcTomorrow.getUTCMonth() + 1).padStart(2, '0')}-${String(utcTomorrow.getUTCDate()).padStart(2, '0')}`;
+
+    // Mirror the backend rule so we do not issue a request that the server will
+    // deterministically reject as an early check-in.
+    if (bookingCheckInDate > utcTomorrowDate) {
+      closeThenShowSubmissionError(
+        'Early check-in is not allowed for this booking yet.',
+        'Early check-in is not allowed for this booking yet.'
+      );
       return;
     }
 
@@ -365,7 +395,10 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
       }
       
       if (!roomId) {
-        setError('Could not find assigned room details. The room may have been deleted or is not available for these dates. Please assign a different room.');
+        closeThenShowSubmissionError(
+          'Could not find assigned room details. The room may have been deleted or is not available for these dates. Please assign a different room.',
+          'Could not find assigned room details. Please assign a different room.'
+        );
         setLoading(false);
         return;
       }
@@ -374,7 +407,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
         token,
         booking.reservationId,
         roomId,
-        currentRoomType || booking.roomType,
+        undefined,
         tenant?.id || null
       );
 
@@ -393,10 +426,10 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
         onCheckInSuccess(updatedBooking);
         onClose();
       } else {
-        setError(result.message || 'Failed to check-in guest');
+        closeThenShowSubmissionError(result.message || 'Failed to check-in guest', 'Failed to check-in guest');
       }
     } catch (error) {
-      setError('Failed to check-in guest');
+      closeThenShowSubmissionError(error, 'Failed to check-in guest');
       // console.error('Check-in error:', error);
     } finally {
       setLoading(false);

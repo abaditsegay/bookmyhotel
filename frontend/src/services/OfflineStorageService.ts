@@ -76,8 +76,9 @@ interface OfflineBooking {
   pricePerNight: number;
   paymentMethod: 'CASH' | 'CARD' | 'PENDING';
   specialRequests?: string;
-  status: 'PENDING_SYNC' | 'SYNC_FAILED' | 'SYNCED';
+  status: 'PENDING_SYNC' | 'SYNC_FAILED' | 'SYNCED' | 'MANUAL_REVIEW_REQUIRED';
   createdAt: string;
+  syncedAt?: string;
   createdBy: number;
   syncAttempts: number;
   errorMessage?: string;
@@ -381,19 +382,10 @@ export class OfflineStorageService {
   }
 
   async getFailedSyncBookings(): Promise<OfflineBooking[]> {
-    return new Promise((resolve, reject) => {
-      const store = this.getStore('offlineBookings');
-      const request = store.index('status').getAll('SYNC_FAILED');
-
-      request.onsuccess = () => {
-        resolve(request.result || []);
-      };
-
-      request.onerror = () => {
-        // console.error('Failed to get failed sync bookings:', request.error);
-        reject(request.error);
-      };
-    });
+    const bookings = await this.getOfflineBookings();
+    return bookings.filter(
+      booking => booking.status === 'SYNC_FAILED' || booking.status === 'MANUAL_REVIEW_REQUIRED'
+    );
   }
 
   async updateBookingStatus(bookingId: string, status: OfflineBooking['status'], errorMessage?: string): Promise<void> {
@@ -406,6 +398,10 @@ export class OfflineStorageService {
         if (booking) {
           booking.status = status;
           booking.syncAttempts += 1;
+          if (status === 'SYNCED') {
+            booking.syncedAt = new Date().toISOString();
+            booking.errorMessage = undefined;
+          }
           if (errorMessage) {
             booking.errorMessage = errorMessage;
           }

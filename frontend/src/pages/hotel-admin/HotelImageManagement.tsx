@@ -22,6 +22,7 @@ import {
   Image as ImageIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
 import { COLORS, addAlpha } from '../../theme/themeColors';
 import { hotelAdminApi, HotelImageUploadRequest, HotelImageResponse } from '../../services/hotelAdminApi';
 import { ROOM_TYPE_VALUES } from '../../constants/roomTypes';
@@ -41,6 +42,7 @@ interface HotelGeneralImageState {
 
 const HotelImageManagement: React.FC = () => {
   const { token } = useAuth();
+  const { showSubmissionError } = useSubmissionError();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -131,7 +133,7 @@ const HotelImageManagement: React.FC = () => {
     
     const state = roomTypeStates[roomType];
     if (!state.heroImage) {
-      setError('Please select an image to upload');
+      showSubmissionError('Please select an image to upload');
       return;
     }
 
@@ -165,10 +167,14 @@ const HotelImageManagement: React.FC = () => {
         
         setSuccess(`Successfully uploaded image for ${roomType} rooms!`);
       } else {
-        setError(response.message || 'Failed to upload image');
+        showSubmissionError(response.message || 'Failed to upload image', {
+          fallbackMessage: 'Failed to upload image',
+        });
       }
     } catch (err) {
-      setError('Failed to upload image');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to upload image',
+      });
     } finally {
       updateRoomTypeState(roomType, { uploading: false });
     }
@@ -178,7 +184,7 @@ const HotelImageManagement: React.FC = () => {
     if (!token) return;
     
     if (!hotelGeneralState.heroImage) {
-      setError('Please select a hotel image to upload');
+      showSubmissionError('Please select a hotel image to upload');
       return;
     }
 
@@ -214,10 +220,14 @@ const HotelImageManagement: React.FC = () => {
         
         setSuccess('Successfully uploaded hotel image!');
       } else {
-        setError(response.message || 'Failed to upload hotel image');
+        showSubmissionError(response.message || 'Failed to upload hotel image', {
+          fallbackMessage: 'Failed to upload hotel image',
+        });
       }
     } catch (err) {
-      setError('Failed to upload hotel image');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to upload hotel image',
+      });
     } finally {
       setHotelGeneralState(prev => ({ ...prev, uploading: false }));
     }

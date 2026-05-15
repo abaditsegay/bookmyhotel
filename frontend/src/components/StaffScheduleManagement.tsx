@@ -36,6 +36,7 @@ import {
   Add as AddIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
+import { useSubmissionError } from '../contexts/SubmissionErrorContext';
 import PremiumTextField from './common/PremiumTextField';
 import PremiumSelect from './common/PremiumSelect';
 import PremiumDatePicker from './common/PremiumDatePicker';
@@ -100,6 +101,7 @@ const StaffScheduleManagement: React.FC = () => {
   const theme = useTheme();
   const { token, user } = useAuth();
   const { t } = useTranslation();
+  const { showSubmissionError } = useSubmissionError();
   const [schedules, setSchedules] = useState<StaffSchedule[]>([]);
   const [hotels, setHotels] = useState<Hotel[]>([]);
   const [staff, setStaff] = useState<User[]>([]);
@@ -372,7 +374,9 @@ const StaffScheduleManagement: React.FC = () => {
       await fetchSchedules();
     } catch (error) {
       // console.error('Error updating status:', error);
-      setError('Failed to update schedule status');
+      showSubmissionError(error, {
+        fallbackMessage: 'Failed to update schedule status',
+      });
     }
   };
 
@@ -418,12 +422,12 @@ const StaffScheduleManagement: React.FC = () => {
 
   const handleFileUpload = async () => {
     if (!uploadFile) {
-      setError('Please select a file to upload');
+      showSubmissionError('Please select a file to upload');
       return;
     }
 
     if (!token) {
-      setError('Authentication token not available');
+      showSubmissionError('Authentication token not available');
       return;
     }
 

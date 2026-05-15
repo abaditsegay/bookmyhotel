@@ -41,6 +41,7 @@ import {
   CheckCircle as CompleteIcon
 } from '@mui/icons-material';
 import { COLORS, addAlpha } from '../../theme/themeColors';
+import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
 
 
 const API_BASE_URL = API_CONFIG.BASE_URL;
@@ -85,6 +86,7 @@ interface CreateTaskForm {
 }
 
 const HousekeepingDashboard: React.FC = () => {
+  const { showSubmissionError } = useSubmissionError();
   const [activeTab, setActiveTab] = useState(0);
   const [tasks, setTasks] = useState<HousekeepingTask[]>([]);
   const [staff, setStaff] = useState<HousekeepingStaff[]>([]);
@@ -242,7 +244,9 @@ const HousekeepingDashboard: React.FC = () => {
       });
       await loadTasks();
     } catch (err) {
-      setError('Failed to create task');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to create task',
+      });
     }
   };
 
@@ -275,7 +279,7 @@ const HousekeepingDashboard: React.FC = () => {
       await loadTasks();
     } catch (err) {
       // console.error('Task assignment error:', err);
-      setError(`Failed to assign task: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      showSubmissionError(`Failed to assign task: ${err instanceof Error ? err.message : 'Unknown error'}`);
     }
   };
 
@@ -293,7 +297,7 @@ const HousekeepingDashboard: React.FC = () => {
       await loadTasks();
     } catch (err) {
       // console.error('Task start error:', err);
-      setError(`Failed to start task: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      showSubmissionError(`Failed to start task: ${err instanceof Error ? err.message : 'Unknown error'}`);
     }
   };
 
@@ -321,7 +325,7 @@ const HousekeepingDashboard: React.FC = () => {
       await loadTasks();
     } catch (err) {
       // console.error('Task completion error:', err);
-      setError(`Failed to complete task: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      showSubmissionError(`Failed to complete task: ${err instanceof Error ? err.message : 'Unknown error'}`);
     }
   };
 

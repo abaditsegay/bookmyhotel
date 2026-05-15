@@ -18,6 +18,8 @@ public class UserManagementResponse {
     private Boolean isActive;
     private Set<UserRole> roles;
     private String tenantId;
+    private Long hotelId;
+    private String hotelName;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     
@@ -87,6 +89,22 @@ public class UserManagementResponse {
     
     public void setTenantId(String tenantId) {
         this.tenantId = tenantId;
+    }
+
+    public Long getHotelId() {
+        return hotelId;
+    }
+
+    public void setHotelId(Long hotelId) {
+        this.hotelId = hotelId;
+    }
+
+    public String getHotelName() {
+        return hotelName;
+    }
+
+    public void setHotelName(String hotelName) {
+        this.hotelName = hotelName;
     }
     
     public LocalDateTime getCreatedAt() {

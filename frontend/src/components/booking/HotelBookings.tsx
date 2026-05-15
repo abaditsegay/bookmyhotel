@@ -80,6 +80,8 @@ const HotelBookings: React.FC<HotelBookingsProps> = ({
   const [size, setSize] = useState(10);
   const [totalElements, setTotalElements] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, searchTerm.trim() ? 300 : 0);
+  const effectiveSearchTerm = getEffectiveSearchTerm(debouncedSearchTerm);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
   const [snackbar, setSnackbar] = useState({ 
@@ -110,7 +112,7 @@ const HotelBookings: React.FC<HotelBookingsProps> = ({
     try {
       const pageToUse = customPage !== undefined ? customPage : page;
       const sizeToUse = customSize !== undefined ? customSize : size;
-      const searchToUse = customSearch !== undefined ? customSearch : searchTerm;
+      const searchToUse = customSearch !== undefined ? customSearch : (effectiveSearchTerm ?? '');
 
       let result;
       // Both hotel admin and front desk should use the same booking management API
@@ -140,7 +142,7 @@ const HotelBookings: React.FC<HotelBookingsProps> = ({
     } finally {
       setLoading(false);
     }
-  }, [tenant, token, page, size, searchTerm]);
+  }, [tenant, token, page, size, effectiveSearchTerm]);
 
   // Load bookings on component mount and tenant change
   useEffect(() => {
@@ -151,15 +153,15 @@ const HotelBookings: React.FC<HotelBookingsProps> = ({
 
   // Handle search
   useEffect(() => {
-    const timeoutId = setTimeout(() => {
+    if (effectiveSearchTerm === null) {
+      return;
+    }
+
       setPage(0);
       if (tenant) {
         loadBookings();
       }
-    }, 500);
-
-    return () => clearTimeout(timeoutId);
-  }, [searchTerm, tenant, loadBookings]);
+  }, [effectiveSearchTerm, tenant, loadBookings]);
 
   // Handle page change
   const handlePageChange = (event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {

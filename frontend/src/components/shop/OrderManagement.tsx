@@ -50,6 +50,7 @@ import { useCsvExport } from '../../hooks/useCsvExport';
 import { useSnackbar } from 'notistack';
 import { useTranslation } from 'react-i18next';
 import { getPremiumTableHeadSx } from './premiumStyles';
+import { getEffectiveSearchTerm } from '../../utils/search';
 
 const OrderManagement: React.FC = () => {
   const { user, token } = useAuth();
@@ -62,6 +63,7 @@ const OrderManagement: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
+  const effectiveSearchTerm = getEffectiveSearchTerm(debouncedSearchTerm);
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [viewOrderDialog, setViewOrderDialog] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<ShopOrder | null>(null);
@@ -84,9 +86,10 @@ const OrderManagement: React.FC = () => {
 
   // Filter orders based on search term and status
   const filteredOrders = orders.filter(order => {
-    const matchesSearch = order.orderNumber.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
-                         ShopOrderUtils.getDisplayCustomerName(order).toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
-                         (order.roomNumber && order.roomNumber.toLowerCase().includes(debouncedSearchTerm.toLowerCase()));
+    const appliedSearchTerm = effectiveSearchTerm ?? '';
+    const matchesSearch = order.orderNumber.toLowerCase().includes(appliedSearchTerm.toLowerCase()) ||
+                         ShopOrderUtils.getDisplayCustomerName(order).toLowerCase().includes(appliedSearchTerm.toLowerCase()) ||
+                         (order.roomNumber && order.roomNumber.toLowerCase().includes(appliedSearchTerm.toLowerCase()));
     const matchesStatus = statusFilter === 'ALL' || order.status === statusFilter;
     return matchesSearch && matchesStatus;
   });

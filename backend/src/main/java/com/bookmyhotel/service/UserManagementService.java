@@ -498,6 +498,10 @@ public class UserManagementService {
         response.setIsActive(user.getIsActive());
         response.setRoles(user.getRoles());
         response.setTenantId(user.getTenantId());
+        if (user.getHotel() != null) {
+            response.setHotelId(user.getHotel().getId());
+            response.setHotelName(user.getHotel().getName());
+        }
         response.setCreatedAt(user.getCreatedAt());
         response.setUpdatedAt(user.getUpdatedAt());
         return response;

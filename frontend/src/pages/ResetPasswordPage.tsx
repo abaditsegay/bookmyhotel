@@ -16,12 +16,14 @@ import { useNavigate, useSearchParams, Link as RouterLink } from 'react-router-d
 import { API_CONFIG } from '../config/apiConfig';
 import { COLORS, addAlpha, getGradient } from '../theme/themeColors';
 import PremiumTextField from '../components/common/PremiumTextField';
+import { useSubmissionError } from '../contexts/SubmissionErrorContext';
 
 const ResetPasswordPage: React.FC = () => {
   const { t } = useTranslation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const navigate = useNavigate();
+  const { showSubmissionError } = useSubmissionError();
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');
 
@@ -31,7 +33,6 @@ const ResetPasswordPage: React.FC = () => {
   const [validating, setValidating] = useState(true);
   const [tokenValid, setTokenValid] = useState(false);
   const [success, setSuccess] = useState('');
-  const [error, setError] = useState('');
 
   // Validate token on mount
   useEffect(() => {
@@ -62,15 +63,14 @@ const ResetPasswordPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
 
     if (newPassword.length < 6) {
-      setError(t('auth.resetPassword.passwordTooShort'));
+      showSubmissionError(t('auth.resetPassword.passwordTooShort'));
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      setError(t('auth.resetPassword.passwordsNoMatch'));
+      showSubmissionError(t('auth.resetPassword.passwordsNoMatch'));
       return;
     }
 
@@ -88,10 +88,14 @@ const ResetPasswordPage: React.FC = () => {
       if (response.ok) {
         setSuccess(t('auth.resetPassword.successMessage'));
       } else {
-        setError(data.message || t('auth.resetPassword.errorMessage'));
+        showSubmissionError(data.message || t('auth.resetPassword.errorMessage'), {
+          fallbackMessage: t('auth.resetPassword.errorMessage'),
+        });
       }
     } catch {
-      setError(t('auth.resetPassword.errorMessage'));
+      showSubmissionError(t('auth.resetPassword.errorMessage'), {
+        fallbackMessage: t('auth.resetPassword.errorMessage'),
+      });
     } finally {
       setLoading(false);
     }
@@ -194,12 +198,6 @@ const ResetPasswordPage: React.FC = () => {
           </Box>
 
           <CardContent sx={{ p: isMobile ? 3 : 4 }}>
-            {error && (
-              <Alert severity="error" sx={{ mb: 2 }}>
-                {error}
-              </Alert>
-            )}
-
             {success ? (
               <Box sx={{ textAlign: 'center', py: 2 }}>
                 <Alert severity="success" sx={{ mb: 3 }}>

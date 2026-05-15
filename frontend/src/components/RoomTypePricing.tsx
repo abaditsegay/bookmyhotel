@@ -37,6 +37,7 @@ import {
   Info as InfoIcon
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
+import { useSubmissionError } from '../contexts/SubmissionErrorContext';
 import roomTypePricingService, { 
   RoomTypePricingRequest, 
   RoomTypePricingResponse 
@@ -57,6 +58,7 @@ interface RoomTypePricingProps {
 
 const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) => {
   const { token, user } = useAuth();
+  const { showSubmissionError } = useSubmissionError();
   const [pricingList, setPricingList] = useState<RoomTypePricingResponse[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -215,11 +217,15 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
         }
         setError(null);
       } else {
-        setError(response.message || 'Failed to save pricing');
+        showSubmissionError(response.message || 'Failed to save pricing', {
+          fallbackMessage: 'Failed to save pricing',
+        });
       }
     } catch (err) {
       // console.error('Error saving pricing:', err);
-      setError('Failed to save pricing');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to save pricing',
+      });
     } finally {
       setLoading(false);
     }
@@ -239,11 +245,15 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
         }
         setError(null);
       } else {
-        setError(response.message || 'Failed to initialize default pricing');
+        showSubmissionError(response.message || 'Failed to initialize default pricing', {
+          fallbackMessage: 'Failed to initialize default pricing',
+        });
       }
     } catch (err) {
       // console.error('Error initializing defaults:', err);
-      setError('Failed to initialize default pricing');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to initialize default pricing',
+      });
     } finally {
       setLoading(false);
     }

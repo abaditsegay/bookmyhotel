@@ -47,6 +47,7 @@ import { hotelAdminApi, RoomResponse, RoomCreateRequest, RoomUpdateRequest } fro
 import PremiumTextField from '../../components/common/PremiumTextField';
 import PremiumSelect from '../../components/common/PremiumSelect';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
 import { formatCurrency } from '../../utils/currencyUtils';
 import RoomTypePricing from '../../components/RoomTypePricing';
 import RoomBulkUpload from '../../components/hotel-admin/RoomBulkUpload';
@@ -64,6 +65,7 @@ interface RoomManagementProps {
 
 const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => {
   const { token } = useAuth();
+  const { showSubmissionError } = useSubmissionError();
   const navigate = useNavigate();
   const [rooms, setRooms] = useState<RoomResponse[]>([]);
   const [loading, setLoading] = useState(true);
@@ -72,6 +74,8 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
   const [rowsPerPage, setRowsPerPage] = useState(25);
   const [totalElements, setTotalElements] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, searchTerm.trim() ? 300 : 0);
+  const effectiveSearchTerm = getEffectiveSearchTerm(debouncedSearchTerm);
   const [tabValue, setTabValue] = useState(0);
   const [filters, setFilters] = useState<RoomFilters>({
     roomNumber: '',
@@ -131,6 +135,10 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
     // console.log('🔄 Loading rooms... page:', page, 'size:', rowsPerPage, 'filters:', filters);
     
     try {
+      if (effectiveSearchTerm === null) {
+        return;
+      }
+
       setLoading(true);
       setError(null);
       
@@ -138,7 +146,7 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
         token,
         page,
         rowsPerPage,
-        searchTerm || undefined,
+        effectiveSearchTerm || undefined,
         filters.roomNumber || undefined,
         filters.roomType || undefined,
         filters.status || undefined
@@ -179,7 +187,7 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
     } finally {
       setLoading(false);
     }
-  }, [token, page, rowsPerPage, searchTerm, filters]);
+  }, [token, page, rowsPerPage, effectiveSearchTerm, filters]);
 
   useEffect(() => {
     loadRooms();
@@ -193,8 +201,13 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
   // Memoized search handler to prevent input focus loss
   const handleSearchChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
-    setPage(0);
   }, []);
+
+  useEffect(() => {
+    if (effectiveSearchTerm !== null) {
+      setPage(0);
+    }
+  }, [effectiveSearchTerm]);
 
   // Memoized filter handler to prevent input focus loss
   const handleFilterChange = React.useCallback((filterName: keyof RoomFilters, value: string) => {
@@ -277,11 +290,15 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
         handleStatusDialogClose();
         setError(null);
       } else {
-        setError(response.message || 'Failed to update room status');
+        showSubmissionError(response.message || 'Failed to update room status', {
+          fallbackMessage: 'Failed to update room status',
+        });
       }
     } catch (err) {
       // console.error('Error updating room status:', err);
-      setError('Failed to update room status. Please try again.');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to update room status. Please try again.',
+      });
     } finally {
       setStatusUpdating(false);
     }
@@ -305,12 +322,15 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
         
         setError(null);
       } else {
-        setError(response.message || 'Failed to update room availability');
+        showSubmissionError(response.message || 'Failed to update room availability', {
+          fallbackMessage: 'Failed to update room availability',
+        });
       }
     } catch (err) {
       // console.error('Error toggling room availability:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Failed to update room availability';
-      setError(errorMessage);
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to update room availability',
+      });
     } finally {
       setAvailabilityUpdating(prev => ({ ...prev, [room.id]: false }));
     }
@@ -345,11 +365,15 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
         
         // console.log('🔧 Room list refreshed');
       } else {
-        setError(response.message || 'Failed to fix room status consistency');
+        showSubmissionError(response.message || 'Failed to fix room status consistency', {
+          fallbackMessage: 'Failed to fix room status consistency',
+        });
       }
     } catch (error) {
       // console.error('Fix room status consistency error:', error);
-      setError('Failed to fix room status consistency');
+      showSubmissionError(error, {
+        fallbackMessage: 'Failed to fix room status consistency',
+      });
     } finally {
       setFixingConsistency(false);
     }
@@ -385,7 +409,9 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
           setBulkCreateProgress(null);
           setError(null);
         } else {
-          setError(response.message || 'Failed to create room. Please check the room number is unique.');
+          showSubmissionError(response.message || 'Failed to create room. Please check the room number is unique.', {
+            fallbackMessage: 'Failed to create room. Please check the room number is unique.',
+          });
         }
       } else {
         // Multiple rooms — use batch endpoint
@@ -409,16 +435,20 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
               created: data.createdRooms.map(r => r.roomNumber),
               failed: data.failedRooms.map(f => ({ room: f.roomNumber, error: f.error })),
             });
-            setError(`${data.failed} room(s) failed to create. ${data.created} created successfully.`);
+            showSubmissionError(`${data.failed} room(s) failed to create. ${data.created} created successfully.`);
           }
         } else {
-          setError(response.message || 'Failed to create rooms.');
+          showSubmissionError(response.message || 'Failed to create rooms.', {
+            fallbackMessage: 'Failed to create rooms.',
+          });
         }
       }
 
       await loadRooms();
     } catch (err) {
-      setError('Failed to create rooms. Please try again.');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to create rooms. Please try again.',
+      });
     } finally {
       setLoading(false);
     }
@@ -442,11 +472,15 @@ const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => 
         await loadRooms();
         setError(null);
       } else {
-        setError(response.message || 'Failed to update room');
+        showSubmissionError(response.message || 'Failed to update room', {
+          fallbackMessage: 'Failed to update room',
+        });
       }
     } catch (err) {
       // console.error('Error updating room:', err);
-      setError('Failed to update room. Please try again.');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to update room. Please try again.',
+      });
     } finally {
       setLoading(false);
     }

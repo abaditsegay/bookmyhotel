@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { formatEthiopianPhone, normalizeEthiopianPhone } from '../utils/phoneUtils';
+import { normalizeEthiopianPhone } from '../utils/phoneUtils';
 import {
   Box,
   CardContent,
@@ -28,13 +28,14 @@ import StandardButton from '../components/common/StandardButton';
 import PremiumTextField from '../components/common/PremiumTextField';
 import { formatDateForDisplay, formatDateTimeForDisplay } from '../utils/dateUtils';
 import { COLORS, addAlpha } from '../theme/themeColors';
+import { useSubmissionError } from '../contexts/SubmissionErrorContext';
 
 const ProfilePage: React.FC = () => {
   const { user, updateProfile, changePassword } = useAuth();
+  const { showSubmissionError } = useSubmissionError();
   const [isEditing, setIsEditing] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
 
   // Form state
   const [formData, setFormData] = useState({
@@ -72,7 +73,6 @@ const ProfilePage: React.FC = () => {
   const handleEdit = () => {
     setIsEditing(true);
     setSuccessMessage('');
-    setErrorMessage('');
   };
 
   const handleCancel = () => {
@@ -87,28 +87,27 @@ const ProfilePage: React.FC = () => {
       confirmPassword: '',
     });
     setSuccessMessage('');
-    setErrorMessage('');
   };
 
   const handleSave = async () => {
     try {
       // Validate form
       if (!formData.firstName.trim() || !formData.lastName.trim()) {
-        setErrorMessage('First name and last name are required');
+        showSubmissionError('First name and last name are required');
         return;
       }
 
       if (formData.newPassword) {
         if (formData.newPassword !== formData.confirmPassword) {
-          setErrorMessage('New passwords do not match');
+          showSubmissionError('New passwords do not match');
           return;
         }
         if (formData.newPassword.length < 6) {
-          setErrorMessage('New password must be at least 6 characters long');
+          showSubmissionError('New password must be at least 6 characters long');
           return;
         }
         if (!formData.currentPassword) {
-          setErrorMessage('Current password is required to change password');
+          showSubmissionError('Current password is required to change password');
           return;
         }
       }
@@ -125,7 +124,9 @@ const ProfilePage: React.FC = () => {
       const profileSuccess = await updateProfile(profileUpdates);
       
       if (!profileSuccess) {
-        setErrorMessage('Failed to update profile. Please try again.');
+        showSubmissionError('Failed to update profile. Please try again.', {
+          fallbackMessage: 'Failed to update profile. Please try again.',
+        });
         return;
       }
 
@@ -134,7 +135,9 @@ const ProfilePage: React.FC = () => {
         const passwordSuccess = await changePassword(formData.currentPassword, formData.newPassword);
         
         if (!passwordSuccess) {
-          setErrorMessage('Profile updated, but failed to change password. Please try again.');
+          showSubmissionError('Profile updated, but failed to change password. Please try again.', {
+            fallbackMessage: 'Profile updated, but failed to change password. Please try again.',
+          });
           return;
         }
       }
@@ -146,7 +149,6 @@ const ProfilePage: React.FC = () => {
           : 'Profile updated successfully!'
       );
       setIsEditing(false);
-      setErrorMessage('');
       
       // Clear password fields
       setFormData(prev => ({
@@ -157,7 +159,9 @@ const ProfilePage: React.FC = () => {
       }));
 
     } catch (error) {
-      setErrorMessage('Failed to update profile. Please try again.');
+      showSubmissionError(error, {
+        fallbackMessage: 'Failed to update profile. Please try again.',
+      });
     }
   };
 
@@ -184,12 +188,6 @@ const ProfilePage: React.FC = () => {
       {successMessage && (
         <Alert severity="success" sx={{ mb: 3 }} onClose={() => setSuccessMessage('')}>
           {successMessage}
-        </Alert>
-      )}
-
-      {errorMessage && (
-        <Alert severity="error" sx={{ mb: 3 }} onClose={() => setErrorMessage('')}>
-          {errorMessage}
         </Alert>
       )}
 

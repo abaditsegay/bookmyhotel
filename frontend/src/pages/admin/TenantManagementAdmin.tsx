@@ -37,6 +37,7 @@ import {
   ArrowBack as ArrowBackIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
 import { useNavigate } from 'react-router-dom';
 import { formatDateTimeForDisplay } from '../../utils/dateUtils';
 import { 
@@ -56,6 +57,7 @@ interface TenantFilters {
 const TenantManagementAdmin: React.FC = () => {
   const theme = useTheme();
   const { token } = useAuth();
+  const { showSubmissionError } = useSubmissionError();
   const navigate = useNavigate();
   const [tenants, setTenants] = useState<TenantDTO[]>([]);
   const [loading, setLoading] = useState(true);
@@ -187,7 +189,7 @@ const TenantManagementAdmin: React.FC = () => {
     if (!token) return;
     
     if (!tenantForm.name) {
-      setError('Please enter a tenant name.');
+      showSubmissionError('Please enter a tenant name.');
       return;
     }
     
@@ -204,7 +206,9 @@ const TenantManagementAdmin: React.FC = () => {
       setError(null);
     } catch (err) {
       // console.error('Error creating tenant:', err);
-      setError('Failed to create tenant. Please check if the name and subdomain are unique.');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to create tenant. Please check if the name and subdomain are unique.',
+      });
     } finally {
       setLoading(false);
     }
@@ -222,7 +226,9 @@ const TenantManagementAdmin: React.FC = () => {
       setError(null);
     } catch (err) {
       // console.error('Error updating tenant:', err);
-      setError('Failed to update tenant.');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to update tenant.',
+      });
     } finally {
       setLoading(false);
     }
@@ -238,7 +244,9 @@ const TenantManagementAdmin: React.FC = () => {
       setError(null);
     } catch (err) {
       // console.error('Error toggling tenant status:', err);
-      setError('Failed to update tenant status.');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to update tenant status.',
+      });
     } finally {
       setLoading(false);
     }

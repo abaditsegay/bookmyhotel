@@ -77,6 +77,10 @@ public class SystemWideUserService {
         response.setLastName(user.getLastName());
         response.setIsActive(user.getIsActive());
         response.setTenantId(user.getTenantId());
+        if (user.getHotel() != null) {
+            response.setHotelId(user.getHotel().getId());
+            response.setHotelName(user.getHotel().getName());
+        }
         response.setRoles(user.getRoles());
         response.setCreatedAt(user.getCreatedAt());
         response.setUpdatedAt(user.getUpdatedAt());

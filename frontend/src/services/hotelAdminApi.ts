@@ -1237,9 +1237,13 @@ export const hotelAdminApi = {
     bookingRequest: any
   ): Promise<{ success: boolean; data?: any; message?: string }> => {
     try {
+      const tenantId = TokenManager.getUser()?.tenantId;
       const response = await fetch(`${API_BASE_URL}/hotel-admin/walk-in-booking`, {
         method: 'POST',
-        headers: getAuthHeaders(),
+        headers: {
+          ...getAuthHeaders(token),
+          ...(tenantId ? { 'X-Tenant-ID': tenantId } : {}),
+        },
         body: JSON.stringify(bookingRequest),
       });
 

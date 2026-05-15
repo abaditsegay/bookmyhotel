@@ -34,6 +34,8 @@ import {
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { adminApiService, UserManagementResponse, HotelDTO, PagedResponse } from '../../services/adminApi';
+import { useDebounce } from '../../hooks/useDebounce';
+import { getEffectiveSearchTerm } from '../../utils/search';
 import AuditLogTab from './AuditLogTab';
 import PremiumTextField from '../../components/common/PremiumTextField';
 import PremiumSelect from '../../components/common/PremiumSelect';
@@ -42,7 +44,7 @@ import { formatDateForDisplay } from '../../utils/dateUtils';
 const AdminDashboard: React.FC = () => {
   const theme = useTheme();
   const navigate = useNavigate();
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   
   // Get initial tab from URL parameter, default to 0 if not present
@@ -72,6 +74,10 @@ const AdminDashboard: React.FC = () => {
   const [userStatusFilter, setUserStatusFilter] = useState('');
   const [userLoading, setUserLoading] = useState(false);
   const [userError, setUserError] = useState<string | null>(null);
+  const debouncedHotelSearchTerm = useDebounce(hotelSearchTerm, hotelSearchTerm.trim() ? 300 : 0);
+  const debouncedUserSearchTerm = useDebounce(userSearchTerm, userSearchTerm.trim() ? 300 : 0);
+  const effectiveHotelSearchTerm = getEffectiveSearchTerm(debouncedHotelSearchTerm);
+  const effectiveUserSearchTerm = getEffectiveSearchTerm(debouncedUserSearchTerm);
 
   // Set token on component mount
   useEffect(() => {
@@ -92,9 +98,13 @@ const AdminDashboard: React.FC = () => {
 
     try {
       let result: PagedResponse<HotelDTO>;
+
+      if (effectiveHotelSearchTerm === null) {
+        return;
+      }
       
-      if (hotelSearchTerm.trim()) {
-        result = await adminApiService.searchHotels(hotelSearchTerm, 0, 1000); // Load many results for client-side filtering
+      if (effectiveHotelSearchTerm) {
+        result = await adminApiService.searchHotels(effectiveHotelSearchTerm, 0, 1000); // Load many results for client-side filtering
       } else {
         result = await adminApiService.getHotels(0, 1000); // Load many results for client-side pagination
       }
@@ -107,7 +117,7 @@ const AdminDashboard: React.FC = () => {
     } finally {
       setHotelLoading(false);
     }
-  }, [token, hotelSearchTerm]);
+  }, [token, effectiveHotelSearchTerm]);
 
   const loadUsers = useCallback(async () => {
     if (!token) {
@@ -120,9 +130,13 @@ const AdminDashboard: React.FC = () => {
 
     try {
       let result: PagedResponse<UserManagementResponse>;
+
+      if (effectiveUserSearchTerm === null) {
+        return;
+      }
       
-      if (userSearchTerm.trim()) {
-        result = await adminApiService.searchUsers(userSearchTerm, 0, 1000); // Load many results for client-side filtering
+      if (effectiveUserSearchTerm) {
+        result = await adminApiService.searchUsers(effectiveUserSearchTerm, 0, 1000); // Load many results for client-side filtering
       } else {
         result = await adminApiService.getUsers(0, 1000); // Load many results for client-side pagination
       }
@@ -135,7 +149,7 @@ const AdminDashboard: React.FC = () => {
     } finally {
       setUserLoading(false);
     }
-  }, [token, userSearchTerm]);
+  }, [token, effectiveUserSearchTerm]);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setCurrentTab(newValue);
@@ -190,9 +204,10 @@ const AdminDashboard: React.FC = () => {
   // Search handlers
   // Filter and paginate hotels
   const filteredHotels = hotels.filter(hotel => {
-    const matchesSearch = (hotel.name?.toLowerCase().includes(hotelSearchTerm.toLowerCase()) || false) ||
-                         (hotel.address?.toLowerCase().includes(hotelSearchTerm.toLowerCase()) || false) ||
-                         (hotel.city?.toLowerCase().includes(hotelSearchTerm.toLowerCase()) || false);
+    const appliedHotelSearchTerm = effectiveHotelSearchTerm ?? '';
+    const matchesSearch = (hotel.name?.toLowerCase().includes(appliedHotelSearchTerm.toLowerCase()) || false) ||
+                         (hotel.address?.toLowerCase().includes(appliedHotelSearchTerm.toLowerCase()) || false) ||
+                         (hotel.city?.toLowerCase().includes(appliedHotelSearchTerm.toLowerCase()) || false);
     // Note: HotelDTO doesn't have status field, so we'll show all hotels for now
     return matchesSearch;
   });
@@ -204,9 +219,10 @@ const AdminDashboard: React.FC = () => {
 
   // Filter and paginate users
   const filteredUsers = users.filter(user => {
-    const matchesSearch = user.firstName.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
-                         user.lastName.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
-                         user.email.toLowerCase().includes(userSearchTerm.toLowerCase());
+    const appliedUserSearchTerm = effectiveUserSearchTerm ?? '';
+    const matchesSearch = user.firstName.toLowerCase().includes(appliedUserSearchTerm.toLowerCase()) ||
+                         user.lastName.toLowerCase().includes(appliedUserSearchTerm.toLowerCase()) ||
+                         user.email.toLowerCase().includes(appliedUserSearchTerm.toLowerCase());
     const matchesRole = userRoleFilter === '' || user.roles.includes(userRoleFilter);
     // Note: UserManagementResponse uses isActive boolean instead of status string
     const matchesStatus = userStatusFilter === '' || 
@@ -219,6 +235,25 @@ const AdminDashboard: React.FC = () => {
     userPage * userRowsPerPage,
     userPage * userRowsPerPage + userRowsPerPage
   );
+
+    useEffect(() => {
+      if (effectiveHotelSearchTerm !== null) {
+        setHotelPage(0);
+      }
+    }, [effectiveHotelSearchTerm]);
+
+    useEffect(() => {
+      if (effectiveUserSearchTerm !== null) {
+        setUserPage(0);
+      }
+    }, [effectiveUserSearchTerm]);
+
+    const canViewUserHotelColumn = Boolean(
+      user?.roles?.includes('SUPER_ADMIN') ||
+      user?.roles?.includes('ADMIN') ||
+      user?.role === 'SUPER_ADMIN' ||
+      user?.role === 'ADMIN'
+    );
 
   return (
     <Box sx={{ width: '100%', p: 3 }}>
@@ -539,6 +574,7 @@ const AdminDashboard: React.FC = () => {
                   >
                     <TableCell>User Name</TableCell>
                     <TableCell>Email</TableCell>
+                    {canViewUserHotelColumn && <TableCell>Hotel</TableCell>}
                     <TableCell>Role</TableCell>
                     <TableCell>Status</TableCell>
                     <TableCell>Last Login</TableCell>
@@ -549,20 +585,20 @@ const AdminDashboard: React.FC = () => {
                 <TableBody>
                   {userLoading ? (
                     <TableRow>
-                      <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
+                      <TableCell colSpan={canViewUserHotelColumn ? 8 : 7} align="center" sx={{ py: 4 }}>
                         <CircularProgress size={40} />
                         <Typography variant="body2" sx={{ mt: 2 }}>Loading users...</Typography>
                       </TableCell>
                     </TableRow>
                   ) : userError ? (
                     <TableRow>
-                      <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
+                      <TableCell colSpan={canViewUserHotelColumn ? 8 : 7} align="center" sx={{ py: 4 }}>
                         <Typography variant="body2" color="error">{userError}</Typography>
                       </TableCell>
                     </TableRow>
                   ) : paginatedUsers.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
+                      <TableCell colSpan={canViewUserHotelColumn ? 8 : 7} align="center" sx={{ py: 4 }}>
                         <Typography variant="body2" color="text.secondary">No users found</Typography>
                       </TableCell>
                     </TableRow>
@@ -582,6 +618,13 @@ const AdminDashboard: React.FC = () => {
                           {user.email}
                         </Typography>
                       </TableCell>
+                      {canViewUserHotelColumn && (
+                        <TableCell>
+                          <Typography variant="body2" color="text.secondary">
+                            {user.hotelName || 'System-wide'}
+                          </Typography>
+                        </TableCell>
+                      )}
                       <TableCell>
                         <Chip
                           label={user.roles.length > 0 ? user.roles[0] : 'NO_ROLE'}

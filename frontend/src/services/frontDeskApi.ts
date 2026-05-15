@@ -81,6 +81,34 @@ export interface CheckoutResponse {
   message?: string;
 }
 
+export interface WalkInBookingRequest {
+  hotelId: number;
+  roomType: string;
+  roomId: number;
+  checkInDate: string;
+  checkOutDate: string;
+  guests: number;
+  specialRequests?: string;
+  paymentMethodId: string;
+  paymentReference?: string;
+  guestName: string;
+  guestEmail: string;
+  guestPhone?: string;
+}
+
+export interface WalkInBookingRequestInput {
+  hotelId: number;
+  roomType: string;
+  roomId: number;
+  checkInDate: string;
+  checkOutDate: string;
+  guests: number;
+  specialRequests?: string;
+  guestName: string;
+  guestEmail: string;
+  guestPhone?: string;
+}
+
 export interface FrontDeskStats {
   todaysArrivals: number;
   todaysDepartures: number;
@@ -142,7 +170,7 @@ export interface BookingPage {
   empty: boolean;
 }
 
-const getAuthHeaders = (token: string, tenantId: string | null = null) => {
+export const buildFrontDeskAuthHeaders = (token: string, tenantId: string | null = null) => {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     'Authorization': `Bearer ${token}`,
@@ -156,6 +184,25 @@ const getAuthHeaders = (token: string, tenantId: string | null = null) => {
   
   return headers;
 };
+
+const getAuthHeaders = buildFrontDeskAuthHeaders;
+
+  export const buildWalkInBookingRequest = (
+    input: WalkInBookingRequestInput
+  ): WalkInBookingRequest => ({
+    hotelId: input.hotelId,
+    roomType: input.roomType,
+    roomId: input.roomId,
+    checkInDate: input.checkInDate,
+    checkOutDate: input.checkOutDate,
+    guests: input.guests,
+    specialRequests: input.specialRequests || undefined,
+    paymentMethodId: 'pay_at_frontdesk',
+    paymentReference: 'FRONTDESK',
+    guestName: input.guestName,
+    guestEmail: input.guestEmail,
+    guestPhone: input.guestPhone,
+  });
 
 export const frontDeskApiService = {
   /**
@@ -1117,7 +1164,7 @@ export const frontDeskApiService = {
     try {
       const response = await fetch(`${API_BASE_URL}/front-desk/walk-in-booking`, {
         method: 'POST',
-        headers: getAuthHeaders(token, tenantId),
+        headers: buildFrontDeskAuthHeaders(token, tenantId),
         body: JSON.stringify(bookingRequest),
       });
 

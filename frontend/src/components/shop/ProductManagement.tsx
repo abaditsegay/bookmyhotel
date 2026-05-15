@@ -66,6 +66,8 @@ const ProductManagement: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, searchTerm.trim() ? 300 : 0);
+  const effectiveSearchTerm = getEffectiveSearchTerm(debouncedSearchTerm);
   const [categoryFilter, setCategoryFilter] = useState<string>('ALL');
   const [openDialog, setOpenDialog] = useState(false);
   const [viewDetailsDialogOpen, setViewDetailsDialogOpen] = useState(false);
@@ -115,7 +117,11 @@ const ProductManagement: React.FC = () => {
       return;
     }
     
-    const loadProductsDebounced = async () => {
+    const loadProducts = async () => {
+      if (effectiveSearchTerm === null) {
+        return;
+      }
+
       try {
         setLoading(true);
         
@@ -130,7 +136,7 @@ const ProductManagement: React.FC = () => {
         const data = await shopApiService.getProducts(hotelId, {
           page: page, // Already 0-indexed for API
           size: rowsPerPage,
-          search: searchTerm.trim() || undefined,
+          search: effectiveSearchTerm || undefined,
           category: categoryFilter !== 'ALL' ? categoryFilter : undefined
         });
         
@@ -153,10 +159,14 @@ const ProductManagement: React.FC = () => {
       }
     };
 
-    // Debounce search term changes
-    const debounceTimer = setTimeout(loadProductsDebounced, searchTerm ? 300 : 0);
-    return () => clearTimeout(debounceTimer);
-  }, [hotelId, page, rowsPerPage, searchTerm, categoryFilter, refreshTrigger, token, user?.tenantId]);
+    loadProducts();
+  }, [hotelId, page, rowsPerPage, effectiveSearchTerm, categoryFilter, refreshTrigger, token, user?.tenantId]);
+
+  useEffect(() => {
+    if (effectiveSearchTerm !== null) {
+      setPage(0);
+    }
+  }, [effectiveSearchTerm]);
 
   const triggerRefresh = () => setRefreshTrigger(prev => prev + 1);
 

@@ -50,6 +50,8 @@ const RoomChargesManagement: React.FC<RoomChargesProps> = ({ hotelId }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, searchTerm.trim() ? 300 : 0);
+  const effectiveSearchTerm = getEffectiveSearchTerm(debouncedSearchTerm);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
@@ -72,8 +74,12 @@ const RoomChargesManagement: React.FC<RoomChargesProps> = ({ hotelId }) => {
   const pageSize = 20;
 
   useEffect(() => {
+    if (effectiveSearchTerm === null) {
+      return;
+    }
+
     loadRoomCharges();
-  }, [hotelId, page, searchTerm]); // loadRoomCharges is not included to avoid infinite loop
+  }, [hotelId, page, effectiveSearchTerm]); // loadRoomCharges is not included to avoid infinite loop
 
   const loadRoomCharges = async () => {
     try {
@@ -81,8 +87,8 @@ const RoomChargesManagement: React.FC<RoomChargesProps> = ({ hotelId }) => {
       setError(null);
       
       let response;
-      if (searchTerm.trim()) {
-        response = await roomChargeApiService.searchRoomCharges(hotelId, searchTerm, page, pageSize);
+      if (effectiveSearchTerm) {
+        response = await roomChargeApiService.searchRoomCharges(hotelId, effectiveSearchTerm, page, pageSize);
       } else {
         response = await roomChargeApiService.getRoomChargesForHotel(hotelId, page, pageSize);
       }
@@ -97,6 +103,12 @@ const RoomChargesManagement: React.FC<RoomChargesProps> = ({ hotelId }) => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (effectiveSearchTerm !== null) {
+      setPage(0);
+    }
+  }, [effectiveSearchTerm]);
 
   const handleCreateCharge = async () => {
     try {

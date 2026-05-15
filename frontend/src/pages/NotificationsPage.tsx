@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { COLORS, addAlpha, getGradient } from '../theme/themeColors';
 import PremiumTextField from '../components/common/PremiumTextField';
+import { useDebounce } from '../hooks/useDebounce';
 import {
   Box,
   Typography,
@@ -44,6 +45,7 @@ import { useNotificationsWithEvents, BookingNotification } from '../hooks/useNot
 import { useBookingNotifications } from '../hooks/useBookingNotifications';
 import { formatDateForDisplay, formatDateTimeForDisplay } from '../utils/dateUtils';
 import { formatEthiopianTime } from '../utils/ethiopianCalendar';
+import { getEffectiveSearchTerm } from '../utils/search';
 
 const NotificationsPage: React.FC = () => {
   // const { user } = useAuth(); // Keep for future role-based features
@@ -63,6 +65,8 @@ const NotificationsPage: React.FC = () => {
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [typeFilter, setTypeFilter] = useState<string>('ALL');
   const [confirmationFilter, setConfirmationFilter] = useState<string>('');
+  const debouncedConfirmationFilter = useDebounce(confirmationFilter, confirmationFilter.trim() ? 300 : 0);
+  const effectiveConfirmationFilter = getEffectiveSearchTerm(debouncedConfirmationFilter);
   
   // Pagination state
   const [page, setPage] = useState(0);
@@ -135,8 +139,8 @@ const NotificationsPage: React.FC = () => {
     }
     
     // Apply confirmation number filter
-    if (confirmationFilter.trim()) {
-      const searchTerm = confirmationFilter.toLowerCase().trim();
+    if (effectiveConfirmationFilter) {
+      const searchTerm = effectiveConfirmationFilter.toLowerCase().trim();
       filtered = filtered.filter(n => 
         n.confirmationNumber.toLowerCase().includes(searchTerm)
       );
