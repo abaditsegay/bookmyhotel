@@ -205,6 +205,28 @@ class HotelPricingConfigServiceTest {
     }
 
     @Test
+    void getVatRateShouldUseDefaultsWithoutPersistingWhenConfigurationMissing() {
+        when(pricingConfigRepository.findByHotelId(12L)).thenReturn(Optional.empty());
+
+        BigDecimal vatRate = hotelPricingConfigService.getVatRate(12L);
+
+        assertEquals(new BigDecimal("0.15"), vatRate);
+        verify(pricingConfigRepository, never()).save(any(HotelPricingConfig.class));
+        verifyNoInteractions(hotelRepository, hotelActivityAuditService);
+    }
+
+    @Test
+    void getTotalTaxRateShouldUseDefaultReadOnlyConfigurationWhenMissing() {
+        when(pricingConfigRepository.findByHotelId(13L)).thenReturn(Optional.empty());
+
+        BigDecimal totalTaxRate = hotelPricingConfigService.getTotalTaxRate(13L);
+
+        assertEquals(new BigDecimal("0.2000"), totalTaxRate);
+        verify(pricingConfigRepository, never()).save(any(HotelPricingConfig.class));
+        verifyNoInteractions(hotelRepository, hotelActivityAuditService);
+    }
+
+    @Test
     void validateConfigurationShouldRejectNullAndOutOfRangeRates() {
         assertFalse(hotelPricingConfigService.validateConfiguration(null));
 

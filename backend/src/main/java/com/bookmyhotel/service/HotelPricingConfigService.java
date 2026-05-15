@@ -269,7 +269,7 @@ public class HotelPricingConfigService {
      */
     @Transactional(readOnly = true)
     public BigDecimal getTotalTaxRate(Long hotelId) {
-        HotelPricingConfig config = getOrCreateActiveConfiguration(hotelId);
+        HotelPricingConfig config = getConfigurationForRead(hotelId);
 
         BigDecimal vatRate = config.getVatRate();
         BigDecimal serviceRate = config.getServiceTaxRate();
@@ -292,7 +292,7 @@ public class HotelPricingConfigService {
      */
     @Transactional(readOnly = true)
     public BigDecimal getVatRate(Long hotelId) {
-        HotelPricingConfig config = getOrCreateActiveConfiguration(hotelId);
+        HotelPricingConfig config = getConfigurationForRead(hotelId);
         return config.getVatRate();
     }
 
@@ -304,7 +304,7 @@ public class HotelPricingConfigService {
      */
     @Transactional(readOnly = true)
     public BigDecimal getServiceTaxRate(Long hotelId) {
-        HotelPricingConfig config = getOrCreateActiveConfiguration(hotelId);
+        HotelPricingConfig config = getConfigurationForRead(hotelId);
         return config.getServiceTaxRate();
     }
 
@@ -316,7 +316,7 @@ public class HotelPricingConfigService {
      */
     @Transactional(readOnly = true)
     public BigDecimal getCityTaxRate(Long hotelId) {
-        HotelPricingConfig config = getOrCreateActiveConfiguration(hotelId);
+        HotelPricingConfig config = getConfigurationForRead(hotelId);
         return config.getCityTaxRate();
     }
 
@@ -384,7 +384,7 @@ public class HotelPricingConfigService {
      */
     @Transactional(readOnly = true)
     public BigDecimal getCancellationFeeRate(Long hotelId) {
-        HotelPricingConfig config = getOrCreateActiveConfiguration(hotelId);
+        HotelPricingConfig config = getConfigurationForRead(hotelId);
         return config.getCancellationFeeRate();
     }
 
@@ -396,7 +396,7 @@ public class HotelPricingConfigService {
      */
     @Transactional(readOnly = true)
     public BigDecimal getNoShowFeeRate(Long hotelId) {
-        HotelPricingConfig config = getOrCreateActiveConfiguration(hotelId);
+        HotelPricingConfig config = getConfigurationForRead(hotelId);
         return config.getNoShowPenaltyRate();
     }
 
@@ -408,7 +408,6 @@ public class HotelPricingConfigService {
      */
     @Transactional(readOnly = true)
     public BigDecimal getEarlyCheckoutFeeRate(Long hotelId) {
-        HotelPricingConfig config = getOrCreateActiveConfiguration(hotelId);
         return BigDecimal.ZERO; // Not implemented in current entity
     }
 
@@ -420,7 +419,7 @@ public class HotelPricingConfigService {
      */
     @Transactional(readOnly = true)
     public BigDecimal getRoomModificationFeeRate(Long hotelId) {
-        HotelPricingConfig config = getOrCreateActiveConfiguration(hotelId);
+        HotelPricingConfig config = getConfigurationForRead(hotelId);
         return config.getModificationFeeRate();
     }
 
@@ -432,7 +431,6 @@ public class HotelPricingConfigService {
      */
     @Transactional(readOnly = true)
     public BigDecimal getTaxExemptBookingFeeRate(Long hotelId) {
-        HotelPricingConfig config = getOrCreateActiveConfiguration(hotelId);
         return BigDecimal.ZERO; // Not implemented in current entity
     }
 
@@ -444,7 +442,7 @@ public class HotelPricingConfigService {
      */
     @Transactional(readOnly = true)
     public BigDecimal getWeekendMultiplier(Long hotelId) {
-        HotelPricingConfig config = getOrCreateActiveConfiguration(hotelId);
+        HotelPricingConfig config = getConfigurationForRead(hotelId);
         return config.getWeekendMultiplier();
     }
 
@@ -456,7 +454,7 @@ public class HotelPricingConfigService {
      */
     @Transactional(readOnly = true)
     public BigDecimal getHolidayMultiplier(Long hotelId) {
-        HotelPricingConfig config = getOrCreateActiveConfiguration(hotelId);
+        HotelPricingConfig config = getConfigurationForRead(hotelId);
         return config.getHolidayMultiplier();
     }
 
@@ -468,7 +466,7 @@ public class HotelPricingConfigService {
      */
     @Transactional(readOnly = true)
     public BigDecimal getPeakSeasonMultiplier(Long hotelId) {
-        HotelPricingConfig config = getOrCreateActiveConfiguration(hotelId);
+        HotelPricingConfig config = getConfigurationForRead(hotelId);
         return config.getPeakSeasonMultiplier();
     }
 
@@ -480,7 +478,7 @@ public class HotelPricingConfigService {
      */
     @Transactional(readOnly = true)
     public BigDecimal getOffSeasonMultiplier(Long hotelId) {
-        HotelPricingConfig config = getOrCreateActiveConfiguration(hotelId);
+        HotelPricingConfig config = getConfigurationForRead(hotelId);
         return config.getOffSeasonMultiplier();
     }
 
@@ -587,6 +585,34 @@ public class HotelPricingConfigService {
     public void deactivateExistingConfigurations(Long hotelId) {
         // No-op since we're using versioning instead of multiple active records
         logger.debug("Deactivation request for hotel {} - using versioning approach", hotelId);
+    }
+
+    private HotelPricingConfig getConfigurationForRead(Long hotelId) {
+        HotelPricingConfig config = getActiveConfiguration(hotelId);
+        if (config != null) {
+            return config;
+        }
+
+        logger.debug("No persisted pricing configuration for hotel {}. Using in-memory defaults for read-only access.", hotelId);
+        return buildDefaultConfigurationTemplate(hotelId);
+    }
+
+    private HotelPricingConfig buildDefaultConfigurationTemplate(Long hotelId) {
+        HotelPricingConfig config = new HotelPricingConfig();
+        config.setHotelId(hotelId);
+        config.setVersion(1);
+        config.setPricingStrategy(PricingStrategy.FIXED);
+        config.setServiceTaxRate(new BigDecimal("0.05"));
+        config.setVatRate(new BigDecimal("0.15"));
+        config.setCityTaxRate(BigDecimal.ZERO);
+        config.setCancellationFeeRate(new BigDecimal("0.50"));
+        config.setNoShowPenaltyRate(new BigDecimal("1.00"));
+        config.setModificationFeeRate(BigDecimal.ZERO);
+        config.setPeakSeasonMultiplier(new BigDecimal("1.00"));
+        config.setOffSeasonMultiplier(new BigDecimal("1.00"));
+        config.setWeekendMultiplier(new BigDecimal("1.00"));
+        config.setHolidayMultiplier(new BigDecimal("1.00"));
+        return config;
     }
 
     private Map<String, Object> createPricingConfigSnapshot(HotelPricingConfig config) {
