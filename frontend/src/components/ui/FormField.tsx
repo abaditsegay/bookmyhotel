@@ -5,7 +5,6 @@ import React from 'react';
 import { 
   TextField, 
   TextFieldProps,
-  FormControl,
   FormLabel,
   FormHelperText,
   Box,
@@ -52,9 +51,9 @@ const FormField: React.FC<FormFieldProps> = ({
           sx={{ 
             mb: 1,
             display: 'block',
-            color: isError ? 'error.main' : 'text.primary',
-            fontWeight: 500,
-            fontSize: '0.875rem',
+            color: isError ? 'error.main' : 'text.secondary',
+            fontWeight: 600,
+            fontSize: '0.82rem',
           }}
         >
           {label}
@@ -81,12 +80,15 @@ const FormField: React.FC<FormFieldProps> = ({
           '& .MuiOutlinedInput-root': {
             borderRadius: designSystem.borderRadius.md,
             backgroundColor: isDisabled ? 'action.disabledBackground' : 'background.paper',
+            '& .MuiOutlinedInput-notchedOutline': {
+              borderColor: 'rgba(26, 54, 93, 0.12)',
+            },
             '&:hover .MuiOutlinedInput-notchedOutline': {
               borderColor: isError ? 'error.main' : 'primary.main',
             },
             '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
               borderColor: isError ? 'error.main' : 'primary.main',
-              borderWidth: '2px',
+              borderWidth: '1px',
             },
             '&.Mui-error .MuiOutlinedInput-notchedOutline': {
               borderColor: 'error.main',

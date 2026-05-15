@@ -43,7 +43,7 @@ import {
   Edit as EditIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { hotelAdminApi, RoomResponse, RoomCreateRequest, RoomUpdateRequest } from '../../services/hotelAdminApi';
+import { hotelAdminApi, RoomResponse } from '../../services/hotelAdminApi';
 import PremiumTextField from '../../components/common/PremiumTextField';
 import PremiumSelect from '../../components/common/PremiumSelect';
 import { useAuth } from '../../contexts/AuthContext';

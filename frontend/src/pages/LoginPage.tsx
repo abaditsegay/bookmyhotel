@@ -265,7 +265,18 @@ const LoginPage: React.FC = () => {
             </Box>
 
             {displayError && (
-              <Alert severity="error" sx={{ mb: 2 }}>
+              <Alert
+                severity="error"
+                sx={{
+                  mb: 2,
+                  alignItems: 'flex-start',
+                  '& .MuiAlert-message': {
+                    width: '100%',
+                    overflowWrap: 'anywhere',
+                    lineHeight: 1.55,
+                  },
+                }}
+              >
                 {displayError}
               </Alert>
             )}

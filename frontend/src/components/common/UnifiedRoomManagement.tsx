@@ -45,7 +45,7 @@ import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
 import { useDebounce } from '../../hooks/useDebounce';
 import { formatCurrency } from '../../utils/currencyUtils';
 import { buildApiUrl } from '../../config/apiConfig';
-import { hotelAdminApi, RoomCreateRequest, RoomLimitInfo } from '../../services/hotelAdminApi';
+import { hotelAdminApi, RoomLimitInfo } from '../../services/hotelAdminApi';
 import * as frontDeskApi from '../../services/frontDeskApi';
 import { ROOM_TYPES, getRoomTypeLabel } from '../../constants/roomTypes';
 import PremiumTextField from './PremiumTextField';

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { formatEthiopianPhone, normalizeEthiopianPhone } from '../../utils/phoneUtils';
+import { formatEthiopianPhone } from '../../utils/phoneUtils';
 import {
   Dialog,
   DialogTitle,

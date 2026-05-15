@@ -2,9 +2,6 @@ import React, { useEffect, useState } from 'react';
 import {
   Alert,
   Box,
-  Button,
-  Card,
-  CardContent,
   Checkbox,
   Chip,
   Dialog,
@@ -17,7 +14,6 @@ import {
   Grid,
   InputLabel,
   MenuItem,
-  Paper,
   Select,
   SelectChangeEvent,
   Tab,
@@ -31,7 +27,12 @@ import {
   Typography,
 } from '@mui/material';
 import { BugReport, FactCheck, Save } from '@mui/icons-material';
+import { PageContainer } from '../components/common/PageShell';
 import PremiumTextField from '../components/common/PremiumTextField';
+import StandardButton from '../components/common/StandardButton';
+import StandardCard from '../components/common/StandardCard';
+import PageHeader from '../components/ui/PageHeader';
+import SurfaceCard from '../components/ui/SurfaceCard';
 import { useAuth } from '../contexts/AuthContext';
 import {
   uatApi,
@@ -305,22 +306,16 @@ const UatTestingPage: React.FC = () => {
 
   const selectedHotelIdNumber = checklist?.hotelId ?? null;
   const workspaceLoaded = Boolean(checklist);
+  const hotelLabel = checklist?.hotelName || (selectedHotelIdNumber ? `Hotel ${selectedHotelIdNumber}` : null);
 
   return (
-    <Box sx={{ width: '100%', p: 3 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, gap: 2, flexWrap: 'wrap' }}>
-        <Box>
-          <Typography variant="h4" sx={{ fontWeight: 700 }}>
-            UAT Testing Workspace
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Use the sign-off checklist during UAT and track open defects, admin notes, fix details, and closure state for the shared platform UAT workspace.
-          </Typography>
-        </Box>
-        {selectedHotelIdNumber && (
-          <Chip color="primary" label={checklist?.hotelName || `Hotel ${selectedHotelIdNumber}`} />
-        )}
-      </Box>
+    <PageContainer maxWidth={false}>
+      <PageHeader
+        eyebrow="Quality Assurance"
+        title="UAT Testing Workspace"
+        description="Use the sign-off checklist during UAT and track open defects, admin notes, fix details, and closure state for the shared platform UAT workspace."
+        actions={hotelLabel ? <Chip color="primary" label={hotelLabel} /> : undefined}
+      />
 
       {error && (
         <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
@@ -341,7 +336,7 @@ const UatTestingPage: React.FC = () => {
       )}
 
       {workspaceLoaded && (
-        <Paper>
+        <SurfaceCard variantStyle="elevated" contentSx={{ p: 0 }}>
           <Tabs value={activeTab} onChange={(_, value) => setActiveTab(value)}>
             <Tab icon={<FactCheck />} iconPosition="start" label="UAT Sign-Off Checklist" />
             <Tab icon={<BugReport />} iconPosition="start" label="Open Defects And Notes" />
@@ -376,8 +371,8 @@ const UatTestingPage: React.FC = () => {
                   <Grid container spacing={2}>
                     {CHECKLIST_SECTIONS.map(section => (
                       <Grid item xs={12} md={6} key={section.title}>
-                        <Card variant="outlined" sx={{ height: '100%' }}>
-                          <CardContent>
+                        <StandardCard cardVariant="outlined" sx={{ height: '100%' }}>
+                          <Box sx={{ p: { xs: 2, md: 3 } }}>
                             <Typography variant="h6" sx={{ mb: 1.5 }}>{section.title}</Typography>
                             <FormGroup>
                               {section.items.map(item => (
@@ -393,8 +388,8 @@ const UatTestingPage: React.FC = () => {
                                 />
                               ))}
                             </FormGroup>
-                          </CardContent>
-                        </Card>
+                          </Box>
+                        </StandardCard>
                       </Grid>
                     ))}
                   </Grid>
@@ -430,9 +425,9 @@ const UatTestingPage: React.FC = () => {
                   </Grid>
 
                   <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
-                    <Button variant="contained" startIcon={<Save />} onClick={handleChecklistSave} disabled={savingChecklist}>
+                    <StandardButton variant="contained" startIcon={<Save />} onClick={handleChecklistSave} disabled={savingChecklist}>
                       {savingChecklist ? 'Saving...' : 'Save Checklist'}
-                    </Button>
+                    </StandardButton>
                   </Box>
                 </Box>
               )}
@@ -441,12 +436,12 @@ const UatTestingPage: React.FC = () => {
                 <Box sx={{ p: 3 }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, gap: 2, flexWrap: 'wrap' }}>
                     <Typography variant="h6">Open Defects And Notes</Typography>
-                    <Button variant="contained" startIcon={<BugReport />} onClick={openCreateDefectDialog}>
+                    <StandardButton variant="contained" startIcon={<BugReport />} onClick={openCreateDefectDialog}>
                       Add Defect
-                    </Button>
+                    </StandardButton>
                   </Box>
 
-                  <TableContainer component={Paper} variant="outlined">
+                  <TableContainer sx={{ border: theme => `1px solid ${theme.palette.divider}`, borderRadius: 3 }}>
                     <Table>
                       <TableHead>
                         <TableRow>
@@ -471,11 +466,11 @@ const UatTestingPage: React.FC = () => {
                             <TableCell>{defect.defectId}</TableCell>
                             <TableCell>{defect.summary}</TableCell>
                             <TableCell>
-                              <Chip size="small" label={defect.severity} color={defect.severity === 'CRITICAL' ? 'error' : defect.severity === 'HIGH' ? 'warning' : 'default'} />
+                              <Chip size="small" label={defect.severity} color={defect.severity === 'CRITICAL' ? 'error' : defect.severity === 'HIGH' ? 'warning' : 'default'} variant={defect.severity === 'LOW' ? 'outlined' : 'filled'} />
                             </TableCell>
                             <TableCell>{defect.blockingRelease ? 'Yes' : 'No'}</TableCell>
                             <TableCell>
-                              <Chip size="small" label={defect.status.replace('_', ' ')} color={defect.status === 'CLOSED' ? 'success' : defect.status === 'FIXED' ? 'primary' : 'default'} />
+                              <Chip size="small" label={defect.status.replace('_', ' ')} color={defect.status === 'CLOSED' ? 'success' : defect.status === 'FIXED' ? 'primary' : 'default'} variant={defect.status === 'OPEN' ? 'outlined' : 'filled'} />
                             </TableCell>
                             <TableCell>{defect.adminNotes || defect.fixDetails || defect.testerDetail || '-'}</TableCell>
                           </TableRow>
@@ -487,7 +482,7 @@ const UatTestingPage: React.FC = () => {
               )}
             </>
           )}
-        </Paper>
+        </SurfaceCard>
       )}
 
       <Dialog open={defectDialogOpen} onClose={() => setDefectDialogOpen(false)} fullWidth maxWidth="md">
@@ -562,11 +557,11 @@ const UatTestingPage: React.FC = () => {
           </Grid>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDefectDialogOpen(false)}>Cancel</Button>
-          <Button variant="contained" onClick={handleDefectSave}>Save</Button>
+          <StandardButton variant="text" onClick={() => setDefectDialogOpen(false)}>Cancel</StandardButton>
+          <StandardButton variant="contained" onClick={handleDefectSave}>Save</StandardButton>
         </DialogActions>
       </Dialog>
-    </Box>
+    </PageContainer>
   );
 };
 

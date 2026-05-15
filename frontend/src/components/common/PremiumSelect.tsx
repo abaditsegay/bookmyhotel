@@ -1,5 +1,5 @@
 import React from 'react';
-import { FormControl, InputLabel, Select, FormControlProps, SelectChangeEvent, SxProps, Theme, useTheme } from '@mui/material';
+import { alpha, FormControl, InputLabel, Select, FormControlProps, SelectChangeEvent, SxProps, Theme, useTheme } from '@mui/material';
 
 interface PremiumSelectProps {
   label: string;
@@ -14,8 +14,8 @@ interface PremiumSelectProps {
 }
 
 /**
- * Premium styled Select component for forms
- * Features gold border, cream background, and uppercase labels to match PremiumTextField
+ * Premium styled Select component for forms.
+ * Mirrors PremiumTextField so select inputs participate in the same central form language.
  */
 const PremiumSelect: React.FC<PremiumSelectProps> = ({ 
   label, 
@@ -33,47 +33,51 @@ const PremiumSelect: React.FC<PremiumSelectProps> = ({
 
   const baseSx: SxProps<Theme> = {
     '& .MuiInputLabel-root': {
-      textTransform: 'uppercase',
-      fontSize: '0.7rem',
-      fontWeight: 600,
-      letterSpacing: '0.5px',
-      color: theme.palette.primary.main,
+      fontSize: '0.82rem',
+      fontWeight: 500,
+      color: theme.palette.text.secondary,
       '&.Mui-focused': {
         color: `${theme.palette.primary.main} !important`,
+        fontWeight: 600,
       },
     },
     '& .MuiOutlinedInput-root': {
-      backgroundColor: theme.palette.grey[50],
-      borderRadius: '4px',
+      backgroundColor: alpha(theme.palette.background.paper, 0.98),
+      borderRadius: `${theme.shape.borderRadius}px`,
       '& fieldset': {
-        borderColor: theme.palette.divider,
+        borderColor: alpha(theme.palette.primary.main, 0.12),
         borderWidth: '1px',
-        borderLeftWidth: '2px',
-        borderLeftColor: theme.palette.secondary.main,
       },
       '&:hover fieldset': {
-        borderColor: theme.palette.grey[400],
-        borderLeftWidth: '2px',
-        borderLeftColor: theme.palette.secondary.main,
+        borderColor: alpha(theme.palette.primary.main, 0.24),
       },
-      '&.Mui-focused fieldset': {
-        borderColor: theme.palette.secondary.main,
-        borderWidth: '1px',
-        borderLeftWidth: '2px',
-        borderLeftColor: theme.palette.secondary.main,
+      '&.Mui-focused': {
+        backgroundColor: theme.palette.background.paper,
+        boxShadow: `0 0 0 4px ${alpha(theme.palette.primary.main, 0.08)}`,
+        '& fieldset': {
+          borderColor: theme.palette.primary.main,
+          borderWidth: '1px',
+        },
       },
       '&.Mui-disabled': {
         backgroundColor: theme.palette.action.disabledBackground,
         '& fieldset': {
-          borderColor: theme.palette.grey[400],
+          borderColor: alpha(theme.palette.primary.main, 0.08),
           borderWidth: '1px',
-          borderLeftWidth: '2px',
-          borderLeftColor: theme.palette.secondary.main,
         },
         '& .MuiSelect-select': {
           color: theme.palette.text.disabled,
           WebkitTextFillColor: theme.palette.text.disabled,
         },
+      },
+      '& .MuiSelect-select': {
+        color: theme.palette.text.primary,
+      },
+      '& .MuiSelect-icon': {
+        color: theme.palette.text.secondary,
+      },
+      '&.Mui-error fieldset': {
+        borderColor: theme.palette.error.main,
       },
     },
   };
@@ -86,20 +90,10 @@ const PremiumSelect: React.FC<PremiumSelectProps> = ({
       fullWidth={fullWidth}
       required={required}
       disabled={disabled}
+      {...formControlProps}
       sx={combinedSx}
     >
-      <InputLabel
-        sx={{
-          textTransform: 'uppercase',
-          fontSize: '0.7rem',
-          fontWeight: 600,
-          letterSpacing: '0.5px',
-          color: theme.palette.primary.main,
-          '&.Mui-focused': {
-            color: `${theme.palette.primary.main} !important`,
-          },
-        }}
-      >
+      <InputLabel>
         {label}
       </InputLabel>
       <Select 

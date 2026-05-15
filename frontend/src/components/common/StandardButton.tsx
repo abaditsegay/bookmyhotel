@@ -90,10 +90,10 @@ const StandardButton: React.FC<StandardButtonProps> = ({
       startIcon={loading ? <CircularProgress size={getSpinnerSize()} color="inherit" /> : props.startIcon}
       sx={{
         ...sizeConfig,
-        textTransform: 'none', // More modern look without all-caps
-        borderRadius: 2, // Larger border radius for modern look
+        textTransform: 'none',
+        borderRadius: 2,
         fontWeight: 600,
-        boxShadow: variant === 'contained' ? 2 : 0,
+        boxShadow: 'none',
         transition: 'all 0.3s ease-in-out',
         
         // Gradient styling
@@ -109,34 +109,32 @@ const StandardButton: React.FC<StandardButtonProps> = ({
           boxShadow: designSystem.shadows.lg,
           '&:hover': {
             boxShadow: designSystem.shadows.xl,
-            transform: 'translateY(-2px)',
+            transform: 'translateY(-1px)',
           },
         }),
         
         // Variant-specific styling
         ...(variant === 'contained' && !gradient && {
-          boxShadow: designSystem.shadows.sm,
+          boxShadow: `0 10px 24px ${alpha(designSystem.colors.primary.main, 0.16)}`,
           '&:hover': {
-            boxShadow: designSystem.shadows.md,
-            transform: 'translateY(-1px)',
+            boxShadow: `0 14px 28px ${alpha(designSystem.colors.primary.main, 0.2)}`,
           },
           '&:active': {
-            transform: 'translateY(0)',
-            boxShadow: designSystem.shadows.sm,
+            boxShadow: `0 8px 18px ${alpha(designSystem.colors.primary.main, 0.18)}`,
           },
         }),
         
         ...(variant === 'outlined' && {
-          borderWidth: '2px',
+          borderWidth: '1px',
           '&:hover': {
-            borderWidth: '2px',
-            backgroundColor: (theme) => alpha(theme.palette.common.black, 0.04),
+            borderWidth: '1px',
+            backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.04),
           },
         }),
         
         ...(variant === 'text' && {
           '&:hover': {
-            backgroundColor: (theme) => alpha(theme.palette.common.black, 0.04),
+            backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.04),
           },
         }),
         

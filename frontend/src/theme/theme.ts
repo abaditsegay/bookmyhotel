@@ -43,6 +43,18 @@ const themeOptions: ThemeOptions = {
     h6: designSystem.typography.h6,
     body1: designSystem.typography.body1,
     body2: designSystem.typography.body2,
+    subtitle1: {
+      fontSize: '1rem',
+      fontWeight: 600,
+      lineHeight: 1.5,
+      letterSpacing: '-0.01em'
+    },
+    subtitle2: {
+      fontSize: '0.875rem',
+      fontWeight: 600,
+      lineHeight: 1.45,
+      letterSpacing: '0.01em'
+    },
     caption: designSystem.typography.caption,
     button: {
       ...designSystem.typography.button,
@@ -86,6 +98,42 @@ const themeOptions: ThemeOptions = {
   ],
 
   components: {
+    MuiCssBaseline: {
+      styleOverrides: {
+        ':root': {
+          colorScheme: 'light',
+          '--app-bg': designSystem.colors.background.default,
+          '--app-surface': designSystem.colors.background.paper,
+          '--app-border': alpha(designSystem.colors.primary.main, 0.08),
+          '--app-text-primary': designSystem.colors.text.primary,
+          '--app-text-secondary': designSystem.colors.text.secondary,
+          '--app-focus': alpha(designSystem.colors.primary.main, 0.34),
+        },
+        'html, body, #root': {
+          minHeight: '100%',
+        },
+        html: {
+          WebkitFontSmoothing: 'antialiased',
+          MozOsxFontSmoothing: 'grayscale',
+          scrollBehavior: 'smooth',
+        },
+        body: {
+          backgroundColor: designSystem.colors.background.default,
+          color: designSystem.colors.text.primary,
+          fontFamily: '"Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, sans-serif',
+        },
+        a: {
+          color: 'inherit',
+          textDecorationColor: alpha(designSystem.colors.primary.main, 0.28),
+          textUnderlineOffset: '0.18em',
+        },
+        '::selection': {
+          backgroundColor: alpha(designSystem.colors.secondary.main, 0.32),
+          color: designSystem.colors.primary.dark,
+        },
+      },
+    },
+
     // Button component customization - Premium
     MuiButton: {
       styleOverrides: {
@@ -93,35 +141,35 @@ const themeOptions: ThemeOptions = {
           textTransform: 'none',
           fontWeight: 600,
           borderRadius: designSystem.borderRadius.md,
-          padding: '10px 24px',
-          transition: `all ${animations.duration.standard}ms ${animations.easing.easeInOut}`
+          padding: '10px 20px',
+          minHeight: 44,
+          transition: `all ${animations.duration.standard}ms ${animations.easing.easeInOut}`,
+          boxShadow: 'none',
         },
         contained: {
-          background: `linear-gradient(135deg, ${designSystem.colors.primary.main} 0%, ${designSystem.colors.primary.dark} 100%)`,
-          boxShadow: `0 4px 15px ${alpha(designSystem.colors.primary.main, 0.25)}`,
+          background: designSystem.colors.primary.main,
+          boxShadow: `0 10px 24px ${alpha(designSystem.colors.primary.main, 0.18)}`,
           '&:hover': {
-            background: `linear-gradient(135deg, ${designSystem.colors.primary.dark} 0%, ${designSystem.colors.primary.main} 100%)`,
-            boxShadow: `0 6px 20px ${alpha(designSystem.colors.primary.main, 0.35)}`,
-            transform: 'translateY(-2px)'
+            background: designSystem.colors.primary.dark,
+            boxShadow: `0 14px 28px ${alpha(designSystem.colors.primary.main, 0.22)}`,
           },
           '&:active': {
-            transform: 'translateY(0)',
-            boxShadow: `0 2px 8px ${alpha(designSystem.colors.primary.main, 0.25)}`
+            boxShadow: `0 8px 18px ${alpha(designSystem.colors.primary.main, 0.2)}`,
           },
           '&.Mui-disabled': {
-            background: designSystem.colors.background.default,
+            background: designSystem.colors.background.light,
             color: designSystem.colors.text.disabled,
             boxShadow: 'none',
-            border: `2px solid ${designSystem.colors.secondary.main}`,
+            border: `1px solid ${alpha(designSystem.colors.primary.main, 0.08)}`,
           }
         },
         outlined: {
-          borderWidth: '2px',
-          borderColor: designSystem.colors.primary.main,
+          borderWidth: '1px',
+          borderColor: alpha(designSystem.colors.primary.main, 0.22),
           '&:hover': {
-            borderWidth: '2px',
+            borderWidth: '1px',
+            borderColor: alpha(designSystem.colors.primary.main, 0.36),
             backgroundColor: alpha(designSystem.colors.primary.main, 0.04),
-            transform: 'translateY(-1px)'
           }
         },
         text: {
@@ -137,15 +185,27 @@ const themeOptions: ThemeOptions = {
       styleOverrides: {
         root: {
           borderRadius: designSystem.borderRadius.lg,
-          border: 'none',
-          boxShadow: `0 4px 20px ${alpha('#000000', 0.08)}`,
+          border: `1px solid ${alpha(designSystem.colors.primary.main, 0.08)}`,
+          boxShadow: `0 10px 30px ${alpha('#0f172a', 0.06)}`,
           transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           '&:hover': {
-            boxShadow: `0 8px 30px ${alpha('#000000', 0.12)}`,
-            transform: 'translateY(-4px)'
+            boxShadow: `0 14px 34px ${alpha('#0f172a', 0.09)}`,
+            borderColor: alpha(designSystem.colors.primary.main, 0.14),
+            transform: 'translateY(-1px)'
           }
         }
       }
+    },
+
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          backgroundImage: 'none',
+        },
+        rounded: {
+          borderRadius: designSystem.borderRadius.lg,
+        },
+      },
     },
 
     // TextField component customization - Premium
@@ -157,21 +217,24 @@ const themeOptions: ThemeOptions = {
             backgroundColor: designSystem.colors.background.paper,
             transition: `all ${animations.duration.standard}ms ${animations.easing.easeInOut}`,
             '& fieldset': {
-              borderColor: designSystem.colors.divider,
-              borderWidth: '1.5px'
+              borderColor: alpha(designSystem.colors.primary.main, 0.12),
+              borderWidth: '1px'
             },
             '&:hover fieldset': {
-              borderColor: designSystem.colors.primary.light,
-              borderWidth: '1.5px'
+              borderColor: alpha(designSystem.colors.primary.main, 0.22),
+              borderWidth: '1px'
             },
             '&.Mui-focused fieldset': {
               borderColor: designSystem.colors.primary.main,
-              borderWidth: '2px',
-              boxShadow: `0 0 0 3px ${alpha(designSystem.colors.primary.main, 0.1)}`
+              borderWidth: '1px',
+              boxShadow: `0 0 0 4px ${alpha(designSystem.colors.primary.main, 0.1)}`
             }
           },
+          '& .MuiInputLabel-root': {
+            fontWeight: 500,
+          },
           '& .MuiInputLabel-root.Mui-focused': {
-            color: designSystem.colors.primary.main
+            color: designSystem.colors.primary.main,
           }
         }
       }
@@ -186,17 +249,17 @@ const themeOptions: ThemeOptions = {
             backgroundColor: designSystem.colors.background.paper,
             transition: `all ${animations.duration.standard}ms ${animations.easing.easeInOut}`,
             '& fieldset': {
-              borderColor: designSystem.colors.divider,
-              borderWidth: '1.5px'
+              borderColor: alpha(designSystem.colors.primary.main, 0.12),
+              borderWidth: '1px'
             },
             '&:hover fieldset': {
-              borderColor: designSystem.colors.primary.light,
-              borderWidth: '1.5px'
+              borderColor: alpha(designSystem.colors.primary.main, 0.22),
+              borderWidth: '1px'
             },
             '&.Mui-focused fieldset': {
               borderColor: designSystem.colors.primary.main,
-              borderWidth: '2px',
-              boxShadow: `0 0 0 3px ${alpha(designSystem.colors.primary.main, 0.1)}`
+              borderWidth: '1px',
+              boxShadow: `0 0 0 4px ${alpha(designSystem.colors.primary.main, 0.1)}`
             }
           },
           '& .MuiInputLabel-root.Mui-focused': {
@@ -211,10 +274,37 @@ const themeOptions: ThemeOptions = {
       styleOverrides: {
         paper: {
           borderRadius: designSystem.borderRadius.xl,
-          boxShadow: `0 20px 60px ${alpha('#000000', 0.25)}`,
-          backgroundColor: designSystem.colors.background.paper
+          boxShadow: `0 32px 72px ${alpha('#0f172a', 0.18)}`,
+          backgroundColor: designSystem.colors.background.paper,
+          border: `1px solid ${alpha(designSystem.colors.primary.main, 0.08)}`,
         }
       }
+    },
+
+    MuiDialogTitle: {
+      styleOverrides: {
+        root: {
+          padding: '24px 24px 8px',
+          ...designSystem.typography.h5,
+        },
+      },
+    },
+
+    MuiDialogContent: {
+      styleOverrides: {
+        root: {
+          padding: '8px 24px 24px',
+        },
+      },
+    },
+
+    MuiDialogActions: {
+      styleOverrides: {
+        root: {
+          padding: '0 24px 24px',
+          gap: 12,
+        },
+      },
     },
 
     // Chip component customization - Premium
@@ -223,14 +313,85 @@ const themeOptions: ThemeOptions = {
         root: {
           borderRadius: designSystem.borderRadius.md,
           fontWeight: 600,
-          transition: 'all 0.2s ease'
+          transition: 'all 0.2s ease',
+          border: `1px solid ${alpha(designSystem.colors.primary.main, 0.08)}`,
         },
         filled: {
           '&:hover': {
-            transform: 'scale(1.02)'
+            transform: 'translateY(-1px)'
           }
         }
       }
+    },
+
+    MuiTabs: {
+      styleOverrides: {
+        root: {
+          minHeight: 52,
+        },
+        indicator: {
+          height: 3,
+          borderRadius: 999,
+          backgroundColor: designSystem.colors.secondary.main,
+        },
+      },
+    },
+
+    MuiTab: {
+      styleOverrides: {
+        root: {
+          minHeight: 52,
+          textTransform: 'none',
+          fontWeight: 600,
+          fontSize: '0.95rem',
+          color: alpha(designSystem.colors.text.primary, 0.72),
+          '&.Mui-selected': {
+            color: designSystem.colors.primary.main,
+          },
+        },
+      },
+    },
+
+    MuiTableCell: {
+      styleOverrides: {
+        root: {
+          borderBottomColor: alpha(designSystem.colors.primary.main, 0.08),
+        },
+        head: {
+          fontSize: '0.78rem',
+          fontWeight: 700,
+          letterSpacing: '0.04em',
+          textTransform: 'uppercase',
+          color: alpha(designSystem.colors.text.primary, 0.7),
+          backgroundColor: alpha(designSystem.colors.primary.main, 0.02),
+        },
+        body: {
+          fontSize: '0.92rem',
+        },
+      },
+    },
+
+    MuiAlert: {
+      styleOverrides: {
+        root: {
+          borderRadius: designSystem.borderRadius.lg,
+          alignItems: 'center',
+        },
+        standardInfo: {
+          backgroundColor: alpha(designSystem.colors.info.main, 0.08),
+          color: designSystem.colors.primary.dark,
+        },
+      },
+    },
+
+    MuiAppBar: {
+      styleOverrides: {
+        root: {
+          boxShadow: `0 1px 0 ${alpha(designSystem.colors.primary.main, 0.08)}`,
+          backdropFilter: 'blur(14px)',
+          backgroundImage: 'none',
+        },
+      },
     },
 
     // Divider component customization

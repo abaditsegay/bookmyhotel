@@ -1,9 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { formatEthiopianPhone } from '../../utils/phoneUtils';
 import {
-  alpha,
   Box,
-  Paper,
   Typography,
   Table,
   TableBody,
@@ -12,11 +10,6 @@ import {
   TableHead,
   TableRow,
   TablePagination,
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   IconButton,
   Chip,
   Alert,
@@ -25,13 +18,11 @@ import {
   Grid,
   Tooltip,
   Snackbar,
-  useTheme,
 } from '@mui/material';
 import {
   Edit as EditIcon,
   Visibility as VisibilityIcon,
   Add as AddIcon,
-  FilterList as FilterListIcon,
   LockReset as LockResetIcon,
   ToggleOn as ToggleOnIcon,
   ToggleOff as ToggleOffIcon,
@@ -48,8 +39,11 @@ import {
   TenantDTO,
   HotelDTO
 } from '../../services/adminApi';
+import { PageContainer } from '../../components/common/PageShell';
 import PremiumTextField from '../../components/common/PremiumTextField';
 import PremiumSelect from '../../components/common/PremiumSelect';
+import StandardButton from '../../components/common/StandardButton';
+import { DataTableCard, PageHeader, StandardDialog } from '../../components/ui';
 
 interface UserFilters {
   search: string;
@@ -58,7 +52,6 @@ interface UserFilters {
 }
 
 const UserManagementAdmin: React.FC = () => {
-  const theme = useTheme();
   const { token, user: currentUser } = useAuth();
   const { showSubmissionError } = useSubmissionError();
   const [users, setUsers] = useState<UserManagementResponse[]>([]);
@@ -386,6 +379,18 @@ const UserManagementAdmin: React.FC = () => {
     setPasswordResetDialogOpen(true);
   };
 
+  const closeCreateDialog = () => {
+    setCreateDialogOpen(false);
+    setCreateError(null);
+    setHotels([]);
+  };
+
+  const closeToggleStatusDialog = () => {
+    setToggleStatusDialogOpen(false);
+    setToggleStatusReason('');
+    setToggleUser(null);
+  };
+
   const getRoleColor = (role: string) => {
     switch (role) {
       case 'SUPER_ADMIN': return 'error';
@@ -407,32 +412,26 @@ const UserManagementAdmin: React.FC = () => {
 
   if (loading && users.length === 0) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-        <CircularProgress />
-      </Box>
+      <PageContainer maxWidth={false} sx={{ justifyContent: 'center', minHeight: '60vh' }}>
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+          <CircularProgress />
+        </Box>
+      </PageContainer>
     );
   }
 
   return (
-    <Box sx={{ p: 3 }}>
-      {/* Header */}
-      <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
-        <Typography variant="h4" component="h1" sx={{ 
-          flexGrow: 1,
-          color: 'primary.main',
-          fontWeight: 600,
-          letterSpacing: '0.5px'
-        }}>
-          User Management
-        </Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => setCreateDialogOpen(true)}
-        >
-          Add User
-        </Button>
-      </Box>
+    <PageContainer maxWidth={false}>
+      <PageHeader
+        eyebrow="Identity & Access"
+        title="User Management"
+        description="Manage platform users, review hotel associations, and handle activation, password resets, and profile updates from a consistent admin workflow."
+        actions={
+          <StandardButton variant="contained" startIcon={<AddIcon />} onClick={() => setCreateDialogOpen(true)}>
+            Add User
+          </StandardButton>
+        }
+      />
 
       {error && (
         <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
@@ -440,75 +439,67 @@ const UserManagementAdmin: React.FC = () => {
         </Alert>
       )}
 
-      {/* Filters */}
-      <Box sx={{ mb: 2 }}>
-        <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-          <FilterListIcon />
-          Filters
-        </Typography>
-        <Grid container spacing={2}>
-          <Grid item xs={12} md={4}>
-            <PremiumTextField
-              fullWidth
-              label="Search"
-              value={filters.search}
-              onChange={(e) => handleFilterChange('search', e.target.value)}
-              placeholder="Search by name or email..."
-            />
+      <DataTableCard
+        title="Users Directory"
+        description="Filter by role, status, or text search, then open the relevant action for each user account."
+        filters={
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={4}>
+              <PremiumTextField
+                fullWidth
+                label="Search"
+                value={filters.search}
+                onChange={(e) => handleFilterChange('search', e.target.value)}
+                placeholder="Search by name or email..."
+              />
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <PremiumSelect
+                fullWidth
+                label="Role"
+                value={filters.role}
+                onChange={(e) => handleFilterChange('role', e.target.value)}
+              >
+                <MenuItem value="">All Roles</MenuItem>
+                {roleOptions.map((role) => (
+                  <MenuItem key={role} value={role}>
+                    {role.replace('_', ' ')}
+                  </MenuItem>
+                ))}
+              </PremiumSelect>
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <PremiumSelect
+                fullWidth
+                label="Status"
+                value={filters.status}
+                onChange={(e) => handleFilterChange('status', e.target.value)}
+              >
+                {statusOptions.map((status) => (
+                  <MenuItem key={status.value} value={status.value}>
+                    {status.label}
+                  </MenuItem>
+                ))}
+              </PremiumSelect>
+            </Grid>
           </Grid>
-          <Grid item xs={12} md={4}>
-            <PremiumSelect
-              fullWidth
-              label="Role"
-              value={filters.role}
-              onChange={(e) => handleFilterChange('role', e.target.value)}
-            >
-              <MenuItem value="">All Roles</MenuItem>
-              {roleOptions.map((role) => (
-                <MenuItem key={role} value={role}>
-                  {role.replace('_', ' ')}
-                </MenuItem>
-              ))}
-            </PremiumSelect>
-          </Grid>
-          <Grid item xs={12} md={4}>
-            <PremiumSelect
-              fullWidth
-              label="Status"
-              value={filters.status}
-              onChange={(e) => handleFilterChange('status', e.target.value)}
-            >
-              {statusOptions.map((status) => (
-                <MenuItem key={status.value} value={status.value}>
-                  {status.label}
-                </MenuItem>
-              ))}
-            </PremiumSelect>
-          </Grid>
-        </Grid>
-      </Box>
-
-      {/* Users Table */}
-      <Paper>
+        }
+        pagination={
+          <TablePagination
+            rowsPerPageOptions={[10, 25, 50]}
+            component="div"
+            count={totalElements}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+          />
+        }
+      >
         <TableContainer>
           <Table>
             <TableHead>
-              <TableRow
-                sx={{
-                  background: `linear-gradient(135deg, ${theme.palette.background.default} 0%, ${theme.palette.grey[50]} 50%, ${theme.palette.background.default} 100%)`,
-                  borderBottom: `2px solid ${theme.palette.secondary.main}`,
-                  '& .MuiTableCell-head': {
-                    color: 'primary.main',
-                    fontWeight: 700,
-                    fontSize: '0.95rem',
-                    letterSpacing: '0.5px',
-                    textTransform: 'uppercase',
-                    border: 'none',
-                    padding: '20px 16px',
-                    boxShadow: `inset 0 -1px 0 ${alpha(theme.palette.primary.main, 0.08)}`,
-                  }
-                }}
-              >
+              <TableRow>
                 <TableCell>Name</TableCell>
                 <TableCell>Email</TableCell>
                 <TableCell>Phone</TableCell>
@@ -521,105 +512,104 @@ const UserManagementAdmin: React.FC = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {users.map((user) => (
-                <TableRow key={user.id} hover>
-                  <TableCell>
-                    {user.firstName} {user.lastName}
-                  </TableCell>
-                  <TableCell>{user.email}</TableCell>
-                  <TableCell>{user.phone ? formatEthiopianPhone(user.phone) : ''}</TableCell>
-                  {canViewHotelColumn && (
-                    <TableCell>{user.hotelName || 'System-wide'}</TableCell>
-                  )}
-                  <TableCell>
-                    <Chip
-                      label={user.roles.length > 0 ? user.roles[0].replace('_', ' ') : 'No Role'}
-                      color={getRoleColor(user.roles.length > 0 ? user.roles[0] : '') as any}
-                      size="small"
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Chip
-                      label={user.isActive ? 'Active' : 'Inactive'}
-                      color={getStatusColor(user.isActive) as any}
-                      size="small"
-                    />
-                  </TableCell>
-                  <TableCell>
-                    {new Date(user.createdAt).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell>
-                    N/A
-                  </TableCell>
-                  <TableCell align="center">
-                    <Box sx={{ display: 'flex', gap: 1 }}>
-                      {!user.roles.includes('SUPER_ADMIN') && (
-                        <Tooltip title="View Details">
-                          <IconButton
-                            size="small"
-                            onClick={() => openDetailsDialog(user)}
-                          >
-                            <VisibilityIcon />
-                          </IconButton>
-                        </Tooltip>
-                      )}
-                      {!user.roles.includes('SUPER_ADMIN') && (
-                        <Tooltip title={user.isActive ? 'Deactivate User' : 'Activate User'}>
-                          <IconButton
-                            size="small"
-                            onClick={() => {
-                              setToggleUser(user);
-                              setToggleStatusReason('');
-                              setToggleStatusDialogOpen(true);
-                            }}
-                            color={user.isActive ? 'success' : 'error'}
-                          >
-                            {user.isActive ? <ToggleOnIcon /> : <ToggleOffIcon />}
-                          </IconButton>
-                        </Tooltip>
-                      )}
-                      {!user.roles.includes('SUPER_ADMIN') && (
-                        <Tooltip title="Reset Password">
-                          <IconButton
-                            size="small"
-                            onClick={() => openPasswordResetDialog(user)}
-                          >
-                            <LockResetIcon />
-                          </IconButton>
-                        </Tooltip>
-                      )}
-                    </Box>
+              {users.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={canViewHotelColumn ? 9 : 8} align="center" sx={{ py: 6 }}>
+                    <Typography variant="body2" color="text.secondary">
+                      No users found for the selected filters.
+                    </Typography>
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                users.map((user) => (
+                  <TableRow key={user.id} hover>
+                    <TableCell>
+                      {user.firstName} {user.lastName}
+                    </TableCell>
+                    <TableCell>{user.email}</TableCell>
+                    <TableCell>{user.phone ? formatEthiopianPhone(user.phone) : ''}</TableCell>
+                    {canViewHotelColumn && (
+                      <TableCell>{user.hotelName || 'System-wide'}</TableCell>
+                    )}
+                    <TableCell>
+                      <Chip
+                        label={user.roles.length > 0 ? user.roles[0].replace('_', ' ') : 'No Role'}
+                        color={getRoleColor(user.roles.length > 0 ? user.roles[0] : '') as any}
+                        size="small"
+                        variant="outlined"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        label={user.isActive ? 'Active' : 'Inactive'}
+                        color={getStatusColor(user.isActive) as any}
+                        size="small"
+                        variant={user.isActive ? 'filled' : 'outlined'}
+                      />
+                    </TableCell>
+                    <TableCell>{new Date(user.createdAt).toLocaleDateString()}</TableCell>
+                    <TableCell>N/A</TableCell>
+                    <TableCell align="center">
+                      <Box sx={{ display: 'flex', gap: 1 }}>
+                        {!user.roles.includes('SUPER_ADMIN') && (
+                          <Tooltip title="View Details">
+                            <IconButton size="small" onClick={() => openDetailsDialog(user)}>
+                              <VisibilityIcon />
+                            </IconButton>
+                          </Tooltip>
+                        )}
+                        {!user.roles.includes('SUPER_ADMIN') && (
+                          <Tooltip title={user.isActive ? 'Deactivate User' : 'Activate User'}>
+                            <IconButton
+                              size="small"
+                              onClick={() => {
+                                setToggleUser(user);
+                                setToggleStatusReason('');
+                                setToggleStatusDialogOpen(true);
+                              }}
+                              color={user.isActive ? 'success' : 'error'}
+                            >
+                              {user.isActive ? <ToggleOnIcon /> : <ToggleOffIcon />}
+                            </IconButton>
+                          </Tooltip>
+                        )}
+                        {!user.roles.includes('SUPER_ADMIN') && (
+                          <Tooltip title="Reset Password">
+                            <IconButton size="small" onClick={() => openPasswordResetDialog(user)}>
+                              <LockResetIcon />
+                            </IconButton>
+                          </Tooltip>
+                        )}
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </TableContainer>
-        <TablePagination
-          rowsPerPageOptions={[10, 25, 50]}
-          component="div"
-          count={totalElements}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-        />
-      </Paper>
+      </DataTableCard>
 
-      {/* Create User Dialog */}
-      <Dialog 
+      <StandardDialog
         open={createDialogOpen} 
-        onClose={() => {
-          setCreateDialogOpen(false);
-          setCreateError(null);
-          setHotels([]); // Clear hotels when dialog is closed
-        }} 
+        onClose={closeCreateDialog}
         maxWidth="md" 
         fullWidth
+        title="Add New User"
+        description="Create a new platform or hotel-bound account and assign the appropriate role and tenancy scope."
+        actions={
+          <>
+            <StandardButton variant="text" onClick={closeCreateDialog}>Cancel</StandardButton>
+            <StandardButton onClick={handleCreateUser} variant="contained">Create User</StandardButton>
+          </>
+        }
       >
-        <DialogTitle>Add New User</DialogTitle>
-        <DialogContent>
-          <Grid container spacing={2} sx={{ mt: 1 }}>
+        {createError && (
+          <Alert severity="error" sx={{ mb: 2 }} onClose={() => setCreateError(null)}>
+            {createError}
+          </Alert>
+        )}
+        <Grid container spacing={2} sx={{ mt: 0.5 }}>
             <Grid item xs={12} md={6}>
               <PremiumTextField
                 fullWidth
@@ -742,31 +732,23 @@ const UserManagementAdmin: React.FC = () => {
               </Grid>
             )}
           </Grid>
-        </DialogContent>
-        {createError && (
-          <Box sx={{ px: 3, pb: 1 }}>
-            <Alert severity="error" onClose={() => setCreateError(null)}>
-              {createError}
-            </Alert>
-          </Box>
-        )}
-        <DialogActions>
-          <Button onClick={() => {
-            setCreateDialogOpen(false);
-            setCreateError(null);
-            setHotels([]); // Clear hotels when dialog is closed
-          }}>Cancel</Button>
-          <Button onClick={handleCreateUser} variant="contained">
-            Create User
-          </Button>
-        </DialogActions>
-      </Dialog>
+      </StandardDialog>
 
-      {/* Edit User Dialog */}
-      <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)} maxWidth="md" fullWidth>
-        <DialogTitle>Edit User</DialogTitle>
-        <DialogContent>
-          <Grid container spacing={2} sx={{ mt: 1 }}>
+      <StandardDialog
+        open={editDialogOpen}
+        onClose={() => setEditDialogOpen(false)}
+        maxWidth="md"
+        fullWidth
+        title="Edit User"
+        description="Update the selected account's profile and role assignment."
+        actions={
+          <>
+            <StandardButton variant="text" onClick={() => setEditDialogOpen(false)}>Cancel</StandardButton>
+            <StandardButton onClick={handleEditUser} variant="contained">Update User</StandardButton>
+          </>
+        }
+      >
+        <Grid container spacing={2} sx={{ mt: 0.5 }}>
             <Grid item xs={12} md={6}>
               <PremiumTextField
                 fullWidth
@@ -820,93 +802,94 @@ const UserManagementAdmin: React.FC = () => {
               </PremiumSelect>
             </Grid>
           </Grid>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setEditDialogOpen(false)}>Cancel</Button>
-          <Button onClick={handleEditUser} variant="contained">
-            Update User
-          </Button>
-        </DialogActions>
-      </Dialog>
+      </StandardDialog>
 
-      {/* Toggle Status Confirmation Dialog */}
-      <Dialog
+      <StandardDialog
         open={toggleStatusDialogOpen}
-        onClose={() => {
-          setToggleStatusDialogOpen(false);
-          setToggleStatusReason('');
-          setToggleUser(null);
-        }}
+        onClose={closeToggleStatusDialog}
         maxWidth="sm"
         fullWidth
+        title={toggleUser?.isActive ? 'Deactivate User' : 'Activate User'}
+        actions={
+          <>
+            <StandardButton variant="text" onClick={closeToggleStatusDialog}>Cancel</StandardButton>
+            <StandardButton
+              onClick={handleToggleUserStatus}
+              variant="contained"
+              color={toggleUser?.isActive ? 'error' : 'success'}
+              disabled={!toggleStatusReason.trim() || loading}
+              loading={loading}
+              loadingText={toggleUser?.isActive ? 'Deactivating...' : 'Activating...'}
+            >
+              {toggleUser?.isActive ? 'Deactivate' : 'Activate'}
+            </StandardButton>
+          </>
+        }
       >
-        <DialogTitle>
-          {toggleUser?.isActive ? 'Deactivate User' : 'Activate User'}
-        </DialogTitle>
-        <DialogContent>
-          <Typography sx={{ mb: 2 }}>
-            Are you sure you want to {toggleUser?.isActive ? 'deactivate' : 'activate'} user "{toggleUser?.firstName} {toggleUser?.lastName}" ({toggleUser?.email})?
-          </Typography>
-          <PremiumTextField
-            label="Reason"
-            fullWidth
-            required
-            multiline
-            rows={3}
-            value={toggleStatusReason}
-            onChange={(e) => setToggleStatusReason(e.target.value)}
-            placeholder={`Enter reason for ${toggleUser?.isActive ? 'deactivation' : 'activation'}...`}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => {
-            setToggleStatusDialogOpen(false);
-            setToggleStatusReason('');
-            setToggleUser(null);
-          }}>
-            Cancel
-          </Button>
-          <Button
-            onClick={handleToggleUserStatus}
-            variant="contained"
-            color={toggleUser?.isActive ? 'error' : 'success'}
-            disabled={!toggleStatusReason.trim() || loading}
-          >
-            {loading ? <CircularProgress size={20} /> : (toggleUser?.isActive ? 'Deactivate' : 'Activate')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        <Typography sx={{ mb: 2 }}>
+          Are you sure you want to {toggleUser?.isActive ? 'deactivate' : 'activate'} user "{toggleUser?.firstName} {toggleUser?.lastName}" ({toggleUser?.email})?
+        </Typography>
+        <PremiumTextField
+          label="Reason"
+          fullWidth
+          required
+          multiline
+          rows={3}
+          value={toggleStatusReason}
+          onChange={(e) => setToggleStatusReason(e.target.value)}
+          placeholder={`Enter reason for ${toggleUser?.isActive ? 'deactivation' : 'activation'}...`}
+        />
+      </StandardDialog>
 
-      {/* Password Reset Dialog */}
-      <Dialog open={passwordResetDialogOpen} onClose={() => setPasswordResetDialogOpen(false)}>
-        <DialogTitle>Reset Password</DialogTitle>
-        <DialogContent>
-          <Typography sx={{ mb: 2 }}>
-            A new random password will be generated and sent to <strong>{selectedUser?.email}</strong> via email.
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            The new password will not be visible to you.
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setPasswordResetDialogOpen(false)}>Cancel</Button>
-          <Button onClick={handlePasswordReset} variant="contained" disabled={loading}>
-            {loading ? 'Sending...' : 'Reset & Send Email'}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <StandardDialog
+        open={passwordResetDialogOpen}
+        onClose={() => setPasswordResetDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+        title="Reset Password"
+        actions={
+          <>
+            <StandardButton variant="text" onClick={() => setPasswordResetDialogOpen(false)}>Cancel</StandardButton>
+            <StandardButton onClick={handlePasswordReset} variant="contained" disabled={loading} loading={loading} loadingText="Sending...">
+              Reset & Send Email
+            </StandardButton>
+          </>
+        }
+      >
+        <Typography sx={{ mb: 2 }}>
+          A new random password will be generated and sent to <strong>{selectedUser?.email}</strong> via email.
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          The new password will not be visible to you.
+        </Typography>
+      </StandardDialog>
 
-      {/* Details Dialog */}
-      <Dialog 
+      <StandardDialog
         open={detailsDialogOpen} 
         onClose={() => setDetailsDialogOpen(false)} 
         maxWidth="md" 
         fullWidth
+        title="User Details"
+        actions={
+          <>
+            <StandardButton variant="text" onClick={() => setDetailsDialogOpen(false)}>Close</StandardButton>
+            <StandardButton
+              variant="contained"
+              startIcon={<EditIcon />}
+              onClick={() => {
+                if (selectedUser) {
+                  openEditDialog(selectedUser);
+                  setDetailsDialogOpen(false);
+                }
+              }}
+            >
+              Edit
+            </StandardButton>
+          </>
+        }
       >
-        <DialogTitle>User Details</DialogTitle>
-        <DialogContent>
-          {selectedUser && (
-            <Grid container spacing={2} sx={{ mt: 1 }}>
+        {selectedUser && (
+          <Grid container spacing={2} sx={{ mt: 0.5 }}>
               <Grid item xs={12} sm={6}>
                 <PremiumTextField
                   fullWidth
@@ -989,24 +972,8 @@ const UserManagementAdmin: React.FC = () => {
                 />
               </Grid>
             </Grid>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDetailsDialogOpen(false)}>Close</Button>
-          <Button 
-            variant="contained" 
-            startIcon={<EditIcon />}
-            onClick={() => {
-              if (selectedUser) {
-                openEditDialog(selectedUser);
-                setDetailsDialogOpen(false);
-              }
-            }}
-          >
-            Edit
-          </Button>
-        </DialogActions>
-      </Dialog>
+        )}
+      </StandardDialog>
 
       {/* Success Snackbar */}
       <Snackbar
@@ -1019,7 +986,7 @@ const UserManagementAdmin: React.FC = () => {
           {successMessage}
         </Alert>
       </Snackbar>
-    </Box>
+    </PageContainer>
   );
 };
 

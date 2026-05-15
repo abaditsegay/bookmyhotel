@@ -1603,12 +1603,9 @@ if (process.env.NODE_ENV === 'development') {
 // Global room caching debug function
 (window as any).debugRoomCaching = async () => {
   // console.log('🏨 Room Caching Debug Information:');
-  
-  // Check authentication
-  const authUser = localStorage.getItem('auth_user');
-  
+
   // console.log('🔑 Authentication Status:');
-  // console.log('- auth_user exists:', !!authUser);
+  // console.log('- auth_user exists:', !!localStorage.getItem('auth_user'));
   
   // Check cached rooms
   try {

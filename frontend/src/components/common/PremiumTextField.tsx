@@ -3,7 +3,7 @@ import { alpha, TextField, TextFieldProps, useTheme } from '@mui/material';
 
 /**
  * Premium styled TextField component for forms
- * Features gold border, cream background, and uppercase labels to match PremiumDisplayField
+ * Keeps a lightly elevated form treatment while deferring typography and color rules to the theme.
  */
 const PremiumTextField: React.FC<TextFieldProps> = (props) => {
   const theme = useTheme();
@@ -15,11 +15,9 @@ const PremiumTextField: React.FC<TextFieldProps> = (props) => {
       InputLabelProps={{
         ...props.InputLabelProps,
         sx: {
-          textTransform: 'uppercase',
-          fontSize: '0.7rem',
-          fontWeight: 600,
-          letterSpacing: '0.5px',
-          color: theme.palette.primary.main,
+          fontSize: '0.82rem',
+          fontWeight: 500,
+          color: theme.palette.text.secondary,
           '&.Mui-focused': {
             color: `${theme.palette.primary.main} !important`,
             fontWeight: 600,
@@ -29,35 +27,28 @@ const PremiumTextField: React.FC<TextFieldProps> = (props) => {
       }}
       sx={{
         '& .MuiOutlinedInput-root': {
-          backgroundColor: theme.palette.grey[50],
-          borderRadius: '4px',
+          backgroundColor: alpha(theme.palette.background.paper, 0.98),
+          borderRadius: `${theme.shape.borderRadius}px`,
           '& fieldset': {
-            borderColor: theme.palette.divider,
+            borderColor: alpha(theme.palette.primary.main, 0.12),
             borderWidth: '1px',
-            borderLeftWidth: '2px',
-            borderLeftColor: theme.palette.secondary.main,
           },
           '&:hover fieldset': {
-            borderColor: theme.palette.grey[400],
-            borderLeftWidth: '2px',
-            borderLeftColor: theme.palette.secondary.main,
+            borderColor: alpha(theme.palette.primary.main, 0.24),
           },
           '&.Mui-focused': {
-            backgroundColor: alpha(theme.palette.secondary.light, 0.08),
+            backgroundColor: theme.palette.background.paper,
+            boxShadow: `0 0 0 4px ${alpha(theme.palette.primary.main, 0.08)}`,
             '& fieldset': {
-              borderColor: theme.palette.secondary.main,
+              borderColor: theme.palette.primary.main,
               borderWidth: '1px',
-              borderLeftWidth: '2px',
-              borderLeftColor: theme.palette.secondary.main,
             },
           },
           '&.Mui-disabled': {
             backgroundColor: theme.palette.action.disabledBackground,
             '& fieldset': {
-              borderColor: theme.palette.grey[400],
+              borderColor: alpha(theme.palette.primary.main, 0.08),
               borderWidth: '1px',
-              borderLeftWidth: '2px',
-              borderLeftColor: theme.palette.secondary.main,
             },
             '& input': {
               color: theme.palette.text.disabled,
@@ -69,7 +60,7 @@ const PremiumTextField: React.FC<TextFieldProps> = (props) => {
             },
           },
           '&.Mui-error fieldset': {
-            borderLeftColor: theme.palette.error.main,
+            borderColor: theme.palette.error.main,
           },
           '& input': {
             color: theme.palette.text.primary,
@@ -79,11 +70,9 @@ const PremiumTextField: React.FC<TextFieldProps> = (props) => {
           },
         },
         '& .MuiInputLabel-root': {
-          textTransform: 'uppercase',
-          fontSize: '0.7rem',
-          fontWeight: 600,
-          letterSpacing: '0.5px',
-          color: theme.palette.primary.main,
+          fontSize: '0.82rem',
+          fontWeight: 500,
+          color: theme.palette.text.secondary,
           '&.Mui-focused': {
             color: `${theme.palette.primary.main} !important`,
             fontWeight: 600,

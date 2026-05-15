@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Typography,
   Paper,
-  useTheme,
   alpha,
   IconButton,
 } from '@mui/material';
@@ -48,17 +47,7 @@ function firstDayOfWeekEth(eYear: number, eMonth: number): number {
   return new Date(gY, gM - 1, gD).getDay();
 }
 
-interface CalendarEvent {
-  id: string;
-  title: string;
-  date: Date;
-  type: 'booking' | 'maintenance' | 'meeting' | 'reminder' | 'checkout' | 'checkin';
-  color?: string;
-  description?: string;
-}
-
 const CalendarWidget: React.FC = () => {
-  const theme = useTheme();
   const { user } = useAuth();
   const { t, i18n } = useTranslation();
   const { calendarType } = useCalendarStore();
@@ -75,31 +64,10 @@ const CalendarWidget: React.FC = () => {
   const [ethViewMonth, setEthViewMonth] = useState(todayEM);
 
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [events, setEvents] = useState<CalendarEvent[]>([]);
 
   const hasAccess = user?.roles &&
     !user.roles.includes('CUSTOMER') &&
     !user.roles.includes('GUEST');
-
-  useEffect(() => {
-    if (!hasAccess) return;
-    const mockEvents: CalendarEvent[] = [];
-    const today = new Date();
-    if (user?.roles?.includes('HOTEL_ADMIN')) {
-      mockEvents.push(
-        { id: '1', title: 'Room 101 Check-in', date: new Date(today.getFullYear(), today.getMonth(), today.getDate()), type: 'checkin', description: 'Guest: John Smith' },
-        { id: '2', title: 'Room 205 Check-out', date: new Date(today.getFullYear(), today.getMonth(), today.getDate()), type: 'checkout', description: 'Guest: Jane Doe' },
-        { id: '3', title: 'AC Maintenance', date: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1), type: 'maintenance', description: 'Room 301' },
-        { id: '4', title: 'Staff Meeting', date: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 2), type: 'meeting', description: 'Monthly sync' },
-      );
-    } else if (user?.roles?.includes('FRONTDESK')) {
-      mockEvents.push(
-        { id: '5', title: 'Check-ins Today: 8', date: new Date(today.getFullYear(), today.getMonth(), today.getDate()), type: 'checkin' },
-        { id: '6', title: 'Check-outs Today: 5', date: new Date(today.getFullYear(), today.getMonth(), today.getDate()), type: 'checkout' },
-      );
-    }
-    setEvents(mockEvents);
-  }, [user, hasAccess]);
 
   if (!hasAccess) return null;
 

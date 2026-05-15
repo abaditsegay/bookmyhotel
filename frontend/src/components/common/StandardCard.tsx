@@ -1,7 +1,6 @@
 import React from 'react';
 import { Card, CardProps, useTheme } from '@mui/material';
 import { designSystem } from '../../theme/designSystem';
-import { COLORS, addAlpha } from '../../theme/themeColors';
 
 interface StandardCardProps extends Omit<CardProps, 'variant'> {
   cardVariant?: 'default' | 'outlined' | 'elevated' | 'gradient' | 'glass';
@@ -44,10 +43,12 @@ const StandardCard: React.FC<StandardCardProps> = ({
     switch (cardVariant) {
       case 'outlined':
         return {
-          boxShadow: designSystem.shadows.sm,
-          transition: 'box-shadow 0.2s ease, transform 0.2s ease',
+          border: `1px solid ${theme.palette.divider}`,
+          boxShadow: 'none',
+          transition: 'box-shadow 0.2s ease, border-color 0.2s ease, transform 0.2s ease',
           '&:hover': {
-            boxShadow: designSystem.shadows.md,
+            borderColor: theme.palette.primary.main,
+            boxShadow: designSystem.shadows.sm,
             transform: 'translateY(-1px)',
           },
         };
@@ -62,30 +63,34 @@ const StandardCard: React.FC<StandardCardProps> = ({
         };
       case 'gradient':
         return {
-          background: `linear-gradient(135deg, ${theme.palette.primary.main}08 0%, ${theme.palette.secondary.main}08 100%)`,
+          background: `linear-gradient(180deg, ${theme.palette.background.paper} 0%, ${theme.palette.primary[25] || '#f0f4f8'} 100%)`,
+          border: `1px solid ${theme.palette.divider}`,
           boxShadow: designSystem.shadows.sm,
           transition: 'all 0.2s ease',
           '&:hover': {
-            background: `linear-gradient(135deg, ${theme.palette.primary.main}15 0%, ${theme.palette.secondary.main}15 100%)`,
+            borderColor: theme.palette.primary.main,
             boxShadow: designSystem.shadows.md,
           },
         };
       case 'glass':
         return {
-          background: addAlpha(COLORS.WHITE, 0.85),
+          background: alpha(theme.palette.background.paper, 0.9),
           backdropFilter: 'blur(10px)',
+          border: `1px solid ${alpha(theme.palette.primary.main, 0.08)}`,
           boxShadow: designSystem.shadows.md,
           transition: 'all 0.2s ease',
           '&:hover': {
-            background: addAlpha(COLORS.WHITE, 0.95),
+            background: alpha(theme.palette.background.paper, 0.96),
             boxShadow: designSystem.shadows.lg,
           },
         };
       default:
         return {
+          border: `1px solid ${alpha(theme.palette.primary.main, 0.08)}`,
           boxShadow: designSystem.shadows.sm,
-          transition: 'box-shadow 0.2s ease',
+          transition: 'box-shadow 0.2s ease, border-color 0.2s ease',
           '&:hover': {
+            borderColor: alpha(theme.palette.primary.main, 0.14),
             boxShadow: designSystem.shadows.md,
           },
         };

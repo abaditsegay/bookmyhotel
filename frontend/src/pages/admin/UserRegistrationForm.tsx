@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { normalizeEthiopianPhone } from '../../utils/phoneUtils';
 import {
   Container,
   Typography,
