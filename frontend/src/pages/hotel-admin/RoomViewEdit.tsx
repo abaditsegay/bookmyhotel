@@ -15,6 +15,7 @@ import {
   Switch,
   Dialog,
   DialogContent,
+  useTheme,
 } from '@mui/material';
 import {
   Edit as EditIcon,
@@ -31,13 +32,17 @@ import PremiumDisplayField from '../../components/common/PremiumDisplayField';
 import PremiumTextField from '../../components/common/PremiumTextField';
 import PremiumSelect from '../../components/common/PremiumSelect';
 import StandardButton from '../../components/common/StandardButton';
-import { COLORS, addAlpha } from '../../theme/themeColors';
+import { useThemeColors } from '../../theme/useThemeColors';
+import { getReadableAccentTextColor } from '../../theme/surfaces';
 
 const RoomViewEdit: React.FC = () => {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { COLORS, addAlpha } = useThemeColors();
+  const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
   const { token } = useAuth();
   const { showSubmissionError } = useSubmissionError();
   
@@ -246,7 +251,7 @@ const RoomViewEdit: React.FC = () => {
               onClick={handleCancelAndClose}
               sx={{
                 borderColor: addAlpha(COLORS.SECONDARY, 0.6),
-                color: COLORS.PRIMARY,
+                color: readableAccentColor,
                 '&:hover': {
                   borderColor: COLORS.SECONDARY,
                   bgcolor: addAlpha(COLORS.SECONDARY, 0.08),
@@ -262,7 +267,7 @@ const RoomViewEdit: React.FC = () => {
                 onClick={handleEdit}
                 sx={{
                   borderColor: addAlpha(COLORS.SECONDARY, 0.6),
-                  color: COLORS.PRIMARY,
+                  color: readableAccentColor,
                   '&:hover': {
                     borderColor: COLORS.SECONDARY,
                     bgcolor: addAlpha(COLORS.SECONDARY, 0.08),

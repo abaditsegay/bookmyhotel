@@ -35,6 +35,7 @@ import {
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import { useSubmissionError } from '../contexts/SubmissionErrorContext';
+import { getReadableAccentTextColor } from '../theme/surfaces';
 
 // Utility functions for converting between percentage (0-100) and decimal (0.0-1.0) values
 const toDecimal = (percentage: number): number => {
@@ -125,6 +126,7 @@ const PricingConfigurationComponent: React.FC = () => {
   const { showSubmissionError } = useSubmissionError();
   const { t } = useTranslation();
   const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
   const [config, setConfig] = useState<PricingConfiguration | null>(null);
   const [originalConfig, setOriginalConfig] = useState<PricingConfiguration | null>(null);
   const [loading, setLoading] = useState(true);
@@ -522,9 +524,9 @@ const PricingConfigurationComponent: React.FC = () => {
                 borderLeft: '4px solid #E8B86D',
                 borderRadius: 2,
               }}>
-                <SettingsIcon sx={{ color: 'primary.main' }} />
+                <SettingsIcon sx={{ color: readableAccentColor }} />
                 <Box>
-                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5, color: 'primary.main' }}>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5, color: readableAccentColor }}>
                     {t('dashboard.hotelAdmin.pricingConfiguration.generalSettings.title')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -624,9 +626,9 @@ const PricingConfigurationComponent: React.FC = () => {
                 borderLeft: '4px solid #E8B86D',
                 borderRadius: 2,
               }}>
-                <ReceiptIcon sx={{ color: 'primary.main' }} />
+                <ReceiptIcon sx={{ color: readableAccentColor }} />
                 <Box>
-                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5, color: 'primary.main' }}>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5, color: readableAccentColor }}>
                     {t('dashboard.hotelAdmin.pricingConfiguration.taxConfiguration.title')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -705,9 +707,9 @@ const PricingConfigurationComponent: React.FC = () => {
                 borderLeft: '4px solid #E8B86D',
                 borderRadius: 2,
               }}>
-                <DiscountIcon sx={{ color: 'primary.main' }} />
+                <DiscountIcon sx={{ color: readableAccentColor }} />
                 <Box>
-                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5, color: 'primary.main' }}>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5, color: readableAccentColor }}>
                     {t('dashboard.hotelAdmin.pricingConfiguration.seasonalMultipliers.title')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -777,9 +779,9 @@ const PricingConfigurationComponent: React.FC = () => {
                 borderLeft: '4px solid #E8B86D',
                 borderRadius: 2,
               }}>
-                <SettingsIcon sx={{ color: 'primary.main' }} />
+                <SettingsIcon sx={{ color: readableAccentColor }} />
                 <Box>
-                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5, color: 'primary.main' }}>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5, color: readableAccentColor }}>
                     {t('dashboard.hotelAdmin.pricingConfiguration.bookingRules.title')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -840,9 +842,9 @@ const PricingConfigurationComponent: React.FC = () => {
                 borderColor: 'divider',
                 borderRadius: 2,
               }}>
-                <DiscountIcon sx={{ color: 'primary.main' }} />
+                <DiscountIcon sx={{ color: readableAccentColor }} />
                 <Box>
-                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5, color: 'primary.main' }}>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5, color: readableAccentColor }}>
                     {t('dashboard.hotelAdmin.pricingConfiguration.discountsFees.title')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -933,9 +935,9 @@ const PricingConfigurationComponent: React.FC = () => {
                 borderColor: 'divider',
                 borderRadius: 2,
               }}>
-                <ReceiptIcon sx={{ color: 'primary.main' }} />
+                <ReceiptIcon sx={{ color: readableAccentColor }} />
                 <Box>
-                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5, color: 'primary.main' }}>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5, color: readableAccentColor }}>
                     {t('dashboard.hotelAdmin.pricingConfiguration.cancellationRefundPolicies.title')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -1036,9 +1038,9 @@ const PricingConfigurationComponent: React.FC = () => {
                 borderColor: 'divider',
                 borderRadius: 2,
               }}>
-                <InfoIcon sx={{ color: 'primary.main' }} />
+                <InfoIcon sx={{ color: readableAccentColor }} />
                 <Box>
-                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5, color: 'primary.main' }}>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5, color: readableAccentColor }}>
                     {t('dashboard.hotelAdmin.pricingConfiguration.additionalNotes.title')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">

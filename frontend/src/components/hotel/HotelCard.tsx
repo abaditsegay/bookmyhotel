@@ -120,7 +120,7 @@ const HotelCard: React.FC<HotelCardProps> = ({ hotel, onViewDetails, onBookRoom 
                       border: 1, 
                       borderColor: 'divider', 
                       borderRadius: 1,
-                      backgroundColor: 'grey.50',
+                      backgroundColor: 'action.hover',
                     }}
                   >
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

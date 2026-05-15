@@ -28,11 +28,13 @@ import StandardButton from '../components/common/StandardButton';
 import { StandardLoading, StandardError, ErrorBoundary } from '../components/common';
 import { hotelApiService } from '../services/hotelApi';
 import { HotelSearchRequest } from '../types/hotel';
+import { getInsetSurfaceBackground, getPageShellBackground, getReadableAccentTextColor, getSectionTint } from '../theme/surfaces';
 
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isSmall = useMediaQuery(theme.breakpoints.down('sm'));
   const [loading, setLoading] = useState(false);
@@ -78,9 +80,7 @@ const LandingPage: React.FC = () => {
     <Box
       sx={{
         minHeight: '100vh',
-        background: theme.palette.mode === 'dark'
-          ? `linear-gradient(135deg, ${theme.palette.background.default} 0%, ${theme.palette.grey[900]} 100%)`
-          : `linear-gradient(180deg, ${alpha(theme.palette.primary.main, 0.04)} 0%, ${theme.palette.background.default} 42%, ${theme.palette.background.paper} 100%)`,
+        background: getPageShellBackground(theme),
       }}
     >
       {/* Hero Section */}
@@ -126,7 +126,7 @@ const LandingPage: React.FC = () => {
         >
           <Box sx={{ p: isMobile ? 2 : 3 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <SearchIcon sx={{ mr: 1, color: 'primary.main' }} />
+              <SearchIcon sx={{ mr: 1, color: readableAccentColor }} />
               <Typography variant="h6" sx={{ fontWeight: 600, color: 'text.primary' }}>
                 {t('landing.search.title')}
               </Typography>
@@ -167,7 +167,7 @@ const LandingPage: React.FC = () => {
                   }}
                 >
                   <Box sx={{ p: 3 }}>
-                    <Box sx={{ color: 'primary.main', mb: 2 }}>{item.icon}</Box>
+                    <Box sx={{ color: readableAccentColor, mb: 2 }}>{item.icon}</Box>
                     <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
                       {t(item.titleKey)}
                     </Typography>
@@ -267,9 +267,7 @@ const LandingPage: React.FC = () => {
               elevation={0}
               sx={{
                 height: '100%',
-                background: theme.palette.mode === 'dark'
-                  ? alpha(theme.palette.secondary.main, 0.08)
-                  : alpha(theme.palette.secondary.main, 0.03),
+                background: getInsetSurfaceBackground(theme, 'secondary'),
               }}
             >
               <Box sx={{ p: isMobile ? 3 : 4 }}>
@@ -288,11 +286,11 @@ const LandingPage: React.FC = () => {
                     p: 2,
                     mb: 2,
                     borderRadius: 2,
-                    backgroundColor: theme.palette.background.paper,
+                    backgroundColor: getSectionTint(theme, 'secondary'),
                     boxShadow: theme.shadows[1],
                   }}
                 >
-                  <EmailIcon sx={{ fontSize: 28, color: 'primary.main', mr: 2 }} />
+                  <EmailIcon sx={{ fontSize: 28, color: readableAccentColor, mr: 2 }} />
                   <Box>
                     <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
                       {t('landing.contact.emailLabel')}
@@ -303,7 +301,7 @@ const LandingPage: React.FC = () => {
                       href={`mailto:${t('landing.contact.email')}`}
                       sx={{
                         fontWeight: 600,
-                        color: 'primary.main',
+                        color: readableAccentColor,
                         textDecoration: 'none',
                         '&:hover': { textDecoration: 'underline' },
                       }}
@@ -320,11 +318,11 @@ const LandingPage: React.FC = () => {
                     alignItems: 'center',
                     p: 2,
                     borderRadius: 2,
-                    backgroundColor: theme.palette.background.paper,
+                    backgroundColor: getSectionTint(theme, 'secondary'),
                     boxShadow: theme.shadows[1],
                   }}
                 >
-                  <PhoneIcon sx={{ fontSize: 28, color: 'primary.main', mr: 2 }} />
+                  <PhoneIcon sx={{ fontSize: 28, color: readableAccentColor, mr: 2 }} />
                   <Box>
                     <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
                       {t('landing.contact.phoneLabel')}
@@ -335,7 +333,7 @@ const LandingPage: React.FC = () => {
                       href={`tel:${t('landing.contact.phone')}`}
                       sx={{
                         fontWeight: 600,
-                        color: 'primary.main',
+                        color: readableAccentColor,
                         textDecoration: 'none',
                         '&:hover': { textDecoration: 'underline' },
                       }}

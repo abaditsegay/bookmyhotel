@@ -36,7 +36,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useTenant } from '../../contexts/TenantContext';
 import { Booking, Room } from '../../types/booking-shared';
 import { buildApiUrl } from '../../config/apiConfig';
-import { COLORS, addAlpha } from '../../theme/themeColors';
+import { useThemeColors } from '../../theme/useThemeColors';
 import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
 import { formatDateForInput } from '../../utils/dateUtils';
 
@@ -58,6 +58,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
   const { token, user } = useAuth();
   const { tenant } = useTenant();
   const { showSubmissionError } = useSubmissionError();
+  const { COLORS, addAlpha } = useThemeColors();
   const theme = useTheme();
   const primaryMain = theme.palette.primary.main;
   const primaryLight = theme.palette.primary.light;

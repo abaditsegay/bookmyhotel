@@ -21,13 +21,14 @@ import { hotelApiService } from '../services/hotelApi';
 import { HotelSearchResult } from '../types/hotel';
 import { formatCurrencyWithDecimals } from '../utils/currencyUtils';
 import { useAuth } from '../contexts/AuthContext';
-import { COLORS, addAlpha } from '../theme/themeColors';
+import { useThemeColors } from '../theme/useThemeColors';
 
 interface AdvertisementBannerProps {
   maxAds?: number;
 }
 
 export default function AdvertisementBanner({ maxAds = 5 }: AdvertisementBannerProps) {
+  const { COLORS, addAlpha } = useThemeColors();
   const { t } = useTranslation();
   const { user } = useAuth();
   const [hotels, setHotels] = useState<HotelSearchResult[]>([]);

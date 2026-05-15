@@ -7,15 +7,18 @@ import {
   Button,
   Alert,
   Grid,
+  useTheme,
 } from '@mui/material';
 import { Login, CheckCircle } from '@mui/icons-material';
 import { PageContainer, SurfaceCard } from '../components/common';
 import PremiumTextField from '../components/common/PremiumTextField';
 import { API_CONFIG } from '../config/apiConfig';
+import { getSectionTint } from '../theme/surfaces';
 
 const PublicHotelRegistration: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const theme = useTheme();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
@@ -114,7 +117,7 @@ const PublicHotelRegistration: React.FC = () => {
               {t('publicHotelRegistration.success.emailNotice.before')} <strong>{submittedEmail}</strong>. {t('publicHotelRegistration.success.emailNotice.after')}
             </Alert>
 
-            <Box sx={{ mt: 3, p: 3, bgcolor: 'grey.50', borderRadius: 2, textAlign: 'left' }}>
+            <Box sx={{ mt: 3, p: 3, bgcolor: getSectionTint(theme, 'primary'), borderRadius: 2, textAlign: 'left' }}>
               <Typography variant="subtitle2" gutterBottom>
                 {t('publicHotelRegistration.nextSteps.title')}
               </Typography>
@@ -230,7 +233,7 @@ const PublicHotelRegistration: React.FC = () => {
               </Button>
             </Box>
 
-            <Box sx={{ mt: 4, p: 3, bgcolor: 'grey.50', borderRadius: 2 }}>
+            <Box sx={{ mt: 4, p: 3, bgcolor: getSectionTint(theme, 'primary'), borderRadius: 2 }}>
               <Typography variant="h6" gutterBottom>
                 {t('publicHotelRegistration.nextSteps.title')}
               </Typography>

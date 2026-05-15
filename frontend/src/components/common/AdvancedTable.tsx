@@ -23,7 +23,7 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import { designSystem } from '../../theme/designSystem';
-import { COLORS, addAlpha } from '../../theme/themeColors';
+import { useThemeColors } from '../../theme/useThemeColors';
 
 export type SortDirection = 'asc' | 'desc';
 
@@ -90,6 +90,7 @@ const AdvancedTable: React.FC<AdvancedTableProps> = ({
   rowKeyField = 'id',
 }) => {
   const theme = useTheme();
+  const { COLORS, addAlpha } = useThemeColors();
   const [sortColumn, setSortColumn] = useState<string>('');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
@@ -254,9 +255,9 @@ const AdvancedTable: React.FC<AdvancedTableProps> = ({
                   }}
                   sx={{
                     fontWeight: 700,
-                    color: COLORS.PRIMARY,
+                    color: COLORS.PRIMARY_TEXT,
                     letterSpacing: '0.4px',
-                    background: `linear-gradient(135deg, ${addAlpha(COLORS.PRIMARY, 0.06)} 0%, ${addAlpha(COLORS.PRIMARY, 0.12)} 100%)`,
+                    background: `linear-gradient(135deg, ${COLORS.BG_PRIMARY_SOFT} 0%, ${COLORS.BG_PRIMARY_SOFT} 100%)`,
                     borderBottom: `2px solid ${COLORS.PRIMARY}`,
                   }}
                 >
@@ -267,7 +268,7 @@ const AdvancedTable: React.FC<AdvancedTableProps> = ({
                       onClick={() => handleSort(column.id)}
                       sx={{
                         '&.Mui-active': {
-                          color: COLORS.PRIMARY,
+                          color: COLORS.PRIMARY_TEXT,
                         },
                       }}
                     >
@@ -283,8 +284,8 @@ const AdvancedTable: React.FC<AdvancedTableProps> = ({
                   align="center" 
                   sx={{ 
                     fontWeight: 700,
-                    color: COLORS.PRIMARY,
-                    background: `linear-gradient(135deg, ${addAlpha(COLORS.PRIMARY, 0.06)} 0%, ${addAlpha(COLORS.PRIMARY, 0.12)} 100%)`,
+                    color: COLORS.PRIMARY_TEXT,
+                    background: `linear-gradient(135deg, ${COLORS.BG_PRIMARY_SOFT} 0%, ${COLORS.BG_PRIMARY_SOFT} 100%)`,
                     borderBottom: `2px solid ${COLORS.PRIMARY}`,
                   }}
                 >

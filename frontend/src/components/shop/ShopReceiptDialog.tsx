@@ -22,7 +22,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { ShopOrder } from '../../types/shop';
 import { getPremiumTableHeadSx } from './premiumStyles';
-import { COLORS, addAlpha } from '../../theme/themeColors';
+import { useThemeColors } from '../../theme/useThemeColors';
 import { formatDateTimeForDisplay } from '../../utils/dateUtils';
 
 interface ShopReceiptDialogProps {
@@ -51,6 +51,7 @@ const ShopReceiptDialog: React.FC<ShopReceiptDialogProps> = ({
   requiresPayment = false,
 }) => {
   const { t } = useTranslation();
+  const { COLORS, addAlpha } = useThemeColors();
   
   if (!order) return null;
 

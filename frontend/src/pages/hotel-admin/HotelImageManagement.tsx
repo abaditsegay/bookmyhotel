@@ -15,6 +15,7 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  useTheme,
 } from '@mui/material';
 import {
   CloudUpload as UploadIcon,
@@ -23,9 +24,10 @@ import {
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
-import { COLORS, addAlpha } from '../../theme/themeColors';
+import { useThemeColors } from '../../theme/useThemeColors';
 import { hotelAdminApi, HotelImageUploadRequest, HotelImageResponse } from '../../services/hotelAdminApi';
 import { ROOM_TYPE_VALUES } from '../../constants/roomTypes';
+import { getReadableAccentTextColor, getSectionTint } from '../../theme/surfaces';
 
 interface RoomTypeImageState {
   roomType: string;
@@ -41,6 +43,9 @@ interface HotelGeneralImageState {
 }
 
 const HotelImageManagement: React.FC = () => {
+  const { COLORS, addAlpha } = useThemeColors();
+  const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
   const { token } = useAuth();
   const { showSubmissionError } = useSubmissionError();
   const [loading, setLoading] = useState(false);
@@ -256,7 +261,7 @@ const HotelImageManagement: React.FC = () => {
           variant="h4" 
           sx={{ 
             fontWeight: 700,
-            color: 'primary.main',
+            color: readableAccentColor,
             mb: 1,
           }}
         >
@@ -314,7 +319,7 @@ const HotelImageManagement: React.FC = () => {
             </Typography>
           </Box>
         </AccordionSummary>
-        <AccordionDetails sx={{ p: 3, bgcolor: 'grey.50' }}>
+        <AccordionDetails sx={{ p: 3, bgcolor: getSectionTint(theme, 'primary') }}>
           <Grid container spacing={3}>
             {/* Upload Section */}
             <Grid item xs={12} md={6}>
@@ -453,7 +458,7 @@ const HotelImageManagement: React.FC = () => {
                       sx={{ 
                         textAlign: 'center', 
                         py: 6,
-                        bgcolor: 'grey.50',
+                        bgcolor: getSectionTint(theme, 'primary'),
                         borderRadius: 2,
                       }}
                     >
@@ -548,7 +553,7 @@ const HotelImageManagement: React.FC = () => {
                 {roomType.toLowerCase().replace('_', ' ')} Rooms
               </Typography>
             </AccordionSummary>
-            <AccordionDetails sx={{ p: 3, bgcolor: 'grey.50' }}>
+            <AccordionDetails sx={{ p: 3, bgcolor: getSectionTint(theme, 'primary') }}>
               <Grid container spacing={3}>
                 {/* Upload Section */}
                 <Grid item xs={12} md={6}>
@@ -687,7 +692,7 @@ const HotelImageManagement: React.FC = () => {
                           sx={{ 
                             textAlign: 'center', 
                             py: 6,
-                            bgcolor: 'grey.50',
+                            bgcolor: getSectionTint(theme, 'primary'),
                             borderRadius: 2,
                           }}
                         >

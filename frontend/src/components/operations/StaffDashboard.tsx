@@ -48,6 +48,7 @@ import {
   SupervisorAccount
 } from '@mui/icons-material';
 import { useDebounce } from '../../hooks/useDebounce';
+import { getReadableAccentTextColor } from '../../theme/surfaces';
 import { getEffectiveSearchTerm } from '../../utils/search';
 import TokenManager from '../../utils/tokenManager';
 import { API_CONFIG } from '../../config/apiConfig';
@@ -75,6 +76,7 @@ interface StaffDashboardProps {
 
 const StaffDashboard: React.FC<StaffDashboardProps> = ({ currentUserRole = 'OPERATIONAL_ADMIN' }) => {
   const theme = useTheme();
+  const primaryText = getReadableAccentTextColor(theme);
   const [staffMembers, setStaffMembers] = useState<StaffMember[]>([]);
   const [filteredStaff, setFilteredStaff] = useState<StaffMember[]>([]);
   const [loading, setLoading] = useState(true);
@@ -589,8 +591,8 @@ const StaffDashboard: React.FC<StaffDashboardProps> = ({ currentUserRole = 'OPER
                     <Typography variant="h6" gutterBottom>Performance Metrics</Typography>
                     <Grid container spacing={2}>
                       <Grid item xs={4}>
-                        <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
-                          <Typography variant="h5" color="primary.main">
+                        <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'action.hover', borderRadius: 1 }}>
+                          <Typography variant="h5" sx={{ color: primaryText }}>
                             {selectedStaff.tasksCompleted}
                           </Typography>
                           <Typography variant="body2" color="text.secondary">
@@ -599,8 +601,8 @@ const StaffDashboard: React.FC<StaffDashboardProps> = ({ currentUserRole = 'OPER
                         </Box>
                       </Grid>
                       <Grid item xs={4}>
-                        <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
-                          <Typography variant="h5" color="primary.main">
+                        <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'action.hover', borderRadius: 1 }}>
+                          <Typography variant="h5" sx={{ color: primaryText }}>
                             {selectedStaff.averageRating.toFixed(1)}
                           </Typography>
                           <Typography variant="body2" color="text.secondary">
@@ -609,8 +611,8 @@ const StaffDashboard: React.FC<StaffDashboardProps> = ({ currentUserRole = 'OPER
                         </Box>
                       </Grid>
                       <Grid item xs={4}>
-                        <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
-                          <Typography variant="h5" color="primary.main">
+                        <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'action.hover', borderRadius: 1 }}>
+                          <Typography variant="h5" sx={{ color: primaryText }}>
                             {selectedStaff.efficiency}%
                           </Typography>
                           <Typography variant="body2" color="text.secondary">

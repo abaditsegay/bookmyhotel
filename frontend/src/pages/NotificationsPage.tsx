@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { COLORS, addAlpha, getGradient } from '../theme/themeColors';
 import PremiumTextField from '../components/common/PremiumTextField';
 import { useDebounce } from '../hooks/useDebounce';
+import { alpha, useTheme } from '@mui/material/styles';
 import {
   Box,
   Typography,
@@ -46,8 +46,10 @@ import { useBookingNotifications } from '../hooks/useBookingNotifications';
 import { formatDateForDisplay, formatDateTimeForDisplay } from '../utils/dateUtils';
 import { formatEthiopianTime } from '../utils/ethiopianCalendar';
 import { getEffectiveSearchTerm } from '../utils/search';
+import { getPageShellBackground, getSectionTint } from '../theme/surfaces';
 
 const NotificationsPage: React.FC = () => {
+  const theme = useTheme();
   // const { user } = useAuth(); // Keep for future role-based features
   const { 
     notifications, 
@@ -166,36 +168,35 @@ const NotificationsPage: React.FC = () => {
     return filtered.slice(startIndex, endIndex);
   };
 
+  const tableHeaderSx = {
+    background: `linear-gradient(135deg, ${theme.palette.background.default} 0%, ${theme.palette.background.paper} 50%, ${theme.palette.background.default} 100%)`,
+    boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.22 : 0.12)}`,
+    '& .MuiTableCell-head': {
+      color: theme.palette.text.primary,
+      fontWeight: 700,
+      fontSize: '0.82rem',
+      letterSpacing: '0.5px',
+      textTransform: 'uppercase',
+      border: 'none',
+      padding: '20px 16px',
+      position: 'relative',
+      '&::after': {
+        content: '""',
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: '3px',
+        background: `linear-gradient(90deg, ${alpha(theme.palette.secondary.main, 0.8)} 0%, ${alpha(theme.palette.primary.main, 0.9)} 100%)`
+      }
+    }
+  };
+
   const renderNotificationsTable = (notifications: BookingNotification[]) => (
-    <TableContainer>
+    <TableContainer sx={{ backgroundColor: theme.palette.background.paper }}>
       <Table sx={{ minWidth: 650 }} aria-label="notifications table">
         <TableHead>
-          <TableRow
-            sx={{
-              background: getGradient('slate'),
-              boxShadow: `0 4px 12px ${addAlpha(COLORS.SLATE_500, 0.15)}`,
-              '& .MuiTableCell-head': {
-                color: COLORS.WHITE,
-                fontWeight: 600,
-                fontSize: '0.95rem',
-                letterSpacing: '0.5px',
-                textTransform: 'uppercase',
-                border: 'none',
-                padding: '20px 16px',
-                position: 'relative',
-                textShadow: `0 1px 2px ${addAlpha(COLORS.BLACK, 0.1)}`,
-                '&::after': {
-                  content: '""',
-                  position: 'absolute',
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  height: '3px',
-                  background: getGradient('white')
-                }
-              }
-            }}
-          >
+          <TableRow sx={tableHeaderSx}>
             <TableCell>Type</TableCell>
             <TableCell>Confirmation</TableCell>
             <TableCell>Guest</TableCell>
@@ -214,11 +215,11 @@ const NotificationsPage: React.FC = () => {
               key={notification.id}
               sx={{ 
                 '&:last-child td, &:last-child th': { border: 0 },
-                backgroundColor: notification.status === 'UNREAD' ? addAlpha(COLORS.BOOKED, 0.1) : 'inherit',
+                backgroundColor: notification.status === 'UNREAD' ? getSectionTint(theme, 'info') : 'inherit',
                 opacity: notification.status === 'ARCHIVED' ? 0.6 : 1,
                 cursor: 'pointer',
                 transition: 'background-color 0.2s',
-                '&:hover': { backgroundColor: notification.status === 'UNREAD' ? addAlpha(COLORS.BOOKED, 0.15) : 'action.hover' }
+                '&:hover': { backgroundColor: notification.status === 'UNREAD' ? alpha(theme.palette.info.main, 0.16) : 'action.hover' }
               }}
               onClick={() => openDetails(notification)}
             >
@@ -354,14 +355,20 @@ const NotificationsPage: React.FC = () => {
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight={400}>
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight={400}
+        sx={{ background: getPageShellBackground(theme), borderRadius: 3 }}
+      >
         <CircularProgress />
       </Box>
     );
   }
 
   return (
-    <Box sx={{ width: '100%', height: '100%' }}>
+    <Box sx={{ width: '100%', minHeight: '100%', background: getPageShellBackground(theme) }}>
       {/* Header */}
       <Box 
         sx={{ 
@@ -370,7 +377,7 @@ const NotificationsPage: React.FC = () => {
           pb: 2,
           borderBottom: 1,
           borderColor: 'divider',
-          backgroundColor: 'background.paper'
+          backgroundColor: theme.palette.background.paper
         }}
       >
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
@@ -650,32 +657,7 @@ const NotificationsPage: React.FC = () => {
                       <TableContainer component={Paper} variant="outlined">
                         <Table size="small" aria-label="modification history">
                           <TableHead>
-                            <TableRow
-                              sx={{
-                                background: getGradient('slate'),
-                                boxShadow: `0 4px 12px ${addAlpha(COLORS.SLATE_500, 0.15)}`,
-                                '& .MuiTableCell-head': {
-                                  color: COLORS.WHITE,
-                                  fontWeight: 600,
-                                  fontSize: '0.95rem',
-                                  letterSpacing: '0.5px',
-                                  textTransform: 'uppercase',
-                                  border: 'none',
-                                  padding: '20px 16px',
-                                  position: 'relative',
-                                  textShadow: `0 1px 2px ${addAlpha(COLORS.BLACK, 0.1)}`,
-                                  '&::after': {
-                                    content: '""',
-                                    position: 'absolute',
-                                    bottom: 0,
-                                    left: 0,
-                                    right: 0,
-                                    height: '3px',
-                                    background: getGradient('white')
-                                  }
-                                }
-                              }}
-                            >
+                            <TableRow sx={tableHeaderSx}>
                               <TableCell><strong>Date</strong></TableCell>
                               <TableCell><strong>Type</strong></TableCell>
                               <TableCell><strong>Status</strong></TableCell>

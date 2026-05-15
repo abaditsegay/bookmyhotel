@@ -33,9 +33,10 @@ import { API_CONFIG, buildApiUrl } from '../../config/apiConfig';
 import PremiumTextField from '../common/PremiumTextField';
 import PremiumDatePicker from '../common/PremiumDatePicker';
 import NumberStepper from '../common/NumberStepper';
-import { COLORS, addAlpha } from '../../theme/themeColors';
+import { useThemeColors } from '../../theme/useThemeColors';
 import { extractBookingErrorMessage } from '../../utils/errorHandling';
 import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
+import { getReadableAccentTextColor } from '../../theme/surfaces';
 
 // API base URL for backend calls
 const API_BASE_URL = API_CONFIG.SERVER_URL;
@@ -75,7 +76,9 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
   const { token, user } = useAuth();
   const { tenantId } = useTenant();
   const { showSubmissionError } = useSubmissionError();
+  const { COLORS, addAlpha } = useThemeColors();
   const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
   
   // Get translated steps
   const steps = [
@@ -507,7 +510,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                   <Box>
                     <Typography variant="h6" sx={{ 
                       fontWeight: 700,
-                      color: COLORS.PRIMARY,
+                      color: COLORS.PRIMARY_TEXT,
                       mb: 0.5,
                     }}>
                       {t('walkInBooking.guestInformation.title')}
@@ -579,7 +582,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                   <Box>
                     <Typography variant="h6" sx={{ 
                       fontWeight: 700,
-                      color: COLORS.PRIMARY,
+                      color: COLORS.PRIMARY_TEXT,
                       mb: 0.5,
                     }}>
                       {t('walkInBooking.stayDetails.title')}
@@ -694,7 +697,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
       case 1:
         return (
           <Box>
-            <Typography variant="h6" gutterBottom sx={{ fontWeight: 700, color: COLORS.PRIMARY }}>
+            <Typography variant="h6" gutterBottom sx={{ fontWeight: 700, color: readableAccentColor }}>
               {t('walkInBooking.roomSelection.title')}
             </Typography>
             <Typography variant="body2" sx={{ color: theme.palette.text.secondary }} gutterBottom>
@@ -1069,7 +1072,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                     <Box sx={{
                       p: 2,
                       bgcolor: addAlpha(COLORS.SECONDARY, 0.1),
-                      color: COLORS.PRIMARY,
+                      color: readableAccentColor,
                       borderRadius: 2,
                       textAlign: 'center',
                       border: '1px solid',
@@ -1122,7 +1125,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
               variant="h5" 
               sx={{ 
                 fontWeight: 700,
-                color: COLORS.PRIMARY,
+                color: readableAccentColor,
               }}
             >
               {t('walkInBooking.title')}
@@ -1138,10 +1141,10 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
           alternativeLabel
           sx={{
             '& .MuiStepLabel-root .Mui-completed': {
-              color: COLORS.PRIMARY,
+              color: readableAccentColor,
             },
             '& .MuiStepLabel-root .Mui-active': {
-              color: COLORS.PRIMARY,
+              color: readableAccentColor,
             },
           }}
         >

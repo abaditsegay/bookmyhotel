@@ -28,6 +28,7 @@ import {
   IconButton,
   Tooltip,
   Chip,
+  useTheme,
 } from '@mui/material';
 import {
   Dashboard,
@@ -49,7 +50,7 @@ import { MetricCard, BarChart, DonutChart } from '../components/common/DataVisua
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import BookIcon from '@mui/icons-material/Book';
 import { designSystem } from '../theme/designSystem';
-import { COLORS } from '../theme/themeColors';
+import { useThemeColors } from '../theme/useThemeColors';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -61,12 +62,16 @@ import {
 } from '../data/apiDocumentation';
 import AuditLogTab from './admin/AuditLogTab';
 import TabPanel from '../components/common/TabPanel';
+import { getReadableAccentTextColor, getSectionTint } from '../theme/surfaces';
 
 /**
  * Dashboard page for system-wide users (ADMIN and CUSTOMER roles)
  * Shows different content based on user role
  */
 export const SystemDashboardPage: React.FC = () => {
+  const { COLORS } = useThemeColors();
+  const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
   const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -318,8 +323,8 @@ export const SystemDashboardPage: React.FC = () => {
           }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-            <LinkIcon sx={{ mr: 1, color: COLORS.PRIMARY }} />
-            <Typography variant="h6" fontWeight="bold" color="primary">
+            <LinkIcon sx={{ mr: 1, color: readableAccentColor }} />
+            <Typography variant="h6" fontWeight="bold" sx={{ color: readableAccentColor }}>
               Business Onboarding URL
             </Typography>
             <Chip
@@ -358,8 +363,8 @@ export const SystemDashboardPage: React.FC = () => {
                   setOnboardingUrlCopied(true);
                   setTimeout(() => setOnboardingUrlCopied(false), 2500);
                 }}
-                color={onboardingUrlCopied ? 'success' : 'primary'}
-                sx={{ flexShrink: 0 }}
+                color={onboardingUrlCopied ? 'success' : undefined}
+                sx={{ flexShrink: 0, color: onboardingUrlCopied ? undefined : readableAccentColor }}
               >
                 <ContentCopy />
               </IconButton>
@@ -367,8 +372,7 @@ export const SystemDashboardPage: React.FC = () => {
             <Tooltip title="Open in new tab">
               <IconButton
                 onClick={() => window.open(`${window.location.origin}/business-onboarding`, '_blank')}
-                color="primary"
-                sx={{ flexShrink: 0 }}
+                sx={{ flexShrink: 0, color: readableAccentColor }}
               >
                 <OpenInNew />
               </IconButton>
@@ -420,7 +424,7 @@ export const SystemDashboardPage: React.FC = () => {
                 <List dense>
                   <ListItem>
                     <ListItemIcon>
-                      <Hotel sx={{ color: 'primary.main' }} />
+                      <Hotel sx={{ color: readableAccentColor }} />
                     </ListItemIcon>
                     <ListItemText 
                       primary={t('dashboard.system.hotelApproval')} 
@@ -702,7 +706,7 @@ export const SystemDashboardPage: React.FC = () => {
                               {/* Request Section */}
                               {endpoint.request && (
                                 <Box sx={{ mb: 3 }}>
-                                  <Typography variant="h6" sx={{ mb: 1, color: 'primary.main' }}>
+                                  <Typography variant="h6" sx={{ mb: 1, color: readableAccentColor }}>
                                     Request
                                   </Typography>
                                   
@@ -710,7 +714,7 @@ export const SystemDashboardPage: React.FC = () => {
                                     <Box sx={{ mb: 2 }}>
                                       <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Headers:</Typography>
                                       <Box component="pre" sx={{ 
-                                        bgcolor: 'grey.100', 
+                                        bgcolor: getSectionTint(theme, 'primary'),
                                         p: 1, 
                                         borderRadius: 1, 
                                         fontSize: '0.875rem',
@@ -726,7 +730,7 @@ export const SystemDashboardPage: React.FC = () => {
                                     <Box sx={{ mb: 2 }}>
                                       <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Path Parameters:</Typography>
                                       <Box component="pre" sx={{ 
-                                        bgcolor: 'grey.100', 
+                                        bgcolor: getSectionTint(theme, 'primary'),
                                         p: 1, 
                                         borderRadius: 1, 
                                         fontSize: '0.875rem',
@@ -742,7 +746,7 @@ export const SystemDashboardPage: React.FC = () => {
                                     <Box sx={{ mb: 2 }}>
                                       <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Query Parameters:</Typography>
                                       <Box component="pre" sx={{ 
-                                        bgcolor: 'grey.100', 
+                                        bgcolor: getSectionTint(theme, 'primary'),
                                         p: 1, 
                                         borderRadius: 1, 
                                         fontSize: '0.875rem',
@@ -758,7 +762,7 @@ export const SystemDashboardPage: React.FC = () => {
                                     <Box sx={{ mb: 2 }}>
                                       <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Request Body:</Typography>
                                       <Box component="pre" sx={{ 
-                                        bgcolor: 'grey.100', 
+                                        bgcolor: getSectionTint(theme, 'primary'),
                                         p: 1, 
                                         borderRadius: 1, 
                                         fontSize: '0.875rem',

@@ -2,6 +2,7 @@ import React from 'react';
 import { Box, Stack, Typography } from '@mui/material';
 
 import { pageHeaderActionsSx, pageHeaderContentSx } from '../../theme/sxHelpers';
+import { getReadableAccentTextColor } from '../../theme/surfaces';
 
 interface PageHeaderProps {
   title: string;
@@ -15,7 +16,14 @@ const PageHeader: React.FC<PageHeaderProps> = ({ title, description, eyebrow, ac
     <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} justifyContent="space-between" alignItems={{ xs: 'flex-start', md: 'flex-start' }}>
       <Box sx={pageHeaderContentSx}>
         {eyebrow && (
-          <Typography variant="overline" sx={{ color: 'primary.main', fontWeight: 700, letterSpacing: '0.08em' }}>
+          <Typography
+            variant="overline"
+            sx={(theme) => ({
+              color: getReadableAccentTextColor(theme),
+              fontWeight: 700,
+              letterSpacing: '0.08em',
+            })}
+          >
             {eyebrow}
           </Typography>
         )}

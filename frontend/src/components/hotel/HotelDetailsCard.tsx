@@ -27,7 +27,7 @@ import { HotelSearchResult } from '../../types/hotel';
 import { formatCurrencyWithDecimals } from '../../utils/currencyUtils';
 import RoomCard from './RoomCard';
 import RoomTypeCard from './RoomTypeCard';
-import { COLORS, addAlpha } from '../../theme/themeColors';
+import { useThemeColors } from '../../theme/useThemeColors';
 
 interface HotelDetailsCardProps {
   hotel: HotelSearchResult;
@@ -93,6 +93,7 @@ const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({
   horizontalLayout = false 
 }) => {
   const { t } = useTranslation();
+  const { COLORS, addAlpha } = useThemeColors();
   const [expanded, setExpanded] = React.useState(defaultExpanded);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));

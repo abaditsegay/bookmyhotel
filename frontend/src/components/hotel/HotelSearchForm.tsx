@@ -18,7 +18,7 @@ import PremiumDatePicker from '../common/PremiumDatePicker';
 import { useNotification } from '../common/NotificationSystem';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import PeopleIcon from '@mui/icons-material/People';
-import { COLORS, addAlpha } from '../../theme/themeColors';
+import { useThemeColors } from '../../theme/useThemeColors';
 
 interface HotelSearchFormProps {
   onSearch: (searchRequest: HotelSearchRequest) => void;
@@ -40,6 +40,7 @@ const parseDateOrFallback = (value: string | undefined, fallback: Date): Date =>
 
 const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = false, initialValues = null }) => {
   const { t } = useTranslation();
+  const { COLORS, addAlpha } = useThemeColors();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { showNotification } = useNotification();
@@ -130,7 +131,7 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
                 sm: '1.75rem',  // 28px - Small tablet
                 md: '2rem'      // 32px - Desktop
               },
-              color: COLORS.PRIMARY,
+              color: COLORS.PRIMARY_TEXT,
               lineHeight: 1.2,
               mb: 1,
             }}
@@ -163,7 +164,7 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
                 helperText={t('hotelSearch.form.destinationHelper')}
                 fullWidth
                 InputProps={{
-                  startAdornment: <LocationOnIcon sx={{ mr: 1, color: COLORS.PRIMARY }} />,
+                  startAdornment: <LocationOnIcon sx={{ mr: 1, color: COLORS.PRIMARY_TEXT }} />,
                 }}
               />
             </Grid>
@@ -181,7 +182,7 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
                 helperText={t('hotelSearch.form.guestsHelper')}
                 fullWidth
                 InputProps={{
-                  startAdornment: <PeopleIcon sx={{ mr: 1, color: COLORS.PRIMARY }} />,
+                  startAdornment: <PeopleIcon sx={{ mr: 1, color: COLORS.PRIMARY_TEXT }} />,
                   inputProps: { min: 1, max: 10 }
                 }}
               />

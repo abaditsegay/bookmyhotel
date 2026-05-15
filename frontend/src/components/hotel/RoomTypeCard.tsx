@@ -18,7 +18,7 @@ import {
 } from '@mui/icons-material';
 import { RoomTypeAvailability } from '../../types/hotel';
 import { useAuth } from '../../contexts/AuthContext';
-import { COLORS, addAlpha } from '../../theme/themeColors';
+import { useThemeColors } from '../../theme/useThemeColors';
 
 interface RoomTypeCardProps {
   roomType: RoomTypeAvailability;
@@ -86,6 +86,7 @@ const getBedInfoKey = (roomType: string): string => {
 
 const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRoomType }) => {
   const { t } = useTranslation();
+  const { COLORS, addAlpha } = useThemeColors();
   const amenities = getRoomAmenities(roomType.roomType);
   const { isAuthenticated } = useAuth();
   const theme = useTheme();
@@ -97,7 +98,7 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRo
       sx={{ 
         height: '100%',
         background: isAvailable 
-          ? COLORS.WHITE
+          ? COLORS.BG_PAPER
           : theme.palette.action.disabledBackground,
         borderRadius: 2,
         boxShadow: isAvailable ? `0 4px 12px ${addAlpha(COLORS.SECONDARY, 0.15)}` : theme.shadows[1],
@@ -218,7 +219,7 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRo
                 fontWeight: 700,
                 fontSize: isMobile ? '1.1rem' : '1.25rem',
                 lineHeight: 1.2,
-                color: COLORS.PRIMARY,
+                color: COLORS.PRIMARY_TEXT,
               }}
             >
               {t(`hotelSearch.roomTypes.${getRoomTypeLabelKey(roomType.roomType)}`)}
@@ -240,7 +241,7 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRo
                 <Typography 
                   variant="h5" 
                   sx={{ 
-                    color: COLORS.PRIMARY,
+                    color: COLORS.PRIMARY_TEXT,
                     fontWeight: 700,
                     fontSize: isMobile ? '1.2rem' : '1.3rem',
                     lineHeight: 1.2,
@@ -264,7 +265,7 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRo
         ) : (
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.5 }}>
             <Box>
-              <Typography variant="subtitle1" component="h3" gutterBottom sx={{ fontWeight: 700, color: COLORS.PRIMARY }}>
+              <Typography variant="subtitle1" component="h3" gutterBottom sx={{ fontWeight: 700, color: COLORS.PRIMARY_TEXT }}>
                 {t(`hotelSearch.roomTypes.${getRoomTypeLabelKey(roomType.roomType)}`)}
               </Typography>
             </Box>
@@ -279,7 +280,7 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRo
               <Typography 
                 variant="h5" 
                 sx={{ 
-                  color: COLORS.PRIMARY,
+                  color: COLORS.PRIMARY_TEXT,
                   fontWeight: 700,
                 }}
               >
@@ -388,8 +389,8 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRo
                 sx={{ 
                   fontSize: '0.6rem', 
                   height: 18,
-                  color: COLORS.PRIMARY,
-                  borderColor: COLORS.PRIMARY,
+                  color: COLORS.PRIMARY_TEXT,
+                  borderColor: COLORS.PRIMARY_TEXT,
                 }}
               />
             )}
@@ -469,10 +470,10 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({ roomType, hotelId, onBookRo
                     py: isMobile ? 0.8 : 1,
                     minHeight: isMobile ? '40px' : '42px',
                     backgroundColor: 'transparent',
-                    color: COLORS.PRIMARY,
+                    color: COLORS.PRIMARY_TEXT,
                     '&:hover': {
                       backgroundColor: addAlpha(COLORS.SECONDARY, 0.1),
-                      color: COLORS.PRIMARY_HOVER,
+                      color: COLORS.PRIMARY_TEXT,
                       transform: 'translateY(-1px)',
                       boxShadow: `0 4px 12px ${addAlpha(COLORS.SECONDARY, 0.3)}`,
                     },

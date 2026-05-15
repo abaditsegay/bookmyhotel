@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { COLORS, addAlpha } from '../theme/themeColors';
 import { useTranslation } from 'react-i18next';
 import {
   Alert,
+  alpha,
   Typography,
   Box,
   Snackbar,
@@ -19,6 +19,7 @@ import HotelDetailsCard from '../components/hotel/HotelDetailsCard';
 import { DataState } from '../components/common';
 import { PageHeader, SurfaceCard } from '../components/ui';
 import { usePublicHotelSearchResults, PublicHotelSearchLocationState, formatHotelSearchSummary } from '../hooks/usePublicHotelSearchResults';
+import { getReadableAccentTextColor } from '../theme/surfaces';
 import { 
   HotelSearchResult,
   AvailableRoom,
@@ -30,6 +31,7 @@ const SearchResultsPage: React.FC = () => {
   const location = useLocation();
   const { isAuthenticated } = useAuth();
   const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const locationState = (location.state as PublicHotelSearchLocationState | null) ?? null;
@@ -192,13 +194,13 @@ const SearchResultsPage: React.FC = () => {
             borderRadius: 1,
             textTransform: 'none',
             fontWeight: 500,
-            borderColor: COLORS.SECONDARY,
+            borderColor: theme.palette.secondary.main,
             borderWidth: '2px',
-            color: COLORS.PRIMARY,
-            backgroundColor: COLORS.WHITE,
+            color: readableAccentColor,
+            backgroundColor: theme.palette.background.paper,
             '&:hover': {
-              borderColor: COLORS.SECONDARY_HOVER,
-              backgroundColor: COLORS.BG_LIGHT,
+              borderColor: theme.palette.secondary.light,
+              backgroundColor: theme.palette.background.light,
               borderWidth: '2px',
               transform: 'translateY(-1px)',
             },
@@ -213,7 +215,7 @@ const SearchResultsPage: React.FC = () => {
         variantStyle="default"
         sx={{ 
           mb: 3,
-          boxShadow: `0 2px 8px ${addAlpha(COLORS.SECONDARY, 0.1)}`,
+          boxShadow: `0 2px 8px ${alpha(theme.palette.secondary.main, 0.1)}`,
         }}
         contentSx={{ p: { xs: 2.5, md: 3 } }}
       >
@@ -229,13 +231,13 @@ const SearchResultsPage: React.FC = () => {
                   borderRadius: 1,
                   textTransform: 'none',
                   fontWeight: 600,
-                  borderColor: addAlpha(COLORS.SECONDARY, 0.8),
+                  borderColor: alpha(theme.palette.secondary.main, 0.8),
                   borderWidth: '1px',
-                  color: COLORS.PRIMARY,
-                  backgroundColor: COLORS.BG_LIGHT,
+                  color: readableAccentColor,
+                  backgroundColor: theme.palette.background.light,
                   '&:hover': {
-                    borderColor: COLORS.SECONDARY_HOVER,
-                    backgroundColor: COLORS.BG_DEFAULT,
+                    borderColor: theme.palette.secondary.light,
+                    backgroundColor: theme.palette.background.default,
                     borderWidth: '1px',
                     transform: 'translateY(-1px)',
                   },

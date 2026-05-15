@@ -21,7 +21,7 @@ import {
   LinearProgress
 } from '@mui/material';
 import { alpha, useTheme as useMuiTheme } from '@mui/material/styles';
-import { useTheme } from '../../contexts/ThemeContext';
+import { getPageShellBackground } from '../../theme/surfaces';
 
 // Interface definitions
 interface SystemMetrics {
@@ -108,15 +108,12 @@ interface ProcessMonitoringDashboardProps {
 }
 
 const ProcessMonitoringDashboard: React.FC<ProcessMonitoringDashboardProps> = ({ hotelId }) => {
-  const { themeMode } = useTheme();
   const muiTheme = useMuiTheme();
-  const isDark = themeMode === 'dark';
+  const isDark = muiTheme.palette.mode === 'dark';
   const palette = muiTheme.palette;
   const textPrimary = palette.text.primary;
   const textSecondary = palette.text.secondary;
-  const pageGradient = isDark
-    ? `linear-gradient(135deg, ${palette.grey[800]} 0%, ${palette.grey[900]} 100%)`
-    : `linear-gradient(135deg, ${palette.background.default} 0%, ${palette.background.paper} 100%)`;
+  const pageGradient = getPageShellBackground(muiTheme);
   const headerSurface = alpha(isDark ? palette.grey[900] : palette.common.white, isDark ? 0.8 : 0.9);
   const headerBorder = `1px solid ${alpha(palette.divider, 0.6)}`;
   const primaryMain = palette.primary.main;

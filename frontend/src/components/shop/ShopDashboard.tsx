@@ -25,11 +25,16 @@ import OrderCreation from './OrderCreation';
 import LowStockProducts from './LowStockProducts';
 import { StatCardSkeleton } from '../common/SkeletonLoaders';
 import { premiumTabsPaperSx, premiumTabsSx } from './premiumStyles';
-import { COLORS, addAlpha } from '../../theme/themeColors';
+import { useThemeColors } from '../../theme/useThemeColors';
+import { useTheme } from '@mui/material/styles';
+import { getReadableAccentTextColor } from '../../theme/surfaces';
 
 const ShopDashboard: React.FC = () => {
   const { t } = useTranslation();
   const { user, token } = useAuth();
+  const { COLORS, addAlpha } = useThemeColors();
+  const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
   const [searchParams, setSearchParams] = useSearchParams();
   const [currentTab, setCurrentTab] = useState(() => {
     const tabParam = searchParams.get('tab');
@@ -174,7 +179,7 @@ const ShopDashboard: React.FC = () => {
                       fontWeight: 600,
                       textTransform: 'uppercase',
                       letterSpacing: '0.5px',
-                      color: COLORS.PRIMARY
+                      color: readableAccentColor
                     }}
                   >
                     {t('shop.dashboard.stats.totalProducts')}
@@ -184,7 +189,7 @@ const ShopDashboard: React.FC = () => {
                     sx={{ 
                       lineHeight: 1.2,
                       fontWeight: 700,
-                      color: COLORS.PRIMARY,
+                      color: readableAccentColor,
                       mb: 0.5
                     }}
                   >
@@ -230,7 +235,7 @@ const ShopDashboard: React.FC = () => {
                       fontWeight: 600,
                       textTransform: 'uppercase',
                       letterSpacing: '0.5px',
-                      color: COLORS.PRIMARY
+                      color: readableAccentColor
                     }}
                   >
                     {t('shop.orders.status.pending')} {t('shop.dashboard.tabs.orders')}
@@ -240,7 +245,7 @@ const ShopDashboard: React.FC = () => {
                     sx={{ 
                       lineHeight: 1.2,
                       fontWeight: 700,
-                      color: COLORS.PRIMARY,
+                      color: readableAccentColor,
                       mb: 0.5
                     }}
                   >
@@ -286,7 +291,7 @@ const ShopDashboard: React.FC = () => {
                       fontWeight: 600,
                       textTransform: 'uppercase',
                       letterSpacing: '0.5px',
-                      color: COLORS.PRIMARY
+                      color: readableAccentColor
                     }}
                   >
                     {t('shop.dashboard.stats.revenue')}
@@ -309,7 +314,7 @@ const ShopDashboard: React.FC = () => {
                     variant="caption" 
                     sx={{ 
                       fontSize: '0.75rem',
-                      color: COLORS.PRIMARY,
+                      color: readableAccentColor,
                       fontWeight: 600
                     }}
                   >
@@ -345,7 +350,7 @@ const ShopDashboard: React.FC = () => {
                       fontWeight: 600,
                       textTransform: 'uppercase',
                       letterSpacing: '0.5px',
-                      color: COLORS.PRIMARY
+                      color: readableAccentColor
                     }}
                   >
                     Low Stock Products

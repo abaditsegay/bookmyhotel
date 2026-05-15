@@ -16,12 +16,14 @@ import HotelListCard from '../components/hotel/HotelListCard';
 import { DataState, PageContainer } from '../components/common';
 import { PageHeader, SurfaceCard } from '../components/ui';
 import { PublicHotelSearchLocationState, usePublicHotelSearchResults, formatHotelSearchSummary } from '../hooks/usePublicHotelSearchResults';
+import { getPageShellBackground, getReadableAccentTextColor } from '../theme/surfaces';
 
 const HotelListPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const locationState = (location.state as PublicHotelSearchLocationState | null) ?? null;
@@ -85,7 +87,7 @@ const HotelListPage: React.FC = () => {
         py: isMobile ? 2 : 4,
         px: isMobile ? 1 : 3,
         minHeight: '100vh',
-        background: `linear-gradient(180deg, ${alpha(theme.palette.primary.main, 0.04)} 0%, ${theme.palette.background.default} 42%, ${theme.palette.background.paper} 100%)`,
+        background: getPageShellBackground(theme),
       }}
     >
       {/* Combined Header and Actions Section */}
@@ -120,7 +122,7 @@ const HotelListPage: React.FC = () => {
                 sx={{ 
                   display: 'inline-block',
                   bgcolor: alpha(theme.palette.primary.main, 0.1),
-                  color: 'primary.main',
+                  color: readableAccentColor,
                   px: 2,
                   py: 0.75,
                   borderRadius: 1,
@@ -139,8 +141,8 @@ const HotelListPage: React.FC = () => {
                 sx={{ 
                   py: 1,
                   px: 2.5,
-                  bgcolor: 'common.white',
-                  color: 'primary.main',
+                  bgcolor: 'background.paper',
+                  color: readableAccentColor,
                   border: `1px solid ${theme.palette.secondary.main}`,
                   borderRadius: 1,
                   fontWeight: 600,

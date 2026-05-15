@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatCurrency, formatCurrencyWithDecimals } from '../../utils/currencyUtils';
 import {
+  alpha,
   Dialog,
   DialogContent,
   DialogActions,
@@ -31,7 +32,6 @@ import {
 import { ConsolidatedReceipt, frontDeskApiService } from '../../services/frontDeskApi';
 import { formatDateForDisplay, formatDateTimeForDisplay } from '../../utils/dateUtils';
 import { useAuth } from '../../contexts/AuthContext';
-import { COLORS, addAlpha } from '../../theme/themeColors';
 
 interface CheckoutReceiptDialogProps {
   open: boolean;
@@ -48,6 +48,18 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
 }) => {
   const { t } = useTranslation();
   const theme = useTheme();
+  const addAlpha = alpha;
+  const COLORS = {
+    TEXT_PRIMARY: theme.palette.text.primary,
+    TEXT_SECONDARY: theme.palette.text.secondary,
+    WHITE: theme.palette.common.white,
+    BLACK: theme.palette.common.black,
+    BORDER_LIGHT: theme.palette.divider,
+    DIVIDER: theme.palette.divider,
+    BG_LIGHT: theme.palette.background.light,
+    BG_DEFAULT: theme.palette.background.default,
+    TEXT_DISABLED: theme.palette.text.disabled,
+  } as const;
   const { user, token } = useAuth();
   const [emailLoading, setEmailLoading] = useState(false);
   const [emailDialogOpen, setEmailDialogOpen] = useState(false);

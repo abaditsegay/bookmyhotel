@@ -18,6 +18,7 @@ import { PageContainer } from '../components/common';
 // Icons removed for neutral design
 import { useNavigate } from 'react-router-dom';
 import { hotelApiService } from '../services/hotelApi';
+import { getPageShellBackground, getReadableAccentTextColor } from '../theme/surfaces';
 import { BookingResponse } from '../types/hotel';
 import { formatDateForDisplay } from '../utils/dateUtils';
 import { getRoomTypeLabel } from '../constants/roomTypes';
@@ -47,6 +48,7 @@ const FindBookingPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [confirmationNumber, setConfirmationNumber] = useState('');
   const [email, setEmail] = useState('');
@@ -132,9 +134,7 @@ const FindBookingPage: React.FC = () => {
     <Box
       sx={{
         minHeight: '100vh',
-        background: theme.palette.mode === 'dark'
-          ? `linear-gradient(135deg, ${theme.palette.background.default} 0%, ${theme.palette.grey[900]} 100%)`
-          : `linear-gradient(180deg, ${alpha(theme.palette.primary.main, 0.04)} 0%, ${theme.palette.background.default} 42%, ${theme.palette.background.paper} 100%)`,
+        background: getPageShellBackground(theme),
         py: 4,
       }}
     >
@@ -161,7 +161,7 @@ const FindBookingPage: React.FC = () => {
               variant="h5" 
               sx={{
                 fontWeight: 'bold',
-                color: 'primary.main',
+                color: readableAccentColor,
                 mb: 1,
                 textAlign: 'center',
               }}
@@ -200,9 +200,7 @@ const FindBookingPage: React.FC = () => {
                 sx={{ 
                   mt: 3,
                   borderRadius: 0,
-                  backgroundColor: theme.palette.mode === 'dark' 
-                    ? alpha(theme.palette.error.main, 0.1)
-                    : alpha(theme.palette.error.main, 0.04),
+                  backgroundColor: alpha(theme.palette.error.main, theme.palette.mode === 'dark' ? 0.14 : 0.04),
                 }}
               >
                 {error}
@@ -256,7 +254,7 @@ const FindBookingPage: React.FC = () => {
                   variant="h4" 
                   sx={{ 
                     fontWeight: 'bold',
-                    color: 'primary.main',
+                    color: readableAccentColor,
                     mb: 1,
                   }}
                 >
@@ -280,7 +278,7 @@ const FindBookingPage: React.FC = () => {
                 variant="h5" 
                 sx={{
                   fontWeight: 'bold',
-                  color: 'primary.main',
+                  color: readableAccentColor,
                   mb: 1,
                 }}
               >
@@ -300,7 +298,7 @@ const FindBookingPage: React.FC = () => {
                     boxShadow: 'none',
                   }}
                 >
-                  <Typography variant="subtitle1" color="primary.main" sx={{ fontWeight: 'bold', mb: 1 }}>
+                  <Typography variant="subtitle1" sx={{ color: readableAccentColor, fontWeight: 'bold', mb: 1 }}>
                     {t('booking.find.found.labels.guestName')}
                   </Typography>
                   <Typography variant="h6" sx={{ fontWeight: 'bold' }}>

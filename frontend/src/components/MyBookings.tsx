@@ -48,13 +48,14 @@ import { useSubmissionError } from '../contexts/SubmissionErrorContext';
 import { BookingService } from '../services/BookingService';
 import { BookingResponse, BookingModificationRequest } from '../types/booking';
 import { StandardLoading, StandardError } from './common';
-import { COLORS, addAlpha, getGradient } from '../theme/themeColors';
+import { useThemeColors } from '../theme/useThemeColors';
 import { formatDateForDisplay, formatDateTimeForDisplay } from '../utils/dateUtils';
 
 const MyBookings: React.FC = () => {
   const { t } = useTranslation();
   const { user, token } = useAuth();
   const { showSubmissionError } = useSubmissionError();
+  const { COLORS, addAlpha, getGradient } = useThemeColors();
   const theme = useTheme();
   const [bookings, setBookings] = useState<BookingResponse[]>([]);
   const [loading, setLoading] = useState(true);
@@ -544,7 +545,7 @@ const MyBookings: React.FC = () => {
                       py: 1.5,
                       fontWeight: 600,
                       textTransform: 'none',
-                      backgroundColor: COLORS.WHITE,
+                      backgroundColor: COLORS.BG_PAPER,
                       '&:hover': {
                         borderWidth: 1.5,
                         transform: 'translateY(-1px)',
@@ -614,7 +615,7 @@ const MyBookings: React.FC = () => {
                         py: 1.5,
                         fontWeight: 600,
                         textTransform: 'none',
-                        backgroundColor: COLORS.WHITE,
+                        backgroundColor: COLORS.BG_PAPER,
                         '&:hover': {
                           borderWidth: 1.5,
                           backgroundColor: addAlpha(COLORS.ERROR, 0.04),

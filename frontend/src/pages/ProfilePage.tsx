@@ -12,6 +12,7 @@ import {
   Alert,
   IconButton,
   InputAdornment,
+  useTheme,
 } from '@mui/material';
 import {
   Edit as EditIcon,
@@ -27,10 +28,14 @@ import StandardCard from '../components/common/StandardCard';
 import StandardButton from '../components/common/StandardButton';
 import PremiumTextField from '../components/common/PremiumTextField';
 import { formatDateForDisplay, formatDateTimeForDisplay } from '../utils/dateUtils';
-import { COLORS, addAlpha } from '../theme/themeColors';
+import { useThemeColors } from '../theme/useThemeColors';
 import { useSubmissionError } from '../contexts/SubmissionErrorContext';
+import { getReadableAccentTextColor, getSectionTint } from '../theme/surfaces';
 
 const ProfilePage: React.FC = () => {
+  const theme = useTheme();
+  const { COLORS } = useThemeColors();
+  const readableAccentColor = getReadableAccentTextColor(theme);
   const { user, updateProfile, changePassword } = useAuth();
   const { showSubmissionError } = useSubmissionError();
   const [isEditing, setIsEditing] = useState(false);
@@ -178,7 +183,7 @@ const ProfilePage: React.FC = () => {
         sx={{ 
           fontWeight: 'bold', 
           mb: 3,
-          color: COLORS.PRIMARY,
+          color: readableAccentColor,
           textAlign: 'center'
         }}
       >
@@ -254,7 +259,7 @@ const ProfilePage: React.FC = () => {
           <StandardCard cardVariant="elevated">
             <CardContent sx={{ p: 3 }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                <Typography variant="h6" sx={{ fontWeight: 'bold', color: COLORS.PRIMARY }}>
+                <Typography variant="h6" sx={{ fontWeight: 'bold', color: readableAccentColor }}>
                   Profile Information
                 </Typography>
                 {isEditing && (
@@ -334,7 +339,7 @@ const ProfilePage: React.FC = () => {
                   <Divider sx={{ my: 3 }} />
                   <Typography variant="h6" gutterBottom sx={{ 
                     fontWeight: 'bold', 
-                    color: COLORS.PRIMARY,
+                    color: readableAccentColor,
                     display: 'flex',
                     alignItems: 'center',
                     gap: 1
@@ -390,7 +395,7 @@ const ProfilePage: React.FC = () => {
       {/* Account Information Card */}
       <StandardCard cardVariant="outlined" sx={{ mt: 3 }}>
         <CardContent sx={{ p: 3 }}>
-          <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', color: COLORS.PRIMARY }}>
+          <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', color: readableAccentColor }}>
             Account Information
           </Typography>
           <Grid container spacing={2}>
@@ -399,8 +404,8 @@ const ProfilePage: React.FC = () => {
                 Account Type
               </Typography>
               <Typography variant="body1" sx={{ 
-                backgroundColor: addAlpha(COLORS.PRIMARY, 0.15), 
-                color: COLORS.PRIMARY,
+                backgroundColor: getSectionTint(theme, 'primary'),
+                color: readableAccentColor,
                 px: 2, 
                 py: 0.5, 
                 borderRadius: 1,
@@ -438,7 +443,7 @@ const ProfilePage: React.FC = () => {
                 Account Status
               </Typography>
               <Typography variant="body1" sx={{ 
-                color: COLORS.PRIMARY,
+                color: readableAccentColor,
                 fontWeight: 'bold',
                 display: 'flex',
                 alignItems: 'center',
@@ -454,7 +459,7 @@ const ProfilePage: React.FC = () => {
       {/* Preferences Card */}
       <StandardCard cardVariant="outlined" sx={{ mt: 3 }}>
         <CardContent sx={{ p: 3 }}>
-          <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', color: COLORS.PRIMARY }}>
+          <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', color: readableAccentColor }}>
             Preferences
           </Typography>
           <Grid container spacing={3}>

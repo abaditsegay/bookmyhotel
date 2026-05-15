@@ -9,7 +9,7 @@ import {
   keyframes,
 } from '@mui/material';
 import { designSystem } from '../../theme/designSystem';
-import { COLORS, addAlpha } from '../../theme/themeColors';
+import { useThemeColors } from '../../theme/useThemeColors';
 
 // Pulse animation for enhanced loading
 const pulseAnimation = keyframes`
@@ -63,6 +63,7 @@ const EnhancedLoading: React.FC<EnhancedLoadingProps> = ({
   animated = true,
 }) => {
   const theme = useTheme();
+  const { COLORS, addAlpha } = useThemeColors();
 
   const getSizeValue = () => {
     switch (size) {

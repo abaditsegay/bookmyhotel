@@ -44,7 +44,7 @@ import { formatCurrency } from '../../utils/currencyUtils';
 import PremiumDatePicker from '../common/PremiumDatePicker';
 import PremiumTextField from '../common/PremiumTextField';
 import PremiumSelect from '../common/PremiumSelect';
-import { COLORS, addAlpha } from '../../theme/themeColors';
+import { useThemeColors } from '../../theme/useThemeColors';
 
 // Unified BookingData interface
 export interface BookingData {
@@ -76,6 +76,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
   mode = 'front-desk',
   title
 }) => {
+  const { COLORS, addAlpha } = useThemeColors();
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();

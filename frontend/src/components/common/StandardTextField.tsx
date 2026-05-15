@@ -1,7 +1,7 @@
 import React from 'react';
 import { TextField, TextFieldProps } from '@mui/material';
 import { designSystem } from '../../theme/designSystem';
-import { COLORS, addAlpha } from '../../theme/themeColors';
+import { useThemeColors } from '../../theme/useThemeColors';
 
 interface StandardTextFieldProps extends Omit<TextFieldProps, 'size'> {
   fieldSize?: 'small' | 'medium';
@@ -49,6 +49,8 @@ const StandardTextField: React.FC<StandardTextFieldProps> = ({
   sx,
   ...props
 }) => {
+  const { COLORS, addAlpha } = useThemeColors();
+
   const sizeConfig = {
     small: { 
       height: '40px',

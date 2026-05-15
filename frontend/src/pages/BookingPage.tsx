@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { COLORS } from '../theme/themeColors';
 import {
   Container,
   Typography,
@@ -55,6 +54,7 @@ import PremiumTextField from '../components/common/PremiumTextField';
 import PremiumDatePicker from '../components/common/PremiumDatePicker';
 import { formatEthiopianPhone } from '../utils/phoneUtils';
 import { Hotel } from '../types/hotel';
+import { getReadableAccentTextColor } from '../theme/surfaces';
 
 interface BookingPageState {
   room?: AvailableRoom;
@@ -75,6 +75,7 @@ const BookingPage: React.FC = () => {
   // Mobile responsiveness
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const readableAccentColor = getReadableAccentTextColor(theme);
 
   // Helper function to format amount for translations (without ETB prefix)
   const formatAmountForTranslation = (amount: number): string => {
@@ -505,7 +506,7 @@ const BookingPage: React.FC = () => {
           p: isMobile ? 1.5 : 2,
           backgroundColor: 'background.paper',
           borderRadius: 2,
-          boxShadow: `0 4px 12px ${alpha(COLORS.SECONDARY, 0.15)}`,
+          boxShadow: `0 4px 12px ${alpha(theme.palette.secondary.main, 0.15)}`,
         }}>
           {/* Back Navigation */}
           <Box sx={{ mb: isMobile ? 1 : 1.5 }}>
@@ -533,7 +534,7 @@ const BookingPage: React.FC = () => {
                   aria-label="breadcrumb"
                   sx={{
                     '& .MuiBreadcrumbs-separator': {
-                      color: 'primary.main',
+                      color: readableAccentColor,
                     },
                   }}
                 >
@@ -543,7 +544,7 @@ const BookingPage: React.FC = () => {
                     onClick={() => navigate('/')}
                     sx={{ 
                       textDecoration: 'none',
-                      color: 'primary.main',
+                      color: readableAccentColor,
                       '&:hover': {
                         textDecoration: 'underline',
                       },
@@ -557,7 +558,7 @@ const BookingPage: React.FC = () => {
                     onClick={handleBackToResults}
                     sx={{ 
                       textDecoration: 'none',
-                      color: 'primary.main',
+                      color: readableAccentColor,
                       '&:hover': {
                         textDecoration: 'underline',
                       },
@@ -606,7 +607,7 @@ const BookingPage: React.FC = () => {
                   <Typography 
                     variant={isMobile ? 'h6' : 'h5'} 
                     sx={{ 
-                      color: COLORS.PRIMARY,
+                      color: readableAccentColor,
                       fontWeight: 600,
                     }}
                   >
@@ -628,8 +629,8 @@ const BookingPage: React.FC = () => {
                   label={t('booking.guestBooking')} 
                   size="medium"
                   sx={{ 
-                    bgcolor: COLORS.SUCCESS,
-                    color: COLORS.WHITE,
+                    bgcolor: theme.palette.success.main,
+                    color: theme.palette.common.white,
                     fontWeight: 700,
                     fontSize: '1rem',
                     height: '40px',
@@ -671,7 +672,7 @@ const BookingPage: React.FC = () => {
               <Grid item xs={12}>
                 <Card
                   sx={{
-                    backgroundColor: alpha(COLORS.PRIMARY, 0.05),
+                    backgroundColor: alpha(theme.palette.primary.main, 0.05),
                   }}
                 >
               <CardContent>
@@ -680,10 +681,10 @@ const BookingPage: React.FC = () => {
                   alignItems: 'center', 
                   mb: 2,
                 }}>
-                  <HotelIcon sx={{ mr: 1, color: COLORS.PRIMARY }} />
+                  <HotelIcon sx={{ mr: 1, color: readableAccentColor }} />
                   <Typography 
                     variant={isMobile ? 'subtitle1' : 'h6'} 
-                    sx={{ fontWeight: 600, color: COLORS.PRIMARY }}
+                    sx={{ fontWeight: 600, color: readableAccentColor }}
                   >
                     {t('booking.page.roomDetails')}
                   </Typography>
@@ -699,7 +700,7 @@ const BookingPage: React.FC = () => {
                       <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1 }}>
                         {t('booking.page.roomType')}
                       </Typography>
-                      <Typography variant="h6" sx={{ fontWeight: 600, mt: 0.5, color: COLORS.PRIMARY }}>
+                      <Typography variant="h6" sx={{ fontWeight: 600, mt: 0.5, color: readableAccentColor }}>
                         {roomData.roomType}
                       </Typography>
                     </Box>
@@ -714,7 +715,7 @@ const BookingPage: React.FC = () => {
                       <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1 }}>
                         {t('booking.page.hotel')}
                       </Typography>
-                      <Typography variant="h6" sx={{ fontWeight: 600, mt: 0.5, color: COLORS.PRIMARY }}>
+                      <Typography variant="h6" sx={{ fontWeight: 600, mt: 0.5, color: readableAccentColor }}>
                         {hotelName || t('booking.page.hotelInformation')}
                       </Typography>
                     </Box>
@@ -729,7 +730,7 @@ const BookingPage: React.FC = () => {
                       <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1 }}>
                         {t('booking.page.pricePerNight')}
                       </Typography>
-                      <Typography variant="h6" sx={{ fontWeight: 600, mt: 0.5, color: COLORS.PRIMARY }}>
+                      <Typography variant="h6" sx={{ fontWeight: 600, mt: 0.5, color: readableAccentColor }}>
                         💰 {formatCurrency(roomData.pricePerNight || 0)}
                       </Typography>
                     </Box>
@@ -749,12 +750,12 @@ const BookingPage: React.FC = () => {
                           <Typography variant="body2" sx={{ mt: 0.5, color: 'text.secondary' }}>
                             📅 {nights} {nights !== 1 ? t('booking.page.nightsPlural') : t('booking.page.nights')}
                           </Typography>
-                          <Typography variant="h6" sx={{ fontWeight: 700, color: COLORS.PRIMARY }}>
+                          <Typography variant="h6" sx={{ fontWeight: 700, color: readableAccentColor }}>
                             {formatCurrency((roomData.pricePerNight || 0) * nights)}
                           </Typography>
                         </Box>
                       ) : (
-                        <Typography variant="h6" sx={{ fontWeight: 600, mt: 0.5, color: COLORS.PRIMARY }}>
+                        <Typography variant="h6" sx={{ fontWeight: 600, mt: 0.5, color: readableAccentColor }}>
                           {formatCurrency(roomData.pricePerNight || 0)}
                         </Typography>
                       )}
@@ -772,7 +773,7 @@ const BookingPage: React.FC = () => {
             p: isMobile ? 1.5 : 2, 
             backgroundColor: 'background.paper',
             borderRadius: 2,
-            boxShadow: `0 4px 12px ${alpha(COLORS.SECONDARY, 0.15)}`,
+            boxShadow: `0 4px 12px ${alpha(theme.palette.secondary.main, 0.15)}`,
           }}>
 
             <Grid container spacing={isMobile ? 1.5 : 2}>
@@ -814,7 +815,7 @@ const BookingPage: React.FC = () => {
               <Grid item xs={12}>
                 <Card
                   sx={{
-                    backgroundColor: alpha(COLORS.PRIMARY, 0.05),
+                    backgroundColor: alpha(theme.palette.primary.main, 0.05),
                   }}
                 >
                   <CardContent>
@@ -823,10 +824,10 @@ const BookingPage: React.FC = () => {
                       alignItems: 'center', 
                       mb: 2,
                     }}>
-                      <PersonIcon sx={{ mr: 1, color: COLORS.PRIMARY }} />
+                      <PersonIcon sx={{ mr: 1, color: readableAccentColor }} />
                       <Typography 
                         variant={isMobile ? 'subtitle1' : 'h6'} 
-                        sx={{ fontWeight: 600, color: COLORS.PRIMARY }}
+                        sx={{ fontWeight: 600, color: readableAccentColor }}
                       >
                         {t('booking.page.guestInformation')}
                       </Typography>
@@ -848,7 +849,7 @@ const BookingPage: React.FC = () => {
                           <Avatar sx={{
                             width: 40,
                             height: 40,
-                            bgcolor: COLORS.PRIMARY,
+                            bgcolor: theme.palette.primary.main,
                             mr: 1.5,
                           }}>
                             {user?.firstName?.charAt(0)}{user?.lastName?.charAt(0)}
@@ -876,7 +877,7 @@ const BookingPage: React.FC = () => {
                       }}>
                         <Typography variant="body1" sx={{ 
                           fontWeight: 600,
-                          color: COLORS.PRIMARY,
+                          color: readableAccentColor,
                           mb: 1.5,
                         }}>
                           {t('booking.page.guestDetails')}
@@ -950,7 +951,7 @@ const BookingPage: React.FC = () => {
                     }}>
                       <Typography variant="body1" sx={{ 
                         fontWeight: 600,
-                        color: COLORS.PRIMARY,
+                        color: readableAccentColor,
                         mb: 1,
                       }}>
                         Special Requests (Optional)
@@ -987,13 +988,13 @@ const BookingPage: React.FC = () => {
                             }}
                             sx={{
                               cursor: 'pointer',
-                              color: COLORS.PRIMARY,
-                              backgroundColor: alpha(COLORS.SECONDARY, 0.12),
+                              color: readableAccentColor,
+                              backgroundColor: alpha(theme.palette.secondary.main, 0.12),
                               '&:hover': {
-                                backgroundColor: alpha(COLORS.SECONDARY, 0.18),
-                                color: COLORS.PRIMARY_HOVER,
+                                backgroundColor: alpha(theme.palette.secondary.main, 0.18),
+                                color: theme.palette.primary.dark,
                                 transform: 'translateY(-1px)',
-                                boxShadow: `0 2px 8px ${alpha(COLORS.SECONDARY, 0.3)}`,
+                                boxShadow: `0 2px 8px ${alpha(theme.palette.secondary.main, 0.3)}`,
                               },
                             }}
                           />
@@ -1026,7 +1027,7 @@ const BookingPage: React.FC = () => {
               <Grid item xs={12}>
                 <Card
                   sx={{
-                    backgroundColor: alpha(COLORS.PRIMARY, 0.05),
+                    backgroundColor: alpha(theme.palette.primary.main, 0.05),
                   }}
                 >
                   <CardContent>
@@ -1035,10 +1036,10 @@ const BookingPage: React.FC = () => {
                       alignItems: 'center', 
                       mb: 2,
                     }}>
-                      <LockIcon sx={{ mr: 1, color: COLORS.PRIMARY }} />
+                      <LockIcon sx={{ mr: 1, color: readableAccentColor }} />
                       <Typography 
                         variant={isMobile ? 'subtitle1' : 'h6'} 
-                        sx={{ fontWeight: 600, color: COLORS.PRIMARY }}
+                        sx={{ fontWeight: 600, color: readableAccentColor }}
                       >
                         Payment Information
                       </Typography>
@@ -1056,7 +1057,7 @@ const BookingPage: React.FC = () => {
                           component="legend" 
                           sx={{ 
                             fontWeight: 600, 
-                            color: COLORS.PRIMARY,
+                            color: readableAccentColor,
                             fontSize: isMobile ? '0.875rem' : '1rem',
                             mb: 1,
                           }}
@@ -1110,7 +1111,7 @@ const BookingPage: React.FC = () => {
                                 <Typography 
                                   variant="caption" 
                                   sx={{ 
-                                    color: COLORS.PRIMARY, 
+                                    color: readableAccentColor,
                                     fontWeight: 600,
                                     fontSize: '0.75rem',
                                     mt: 0.3,
@@ -1158,7 +1159,7 @@ const BookingPage: React.FC = () => {
                                 <Typography 
                                   variant="caption" 
                                   sx={{ 
-                                    color: COLORS.PRIMARY,
+                                    color: readableAccentColor,
                                     fontWeight: 600,
                                     fontSize: '0.75rem',
                                     mt: 0.3,
@@ -1189,7 +1190,7 @@ const BookingPage: React.FC = () => {
                                 <Typography 
                                   variant="caption" 
                                   sx={{ 
-                                    color: COLORS.PRIMARY,
+                                    color: readableAccentColor,
                                     fontWeight: 600,
                                     fontSize: '0.75rem',
                                     mt: 0.3,
@@ -1218,7 +1219,7 @@ const BookingPage: React.FC = () => {
                         <Box sx={{ textAlign: 'center', mb: 1.5 }}>
                           <CreditCardIcon sx={{ 
                             fontSize: 32, 
-                            color: COLORS.PRIMARY,
+                            color: readableAccentColor,
                             mb: 0.5 
                           }} />
                           <Typography variant="body1" sx={{ 
@@ -1326,18 +1327,18 @@ const BookingPage: React.FC = () => {
                         <Box sx={{ textAlign: 'center', mb: 2 }}>
                           <PhoneIcon sx={{ 
                             fontSize: 40, 
-                            color: COLORS.PRIMARY,
+                            color: readableAccentColor,
                             mb: 1 
                           }} />
                           <Typography variant="h6" sx={{ 
-                            color: COLORS.PRIMARY,
+                            color: readableAccentColor,
                             fontWeight: 700,
                             mb: 0.5,
                           }}>
                             {t('booking.page.mobileMoneyTransfer')} - {formatCurrency(totalAmount || 0)}
                           </Typography>
                           <Typography variant="body1" sx={{ 
-                            color: COLORS.PRIMARY,
+                            color: readableAccentColor,
                             fontWeight: 600,
                             fontSize: '1.1rem',
                           }}>
@@ -1461,7 +1462,7 @@ const BookingPage: React.FC = () => {
                         <Box sx={{ textAlign: 'center', mb: 1.5 }}>
                           <HotelIcon sx={{ 
                             fontSize: 32, 
-                            color: COLORS.PRIMARY,
+                            color: readableAccentColor,
                             mb: 0.5 
                           }} />
                           <Typography variant="body1" sx={{ 
@@ -1496,7 +1497,7 @@ const BookingPage: React.FC = () => {
                         <Box sx={{ textAlign: 'center', mb: 1.5 }}>
                           <PhoneIcon sx={{ 
                             fontSize: 32, 
-                            color: COLORS.PRIMARY,
+                            color: readableAccentColor,
                             mb: 0.5 
                           }} />
                           <Typography variant="body1" sx={{ 
@@ -1550,7 +1551,7 @@ const BookingPage: React.FC = () => {
                         <Box sx={{ textAlign: 'center', mb: 1.5 }}>
                           <PhoneIcon sx={{ 
                             fontSize: 32, 
-                            color: COLORS.PRIMARY,
+                            color: readableAccentColor,
                             mb: 0.5 
                           }} />
                           <Typography variant="body1" sx={{ 
@@ -1666,11 +1667,11 @@ const BookingPage: React.FC = () => {
                 minHeight: 56,
                 fontWeight: 'bold',
                 fontSize: isMobile ? '1rem' : '0.875rem',
-                backgroundColor: COLORS.PRIMARY,
-                boxShadow: `0 2px 8px ${alpha(COLORS.SECONDARY, 0.2)}`,
+                backgroundColor: theme.palette.primary.main,
+                boxShadow: `0 2px 8px ${alpha(theme.palette.secondary.main, 0.2)}`,
                 '&:hover': {
-                  backgroundColor: COLORS.PRIMARY_HOVER,
-                  boxShadow: `0 4px 12px ${alpha(COLORS.SECONDARY, 0.3)}`,
+                  backgroundColor: theme.palette.primary.dark,
+                  boxShadow: `0 4px 12px ${alpha(theme.palette.secondary.main, 0.3)}`,
                 },
               }}
               startIcon={loading ? <CircularProgress size={16} /> : undefined}

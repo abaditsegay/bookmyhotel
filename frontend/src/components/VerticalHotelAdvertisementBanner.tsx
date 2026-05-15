@@ -18,7 +18,7 @@ import { useNavigate } from 'react-router-dom';
 import { hotelApiService } from '../services/hotelApi';
 import { HotelSearchResult } from '../types/hotel';
 import { useAuth } from '../contexts/AuthContext';
-import { COLORS, addAlpha } from '../theme/themeColors';
+import { useThemeColors } from '../theme/useThemeColors';
 
 interface VerticalHotelAdvertisementBannerProps {
   maxHotels?: number;
@@ -64,6 +64,7 @@ const getFallbackHotels = (t: (key: string) => string): HotelSearchResult[] => [
 ];
 
 export default function VerticalHotelAdvertisementBanner({ maxHotels = 3 }: VerticalHotelAdvertisementBannerProps) {
+  const { COLORS, addAlpha } = useThemeColors();
   const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();

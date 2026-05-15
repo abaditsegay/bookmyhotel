@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import TokenManager from '../../utils/tokenManager';
 import { buildApiUrl } from '../../config/apiConfig';
 import {
+  alpha,
   Box,
   Typography,
   Button,
@@ -30,7 +31,8 @@ import {
   Chip,
   Tooltip,
   TablePagination,
-  Grid
+  Grid,
+  useTheme
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -41,7 +43,6 @@ import {
   PlayArrow as StartIcon,
   CheckCircle as CompleteIcon
 } from '@mui/icons-material';
-import { COLORS, addAlpha } from '../../theme/themeColors';
 import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
 
 interface MaintenanceTask {
@@ -107,6 +108,13 @@ const MAINTENANCE_TASK_TYPES = [
 const PRIORITIES = ['LOW', 'NORMAL', 'HIGH', 'URGENT', 'CRITICAL'];
 
 const MaintenanceDashboard: React.FC = () => {
+  const theme = useTheme();
+  const addAlpha = alpha;
+  const COLORS = {
+    GRADIENT_SLATE: `linear-gradient(135deg, ${theme.palette.primary.light} 0%, ${theme.palette.primary.main} 58%, ${theme.palette.primary.dark} 100%)`,
+    WHITE: theme.palette.common.white,
+    BLACK: theme.palette.common.black,
+  } as const;
   const { showSubmissionError } = useSubmissionError();
   const [tasks, setTasks] = useState<MaintenanceTask[]>([]);
   const [staff, setStaff] = useState<MaintenanceStaff[]>([]);

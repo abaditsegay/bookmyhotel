@@ -18,10 +18,12 @@ import { useNavigate, useLocation, Link as RouterLink } from 'react-router-dom';
 import { API_CONFIG } from '../config/apiConfig';
 import { PageContainer, SurfaceCard } from '../components/common';
 import PremiumTextField from '../components/common/PremiumTextField';
+import { getElevatedCardShadow, getPageShellBackground, getReadableAccentTextColor } from '../theme/surfaces';
 
 const LoginPage: React.FC = () => {
   const { t } = useTranslation();
   const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
   const [email, setEmail] = useState('');
@@ -199,9 +201,7 @@ const LoginPage: React.FC = () => {
     <Box
       sx={{
         minHeight: '100vh',
-        background: theme.palette.mode === 'dark'
-          ? `linear-gradient(135deg, ${theme.palette.background.default} 0%, ${theme.palette.grey[900]} 100%)`
-          : `linear-gradient(180deg, ${alpha(theme.palette.primary.main, 0.05)} 0%, ${theme.palette.background.default} 42%, ${theme.palette.background.paper} 100%)`,
+        background: getPageShellBackground(theme),
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -230,7 +230,7 @@ const LoginPage: React.FC = () => {
             background: theme.palette.background.paper,
             border: `1px solid ${theme.palette.divider}`,
             borderRadius: 4,
-            boxShadow: theme.shadows[8],
+            boxShadow: getElevatedCardShadow(theme),
           }}
           contentSx={{ p: isMobile ? 3 : 5 }}
         >
@@ -250,7 +250,7 @@ const LoginPage: React.FC = () => {
                 component="h2" 
                 sx={{ 
                   fontWeight: 'bold',
-                  color: 'primary.main',
+                  color: readableAccentColor,
                   mb: 1,
                 }}
               >
@@ -320,7 +320,7 @@ const LoginPage: React.FC = () => {
                     variant="text"
                     size="small"
                     sx={{ 
-                      color: 'primary.main',
+                      color: readableAccentColor,
                       textTransform: 'none',
                       fontWeight: 500,
                       p: 0,

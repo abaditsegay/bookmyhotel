@@ -38,7 +38,7 @@ import { useTenant } from '../../contexts/TenantContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { hotelAdminApi } from '../../services/hotelAdminApi';
 import { frontDeskApiService } from '../../services/frontDeskApi';
-import { COLORS, addAlpha } from '../../theme/themeColors';
+import { useThemeColors } from '../../theme/useThemeColors';
 
 interface Booking {
   reservationId: number;
@@ -72,6 +72,7 @@ const HotelBookings: React.FC<HotelBookingsProps> = ({
   showCheckInOut = false,
   onBookingAction
 }) => {
+  const { COLORS, addAlpha } = useThemeColors();
   const { tenant } = useTenant();
   const { token, user } = useAuth();
   const [bookings, setBookings] = useState<Booking[]>([]);

@@ -14,6 +14,7 @@ import {
   Button,
   CircularProgress,
   Chip,
+  useTheme,
 } from '@mui/material';
 import {
   NavigateNext,
@@ -28,10 +29,11 @@ import {
   Save,
 } from '@mui/icons-material';
 import PremiumDisplayField from '../../components/common/PremiumDisplayField';
-import { COLORS, addAlpha } from '../../theme/themeColors';
+import { useThemeColors } from '../../theme/useThemeColors';
 import TokenManager from '../../utils/tokenManager';
 import { useAuth } from '../../contexts/AuthContext';
 import { API_CONFIG } from '../../config/apiConfig';
+import { getReadableAccentTextColor } from '../../theme/surfaces';
 
 interface HotelRegistration {
   id: number;
@@ -111,6 +113,9 @@ const STATUS_CONFIG: Record<string, StatusConfig> = {
 const WIZARD_STEPS = ['Hotel & Admin Info', 'Business & Facility Details'];
 
 const MyRegistrationPage: React.FC = () => {
+  const { COLORS, addAlpha } = useThemeColors();
+  const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
   const { setAccountStatus, user } = useAuth();
   const navigate = useNavigate();
   const [registration, setRegistration] = useState<HotelRegistration | null>(null);
@@ -264,7 +269,7 @@ const MyRegistrationPage: React.FC = () => {
     <Container maxWidth="md" sx={{ py: 4, pb: 8 }}>
       {/* Page title */}
       <Typography variant="h4" component="h1" gutterBottom
-        sx={{ color: COLORS.PRIMARY, fontWeight: 700, mb: 1 }}
+        sx={{ color: readableAccentColor, fontWeight: 700, mb: 1 }}
       >
         Hotel Registration
       </Typography>
@@ -284,7 +289,7 @@ const MyRegistrationPage: React.FC = () => {
         </Box>
         {statusCfg.message}
         {registration.reviewComments && registration.status === 'REJECTED' && (
-          <Box sx={{ mt: 1.5, p: 1.5, bgcolor: addAlpha('#000', 0.05), borderRadius: 1 }}>
+          <Box sx={{ mt: 1.5, p: 1.5, bgcolor: addAlpha(theme.palette.common.black, theme.palette.mode === 'dark' ? 0.18 : 0.05), borderRadius: 1 }}>
             <Typography variant="caption" display="block" fontWeight={600} gutterBottom>
               Administrator Comments:
             </Typography>

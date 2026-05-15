@@ -1,7 +1,7 @@
-import { COLORS, addAlpha } from '../../theme/themeColors';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { 
+  alpha,
   AppBar, 
   Toolbar, 
   Typography, 
@@ -156,8 +156,8 @@ export const SystemWideNavbar: React.FC = () => {
             size="small"
             variant="outlined"
             sx={{ 
-              color: COLORS.WHITE, 
-              borderColor: addAlpha(COLORS.WHITE, 0.5),
+              color: theme.palette.common.white, 
+              borderColor: alpha(theme.palette.common.white, 0.5),
               fontSize: '0.75rem',
               fontWeight: 500,
             }}
@@ -173,8 +173,8 @@ export const SystemWideNavbar: React.FC = () => {
               onClick={() => navigate('/system/hotels')}
               sx={{ 
                 fontSize: '0.8rem',
-                color: COLORS.WHITE,
-                '&:hover': { color: COLORS.WHITE }
+                color: theme.palette.common.white,
+                '&:hover': { color: theme.palette.common.white }
               }}
             >
               Hotels
@@ -185,8 +185,8 @@ export const SystemWideNavbar: React.FC = () => {
               onClick={() => navigate('/system/users')}
               sx={{ 
                 fontSize: '0.8rem',
-                color: COLORS.WHITE,
-                '&:hover': { color: COLORS.WHITE }
+                color: theme.palette.common.white,
+                '&:hover': { color: theme.palette.common.white }
               }}
             >
               Users
@@ -197,8 +197,8 @@ export const SystemWideNavbar: React.FC = () => {
               onClick={handleSystemSettings}
               sx={{ 
                 fontSize: '0.8rem',
-                color: COLORS.WHITE,
-                '&:hover': { color: COLORS.WHITE }
+                color: theme.palette.common.white,
+                '&:hover': { color: theme.palette.common.white }
               }}
             >
               Settings
@@ -215,8 +215,8 @@ export const SystemWideNavbar: React.FC = () => {
               onClick={() => navigate('/search')}
               sx={{ 
                 fontSize: '0.8rem',
-                color: COLORS.WHITE,
-                '&:hover': { color: COLORS.WHITE }
+                color: theme.palette.common.white,
+                '&:hover': { color: theme.palette.common.white }
               }}
             >
               {t('hotelSearch.form.searchButton')}

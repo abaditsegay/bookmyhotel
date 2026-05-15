@@ -46,7 +46,7 @@ import { Product, ShopOrderCreateRequest, PaymentMethod, DeliveryType, ProductCa
 import ShopReceiptDialog from './ShopReceiptDialog';
 import PaymentDialog from './PaymentDialog';
 import { formatCurrencyWithDecimals } from '../../utils/currencyUtils';
-import { COLORS, addAlpha } from '../../theme/themeColors';
+import { useThemeColors } from '../../theme/useThemeColors';
 import { buildApiUrl } from '../../config/apiConfig';
 import { getPremiumTableHeadSx } from './premiumStyles';
 
@@ -63,6 +63,7 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
   const navigate = useNavigate();
   const { user, token } = useAuth();
   const { t } = useTranslation();
+  const { COLORS, addAlpha } = useThemeColors();
   const [products, setProducts] = useState<Product[]>([]);
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -668,7 +669,7 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                             sx={{ 
                               fontWeight: isSelected ? 700 : 600,
                               fontSize: '0.9rem',
-                              color: isSelected ? COLORS.PRIMARY : (isOutOfStock ? 'text.disabled' : 'text.primary'),
+                              color: isSelected ? COLORS.PRIMARY_TEXT : (isOutOfStock ? 'text.disabled' : 'text.primary'),
                               mb: 0.5
                             }}
                           >
@@ -682,8 +683,8 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                               label={product.category.replace('_', ' ')}
                               size="small"
                               sx={{ 
-                                background: `linear-gradient(135deg, ${addAlpha(COLORS.PRIMARY, 0.08)} 0%, ${addAlpha(COLORS.PRIMARY, 0.12)} 100%)`,
-                                color: COLORS.PRIMARY,
+                                background: `linear-gradient(135deg, ${COLORS.BG_PRIMARY_SOFT} 0%, ${COLORS.BG_PRIMARY_SOFT} 100%)`,
+                                color: COLORS.PRIMARY_TEXT,
                                 border: `1px solid ${addAlpha(COLORS.PRIMARY, 0.2)}`,
                                 fontWeight: 600,
                                 fontSize: '0.7rem',
@@ -738,7 +739,7 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                               sx={{ 
                                 display: 'block',
                                 mt: 0.75,
-                                color: COLORS.PRIMARY,
+                                color: COLORS.PRIMARY_TEXT,
                                 fontWeight: 700,
                                 fontSize: '0.75rem',
                                 letterSpacing: '0.3px'
@@ -792,10 +793,10 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                 alignItems: 'center', 
                 gap: 1,
                 fontWeight: 700,
-                color: COLORS.PRIMARY,
+                color: COLORS.PRIMARY_TEXT,
                 letterSpacing: '-0.01em'
               }}>
-                <ReceiptIcon sx={{ color: COLORS.PRIMARY }} />
+                <ReceiptIcon sx={{ color: COLORS.PRIMARY_TEXT }} />
                 {t('shop.orders.creation.orderSummary')}
               </Typography>
 
@@ -1013,10 +1014,10 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                 mb: 3,
                 p: 2,
                 borderRadius: 2,
-                background: `linear-gradient(135deg, ${addAlpha(COLORS.PRIMARY, 0.08)} 0%, ${addAlpha(COLORS.SECONDARY, 0.06)} 100%)`,
+                background: `linear-gradient(135deg, ${COLORS.BG_PRIMARY_SOFT} 0%, ${COLORS.BG_SECONDARY_SOFT} 100%)`,
                 border: `1px solid ${addAlpha(COLORS.PRIMARY, 0.2)}`
               }}>
-                <Typography variant="h6" sx={{ fontWeight: 700, color: COLORS.PRIMARY }}>{t('shop.orders.creation.grandTotal')}</Typography>
+                <Typography variant="h6" sx={{ fontWeight: 700, color: COLORS.PRIMARY_TEXT }}>{t('shop.orders.creation.grandTotal')}</Typography>
                 <Typography 
                   variant="h5" 
                   sx={{

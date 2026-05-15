@@ -38,7 +38,7 @@ import { offlineStorage, OfflineBooking, GuestInfo, CachedRoom } from '../servic
 import { syncManager } from '../services/SyncManager';
 import { roomCacheService } from '../services/RoomCacheService';
 import NumberStepper from './common/NumberStepper';
-import { COLORS, addAlpha } from '../theme/themeColors';
+import { useThemeColors } from '../theme/useThemeColors';
 import { formatCurrency } from '../utils/currencyUtils';
 
 // Define interfaces for offline walk-in booking (matching online version EXACTLY)
@@ -76,6 +76,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
   const { token, user } = useAuth(); // Match exact order from main component
   const { tenantId } = useTenant(); // Match exact usage from main component
   const { t } = useTranslation();
+  const { COLORS, addAlpha } = useThemeColors();
   const theme = useTheme(); // Add theme hook
   
   const steps = [
@@ -353,7 +354,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                 borderRadius: 2,
               }}>
                 <Box>
-                  <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5, color: COLORS.PRIMARY }}>
+                  <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5, color: COLORS.PRIMARY_TEXT }}>
                     {t('dashboard.hotelAdmin.offlineBooking.guestInformation.title')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -416,7 +417,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                 borderRadius: 2,
               }}>
                 <Box>
-                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5, color: COLORS.PRIMARY }}>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5, color: COLORS.PRIMARY_TEXT }}>
                     {t('dashboard.hotelAdmin.offlineBooking.bookingDetails.stayDetailsTitle')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -1433,7 +1434,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                     variant="h5" 
                     sx={{ 
                       fontWeight: 'bold',
-                      color: COLORS.PRIMARY, // Orange color to match theme
+                      color: COLORS.PRIMARY_TEXT,
                       mb: 0.5,
                     }}
                   >
@@ -1469,20 +1470,20 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
             alternativeLabel
             sx={{
               '& .MuiStepLabel-root .Mui-completed': {
-                color: COLORS.PRIMARY, // Orange for completed steps
+                color: COLORS.PRIMARY_TEXT,
               },
               '& .MuiStepLabel-root .Mui-active': {
-                color: COLORS.PRIMARY, // Orange for active step
+                color: COLORS.PRIMARY_TEXT,
               },
               '& .MuiStepConnector-line': {
                 borderColor: 'divider',
               },
               '& .MuiStepIcon-root': {
                 '&.Mui-completed': {
-                  color: COLORS.PRIMARY, // Orange for completed step icons
+                  color: COLORS.PRIMARY_TEXT,
                 },
                 '&.Mui-active': {
-                  color: COLORS.PRIMARY, // Orange for active step icon
+                  color: COLORS.PRIMARY_TEXT,
                 },
               },
             }}

@@ -11,12 +11,13 @@ import {
   useTheme,
   useMediaQuery,
 } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams, Link as RouterLink } from 'react-router-dom';
 import { API_CONFIG } from '../config/apiConfig';
-import { COLORS, addAlpha, getGradient } from '../theme/themeColors';
 import PremiumTextField from '../components/common/PremiumTextField';
 import { useSubmissionError } from '../contexts/SubmissionErrorContext';
+import { getElevatedCardShadow, getPageShellBackground } from '../theme/surfaces';
 
 const ResetPasswordPage: React.FC = () => {
   const { t } = useTranslation();
@@ -33,6 +34,7 @@ const ResetPasswordPage: React.FC = () => {
   const [validating, setValidating] = useState(true);
   const [tokenValid, setTokenValid] = useState(false);
   const [success, setSuccess] = useState('');
+  const headerGradient = `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`;
 
   // Validate token on mount
   useEffect(() => {
@@ -110,7 +112,7 @@ const ResetPasswordPage: React.FC = () => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          background: getGradient('primaryDiagonal'),
+          background: getPageShellBackground(theme),
         }}
       >
         <CircularProgress sx={{ color: 'white' }} />
@@ -127,12 +129,12 @@ const ResetPasswordPage: React.FC = () => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          background: getGradient('primaryDiagonal'),
+          background: getPageShellBackground(theme),
           px: 2,
         }}
       >
         <Container maxWidth="sm">
-          <Card sx={{ borderRadius: 3, textAlign: 'center' }}>
+          <Card sx={{ borderRadius: 3, textAlign: 'center', border: `1px solid ${theme.palette.divider}`, boxShadow: getElevatedCardShadow(theme) }}>
             <CardContent sx={{ p: 4 }}>
               <Typography variant="h5" color="error" gutterBottom>
                 {t('auth.resetPassword.invalidTokenTitle')}
@@ -169,7 +171,7 @@ const ResetPasswordPage: React.FC = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: getGradient('primaryDiagonal'),
+          background: getPageShellBackground(theme),
         px: 2,
       }}
     >
@@ -177,13 +179,15 @@ const ResetPasswordPage: React.FC = () => {
         <Card
           sx={{
             borderRadius: 3,
-            boxShadow: `0 20px 60px ${addAlpha(COLORS.PRIMARY, 0.15)}`,
+            boxShadow: getElevatedCardShadow(theme),
+            border: `1px solid ${theme.palette.divider}`,
+            backgroundImage: 'none',
             overflow: 'hidden',
           }}
         >
           <Box
             sx={{
-              background: getGradient('primaryDiagonal'),
+              background: headerGradient,
               py: 4,
               px: 3,
               textAlign: 'center',
@@ -208,7 +212,7 @@ const ResetPasswordPage: React.FC = () => {
                   onClick={() => navigate('/login')}
                   sx={{
                     mt: 1,
-                    background: getGradient('primaryDiagonal'),
+                    background: headerGradient,
                   }}
                 >
                   {t('auth.resetPassword.goToLogin')}
@@ -249,10 +253,11 @@ const ResetPasswordPage: React.FC = () => {
                     borderRadius: 1,
                     fontSize: '1rem',
                     fontWeight: 'bold',
-                    background: getGradient('primaryDiagonal'),
-                    boxShadow: `0 4px 15px ${addAlpha(COLORS.PRIMARY, 0.3)}`,
+                    background: headerGradient,
+                    boxShadow: `0 4px 15px ${alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.34 : 0.3)}`,
                     '&:hover': {
-                      boxShadow: `0 6px 20px ${addAlpha(COLORS.PRIMARY, 0.4)}`,
+                      background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.dark} 100%)`,
+                      boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.42 : 0.4)}`,
                       transform: 'translateY(-1px)',
                     },
                   }}

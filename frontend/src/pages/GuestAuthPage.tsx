@@ -16,9 +16,11 @@ import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { API_CONFIG } from '../config/apiConfig';
 import { useTheme, alpha } from '@mui/material/styles';
+import { getElevatedCardShadow, getPageShellBackground, getReadableAccentTextColor } from '../theme/surfaces';
 
 const GuestAuthPage: React.FC = () => {
   const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
   const { t } = useTranslation();
   const [tabValue, setTabValue] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -225,19 +227,15 @@ const GuestAuthPage: React.FC = () => {
           alignItems: 'center',
           justifyContent: 'center',
           py: 4,
-          background: theme.palette.mode === 'light'
-            ? `linear-gradient(180deg, ${alpha(theme.palette.primary.main, 0.04)} 0%, ${theme.palette.background.default} 44%, ${theme.palette.background.paper} 100%)`
-            : `linear-gradient(135deg, ${alpha(theme.palette.primary.dark, 0.1)} 0%, transparent 100%)`,
+          background: getPageShellBackground(theme),
         }}
       >
         <SurfaceCard
-          elevation={theme.palette.mode === 'light' ? 8 : 4}
+          elevation={0}
           sx={{ 
             width: '100%', 
             maxWidth: 500,
-            boxShadow: theme.palette.mode === 'light' 
-              ? `0 2px 8px ${alpha(theme.palette.secondary.main, 0.1)}`
-              : `0 8px 32px -4px ${alpha(theme.palette.primary.main, 0.25)}`,
+            boxShadow: getElevatedCardShadow(theme),
             borderRadius: 3,
             overflow: 'hidden',
             position: 'relative',
@@ -261,7 +259,7 @@ const GuestAuthPage: React.FC = () => {
               align="center"
               sx={{
                 fontWeight: 'bold',
-                color: 'primary.main',
+                color: readableAccentColor,
                 mb: 1,
               }}
             >

@@ -18,7 +18,8 @@ import {
   Visibility as ViewIcon,
 } from '@mui/icons-material';
 import { HotelSearchResult } from '../../types/hotel';
-import { COLORS, addAlpha } from '../../theme/themeColors';
+import { useThemeColors } from '../../theme/useThemeColors';
+import { getReadableAccentTextColor } from '../../theme/surfaces';
 import { formatCurrencyWithDecimals } from '../../utils/currencyUtils';
 import { formatCurrency } from '../../utils/currencyUtils';
 
@@ -55,8 +56,10 @@ const getHotelImage = (hotel: HotelSearchResult): string => {
 
 const HotelListCard: React.FC<HotelListCardProps> = ({ hotel, onViewHotel }) => {
   const { t } = useTranslation();
+  const { COLORS, addAlpha } = useThemeColors();
   // Responsive breakpoints
   const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
   const isLargeScreen = useMediaQuery(theme.breakpoints.up('lg')); // 1200px+
   const isMobile = useMediaQuery(theme.breakpoints.down('md')); // Below 960px
 
@@ -99,7 +102,7 @@ const HotelListCard: React.FC<HotelListCardProps> = ({ hotel, onViewHotel }) => 
         borderRadius: 1.5,
         overflow: 'hidden',
         boxShadow: `0 4px 12px ${addAlpha(COLORS.SECONDARY, 0.15)}`,
-        backgroundColor: COLORS.WHITE,
+        backgroundColor: COLORS.BG_PAPER,
         transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
         '&:hover': {
           transform: isMobile ? 'none' : 'translateY(-4px)',
@@ -158,7 +161,7 @@ const HotelListCard: React.FC<HotelListCardProps> = ({ hotel, onViewHotel }) => 
                 component="h3" 
                 sx={{ 
                   fontWeight: 'bold', 
-                  color: COLORS.PRIMARY,
+                  color: readableAccentColor,
                   fontSize: '1.2rem',
                   lineHeight: 1.3,
                   mb: 1,
@@ -181,7 +184,7 @@ const HotelListCard: React.FC<HotelListCardProps> = ({ hotel, onViewHotel }) => 
                 <Box sx={{ textAlign: 'right' }}>
                   <Typography 
                     variant="h6" 
-                    color={COLORS.PRIMARY} 
+                    color={readableAccentColor} 
                     sx={{ 
                       fontWeight: 'bold',
                       fontSize: '1.1rem',
@@ -199,11 +202,11 @@ const HotelListCard: React.FC<HotelListCardProps> = ({ hotel, onViewHotel }) => 
           ) : (
             /* Desktop: Side-by-side layout */
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-              <Typography variant="h5" component="h3" sx={{ fontWeight: 'bold', color: COLORS.PRIMARY }}>
+              <Typography variant="h5" component="h3" sx={{ fontWeight: 'bold', color: readableAccentColor }}>
                 {hotel.name}
               </Typography>
               <Box sx={{ textAlign: 'right' }}>
-                <Typography variant="h6" color={COLORS.PRIMARY} sx={{ fontWeight: 'bold' }}>
+                <Typography variant="h6" color={readableAccentColor} sx={{ fontWeight: 'bold' }}>
                   {t('hotelSearch.detail.fromPrice')} {formatCurrencyWithDecimals(hotel.minPrice || 0)}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">

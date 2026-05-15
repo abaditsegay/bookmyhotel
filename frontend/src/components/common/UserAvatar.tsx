@@ -1,7 +1,6 @@
 import React from 'react';
-import { Avatar, Box, useTheme } from '@mui/material';
+import { Avatar, Box, alpha, useTheme } from '@mui/material';
 import { Person as PersonIcon } from '@mui/icons-material';
-import { COLORS, addAlpha } from '../../theme/themeColors';
 
 interface UserAvatarProps {
   user: {
@@ -58,17 +57,17 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
     
     // Generate different blue gradients based on user's first letter for variety
     const initials = getInitials();
-    if (!initials) return `linear-gradient(135deg, ${COLORS.PRIMARY} 0%, ${COLORS.SECONDARY} 100%)`;
+    if (!initials) return `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`;
     
     const gradients = [
-      `linear-gradient(135deg, ${COLORS.PRIMARY} 0%, ${COLORS.SECONDARY} 100%)`, // Primary to Secondary
-      `linear-gradient(135deg, ${COLORS.SECONDARY} 0%, ${addAlpha(COLORS.PRIMARY, 0.7)} 100%)`, // Secondary to light Primary
-      `linear-gradient(135deg, ${addAlpha(COLORS.PRIMARY, 0.8)} 0%, ${COLORS.PRIMARY} 100%)`, // Light Primary to Primary
-      `linear-gradient(135deg, ${COLORS.PRIMARY} 0%, ${addAlpha(COLORS.SECONDARY, 0.8)} 100%)`, // Primary to light Secondary
-      `linear-gradient(135deg, ${addAlpha(COLORS.SECONDARY, 0.9)} 0%, ${COLORS.PRIMARY} 100%)`, // Very light Secondary to Primary
-      `linear-gradient(135deg, ${COLORS.SECONDARY} 0%, ${COLORS.PRIMARY} 100%)`, // Secondary to Primary
-      `linear-gradient(135deg, ${addAlpha(COLORS.PRIMARY, 0.6)} 0%, ${addAlpha(COLORS.SECONDARY, 0.8)} 100%)`, // Light variations
-      `linear-gradient(135deg, ${COLORS.PRIMARY} 0%, ${addAlpha(COLORS.PRIMARY, 0.5)} 100%)`, // Primary to very light Primary
+      `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
+      `linear-gradient(135deg, ${theme.palette.secondary.main} 0%, ${alpha(theme.palette.primary.main, 0.7)} 100%)`,
+      `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.8)} 0%, ${theme.palette.primary.main} 100%)`,
+      `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${alpha(theme.palette.secondary.main, 0.8)} 100%)`,
+      `linear-gradient(135deg, ${alpha(theme.palette.secondary.main, 0.9)} 0%, ${theme.palette.primary.main} 100%)`,
+      `linear-gradient(135deg, ${theme.palette.secondary.main} 0%, ${theme.palette.primary.main} 100%)`,
+      `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.6)} 0%, ${alpha(theme.palette.secondary.main, 0.8)} 100%)`,
+      `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${alpha(theme.palette.primary.main, 0.5)} 100%)`,
     ];
     
     const index = initials.charCodeAt(0) % gradients.length;
@@ -114,7 +113,7 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
             right: variant === 'square' ? 2 : 0,
             width: width * 0.25,
             height: width * 0.25,
-            backgroundColor: COLORS.PRIMARY,
+            backgroundColor: theme.palette.primary.main,
             borderRadius: '50%',
             border: `2px solid ${theme.palette.background.paper}`,
             zIndex: 1,

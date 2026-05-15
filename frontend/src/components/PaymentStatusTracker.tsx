@@ -21,7 +21,7 @@ import {
 } from '@mui/icons-material';
 import TokenManager from '../utils/tokenManager';
 import { StandardCard, StandardButton, StandardLoading, StandardError } from './common';
-import { COLORS, addAlpha } from '../theme/themeColors';
+import { useThemeColors } from '../theme/useThemeColors';
 import { formatDateTimeForDisplay } from '../utils/dateUtils';
 import { buildApiUrl } from '../config/apiConfig';
 
@@ -57,6 +57,7 @@ const PaymentStatusTracker: React.FC<PaymentStatusProps> = ({
   refreshInterval = 10
 }) => {
   const theme = useTheme();
+  const { COLORS, addAlpha } = useThemeColors();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   
   const [status, setStatus] = useState<PaymentStatus | null>(null);

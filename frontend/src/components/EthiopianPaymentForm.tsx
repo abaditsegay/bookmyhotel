@@ -25,7 +25,7 @@ import {
   AccessTime as TimeIcon
 } from '@mui/icons-material';
 import TokenManager from '../utils/tokenManager';
-import { COLORS } from '../theme/themeColors';
+import { useThemeColors } from '../theme/useThemeColors';
 import { buildApiUrl } from '../config/apiConfig';
 
 interface EthiopianPaymentFormProps {
@@ -59,6 +59,7 @@ export const EthiopianPaymentForm: React.FC<EthiopianPaymentFormProps> = ({
   instructions,
   errorMessage
 }) => {
+  const { COLORS } = useThemeColors();
   const [selectedProvider, setSelectedProvider] = useState<'MBIRR' | 'TELEBIRR'>('TELEBIRR');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [loading, setLoading] = useState(false);
@@ -344,7 +345,7 @@ export const EthiopianPaymentForm: React.FC<EthiopianPaymentFormProps> = ({
 
           {/* Provider Information */}
           <Grid item xs={12}>
-            <Card variant="outlined" sx={{ bgcolor: 'grey.50' }}>
+            <Card variant="outlined" sx={{ bgcolor: 'action.hover' }}>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                   {providerInfo.icon}

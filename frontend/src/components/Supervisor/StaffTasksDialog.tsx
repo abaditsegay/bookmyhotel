@@ -22,6 +22,7 @@ import {
 } from '@mui/material';
 import { operationsSupervisorApi } from '../../services/operationsSupervisorApi';
 import { HousekeepingTask, HousekeepingStaff, StaffPerformance } from '../../types/operations';
+import { getReadableAccentTextColor } from '../../theme/surfaces';
 
 interface StaffTasksDialogProps {
   open: boolean;
@@ -35,6 +36,7 @@ const StaffTasksDialog: React.FC<StaffTasksDialogProps> = ({
   staff
 }) => {
   const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
   const [tasks, setTasks] = useState<HousekeepingTask[]>([]);
   const [performance, setPerformance] = useState<StaffPerformance | null>(null);
   const [loading, setLoading] = useState(false);
@@ -82,7 +84,7 @@ const StaffTasksDialog: React.FC<StaffTasksDialogProps> = ({
     <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
       <DialogTitle sx={{ 
         textAlign: 'center', 
-        color: 'primary.main',
+        color: readableAccentColor,
         borderBottom: '1px solid',
         borderColor: 'divider'
       }}>
@@ -104,7 +106,7 @@ const StaffTasksDialog: React.FC<StaffTasksDialogProps> = ({
             {/* Performance Summary */}
             {performance && (
               <Box sx={{ mb: 3 }}>
-                <Typography variant="h6" gutterBottom sx={{ color: 'primary.main' }}>
+                <Typography variant="h6" gutterBottom sx={{ color: readableAccentColor }}>
                   Performance Summary
                 </Typography>
                 <Box sx={{ 
@@ -134,7 +136,7 @@ const StaffTasksDialog: React.FC<StaffTasksDialogProps> = ({
             )}
 
             {/* Tasks Table */}
-            <Typography variant="h6" gutterBottom sx={{ color: 'primary.main' }}>
+            <Typography variant="h6" gutterBottom sx={{ color: readableAccentColor }}>
               Recent Tasks
             </Typography>
             <TableContainer component={Paper}>
@@ -222,7 +224,7 @@ const StaffTasksDialog: React.FC<StaffTasksDialogProps> = ({
           variant="outlined"
           sx={{
             borderColor: 'primary.main',
-            color: 'primary.main',
+            color: readableAccentColor,
             '&:hover': {
               backgroundColor: alpha(theme.palette.primary.main, 0.1),
               borderColor: 'primary.main'

@@ -30,7 +30,8 @@ import RoomCard from '../components/hotel/RoomCard';
 import RoomTypeCard from '../components/hotel/RoomTypeCard';
 import { DataState } from '../components/common';
 import { SurfaceCard } from '../components/ui';
-import { COLORS, addAlpha } from '../theme/themeColors';
+import { useThemeColors } from '../theme/useThemeColors';
+import { getReadableAccentTextColor } from '../theme/surfaces';
 import { formatCurrencyWithDecimals } from '../utils/currencyUtils';
 import { formatHotelSearchSummary } from '../hooks/usePublicHotelSearchResults';
 import { 
@@ -45,7 +46,9 @@ const HotelDetailPage: React.FC = () => {
   const location = useLocation();
   const { hotelId } = useParams<{ hotelId: string }>();
   const { isAuthenticated } = useAuth();
+  const { COLORS, addAlpha } = useThemeColors();
   const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -361,7 +364,7 @@ const HotelDetailPage: React.FC = () => {
                 gutterBottom 
                 sx={{ 
                   fontWeight: 700, 
-                  color: COLORS.PRIMARY,
+                  color: readableAccentColor,
                   lineHeight: 1.2,
                 }}
               >
@@ -396,7 +399,7 @@ const HotelDetailPage: React.FC = () => {
                 }}
               >
                 <Typography variant="h5" sx={{ 
-                  color: COLORS.PRIMARY,
+                  color: readableAccentColor,
                   fontWeight: 700 
                 }}>
                   {t('hotelSearch.detail.fromPrice')} {formatCurrencyWithDecimals(hotel.minPrice || 0)}
@@ -414,7 +417,7 @@ const HotelDetailPage: React.FC = () => {
           /* Desktop Layout - Side by Side */
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
             <Box sx={{ flexGrow: 1 }}>
-              <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 700, color: COLORS.PRIMARY }}>
+              <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 700, color: readableAccentColor }}>
                 {hotel.name}
               </Typography>
               
@@ -431,7 +434,7 @@ const HotelDetailPage: React.FC = () => {
             {searchRequest && (
               <Box sx={{ textAlign: 'right', ml: 3 }}>
                 <Typography variant="h5" sx={{ 
-                  color: COLORS.PRIMARY,
+                  color: readableAccentColor,
                   fontWeight: 700 
                 }}>
                   {t('hotelSearch.detail.fromPrice')} {formatCurrencyWithDecimals(hotel.minPrice || 0)}
@@ -540,7 +543,7 @@ const HotelDetailPage: React.FC = () => {
 
             {amenityHighlights.length > 0 && (
               <Box>
-                <Typography variant="body2" sx={{ fontWeight: 700, mb: 1, color: COLORS.PRIMARY }}>
+                <Typography variant="body2" sx={{ fontWeight: 700, mb: 1, color: readableAccentColor }}>
                   {t('hotelSearch.detail.guestAmenities')}
                 </Typography>
                 <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
@@ -581,7 +584,7 @@ const HotelDetailPage: React.FC = () => {
                 fontWeight: 700, 
                 mb: isMobile ? 1.5 : 2,
                 fontSize: isMobile ? '1.1rem' : undefined,
-                color: COLORS.PRIMARY,
+                color: readableAccentColor,
               }}
             >
               {useRoomTypes ? 

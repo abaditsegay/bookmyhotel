@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import TokenManager from '../../utils/tokenManager';
 import { API_CONFIG } from '../../config/apiConfig';
 import {
+  alpha,
   Box,
   Button,
   Typography,
@@ -29,7 +30,8 @@ import {
   Tooltip,
   TablePagination,
   CircularProgress,
-  Alert
+  Alert,
+  useTheme
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -40,7 +42,6 @@ import {
   PlayArrow as StartIcon,
   CheckCircle as CompleteIcon
 } from '@mui/icons-material';
-import { COLORS, addAlpha } from '../../theme/themeColors';
 import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
 
 
@@ -86,6 +87,13 @@ interface CreateTaskForm {
 }
 
 const HousekeepingDashboard: React.FC = () => {
+  const theme = useTheme();
+  const addAlpha = alpha;
+  const COLORS = {
+    GRADIENT_SLATE: `linear-gradient(135deg, ${theme.palette.primary.light} 0%, ${theme.palette.primary.main} 58%, ${theme.palette.primary.dark} 100%)`,
+    WHITE: theme.palette.common.white,
+    BLACK: theme.palette.common.black,
+  } as const;
   const { showSubmissionError } = useSubmissionError();
   const [activeTab, setActiveTab] = useState(0);
   const [tasks, setTasks] = useState<HousekeepingTask[]>([]);

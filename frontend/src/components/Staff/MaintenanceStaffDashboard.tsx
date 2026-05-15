@@ -36,12 +36,13 @@ import {
   Schedule as ScheduleIcon,
   Warning as WarningIcon
 } from '@mui/icons-material';
-import { COLORS, addAlpha } from '../../theme/themeColors';
+import { useThemeColors } from '../../theme/useThemeColors';
 import { staffApi } from '../../services/staffApi';
 import { MaintenanceTask } from '../../types/operations';
 import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
 
 const MaintenanceStaffDashboard: React.FC = () => {
+  const { COLORS, addAlpha } = useThemeColors();
   const { showSubmissionError } = useSubmissionError();
   const [tasks, setTasks] = useState<MaintenanceTask[]>([]);
   const [loading, setLoading] = useState(false);

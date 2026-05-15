@@ -34,6 +34,7 @@ import { alpha } from '@mui/material/styles';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../hooks/useNotifications';
+import { getReadableAccentTextColor } from '../../theme/surfaces';
 import NetworkStatusIndicator from '../NetworkStatusIndicator';
 import LanguageSelector from '../common/LanguageSelector';
 
@@ -42,6 +43,7 @@ const Navbar: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
   const { user, logout } = useAuth();
@@ -271,7 +273,7 @@ const Navbar: React.FC = () => {
       }}
     >
       <Box sx={{ p: 2 }}>
-        <Typography variant="h6" sx={{ color: theme.palette.primary.main, fontWeight: 'bold' }}>
+        <Typography variant="h6" sx={{ color: readableAccentColor, fontWeight: 'bold' }}>
           🏨 BookMyHotel
         </Typography>
         {user && user.hotelName && shouldShowHotelName() && (
@@ -315,7 +317,7 @@ const Navbar: React.FC = () => {
             <ListItemIcon sx={{ 
               color: item.label === 'Shop' 
                 ? theme.palette.common.white
-                : item.path && isActivePath(item.path) ? theme.palette.primary.main : 'inherit' 
+                : item.path && isActivePath(item.path) ? readableAccentColor : 'inherit' 
             }}>
               {item.icon}
             </ListItemIcon>
@@ -326,7 +328,7 @@ const Navbar: React.FC = () => {
                   fontWeight: item.label === 'Shop' ? 700 : item.path && isActivePath(item.path) ? 600 : 400,
                   color: item.label === 'Shop' 
                     ? theme.palette.common.white
-                    : item.path && isActivePath(item.path) ? theme.palette.primary.main : 'inherit',
+                    : item.path && isActivePath(item.path) ? readableAccentColor : 'inherit',
                 }
               }}
             />

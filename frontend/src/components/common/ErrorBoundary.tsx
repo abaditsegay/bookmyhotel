@@ -1,5 +1,6 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { Box, Container, Typography, Button, Card, CardContent } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import { 
   BugReport as BugIcon,
   Refresh as RefreshIcon,
@@ -71,6 +72,7 @@ const DefaultErrorFallback: React.FC<ErrorFallbackProps> = ({
   showDetails
 }) => {
   const isDevelopment = process.env.NODE_ENV === 'development';
+  const theme = useTheme();
   
   const handleReportError = () => {
     // In a real app, this would send error to logging service
@@ -218,9 +220,9 @@ const DefaultErrorFallback: React.FC<ErrorFallbackProps> = ({
           mt: 4, 
           width: '100%', 
           maxWidth: 800,
-          backgroundColor: 'grey.50',
+          backgroundColor: 'background.paper',
           border: '1px solid',
-          borderColor: 'grey.300'
+          borderColor: 'divider'
         }}>
           <CardContent>
             <Typography variant="h6" gutterBottom color="error">
@@ -230,7 +232,7 @@ const DefaultErrorFallback: React.FC<ErrorFallbackProps> = ({
             <Typography variant="body2" sx={{ 
               mb: 2, 
               fontFamily: 'monospace',
-              backgroundColor: 'grey.100',
+              backgroundColor: theme.palette.action.hover,
               p: 2,
               borderRadius: 1,
               wordBreak: 'break-all'
@@ -241,7 +243,7 @@ const DefaultErrorFallback: React.FC<ErrorFallbackProps> = ({
             {error.stack && (
               <Typography variant="body2" sx={{ 
                 fontFamily: 'monospace',
-                backgroundColor: 'grey.100',
+                backgroundColor: theme.palette.action.hover,
                 p: 2,
                 borderRadius: 1,
                 fontSize: '0.75rem',
@@ -258,7 +260,7 @@ const DefaultErrorFallback: React.FC<ErrorFallbackProps> = ({
               <Typography variant="body2" sx={{ 
                 mt: 2,
                 fontFamily: 'monospace',
-                backgroundColor: 'grey.100',
+                backgroundColor: theme.palette.action.hover,
                 p: 2,
                 borderRadius: 1,
                 fontSize: '0.75rem',

@@ -1,5 +1,6 @@
 import React, { useState, createContext, useContext } from 'react';
 import {
+  alpha,
   Box,
   IconButton,
   Typography,
@@ -13,7 +14,6 @@ import ErrorIcon from '@mui/icons-material/Error';
 import WarningIcon from '@mui/icons-material/Warning';
 import InfoIcon from '@mui/icons-material/Info';
 import { designSystem } from '../../theme/designSystem';
-import { COLORS, addAlpha } from '../../theme/themeColors';
 
 // Animation for notification entrance
 const slideInRight = keyframes`
@@ -126,25 +126,25 @@ const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     switch (type) {
       case 'success':
         return {
-          bg: addAlpha(theme.palette.success.main, theme.palette.mode === 'dark' ? 0.1 : 0.05),
+          bg: alpha(theme.palette.success.main, theme.palette.mode === 'dark' ? 0.1 : 0.05),
           border: theme.palette.success.main,
           icon: theme.palette.success.main,
         };
       case 'error':
         return {
-          bg: addAlpha(theme.palette.error.main, theme.palette.mode === 'dark' ? 0.1 : 0.05),
+          bg: alpha(theme.palette.error.main, theme.palette.mode === 'dark' ? 0.1 : 0.05),
           border: theme.palette.error.main,
           icon: theme.palette.error.main,
         };
       case 'warning':
         return {
-          bg: addAlpha(theme.palette.warning.main, theme.palette.mode === 'dark' ? 0.1 : 0.05),
+          bg: alpha(theme.palette.warning.main, theme.palette.mode === 'dark' ? 0.1 : 0.05),
           border: theme.palette.warning.main,
           icon: theme.palette.warning.main,
         };
       case 'info':
         return {
-          bg: addAlpha(theme.palette.info.main, theme.palette.mode === 'dark' ? 0.1 : 0.05),
+          bg: alpha(theme.palette.info.main, theme.palette.mode === 'dark' ? 0.1 : 0.05),
           border: theme.palette.info.main,
           icon: theme.palette.info.main,
         };
@@ -280,7 +280,7 @@ const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                   sx={{
                     color: theme.palette.text.secondary,
                     '&:hover': {
-                      backgroundColor: addAlpha(COLORS.BLACK, 0.04),
+                      backgroundColor: alpha(theme.palette.common.black, 0.04),
                     },
                   }}
                 >

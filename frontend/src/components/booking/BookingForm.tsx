@@ -27,7 +27,7 @@ import { useAsyncOperation } from '../../hooks/useLoading';
 import { useFormValidation } from '../../hooks/useFormValidation';
 import PremiumDatePicker from '../common/PremiumDatePicker';
 import NumberStepper from '../common/NumberStepper';
-import { COLORS, addAlpha } from '../../theme/themeColors';
+import { useThemeColors } from '../../theme/useThemeColors';
 import { formatCurrencyWithDecimals } from '../../utils/currencyUtils';
 
 interface BookingFormProps {
@@ -52,6 +52,7 @@ const BookingForm: React.FC<BookingFormProps> = ({
   defaultGuests = 1,
 }) => {
   const { t } = useTranslation();
+  const { COLORS, addAlpha } = useThemeColors();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   

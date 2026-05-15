@@ -39,7 +39,7 @@ import {
 } from '@mui/icons-material';
 import { useNetworkStatus } from '../hooks/useNetworkStatus';
 import { useAuth } from '../contexts/AuthContext';
-import { COLORS, addAlpha } from '../theme/themeColors';
+import { useThemeColors } from '../theme/useThemeColors';
 
 interface NetworkStatusIndicatorProps {
   variant?: 'detailed' | 'minimal';
@@ -52,6 +52,7 @@ export const NetworkStatusIndicator: React.FC<NetworkStatusIndicatorProps> = ({
   className,
   position = 'top'
 }) => {
+  const { COLORS, addAlpha } = useThemeColors();
   const { token } = useAuth();
   const {
     networkStatus,

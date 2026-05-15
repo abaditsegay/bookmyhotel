@@ -10,16 +10,18 @@ import {
   useTheme,
   useMediaQuery,
 } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { API_CONFIG } from '../config/apiConfig';
-import { COLORS, addAlpha, getGradient } from '../theme/themeColors';
 import PremiumTextField from '../components/common/PremiumTextField';
 import { useSubmissionError } from '../contexts/SubmissionErrorContext';
+import { getElevatedCardShadow, getPageShellBackground, getReadableAccentTextColor } from '../theme/surfaces';
 
 const ForgotPasswordPage: React.FC = () => {
   const { t } = useTranslation();
   const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const navigate = useNavigate();
   const { showSubmissionError } = useSubmissionError();
@@ -27,6 +29,7 @@ const ForgotPasswordPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
+  const headerGradient = `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,7 +75,7 @@ const ForgotPasswordPage: React.FC = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: getGradient('primaryDiagonal'),
+        background: getPageShellBackground(theme),
         px: 2,
       }}
     >
@@ -80,13 +83,15 @@ const ForgotPasswordPage: React.FC = () => {
         <Card
           sx={{
             borderRadius: 3,
-            boxShadow: `0 20px 60px ${addAlpha(COLORS.PRIMARY, 0.15)}`,
+            boxShadow: getElevatedCardShadow(theme),
+            border: `1px solid ${theme.palette.divider}`,
+            backgroundImage: 'none',
             overflow: 'hidden',
           }}
         >
           <Box
             sx={{
-              background: getGradient('primaryDiagonal'),
+              background: headerGradient,
               py: 4,
               px: 3,
               textAlign: 'center',
@@ -142,10 +147,11 @@ const ForgotPasswordPage: React.FC = () => {
                     borderRadius: 1,
                     fontSize: '1rem',
                     fontWeight: 'bold',
-                    background: getGradient('primaryDiagonal'),
-                    boxShadow: `0 4px 15px ${addAlpha(COLORS.PRIMARY, 0.3)}`,
+                    background: headerGradient,
+                    boxShadow: `0 4px 15px ${alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.34 : 0.3)}`,
                     '&:hover': {
-                      boxShadow: `0 6px 20px ${addAlpha(COLORS.PRIMARY, 0.4)}`,
+                      background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.dark} 100%)`,
+                      boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.42 : 0.4)}`,
                       transform: 'translateY(-1px)',
                     },
                   }}
@@ -158,7 +164,7 @@ const ForgotPasswordPage: React.FC = () => {
                     to="/login"
                     variant="text"
                     size="small"
-                    sx={{ color: COLORS.PRIMARY }}
+                    sx={{ color: readableAccentColor }}
                   >
                     {t('auth.forgotPassword.backToLogin')}
                   </Button>

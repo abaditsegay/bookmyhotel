@@ -26,7 +26,7 @@ import {
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { PaymentMethod } from '../../types/shop';
-import { COLORS, addAlpha } from '../../theme/themeColors';
+import { useThemeColors } from '../../theme/useThemeColors';
 import { StandardButton } from '../common';
 import { useMockPayment, MockPaymentRequest } from '../../services/mockPaymentGateway';
 
@@ -56,6 +56,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
   showSuccess = false, // Default to false
 }) => {
   const theme = useTheme();
+  const { COLORS, addAlpha } = useThemeColors();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const mockPayment = useMockPayment();
   const { t } = useTranslation();
@@ -84,14 +85,14 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
       value: PaymentMethod.CASH,
       label: t('shopPayment.cashPayment'),
       icon: <CashIcon />,
-      color: COLORS.PRIMARY_HOVER,
+      color: COLORS.PRIMARY_TEXT,
       description: t('shopPayment.cashDescription')
     },
     {
       value: PaymentMethod.CARD,
       label: t('shopPayment.creditDebitCard'),
       icon: <CreditCardIcon />,
-      color: COLORS.PRIMARY,
+      color: COLORS.PRIMARY_TEXT,
       description: t('shopPayment.cardDescription')
     },
     {
@@ -632,7 +633,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
       }}
     >
       <Box sx={{ 
-        bgcolor: COLORS.WHITE, 
+        bgcolor: COLORS.BG_PAPER,
         m: 3, 
         borderRadius: 2,
         boxShadow: `0 1px 3px ${addAlpha(COLORS.BLACK, 0.1)}`
@@ -652,10 +653,10 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
             width: 48,
             height: 48,
             borderRadius: '50%',
-            bgcolor: (theme) => theme.palette.primary.light + '20',
+            bgcolor: COLORS.BG_PRIMARY_SOFT,
             border: `2px solid ${COLORS.SUCCESS}`,
           }}>
-            <PaymentIcon sx={{ color: (theme) => theme.palette.primary.main, fontSize: 28 }} />
+            <PaymentIcon sx={{ color: COLORS.PRIMARY_TEXT, fontSize: 28 }} />
           </Box>
           <Box>
             <Typography variant="h5" sx={{ 
@@ -666,7 +667,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
               {t('shopPayment.completePayment')}
             </Typography>
             <Typography variant="h6" sx={{ 
-              color: (theme) => theme.palette.primary.main,
+              color: COLORS.PRIMARY_TEXT,
               fontWeight: 600,
             }}>
               {formatCurrency(totalAmount)}
@@ -701,7 +702,7 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({
                   sx={{
                     cursor: 'pointer',
                     border: currentPaymentMethod === method.value ? `2px solid ${COLORS.SECONDARY}` : `1px solid ${addAlpha(COLORS.SECONDARY, 0.45)}`,
-                    bgcolor: currentPaymentMethod === method.value ? addAlpha(COLORS.SECONDARY, 0.12) : COLORS.WHITE,
+                    bgcolor: currentPaymentMethod === method.value ? addAlpha(COLORS.SECONDARY, 0.12) : COLORS.BG_PAPER,
                     boxShadow: `0 6px 16px ${addAlpha(COLORS.SECONDARY, 0.12)}`,
                     transition: 'all 0.2s',
                     '&:hover': {

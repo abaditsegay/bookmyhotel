@@ -14,8 +14,9 @@ import {
   LightMode,
   DarkMode,
   Brightness6,
+  SettingsBrightness,
 } from '@mui/icons-material';
-import { useTheme as useCustomTheme } from '../../contexts/ThemeContext';
+import { ThemePreference, useTheme as useCustomTheme } from '../../contexts/ThemeContext';
 import { useTheme } from '@mui/material/styles';
 
 interface ThemeToggleProps {
@@ -29,7 +30,7 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({
   size = 'medium',
   showLabel = false 
 }) => {
-  const { themeMode, toggleTheme, setThemeMode } = useCustomTheme();
+  const { themeMode, themePreference, toggleTheme, setThemeMode } = useCustomTheme();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -43,17 +44,34 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({
     setAnchorEl(null);
   };
 
-  const handleThemeSelect = (mode: 'light' | 'dark') => {
+  const handleThemeSelect = (mode: ThemePreference) => {
     setThemeMode(mode);
     handleMenuClose();
   };
 
   const getThemeIcon = () => {
+    if (themePreference === 'system') {
+      return <SettingsBrightness />;
+    }
+
     return themeMode === 'dark' ? <DarkMode /> : <LightMode />;
   };
 
   const getThemeLabel = () => {
+    if (themePreference === 'system') {
+      return `System (${themeMode === 'dark' ? 'Dark' : 'Light'})`;
+    }
+
     return themeMode === 'dark' ? 'Dark Mode' : 'Light Mode';
+  };
+
+  const selectedMenuItemSx = {
+    py: 1.5,
+    px: 2,
+    '&.Mui-selected': {
+      backgroundColor: theme.palette.primary.light + '20',
+      color: theme.palette.primary.main,
+    }
   };
 
   if (variant === 'menu') {
@@ -93,15 +111,8 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({
         >
           <MenuItem
             onClick={() => handleThemeSelect('light')}
-            selected={themeMode === 'light'}
-            sx={{
-              py: 1.5,
-              px: 2,
-              '&.Mui-selected': {
-                backgroundColor: theme.palette.primary.light + '20',
-                color: theme.palette.primary.main,
-              }
-            }}
+            selected={themePreference === 'light'}
+            sx={selectedMenuItemSx}
           >
             <ListItemIcon>
               <LightMode fontSize="small" />
@@ -110,20 +121,23 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({
           </MenuItem>
           <MenuItem
             onClick={() => handleThemeSelect('dark')}
-            selected={themeMode === 'dark'}
-            sx={{
-              py: 1.5,
-              px: 2,
-              '&.Mui-selected': {
-                backgroundColor: theme.palette.primary.light + '20',
-                color: theme.palette.primary.main,
-              }
-            }}
+            selected={themePreference === 'dark'}
+            sx={selectedMenuItemSx}
           >
             <ListItemIcon>
               <DarkMode fontSize="small" />
             </ListItemIcon>
             <ListItemText>Dark Mode</ListItemText>
+          </MenuItem>
+          <MenuItem
+            onClick={() => handleThemeSelect('system')}
+            selected={themePreference === 'system'}
+            sx={selectedMenuItemSx}
+          >
+            <ListItemIcon>
+              <SettingsBrightness fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>System</ListItemText>
           </MenuItem>
         </Menu>
       </Box>
@@ -144,14 +158,14 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({
           minWidth: showLabel ? 120 : 'auto',
         }}
       >
-        {showLabel && (isMobile ? (themeMode === 'dark' ? 'Dark' : 'Light') : getThemeLabel())}
+        {showLabel && (isMobile ? (themePreference === 'system' ? 'System' : themeMode === 'dark' ? 'Dark' : 'Light') : getThemeLabel())}
       </Button>
     );
   }
 
   // Default: icon variant
   return (
-    <Tooltip title={`Switch to ${themeMode === 'dark' ? 'light' : 'dark'} mode`}>
+    <Tooltip title={themePreference === 'system' ? `Following system (${themeMode})` : `Switch to ${themeMode === 'dark' ? 'light' : 'dark'} mode`}>
       <IconButton
         onClick={toggleTheme}
         size={size}

@@ -1,15 +1,67 @@
 /**
- * Centralized Color Utilities
- * 
- * This file provides easy access to all theme colors from a single location.
- * Components should import colors from here instead of using hardcoded values.
- * 
- * To change the entire app's color scheme:
- * 1. Update the brand colors in themes.ts themeConstants.brand
- * 2. All components using these utilities will automatically update
+ * Legacy color compatibility layer.
+ *
+ * New code should prefer the MUI theme and designSystem tokens directly.
+ * Existing components can keep importing these helpers while they are migrated.
  */
 
-import { themeConstants, getThemeColors } from './themes';
+import { designSystem } from './designSystem';
+
+const themeConstants = {
+  brandPrimary: designSystem.colors.primary.main,
+  brandPrimaryLight: designSystem.colors.primary.light,
+  brandPrimaryDark: designSystem.colors.primary.dark,
+  brandSecondary: designSystem.colors.secondary.main,
+  brandAccent: designSystem.colors.warning.light,
+  greenPalette: {
+    50: '#e8eaf6',
+    100: '#c5cae9',
+    200: '#9fa8da',
+    300: '#7986cb',
+    400: '#5c6bc0',
+    500: '#3f51b5',
+    600: '#3949ab',
+    700: '#303f9f',
+    800: designSystem.colors.primary.dark,
+    900: designSystem.colors.primary.main,
+  },
+  uiColors: {
+    inputFocus: designSystem.colors.primary.main,
+    inputHover: designSystem.colors.primary.dark,
+    inputBorder: designSystem.colors.divider,
+    primaryButton: designSystem.colors.primary.main,
+    primaryButtonHover: designSystem.colors.primary.dark,
+    primaryButtonPressed: designSystem.colors.primary.dark,
+    success: designSystem.colors.success.main,
+    confirmed: designSystem.colors.primary.main,
+    pending: designSystem.colors.warning.main,
+    error: designSystem.colors.error.main,
+    stepperActive: designSystem.colors.primary.main,
+    stepperCompleted: designSystem.colors.primary.dark,
+    stepperInactive: designSystem.colors.text.disabled,
+    cardBorder: designSystem.colors.divider,
+    cardHover: designSystem.colors.background.light,
+    surfaceElevated: designSystem.colors.background.paper,
+  },
+} as const;
+
+const lightGradients = {
+  primaryButton: `linear-gradient(135deg, ${designSystem.colors.primary.main} 0%, ${designSystem.colors.primary.dark} 100%)`,
+  secondaryButton: `linear-gradient(135deg, ${designSystem.colors.secondary.main} 0%, ${designSystem.colors.secondary.dark} 100%)`,
+  successButton: `linear-gradient(135deg, ${designSystem.colors.success.main} 0%, ${designSystem.colors.success.dark} 100%)`,
+  heroBackground: designSystem.effects.gradient.primary,
+} as const;
+
+const darkGradients = {
+  primaryButton: `linear-gradient(135deg, ${designSystem.colors.primary.light} 0%, ${designSystem.colors.primary.main} 100%)`,
+  secondaryButton: `linear-gradient(135deg, ${designSystem.colors.secondary.light} 0%, ${designSystem.colors.secondary.main} 100%)`,
+  successButton: `linear-gradient(135deg, ${designSystem.colors.success.light} 0%, ${designSystem.colors.success.main} 100%)`,
+  heroBackground: `linear-gradient(135deg, ${designSystem.colors.background.dark} 0%, #1e293b 100%)`,
+} as const;
+
+const getThemeColors = (mode: 'light' | 'dark' = 'light') => ({
+  gradients: mode === 'dark' ? darkGradients : lightGradients,
+});
 
 // Export centralized color constants for direct use
 export const colors = themeConstants.uiColors;
@@ -27,63 +79,63 @@ export { getThemeColors };
 // Convenience exports for common colors (these will update automatically when brand colors change)
 export const COLORS = {
   // Interactive elements (buttons, links, form focus) - Premium Business Theme
-  PRIMARY: '#1a365d',           // Deep Navy (Premium)
-  PRIMARY_HOVER: '#2a4a6d',     // Lighter navy for hover
-  PRIMARY_PRESSED: '#0f2744',   // Darker navy for pressed
+  PRIMARY: designSystem.colors.primary.main,
+  PRIMARY_HOVER: designSystem.colors.primary.dark,
+  PRIMARY_PRESSED: designSystem.colors.primary.dark,
   
-  SECONDARY: '#E8B86D',         // Warm Gold for secondary
-  SECONDARY_HOVER: '#F0C880',   // Light gold for secondary hover
+  SECONDARY: designSystem.colors.secondary.main,
+  SECONDARY_HOVER: designSystem.colors.secondary.light,
   
   // Status colors - Professional hotel management colors
-  BOOKED: '#2196F3',            // Blue for booked reservations
-  PENDING: '#9E9E9E',           // Gray for pending
-  SUCCESS: '#2e7d32',           // Forest green for success
-  ERROR: '#d32f2f',             // Professional red for errors
-  CANCELLED: '#757575',         // Gray for cancelled
-  CHECKED_IN: '#2e7d32',        // Green for checked in
-  CHECKED_OUT: '#607D8B',       // Blue gray for checked out
-  AVAILABLE: '#4CAF50',         // Green for available rooms
-  OCCUPIED: '#FF9800',          // Orange for occupied
-  MAINTENANCE: '#F44336',       // Red for maintenance
-  CLEANING: '#FFD54F',          // Yellow for cleaning
+  BOOKED: designSystem.colors.info.main,
+  PENDING: designSystem.colors.warning.main,
+  SUCCESS: designSystem.colors.success.main,
+  ERROR: designSystem.colors.error.main,
+  CANCELLED: '#757575',
+  CHECKED_IN: designSystem.colors.success.main,
+  CHECKED_OUT: '#607D8B',
+  AVAILABLE: '#4CAF50',
+  OCCUPIED: '#FF9800',
+  MAINTENANCE: '#F44336',
+  CLEANING: '#FFD54F',
   
   // Form elements - Premium theme
-  INPUT_FOCUS: '#1a365d',       // Navy focus color
-  INPUT_HOVER: '#2d63ab',       // Light navy hover
-  INPUT_BORDER: '#e0e0e0',      // Neutral gray border
-  INPUT_ERROR: '#d32f2f',       // Red for errors
+  INPUT_FOCUS: designSystem.colors.primary.main,
+  INPUT_HOVER: designSystem.colors.primary.dark,
+  INPUT_BORDER: designSystem.colors.divider,
+  INPUT_ERROR: designSystem.colors.error.main,
   
   // Surface colors - Premium neutral theme
-  CARD_BORDER: 'transparent',   // No border for premium feel
-  CARD_HOVER: '#f8f9fa',        // Very light gray hover
+  CARD_BORDER: 'transparent',
+  CARD_HOVER: designSystem.colors.background.light,
   
   // Additional UI colors
-  WARNING: '#ff9800',           // Orange for warnings (Material Orange 500)
-  INFO: '#1565c0',              // Blue for info
-  WHITE: '#ffffff',             // Pure white
-  GOLD: '#ffd700',              // Gold for stars/ratings
+  WARNING: designSystem.colors.warning.main,
+  INFO: designSystem.colors.info.main,
+  WHITE: designSystem.colors.background.paper,
+  GOLD: '#ffd700',
   
   // Text colors
-  TEXT_PRIMARY: '#212121',      // Primary text (Material Grey 900)
-  TEXT_SECONDARY: '#616161',    // Secondary text (Material Grey 700)
-  TEXT_DISABLED: '#9e9e9e',     // Disabled text (Material Grey 400)
+  TEXT_PRIMARY: designSystem.colors.text.primary,
+  TEXT_SECONDARY: designSystem.colors.text.secondary,
+  TEXT_DISABLED: designSystem.colors.text.disabled,
   
   // Background colors
-  BG_DEFAULT: '#f5f5f5',        // Default background (Material Grey 100)
-  BG_PAPER: '#ffffff',          // Paper/card background
-  BG_LIGHT: '#fafafa',          // Light background (Material Grey 50)
-  BG_SLATE: '#475569',          // Slate background for contrast
+  BG_DEFAULT: designSystem.colors.background.default,
+  BG_PAPER: designSystem.colors.background.paper,
+  BG_LIGHT: designSystem.colors.background.light,
+  BG_SLATE: '#475569',
   
   // Payment provider brand colors (keep as-is for brand recognition)
   MBIRR_ORANGE: '#FFA500',      // M-Birr brand orange
   TELEBIRR_GREEN: '#4CAF50',    // TeleBirr brand green
   
   // Status background colors (for chips and badges)
-  BG_SUCCESS_LIGHT: '#e3f2fd',  // Light blue background
-  BG_WARNING_LIGHT: '#fff8e1',  // Light orange background
-  BG_ERROR_LIGHT: '#ffebee',    // Light red background
-  BG_INFO_LIGHT: '#e3f2fd',     // Light blue background
-  BG_DEFAULT_LIGHT: '#f5f5f5',  // Light grey background
+  BG_SUCCESS_LIGHT: designSystem.colors.success.light,
+  BG_WARNING_LIGHT: designSystem.colors.warning.light,
+  BG_ERROR_LIGHT: designSystem.colors.error.light,
+  BG_INFO_LIGHT: designSystem.colors.info.light,
+  BG_DEFAULT_LIGHT: designSystem.colors.background.light,
   
   // Slate/Dark backgrounds (Professional UI)
   SLATE_50: '#f8fafc',
@@ -101,9 +153,9 @@ export const COLORS = {
   PURPLE_700: '#7e22ce',
   
   // Common borders and dividers
-  BORDER_LIGHT: '#e0e0e0',      // Light gray border (Material Grey 300)
-  BORDER_DEFAULT: '#ddd',       // Default border
-  DIVIDER: '#e5e7eb',           // Divider color
+  BORDER_LIGHT: designSystem.colors.divider,
+  BORDER_DEFAULT: designSystem.colors.divider,
+  DIVIDER: designSystem.colors.divider,
   
   // Black variations
   BLACK: '#000000',             // Pure black
@@ -111,14 +163,14 @@ export const COLORS = {
   BLACK_ALPHA_60: 'rgba(0, 0, 0, 0.60)', // Medium emphasis text
   
   // Gradient presets - Premium
-  GRADIENT_PRIMARY: 'linear-gradient(135deg, #1a365d 0%, #0f2744 100%)',
-  GRADIENT_SECONDARY: 'linear-gradient(135deg, #E8B86D 0%, #D4A355 100%)',
-  GRADIENT_ACCENT: 'linear-gradient(135deg, #63B3ED 0%, #3182CE 100%)',
-  GRADIENT_WARM: 'linear-gradient(135deg, #F0C880 0%, #E8B86D 100%)',
+  GRADIENT_PRIMARY: lightGradients.primaryButton,
+  GRADIENT_SECONDARY: lightGradients.secondaryButton,
+  GRADIENT_ACCENT: `linear-gradient(135deg, ${designSystem.colors.info.light} 0%, ${designSystem.colors.info.main} 100%)`,
+  GRADIENT_WARM: `linear-gradient(135deg, ${designSystem.colors.secondary.light} 0%, ${designSystem.colors.secondary.main} 100%)`,
   GRADIENT_PURPLE: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
   GRADIENT_SLATE: 'linear-gradient(135deg, #64748b 0%, #475569 50%, #334155 100%)',
-  GRADIENT_WHITE: 'linear-gradient(135deg, #ffffff 0%, #ffffff 100%)',
-  GRADIENT_DARK: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+  GRADIENT_WHITE: `linear-gradient(135deg, ${designSystem.colors.background.paper} 0%, ${designSystem.colors.background.paper} 100%)`,
+  GRADIENT_DARK: darkGradients.heroBackground,
   // Glass effects
   GLASS_LIGHT: 'rgba(255, 255, 255, 0.7)',
   GLASS_DARK: 'rgba(30, 30, 30, 0.7)',

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { COLORS, addAlpha } from '../../theme/themeColors';
+import { useThemeColors } from '../../theme/useThemeColors';
 import {
   Paper,
   Table,
@@ -64,6 +64,7 @@ interface RoomManagementProps {
 }
 
 const RoomManagement: React.FC<RoomManagementProps> = ({ onNavigateToRoom }) => {
+  const { COLORS, addAlpha } = useThemeColors();
   const { token } = useAuth();
   const { showSubmissionError } = useSubmissionError();
   const navigate = useNavigate();

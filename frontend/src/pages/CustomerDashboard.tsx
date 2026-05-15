@@ -14,11 +14,13 @@ import {
   ListItemIcon,
   Chip,
   Rating,
+  useTheme,
 } from '@mui/material';
 import {
   Hotel,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import { getPageShellBackground, getReadableAccentTextColor, getSectionTint } from '../theme/surfaces';
 
 /**
  * Dashboard page for customer users
@@ -26,6 +28,8 @@ import { useNavigate } from 'react-router-dom';
  */
 export const CustomerDashboard: React.FC = () => {
   const navigate = useNavigate();
+  const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
 
   // Featured destinations - dynamic data populated from API
   const [featuredDestinations, setFeaturedDestinations] = React.useState<any[]>([]);
@@ -58,10 +62,10 @@ export const CustomerDashboard: React.FC = () => {
   }, []);
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
+    <Container maxWidth="xl" sx={{ py: 4, minHeight: '100vh', background: getPageShellBackground(theme) }}>
       {/* Welcome Header */}
       <Box sx={{ textAlign: 'center', mb: 6 }}>
-        <Typography variant="h3" component="h1" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+        <Typography variant="h3" component="h1" gutterBottom sx={{ fontWeight: 'bold', color: readableAccentColor }}>
           Welcome to BookMyHotel
         </Typography>
         <Typography variant="h6" color="text.secondary" sx={{ mb: 4 }}>
@@ -173,7 +177,7 @@ export const CustomerDashboard: React.FC = () => {
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                   {hotel.description}
                 </Typography>
-                <Typography variant="caption" color="primary.main" sx={{ fontWeight: 'bold' }}>
+                <Typography variant="caption" sx={{ fontWeight: 'bold', color: readableAccentColor }}>
                   {hotel.count}
                 </Typography>
               </Paper>
@@ -239,7 +243,7 @@ export const CustomerDashboard: React.FC = () => {
       </Box>
 
       {/* Travel Tips */}
-      <Paper sx={{ p: 4, bgcolor: 'grey.50' }}>
+      <Paper sx={{ p: 4, bgcolor: getSectionTint(theme, 'primary') }}>
         <Typography variant="h4" component="h2" gutterBottom sx={{ fontWeight: 'bold', mb: 3 }}>
           Travel Tips & Recommendations
         </Typography>
@@ -248,7 +252,7 @@ export const CustomerDashboard: React.FC = () => {
             <List>
               <ListItem>
                 <ListItemIcon>
-                  <Hotel color="primary" />
+                  <Hotel sx={{ color: readableAccentColor }} />
                 </ListItemIcon>
                 <ListItemText
                   primary="Book Early for Best Deals"
@@ -297,7 +301,7 @@ export const CustomerDashboard: React.FC = () => {
               </ListItem>
               <ListItem>
                 <ListItemIcon>
-                  <Hotel color="primary" />
+                  <Hotel sx={{ color: readableAccentColor }} />
                 </ListItemIcon>
                 <ListItemText
                   primary="Plan Your Activities"

@@ -12,8 +12,9 @@ import {
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { formatCurrencyWithDecimals } from '../../utils/currencyUtils';
-import { COLORS } from '../../theme/themeColors';
+import { useThemeColors } from '../../theme/useThemeColors';
 import { formatDateCalendarAware } from '../../utils/dateUtils';
+import { getReadableAccentTextColor } from '../../theme/surfaces';
 
 interface BookingSummaryProps {
   hotelName: string;
@@ -44,7 +45,9 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
   cityTaxRate = 0,
 }) => {
   const { t } = useTranslation();
+  const { COLORS } = useThemeColors();
   const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const formatDate = (date: Date | null): string => {
@@ -103,7 +106,7 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
               variant={isMobile ? 'body1' : 'h6'} 
               sx={{ 
                 fontWeight: 600, 
-                color: COLORS.PRIMARY,
+                color: readableAccentColor,
                 fontSize: { xs: '1rem', md: '1.25rem' },
               }}
             >
@@ -372,7 +375,7 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
                 variant={isMobile ? 'body1' : 'h6'} 
                 sx={{ 
                   fontWeight: 700, 
-                  color: COLORS.PRIMARY,
+                  color: readableAccentColor,
                   fontSize: { xs: '1.1rem', md: '1.25rem' },
                 }}
               >
@@ -382,7 +385,7 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
                 variant={isMobile ? 'body1' : 'h6'} 
                 sx={{ 
                   fontWeight: 700, 
-                  color: COLORS.PRIMARY,
+                  color: readableAccentColor,
                   fontSize: { xs: '1.2rem', md: '1.25rem' },
                 }}
               >
@@ -401,7 +404,7 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
               bgcolor: alpha(COLORS.SECONDARY, 0.08),
               color: 'text.secondary',
               border: `1px solid ${COLORS.SECONDARY}`,
-              '& .MuiAlert-icon': { color: COLORS.PRIMARY },
+              '& .MuiAlert-icon': { color: readableAccentColor },
               mb: 2,
             }}
           >
@@ -415,9 +418,9 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
             sx={{ 
               borderRadius: 2,
               bgcolor: alpha(COLORS.SECONDARY, 0.05),
-              color: COLORS.PRIMARY,
+              color: readableAccentColor,
               border: `1px solid ${COLORS.SECONDARY}`,
-              '& .MuiAlert-icon': { color: COLORS.PRIMARY },
+              '& .MuiAlert-icon': { color: readableAccentColor },
             }}
           >
             <Typography variant="caption">

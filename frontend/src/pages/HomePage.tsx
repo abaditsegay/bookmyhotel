@@ -13,11 +13,13 @@ import StandardButton from '../components/common/StandardButton';
 import { PageContainer, StandardLoading, StandardError, ErrorBoundary } from '../components/common';
 import { hotelApiService } from '../services/hotelApi';
 import { HotelSearchRequest } from '../types/hotel';
+import { getReadableAccentTextColor } from '../theme/surfaces';
 
 const HomePage = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -55,7 +57,7 @@ const HomePage = () => {
           <Typography
             variant={isMobile ? 'h5' : 'h4'}
             component="h1"
-            sx={{ fontWeight: 700, color: 'primary.main', mb: 0.5 }}
+            sx={{ fontWeight: 700, color: readableAccentColor, mb: 0.5 }}
           >
             {t('hotelSearch.title')}
           </Typography>

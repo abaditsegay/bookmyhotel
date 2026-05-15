@@ -30,6 +30,7 @@ import {
 import { bookingApiService, BookingSearchResponse } from '../../services/bookingApi';
 import { formatDateForDisplay } from '../../utils/dateUtils';
 import { getRoomTypeLabel } from '../../constants/roomTypes';
+import { getReadableAccentTextColor } from '../../theme/surfaces';
 
 interface BookingSearchModalProps {
   open: boolean;
@@ -39,6 +40,7 @@ interface BookingSearchModalProps {
 const BookingSearchModal: React.FC<BookingSearchModalProps> = ({ open, onClose }) => {
   const { t } = useTranslation();
   const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   
   const [searchType, setSearchType] = useState<'confirmation' | 'email'>('confirmation');
@@ -319,7 +321,7 @@ const BookingSearchModal: React.FC<BookingSearchModalProps> = ({ open, onClose }
               <Grid container spacing={2}>
                 <Grid item xs={12}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                    <HotelIcon sx={{ mr: 1, color: 'primary.main', fontSize: 20 }} />
+                    <HotelIcon sx={{ mr: 1, color: readableAccentColor, fontSize: 20 }} />
                     <Typography variant="body2" color="text.secondary">{t('booking.manage.hotelAndRoom')}</Typography>
                   </Box>
                   
@@ -378,7 +380,7 @@ const BookingSearchModal: React.FC<BookingSearchModalProps> = ({ open, onClose }
 
                 <Grid item xs={12} sm={6}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                    <CalendarIcon sx={{ mr: 1, color: 'primary.main', fontSize: 20 }} />
+                    <CalendarIcon sx={{ mr: 1, color: readableAccentColor, fontSize: 20 }} />
                     <Typography variant="body2" color="text.secondary">{t('booking.find.found.labels.checkIn')}</Typography>
                   </Box>
                   <Typography variant="body1" fontWeight="medium">
@@ -388,7 +390,7 @@ const BookingSearchModal: React.FC<BookingSearchModalProps> = ({ open, onClose }
 
                 <Grid item xs={12} sm={6}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                    <CalendarIcon sx={{ mr: 1, color: 'primary.main', fontSize: 20 }} />
+                    <CalendarIcon sx={{ mr: 1, color: readableAccentColor, fontSize: 20 }} />
                     <Typography variant="body2" color="text.secondary">{t('booking.find.found.labels.checkOut')}</Typography>
                   </Box>
                   <Typography variant="body1" fontWeight="medium">
@@ -398,7 +400,7 @@ const BookingSearchModal: React.FC<BookingSearchModalProps> = ({ open, onClose }
 
                 <Grid item xs={12}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                    <PersonIcon sx={{ mr: 1, color: 'primary.main', fontSize: 20 }} />
+                    <PersonIcon sx={{ mr: 1, color: readableAccentColor, fontSize: 20 }} />
                     <Typography variant="body2" color="text.secondary">{t('booking.find.found.labels.guestName')}</Typography>
                   </Box>
                   <Typography variant="body1" fontWeight="medium">

@@ -1,12 +1,12 @@
 /* Global CSS - Only true global styles, resets, and utility classes */
 
 :root {
-  --color-primary: #1a365d;
-  --color-warning: #e8b86d;
-  --color-focus: #1a365d;
+  --color-primary: #1f4b99;
+  --color-warning: #c69214;
+  --color-focus: #1f4b99;
   --color-focus-alt: #d84315;
   --color-white: #ffffff;
-  --color-bg-default: #f8fafc;
+  --color-bg-default: #f4f7fb;
   --color-bg-dark: #0f172a;
   --color-scrollbar-track: #f1f1f1;
   --color-scrollbar-thumb: #888;
@@ -119,21 +119,6 @@ code {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-scrollbar-thumb-hover);
-}
-
-/* Dark mode support (future-proofing) */
-@media (prefers-color-scheme: dark) {
-  ::-webkit-scrollbar-track {
-    background: var(--color-scrollbar-track-dark);
-  }
-  
-  ::-webkit-scrollbar-thumb {
-    background: var(--color-scrollbar-thumb-dark);
-  }
-  
-  ::-webkit-scrollbar-thumb:hover {
-    background: var(--color-scrollbar-thumb-hover-dark);
-  }
 }
 
 /* Responsive design improvements */

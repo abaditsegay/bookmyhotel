@@ -29,10 +29,12 @@ import { useTranslation } from 'react-i18next';
 import { bookingApiService, BookingSearchResponse } from '../services/bookingApi';
 import { formatCurrencyWithDecimals } from '../utils/currencyUtils';
 import { formatDateForDisplay } from '../utils/dateUtils';
+import { getReadableAccentTextColor } from '../theme/surfaces';
 
 const BookingSearchPage: React.FC = () => {
   const { t } = useTranslation();
   const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
   const [searchType, setSearchType] = useState<'confirmation' | 'email'>('confirmation');
@@ -305,7 +307,7 @@ const BookingSearchPage: React.FC = () => {
             <Grid container spacing={{ xs: 2, md: 3 }}>
               <Grid item xs={6} sm={6} md={4}>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 0.5, md: 1 } }}>
-                  <HotelIcon sx={{ mr: 1, color: 'primary.main', fontSize: { xs: '1.2rem', md: '1.5rem' } }} />
+                  <HotelIcon sx={{ mr: 1, color: readableAccentColor, fontSize: { xs: '1.2rem', md: '1.5rem' } }} />
                   <Typography variant={isMobile ? "caption" : "body2"} color="text.secondary">{t('booking.page.hotel')}</Typography>
                 </Box>
                 <Typography variant={isMobile ? "body2" : "body1"} fontWeight="medium">
@@ -318,7 +320,7 @@ const BookingSearchPage: React.FC = () => {
 
               <Grid item xs={6} sm={6} md={4}>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 0.5, md: 1 } }}>
-                  <CalendarIcon sx={{ mr: 1, color: 'primary.main', fontSize: { xs: '1.2rem', md: '1.5rem' } }} />
+                  <CalendarIcon sx={{ mr: 1, color: readableAccentColor, fontSize: { xs: '1.2rem', md: '1.5rem' } }} />
                   <Typography variant={isMobile ? "caption" : "body2"} color="text.secondary">{t('booking.manage.checkIn')}</Typography>
                 </Box>
                 <Typography variant={isMobile ? "body2" : "body1"} fontWeight="medium">
@@ -328,7 +330,7 @@ const BookingSearchPage: React.FC = () => {
 
               <Grid item xs={6} sm={6} md={4}>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 0.5, md: 1 } }}>
-                  <CalendarIcon sx={{ mr: 1, color: 'primary.main', fontSize: { xs: '1.2rem', md: '1.5rem' } }} />
+                  <CalendarIcon sx={{ mr: 1, color: readableAccentColor, fontSize: { xs: '1.2rem', md: '1.5rem' } }} />
                   <Typography variant={isMobile ? "caption" : "body2"} color="text.secondary">{t('booking.manage.checkOut')}</Typography>
                 </Box>
                 <Typography variant={isMobile ? "body2" : "body1"} fontWeight="medium">

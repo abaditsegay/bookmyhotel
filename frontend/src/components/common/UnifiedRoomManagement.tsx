@@ -51,7 +51,7 @@ import { ROOM_TYPES, getRoomTypeLabel } from '../../constants/roomTypes';
 import PremiumTextField from './PremiumTextField';
 import PremiumSelect from './PremiumSelect';
 import StandardButton from './StandardButton';
-import { COLORS, addAlpha } from '../../theme/themeColors';
+import { useThemeColors } from '../../theme/useThemeColors';
 import { getEffectiveSearchTerm } from '../../utils/search';
 
 // Import hotel admin specific components conditionally
@@ -93,6 +93,7 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
   const { t } = useTranslation();
   const { token } = useAuth();
   const { showSubmissionError } = useSubmissionError();
+  const { COLORS, addAlpha } = useThemeColors();
   
   // Determine translation key prefix based on mode
   const translationPrefix = mode === 'hotel-admin' 

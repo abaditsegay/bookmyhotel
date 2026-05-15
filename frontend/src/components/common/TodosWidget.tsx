@@ -25,7 +25,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { Todo, useTodoApi } from '../../services/todoApi';
-import { COLORS, addAlpha } from '../../theme/themeColors';
+import { useThemeColors } from '../../theme/useThemeColors';
 
 interface TodosWidgetProps {
   width?: string | number;
@@ -39,6 +39,7 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
   const { user } = useAuth();
   const todoApi = useTodoApi();
   const { t } = useTranslation();
+  const { COLORS, addAlpha } = useThemeColors();
   
   const [todos, setTodos] = useState<Todo[]>([]);
   const [loading, setLoading] = useState(true);
@@ -159,7 +160,7 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
         height,
         display: 'flex',
         flexDirection: 'column',
-        background: `linear-gradient(165deg, ${COLORS.WHITE} 0%, ${addAlpha(COLORS.PRIMARY, 0.02)} 60%, ${addAlpha(COLORS.PRIMARY, 0.06)} 100%)`,
+        background: `linear-gradient(165deg, ${COLORS.BG_PAPER} 0%, ${COLORS.BG_PRIMARY_SOFT} 60%, ${COLORS.BG_PRIMARY_SOFT} 100%)`,
         p: 2.5,
         borderRadius: 3,
         overflow: 'hidden',
@@ -172,7 +173,7 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
         variant="h6" 
         sx={{ 
           mb: 2, 
-          color: COLORS.PRIMARY,
+          color: COLORS.PRIMARY_TEXT,
           fontWeight: 700,
           letterSpacing: '0.04em',
           borderBottom: `1px solid ${alpha(COLORS.PRIMARY, 0.12)}`,
@@ -205,7 +206,7 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
             width: '100%', 
             mb: 1,
             '& .MuiOutlinedInput-root': {
-              backgroundColor: COLORS.WHITE,
+              backgroundColor: COLORS.BG_PAPER,
               '& fieldset': {
                 borderColor: alpha(COLORS.PRIMARY, 0.12),
               },
@@ -220,7 +221,7 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
               color: COLORS.TEXT_PRIMARY,
             },
             '& .MuiInputBase-input::placeholder': {
-              color: alpha(COLORS.PRIMARY, 0.55),
+              color: COLORS.TEXT_SECONDARY,
               opacity: 1,
             },
           }}
@@ -231,7 +232,7 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
             sx={{ 
               minWidth: 100,
               '& .MuiOutlinedInput-root': {
-                backgroundColor: COLORS.WHITE,
+                backgroundColor: COLORS.BG_PAPER,
                 '& fieldset': {
                   borderColor: alpha(COLORS.PRIMARY, 0.12),
                 },
@@ -243,17 +244,17 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
                 },
               },
               '& .MuiInputLabel-root': {
-                color: alpha(COLORS.PRIMARY, 0.7),
+                color: COLORS.TEXT_SECONDARY,
               },
               '& .MuiSelect-select': {
-                color: COLORS.PRIMARY,
+                color: COLORS.PRIMARY_TEXT,
               },
               '& .MuiSelect-icon': {
-                color: COLORS.PRIMARY,
+                color: COLORS.PRIMARY_TEXT,
               },
             }}
           >
-            <InputLabel sx={{ color: alpha(COLORS.PRIMARY, 0.7) }}>{t('widgets.todos.priority')}</InputLabel>
+            <InputLabel sx={{ color: COLORS.TEXT_SECONDARY }}>{t('widgets.todos.priority')}</InputLabel>
             <Select
               value={severity}
               label={t('widgets.todos.priority')}
@@ -320,7 +321,7 @@ export const TodosWidget: React.FC<TodosWidgetProps> = ({
             <ListItem>
               <ListItemText 
                 primary={t('widgets.todos.noTodos')} 
-                sx={{ '& .MuiListItemText-primary': { color: alpha(COLORS.PRIMARY, 0.6), fontStyle: 'italic' } }}
+                sx={{ '& .MuiListItemText-primary': { color: COLORS.TEXT_SECONDARY, fontStyle: 'italic' } }}
               />
             </ListItem>
           ) : (

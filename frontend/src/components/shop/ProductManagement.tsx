@@ -29,7 +29,8 @@ import {
   FormControlLabel,
   TablePagination,
   Card,
-  CardContent
+  CardContent,
+  useTheme
 } from '@mui/material';
 import {
   Edit as EditIcon,
@@ -52,7 +53,8 @@ import { NoProducts } from '../common/EmptyState';
 import { useTableSort } from '../../hooks/useTableSort';
 import { SortableTableCell } from '../common/SortableTableCell';
 import { useCsvExport } from '../../hooks/useCsvExport';
-import { COLORS, addAlpha } from '../../theme/themeColors';
+import { useThemeColors } from '../../theme/useThemeColors';
+import { getReadableAccentTextColor } from '../../theme/surfaces';
 import PremiumTextField from '../common/PremiumTextField';
 import PremiumSelect from '../common/PremiumSelect';
 
@@ -60,6 +62,9 @@ const ProductManagement: React.FC = () => {
   const { t } = useTranslation();
   const { user, token } = useAuth();
   const { enqueueSnackbar } = useSnackbar();
+  const { COLORS, addAlpha } = useThemeColors();
+  const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
   const { exportToCsv } = useCsvExport({ filename: 'products' });
   const [products, setProducts] = useState<Product[]>([]);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -587,16 +592,16 @@ const ProductManagement: React.FC = () => {
             borderRadius: 3,
             boxShadow: `0 18px 48px ${addAlpha(COLORS.PRIMARY, 0.12)}`,
             border: `1px solid ${addAlpha(COLORS.PRIMARY, 0.08)}`,
-            backgroundColor: COLORS.WHITE
+            backgroundColor: theme.palette.background.paper
           }
         }}
       >
-        <DialogTitle sx={{ fontWeight: 700, color: COLORS.PRIMARY }}>
+        <DialogTitle sx={{ fontWeight: 700, color: readableAccentColor }}>
           {editingProduct ? t('shop.products.editProduct') : t('shop.products.addProduct')}
         </DialogTitle>
         <DialogContent dividers sx={{
           borderColor: addAlpha(COLORS.PRIMARY, 0.08),
-          backgroundColor: COLORS.WHITE,
+          backgroundColor: theme.palette.background.paper,
           px: 3,
           pt: 2,
           pb: 3
@@ -733,7 +738,7 @@ const ProductManagement: React.FC = () => {
             variant="outlined"
             sx={{
               borderColor: addAlpha(COLORS.PRIMARY, 0.3),
-              color: COLORS.PRIMARY,
+              color: readableAccentColor,
               fontWeight: 600,
               textTransform: 'none'
             }}

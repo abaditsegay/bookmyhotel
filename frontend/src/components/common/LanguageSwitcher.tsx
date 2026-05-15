@@ -1,5 +1,6 @@
 import React from 'react';
 import { 
+  alpha,
   Button, 
   Menu, 
   MenuItem, 
@@ -12,7 +13,6 @@ import {
   ExpandMore as ExpandMoreIcon 
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
-import { COLORS, addAlpha } from '../../theme/themeColors';
 
 interface LanguageSwitcherProps {
   variant?: 'button' | 'menu';
@@ -78,11 +78,11 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
             justifyContent: 'space-between',
             // Dynamic styling based on color prop
             ...(color === 'white' && {
-              color: COLORS.WHITE,
-              borderColor: addAlpha(COLORS.WHITE, 0.5),
+              color: theme.palette.common.white,
+              borderColor: alpha(theme.palette.common.white, 0.5),
               '&:hover': {
-                borderColor: COLORS.WHITE,
-                backgroundColor: addAlpha(COLORS.WHITE, 0.1),
+                borderColor: theme.palette.common.white,
+                backgroundColor: alpha(theme.palette.common.white, 0.1),
               }
             }),
             ...(color === 'inherit' && {

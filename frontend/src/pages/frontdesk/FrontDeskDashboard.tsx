@@ -28,13 +28,16 @@ import UnifiedRoomManagement from '../../components/common/UnifiedRoomManagement
 import OfflineWalkInBooking from '../../components/OfflineWalkInBooking';
 import HousekeepingPage from '../housekeeping/HousekeepingPage';
 import { roomCacheService } from '../../services/RoomCacheService';
-import { COLORS } from '../../theme/themeColors';
+import { useThemeColors } from '../../theme/useThemeColors';
+import { getReadableAccentTextColor } from '../../theme/surfaces';
 
 const FrontDeskDashboard: React.FC = () => {
   const { t } = useTranslation();
   const { token, user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { COLORS } = useThemeColors();
   const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
   
   // Get initial tab from URL parameter, default to 0
   const initialTab = parseInt(searchParams.get('tab') || '0', 10);
@@ -224,7 +227,7 @@ const FrontDeskDashboard: React.FC = () => {
         <Grid item xs={12} sm={6} md={2}>
           <Card>
             <CardContent sx={{ textAlign: 'center', py: 0.75, px: 1.5 }}>
-              <Typography variant="h6" sx={{ fontWeight: 'bold', color: COLORS.PRIMARY, lineHeight: 1.2 }}>
+              <Typography variant="h6" sx={{ fontWeight: 'bold', color: readableAccentColor, lineHeight: 1.2 }}>
                 {todayStats.currentOccupancy}
               </Typography>
               <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
@@ -260,7 +263,7 @@ const FrontDeskDashboard: React.FC = () => {
         <Grid item xs={12} sm={6} md={2}>
           <Card>
             <CardContent sx={{ textAlign: 'center', py: 0.75, px: 1.5 }}>
-              <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'primary.main', lineHeight: 1.2 }}>
+              <Typography variant="h6" sx={{ fontWeight: 'bold', color: readableAccentColor, lineHeight: 1.2 }}>
                 {todayStats.availableRooms}
               </Typography>
               <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>

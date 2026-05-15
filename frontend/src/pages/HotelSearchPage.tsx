@@ -1,5 +1,4 @@
 import React, { useMemo } from 'react';
-import { getGradient } from '../theme/themeColors';
 import {
   Typography,
   Box,
@@ -17,6 +16,7 @@ import { useTranslation } from 'react-i18next';
 // import VerticalHotelAdvertisementBanner from '../components/VerticalHotelAdvertisementBanner';
 import HotelSearchForm from '../components/hotel/HotelSearchForm';
 import { hotelApiService } from '../services/hotelApi';
+import { getPageShellBackground, getReadableAccentTextColor } from '../theme/surfaces';
 import { 
   HotelSearchRequest,
 } from '../types/hotel';
@@ -26,6 +26,7 @@ const HotelSearchPage: React.FC = () => {
   const location = useLocation();
   const { t } = useTranslation();
   const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const initialSearchRequest = useMemo(
     () => ((location.state as { searchRequest?: HotelSearchRequest } | null)?.searchRequest ?? null),
@@ -53,9 +54,7 @@ const HotelSearchPage: React.FC = () => {
     <Box
       sx={{
         minHeight: '100vh',
-        background: theme.palette.mode === 'dark' 
-          ? getGradient('dark')
-          : getGradient('white'),
+        background: getPageShellBackground(theme),
         pb: 4,
       }}
     >
@@ -82,7 +81,7 @@ const HotelSearchPage: React.FC = () => {
             p: 2,
             backgroundColor: theme.palette.background.default,
           }}>
-            <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 1, color: 'primary.main' }}>
+            <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 1, color: readableAccentColor }}>
               {t('hotelSearch.title')}
             </Typography>
             <Typography variant="body1" color="text.secondary">

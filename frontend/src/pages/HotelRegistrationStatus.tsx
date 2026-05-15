@@ -25,6 +25,8 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import PremiumDisplayField from '../components/common/PremiumDisplayField';
 import { useSubmissionError } from '../contexts/SubmissionErrorContext';
+import { useTheme } from '@mui/material/styles';
+import { getReadableAccentTextColor, getSectionTint } from '../theme/surfaces';
 
 interface RegistrationStatus {
   id: number;
@@ -39,6 +41,8 @@ interface RegistrationStatus {
 
 const HotelRegistrationStatus: React.FC = () => {
   const { t, i18n } = useTranslation();
+  const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
   const navigate = useNavigate();
   const { showSubmissionError } = useSubmissionError();
   const [email, setEmail] = useState('');
@@ -170,7 +174,7 @@ const HotelRegistrationStatus: React.FC = () => {
         <Card>
           <CardContent>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-              <Hotel sx={{ mr: 2, fontSize: 40, color: 'primary.main' }} />
+              <Hotel sx={{ mr: 2, fontSize: 40, color: readableAccentColor }} />
               <Box sx={{ flexGrow: 1 }}>
                 <Typography variant="h5" gutterBottom>
                   {registration.hotelName}
@@ -269,7 +273,7 @@ const HotelRegistrationStatus: React.FC = () => {
       )}
 
       {/* Help Information */}
-      <Card sx={{ mt: 3, bgcolor: 'grey.50' }}>
+      <Card sx={{ mt: 3, bgcolor: getSectionTint(theme, 'primary') }}>
         <CardContent>
           <Typography variant="h6" gutterBottom>
             {t('hotelRegistrationStatus.help.title')}

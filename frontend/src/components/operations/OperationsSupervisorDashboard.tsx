@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
+  alpha,
   Box,
   Grid,
   Card,
@@ -16,7 +17,8 @@ import {
   TableHead,
   TableRow,
   Chip,
-  LinearProgress
+  LinearProgress,
+  useTheme
 } from '@mui/material';
 import {
   CleaningServices,
@@ -31,7 +33,6 @@ import StaffDashboard from './StaffDashboard';
 
 import TokenManager from '../../utils/tokenManager';
 import { API_CONFIG } from '../../config/apiConfig';
-import { COLORS, addAlpha } from '../../theme/themeColors';
 
 const API_BASE_URL = API_CONFIG.SERVER_URL;
 
@@ -73,6 +74,14 @@ interface RecentActivity {
 }
 
 const OperationsSupervisorDashboard: React.FC = () => {
+  const theme = useTheme();
+  const addAlpha = alpha;
+  const COLORS = {
+    GRADIENT_SLATE: `linear-gradient(135deg, ${theme.palette.primary.light} 0%, ${theme.palette.primary.main} 58%, ${theme.palette.primary.dark} 100%)`,
+    SLATE_500: theme.palette.primary.main,
+    WHITE: theme.palette.common.white,
+    BLACK: theme.palette.common.black,
+  } as const;
   const [activeTab, setActiveTab] = useState(0);
   const [stats, setStats] = useState<OperationsStats | null>(null);
   const [staffPerformance, setStaffPerformance] = useState<StaffPerformance[]>([]);

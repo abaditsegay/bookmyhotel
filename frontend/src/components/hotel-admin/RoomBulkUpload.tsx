@@ -35,7 +35,7 @@ import {
 import { hotelAdminApi } from '../../services/hotelAdminApi';
 import { useAuth } from '../../contexts/AuthContext';
 import { formatCurrency } from '../../utils/currencyUtils';
-import { COLORS, addAlpha } from '../../theme/themeColors';
+import { useThemeColors } from '../../theme/useThemeColors';
 
 interface RoomData {
   roomNumber: string;
@@ -61,6 +61,7 @@ interface RoomBulkUploadProps {
 }
 
 const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClose, hotelId }) => {
+  const { COLORS, addAlpha } = useThemeColors();
   const { token } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   

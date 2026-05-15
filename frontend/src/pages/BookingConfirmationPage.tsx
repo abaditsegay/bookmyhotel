@@ -2,9 +2,10 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { BookingService } from '../services/BookingService';
 import { useTranslation } from 'react-i18next';
-import { COLORS, addAlpha } from '../theme/themeColors';
+import { designSystem } from '../theme/designSystem';
 import PremiumTextField from '../components/common/PremiumTextField';
 import {
+  alpha,
   Container,
   Paper,
   Typography,
@@ -41,8 +42,15 @@ import { useAuth } from '../contexts/AuthContext';
 import { buildApiUrl } from '../config/apiConfig';
 import { formatCurrencyWithDecimals } from '../utils/currencyUtils';
 import { formatDateForDisplay, formatDateLongForDisplay, formatDateTimeForDisplay } from '../utils/dateUtils';
+import { getReadableAccentTextColor } from '../theme/surfaces';
 
 // Print-specific CSS styles
+const PRINT_COLORS = {
+  BLACK: designSystem.colors.text.primary,
+  WHITE: designSystem.colors.background.paper,
+  BORDER_DEFAULT: designSystem.colors.divider,
+} as const;
+
 const printStyles = `
   @media screen {
     .print-only {
@@ -64,7 +72,7 @@ const printStyles = `
       padding: 0;
       font-size: 12pt;
       line-height: 1.4;
-      color: ${COLORS.BLACK} !important;
+      color: ${PRINT_COLORS.BLACK} !important;
       background: white !important;
     }
     
@@ -85,21 +93,21 @@ const printStyles = `
       font-size: 20pt;
       font-weight: bold;
       margin-bottom: 10pt;
-      color: ${COLORS.BLACK} !important;
+      color: ${PRINT_COLORS.BLACK} !important;
     }
     
     .print-title {
       font-size: 16pt;
       font-weight: bold;
       margin-bottom: 10pt;
-      color: ${COLORS.BLACK} !important;
+      color: ${PRINT_COLORS.BLACK} !important;
     }
     
     .print-confirmation {
       font-size: 14pt;
       font-weight: bold;
       margin-bottom: 20pt;
-      color: ${COLORS.BLACK} !important;
+      color: ${PRINT_COLORS.BLACK} !important;
     }
     
     .print-table {
@@ -110,14 +118,14 @@ const printStyles = `
     
     .print-table td {
       padding: 8pt;
-      border: 1px solid ${COLORS.BORDER_DEFAULT};
+      border: 1px solid ${PRINT_COLORS.BORDER_DEFAULT};
       vertical-align: top;
     }
     
     .print-table .label {
       width: 30%;
       font-weight: bold;
-      background-color: ${COLORS.WHITE};
+      background-color: ${PRINT_COLORS.WHITE};
     }
     
     .print-table .value {
@@ -132,7 +140,7 @@ const printStyles = `
       font-size: 14pt;
       font-weight: bold;
       margin-bottom: 10pt;
-      color: ${COLORS.BLACK} !important;
+      color: ${PRINT_COLORS.BLACK} !important;
     }
     
     .print-bullet {
@@ -143,7 +151,7 @@ const printStyles = `
       text-align: center;
       margin-top: 20pt;
       font-size: 12pt;
-      color: ${COLORS.BLACK} !important;
+      color: ${PRINT_COLORS.BLACK} !important;
     }
   }
 `;
@@ -199,6 +207,18 @@ const BookingConfirmationPage: React.FC = () => {
   
   // Mobile responsiveness
   const theme = useTheme();
+  const addAlpha = alpha;
+  const readableAccentColor = getReadableAccentTextColor(theme);
+  const COLORS = {
+    PRIMARY: theme.palette.primary.main,
+    PRIMARY_HOVER: theme.palette.primary.dark,
+    SUCCESS: theme.palette.success.main,
+    CHECKED_IN: theme.palette.success.dark,
+    BOOKED: theme.palette.info.main,
+    WHITE: theme.palette.common.white,
+    BLACK: theme.palette.common.black,
+    BORDER_DEFAULT: theme.palette.divider,
+  } as const;
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   
   const [booking, setBooking] = useState<BookingData | null>(null);
@@ -1230,7 +1250,7 @@ const BookingConfirmationPage: React.FC = () => {
                 gutterBottom 
                 sx={{ 
                   fontWeight: 'bold', 
-                  color: COLORS.PRIMARY, 
+                  color: readableAccentColor,
                   mb: isMobile ? 1.5 : 2,
                 }}
               >
@@ -1277,7 +1297,7 @@ const BookingConfirmationPage: React.FC = () => {
                 gutterBottom 
                 sx={{ 
                   fontWeight: 'bold', 
-                  color: COLORS.PRIMARY, 
+                  color: readableAccentColor,
                   mb: isMobile ? 1.5 : 2,
                 }}
               >
@@ -1331,7 +1351,7 @@ const BookingConfirmationPage: React.FC = () => {
                 gutterBottom 
                 sx={{ 
                   fontWeight: 'bold', 
-                  color: COLORS.PRIMARY, 
+                  color: readableAccentColor,
                   mb: isMobile ? 1.5 : 2,
                 }}
               >
@@ -1382,7 +1402,7 @@ const BookingConfirmationPage: React.FC = () => {
                 gutterBottom 
                 sx={{ 
                   fontWeight: 'bold', 
-                  color: COLORS.PRIMARY, 
+                  color: readableAccentColor,
                   mb: isMobile ? 1.5 : 2,
                 }}
               >
@@ -1427,7 +1447,7 @@ const BookingConfirmationPage: React.FC = () => {
             gutterBottom 
             sx={{ 
               fontWeight: 'bold', 
-              color: COLORS.PRIMARY, 
+              color: readableAccentColor,
               mb: isMobile ? 1.5 : 2,
             }}
           >
@@ -1584,7 +1604,7 @@ const BookingConfirmationPage: React.FC = () => {
             minHeight: 48,
             flex: isMobile ? '1' : '0 0 auto',
             borderColor: COLORS.PRIMARY,
-            color: COLORS.PRIMARY,
+            color: readableAccentColor,
             '&:hover': {
               borderColor: COLORS.BOOKED,
               backgroundColor: addAlpha(COLORS.PRIMARY, 0.04),
@@ -1616,7 +1636,7 @@ const BookingConfirmationPage: React.FC = () => {
             component="div" 
             sx={{ 
               fontWeight: 'bold', 
-              color: COLORS.PRIMARY,
+              color: readableAccentColor,
             }}
           >
             {t('bookingConfirmation.emailDialog.title')}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { COLORS, addAlpha, getGradient } from '../theme/themeColors';
+import { useThemeColors } from '../theme/useThemeColors';
 import {
   Container,
   Typography,
@@ -39,6 +39,7 @@ import { ROOM_TYPES, getRoomTypeLabel } from '../constants/roomTypes';
 import PremiumDatePicker from '../components/common/PremiumDatePicker';
 import { formatDateForInput, formatDateForAPI, formatDateForDisplay, parseDateInputValue, formatDateObjectForInput } from '../utils/dateUtils';
 import { formatCurrencyWithDecimals } from '../utils/currencyUtils';
+import { getPageShellBackground, getReadableAccentTextColor } from '../theme/surfaces';
 
 // Get today's date in YYYY-MM-DD format (avoiding timezone issues)
 const getTodayForInput = (): string => {
@@ -75,7 +76,9 @@ const GuestBookingManagementPage: React.FC = () => {
   const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
+  const { COLORS, addAlpha } = useThemeColors();
   const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [searchParams] = useSearchParams();
   
@@ -118,6 +121,11 @@ const GuestBookingManagementPage: React.FC = () => {
   
   // Cancellation form state
   const [cancellationReason, setCancellationReason] = useState('');
+
+  const getStatusSurface = useCallback(
+    (color: string, lightOpacity = 0.04, darkOpacity = 0.12) => alpha(color, theme.palette.mode === 'dark' ? darkOpacity : lightOpacity),
+    [theme.palette.mode]
+  );
 
   // Fetch hotel tax rates
   const fetchHotelTaxRate = useCallback(async (hotelId: number) => {
@@ -431,9 +439,7 @@ const GuestBookingManagementPage: React.FC = () => {
       <Box
         sx={{
           minHeight: '100vh',
-          background: theme.palette.mode === 'dark' 
-            ? getGradient('dark')
-            : getGradient('white'),
+          background: getPageShellBackground(theme),
           py: 4,
         }}
       >
@@ -456,9 +462,7 @@ const GuestBookingManagementPage: React.FC = () => {
       <Box
         sx={{
           minHeight: '100vh',
-          background: theme.palette.mode === 'dark' 
-            ? getGradient('dark')
-            : getGradient('white'),
+          background: getPageShellBackground(theme),
           py: 4,
         }}
       >
@@ -470,9 +474,7 @@ const GuestBookingManagementPage: React.FC = () => {
                 sx={{ 
                   mb: 3,
                   borderRadius: 0,
-                  backgroundColor: theme.palette.mode === 'dark' 
-                    ? addAlpha(COLORS.ERROR, 0.1)
-                    : addAlpha(COLORS.ERROR, 0.04),
+                  backgroundColor: getStatusSurface(COLORS.ERROR),
                 }}
               >
                 {errorMessage || 'No booking information available. Please search for your booking first.'}
@@ -834,9 +836,7 @@ const GuestBookingManagementPage: React.FC = () => {
     <Box
       sx={{
         minHeight: '100vh',
-        background: theme.palette.mode === 'dark' 
-          ? getGradient('dark')
-          : getGradient('white'),
+        background: getPageShellBackground(theme),
         py: 4,
       }}
     >
@@ -848,9 +848,7 @@ const GuestBookingManagementPage: React.FC = () => {
             sx={{ 
               mb: 3,
               borderRadius: 0,
-              backgroundColor: theme.palette.mode === 'dark' 
-                ? addAlpha(COLORS.SUCCESS, 0.1)
-                : addAlpha(COLORS.SUCCESS, 0.04),
+              backgroundColor: getStatusSurface(COLORS.SUCCESS),
             }} 
             onClose={() => setSuccessMessage('')}
           >
@@ -863,9 +861,7 @@ const GuestBookingManagementPage: React.FC = () => {
             sx={{ 
               mb: 3,
               borderRadius: 0,
-              backgroundColor: theme.palette.mode === 'dark' 
-                ? addAlpha(COLORS.ERROR, 0.1)
-                : addAlpha(COLORS.ERROR, 0.04),
+              backgroundColor: getStatusSurface(COLORS.ERROR),
             }} 
             onClose={() => setErrorMessage('')}
           >
@@ -880,9 +876,7 @@ const GuestBookingManagementPage: React.FC = () => {
             sx={{ 
               mb: 3,
               borderRadius: 0,
-              backgroundColor: theme.palette.mode === 'dark' 
-                ? addAlpha(COLORS.INFO, 0.1)
-                : addAlpha(COLORS.INFO, 0.04),
+              backgroundColor: getStatusSurface(COLORS.INFO),
             }}
           >
             <Typography variant="h6" gutterBottom>
@@ -909,16 +903,16 @@ const GuestBookingManagementPage: React.FC = () => {
                   gutterBottom
                   sx={{
                     fontWeight: 'bold',
-                    color: 'primary.main',
+                    color: readableAccentColor,
                   }}
                 >
                   {t('booking.manage.title')}
                 </Typography>
                 <Typography 
                   variant="h6" 
-                  color="primary"
                   sx={{
                     fontWeight: 'bold',
+                    color: readableAccentColor,
                   }}
                 >
                   {t('booking.manage.confirmationLabel')}: {booking.confirmationNumber}
@@ -988,9 +982,7 @@ const GuestBookingManagementPage: React.FC = () => {
                 sx={{ 
                   mt: 2,
                   borderRadius: 0,
-                  backgroundColor: theme.palette.mode === 'dark' 
-                    ? addAlpha(COLORS.INFO, 0.1)
-                    : addAlpha(COLORS.INFO, 0.04),
+                  backgroundColor: getStatusSurface(COLORS.INFO),
                 }}
               >
                 {t('booking.guestManagementPage.modifyDeadline')}
@@ -1024,8 +1016,8 @@ const GuestBookingManagementPage: React.FC = () => {
                 }}
               >
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <EventIcon sx={{ mr: 1, color: 'primary.main' }} />
-                  <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold' }}>
+                  <EventIcon sx={{ mr: 1, color: readableAccentColor }} />
+                  <Typography variant="h6" sx={{ color: readableAccentColor, fontWeight: 'bold' }}>
                     {t('booking.manage.stayDetails')}
                   </Typography>
                 </Box>
@@ -1167,8 +1159,8 @@ const GuestBookingManagementPage: React.FC = () => {
                 }}
               >
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <HotelIcon sx={{ mr: 1, color: 'primary.main' }} />
-                  <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold' }}>
+                  <HotelIcon sx={{ mr: 1, color: readableAccentColor }} />
+                  <Typography variant="h6" sx={{ color: readableAccentColor, fontWeight: 'bold' }}>
                     {t('booking.manage.hotelAndRoom')}
                   </Typography>
                 </Box>
@@ -1199,8 +1191,8 @@ const GuestBookingManagementPage: React.FC = () => {
                 }}
               >
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <PersonIcon sx={{ mr: 1, color: 'primary.main' }} />
-                  <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold' }}>
+                  <PersonIcon sx={{ mr: 1, color: readableAccentColor }} />
+                  <Typography variant="h6" sx={{ color: readableAccentColor, fontWeight: 'bold' }}>
                     {t('booking.manage.guestInformation')}
                   </Typography>
                 </Box>
@@ -1236,7 +1228,7 @@ const GuestBookingManagementPage: React.FC = () => {
                 }}
               >
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold' }}>
+                  <Typography variant="h6" sx={{ color: readableAccentColor, fontWeight: 'bold' }}>
                     {t('booking.manage.paymentInformation')}
                   </Typography>
                 </Box>
@@ -1301,11 +1293,11 @@ const GuestBookingManagementPage: React.FC = () => {
               <Box sx={{ 
                 mb: 3, 
                 p: 3, 
-                backgroundColor: theme.palette.mode === 'dark' ? addAlpha(COLORS.INFO, 0.1) : COLORS.BG_INFO_LIGHT,
-                border: `2px solid ${addAlpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.5 : 0.8)}`,
+                backgroundColor: getStatusSurface(COLORS.INFO, 0.08, 0.14),
+                border: `2px solid ${alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.5 : 0.8)}`,
                 borderRadius: 2,
               }}>
-                <Typography variant="h5" sx={{ color: COLORS.PRIMARY, fontWeight: 'bold', mb: 3, textAlign: 'center' }}>
+                <Typography variant="h5" sx={{ color: readableAccentColor, fontWeight: 'bold', mb: 3, textAlign: 'center' }}>
                   {`🔄 ${t('booking.guestManagementPage.pricingUpdated')}`}
                 </Typography>
                 
@@ -1484,7 +1476,7 @@ const GuestBookingManagementPage: React.FC = () => {
                   </Grid>
                 </Grid>
                 
-                <Typography variant="body2" sx={{ color: COLORS.PRIMARY, fontStyle: 'italic', textAlign: 'center', mt: 2 }}>
+                <Typography variant="body2" sx={{ color: readableAccentColor, fontStyle: 'italic', textAlign: 'center', mt: 2 }}>
                   {`💡 ${t('booking.guestManagementPage.pricingPersistHint')}`}
                 </Typography>
               </Box>
