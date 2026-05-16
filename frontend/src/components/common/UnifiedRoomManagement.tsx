@@ -32,6 +32,7 @@ import {
   FormControlLabel,
   Tabs,
   Tab,
+  useTheme,
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -51,8 +52,9 @@ import { ROOM_TYPES, getRoomTypeLabel } from '../../constants/roomTypes';
 import PremiumTextField from './PremiumTextField';
 import PremiumSelect from './PremiumSelect';
 import StandardButton from './StandardButton';
-import { guestNameBadgeSx } from '../../theme/sxHelpers';
+import { guestNameBadgeSx, refreshActionButtonSx } from '../../theme/sxHelpers';
 import { useThemeColors } from '../../theme/useThemeColors';
+import { getReadableAccentTextColor } from '../../theme/surfaces';
 import { getEffectiveSearchTerm } from '../../utils/search';
 
 // Import hotel admin specific components conditionally
@@ -92,6 +94,8 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
   onRoomUpdate 
 }) => {
   const { t } = useTranslation();
+  const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
   const { token } = useAuth();
   const { showSubmissionError } = useSubmissionError();
   const { COLORS, addAlpha } = useThemeColors();
@@ -411,7 +415,26 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
 
     return (
       <>
-        <Tabs value={activeTab} onChange={handleTabChange} sx={{ mb: 2 }}>
+        <Tabs
+          value={activeTab}
+          onChange={handleTabChange}
+          sx={{
+            mb: 2,
+            '& .MuiTab-root': {
+              color: 'text.secondary',
+              '&:hover': {
+                color: 'text.primary',
+              },
+              '&.Mui-selected': {
+                color: readableAccentColor,
+                fontWeight: 600,
+              },
+            },
+            '& .MuiTabs-indicator': {
+              backgroundColor: readableAccentColor,
+            },
+          }}
+        >
           <Tab label={t(`${translationPrefix}.tabs.roomList`)} />
           {RoomTypePricing && <Tab label={t(`${translationPrefix}.tabs.pricing`)} />}
           {RoomBulkUpload && <Tab label={t(`${translationPrefix}.tabs.bulkUpload`)} />}
@@ -505,7 +528,7 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
                 },
               },
               '& .MuiInputLabel-root.Mui-focused': {
-                color: COLORS.PRIMARY,
+                color: readableAccentColor,
                 fontWeight: 600,
               },
             }}>
@@ -545,7 +568,7 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
                 },
               },
               '& .MuiInputLabel-root.Mui-focused': {
-                color: COLORS.PRIMARY,
+                color: readableAccentColor,
                 fontWeight: 600,
               },
             }}>
@@ -568,6 +591,7 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
               startIcon={<RefreshIcon />}
               onClick={loadRooms}
               variant="outlined"
+              sx={refreshActionButtonSx}
             >
               {t(`${translationPrefix}.actions.refresh`)}
             </Button>
@@ -787,7 +811,7 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
 
       {/* Edit Room Dialog */}
       <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontWeight: 700, color: COLORS.PRIMARY }}>
+        <DialogTitle sx={{ fontWeight: 700, color: readableAccentColor }}>
           {t(`${translationPrefix}.editRoom.title`)}
         </DialogTitle>
         <DialogContent>
@@ -837,7 +861,7 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
             onClick={() => setEditDialogOpen(false)}
             sx={{
               borderColor: addAlpha(COLORS.SECONDARY, 0.6),
-              color: COLORS.PRIMARY,
+              color: readableAccentColor,
               '&:hover': {
                 borderColor: COLORS.SECONDARY,
                 bgcolor: addAlpha(COLORS.SECONDARY, 0.08),

@@ -44,14 +44,14 @@ export const getPremiumTableHeadSx = (options?: { compact?: boolean }): SxProps<
 };
 
 export const premiumTabsPaperSx: SxProps<Theme> = (theme) => {
-  const { COLORS, addAlpha } = getThemeColorHelpers(theme);
+  const { addAlpha } = getThemeColorHelpers(theme);
+  const isDark = theme.palette.mode === 'dark';
 
   return {
     mb: 3,
-    background: `linear-gradient(135deg, ${addAlpha(COLORS.PRIMARY, 0.04)} 0%, ${addAlpha(COLORS.SECONDARY, 0.06)} 100%)`,
-    backdropFilter: 'blur(10px)',
-    border: `1px solid ${addAlpha(COLORS.PRIMARY, 0.08)}`,
-    boxShadow: `0 6px 20px ${addAlpha(COLORS.PRIMARY, 0.12)}`,
+    backgroundColor: addAlpha(theme.palette.text.primary, isDark ? 0.04 : 0.02),
+    border: `1px solid ${addAlpha(theme.palette.text.primary, isDark ? 0.14 : 0.08)}`,
+    boxShadow: 'none',
     borderRadius: 2
   };
 };
@@ -65,25 +65,25 @@ export const premiumTabsSx: SxProps<Theme> = (theme) => {
       fontWeight: 600,
       fontSize: '0.95rem',
       textTransform: 'none',
-      color: COLORS.SLATE_500,
+      color: theme.palette.text.secondary,
       minHeight: 56,
       borderRadius: 1.5,
       transition: 'all 0.25s ease',
       '&:hover': {
-        color: COLORS.PRIMARY,
-        background: addAlpha(COLORS.PRIMARY, 0.06)
+        color: theme.palette.text.primary,
+        backgroundColor: addAlpha(COLORS.PRIMARY, theme.palette.mode === 'dark' ? 0.14 : 0.06)
       },
       '&.Mui-selected': {
-        color: COLORS.PRIMARY,
+        color: theme.palette.text.primary,
         fontWeight: 700,
-        background: addAlpha(COLORS.PRIMARY, 0.08)
+        backgroundColor: addAlpha(COLORS.PRIMARY, theme.palette.mode === 'dark' ? 0.18 : 0.08)
       }
     },
     '& .MuiTabs-indicator': {
       height: 3,
-      background: `linear-gradient(90deg, ${COLORS.SECONDARY} 0%, ${COLORS.PRIMARY} 100%)`,
+      backgroundColor: COLORS.SECONDARY,
       borderRadius: '3px 3px 0 0',
-      boxShadow: `0 -2px 10px ${addAlpha(COLORS.PRIMARY, 0.25)}`
+      boxShadow: 'none'
     }
   };
 };

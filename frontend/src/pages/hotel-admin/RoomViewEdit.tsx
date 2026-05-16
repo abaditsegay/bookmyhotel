@@ -279,15 +279,9 @@ const RoomViewEdit: React.FC = () => {
             ) : (
               <StandardButton
                 variant="contained"
+                color="secondary"
                 startIcon={<SaveIcon />}
                 onClick={handleSaveAndClose}
-                gradient
-                sx={{
-                  background: COLORS.GRADIENT_SECONDARY,
-                  '&:hover': {
-                    background: COLORS.GRADIENT_WARM,
-                  },
-                }}
               >
                 {t('rooms.details.save')}
               </StandardButton>

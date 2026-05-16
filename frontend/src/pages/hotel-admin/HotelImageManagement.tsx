@@ -46,6 +46,19 @@ const HotelImageManagement: React.FC = () => {
   const { COLORS, addAlpha } = useThemeColors();
   const theme = useTheme();
   const readableAccentColor = getReadableAccentTextColor(theme);
+  const neutralAccordionSurface = theme.palette.mode === 'dark'
+    ? addAlpha(theme.palette.common.white, 0.04)
+    : theme.palette.background.paper;
+  const neutralAccordionHover = theme.palette.mode === 'dark'
+    ? addAlpha(theme.palette.common.white, 0.08)
+    : addAlpha(theme.palette.text.primary, 0.04);
+  const neutralAccordionBorder = addAlpha(theme.palette.text.primary, theme.palette.mode === 'dark' ? 0.16 : 0.1);
+  const primaryAccordionSurface = theme.palette.mode === 'dark'
+    ? addAlpha(readableAccentColor, 0.2)
+    : theme.palette.primary.main;
+  const primaryAccordionHover = theme.palette.mode === 'dark'
+    ? addAlpha(readableAccentColor, 0.28)
+    : theme.palette.primary.dark;
   const { token } = useAuth();
   const { showSubmissionError } = useSubmissionError();
   const [loading, setLoading] = useState(false);
@@ -292,7 +305,7 @@ const HotelImageManagement: React.FC = () => {
         sx={{ 
           mb: 3,
           border: '1px solid',
-          borderColor: 'divider',
+          borderColor: neutralAccordionBorder,
           borderRadius: 2,
           '&:before': { display: 'none' },
           boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.08)}`,
@@ -301,14 +314,14 @@ const HotelImageManagement: React.FC = () => {
         <AccordionSummary 
           expandIcon={<ExpandMoreIcon />}
           sx={{
-            bgcolor: 'primary.main',
+            bgcolor: primaryAccordionSurface,
             color: 'white',
             borderRadius: '8px 8px 0 0',
             '& .MuiAccordionSummary-expandIconWrapper': {
               color: 'white',
             },
             '&:hover': {
-              bgcolor: 'primary.dark',
+              bgcolor: primaryAccordionHover,
             },
           }}
         >
@@ -527,7 +540,7 @@ const HotelImageManagement: React.FC = () => {
             sx={{ 
               mb: 3,
               border: '1px solid',
-              borderColor: 'divider',
+              borderColor: neutralAccordionBorder,
               borderRadius: 2,
               '&:before': { display: 'none' },
               boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.08)}`,
@@ -536,20 +549,27 @@ const HotelImageManagement: React.FC = () => {
             <AccordionSummary 
               expandIcon={<ExpandMoreIcon />}
               sx={{
-                bgcolor: 'grey.100',
+                bgcolor: neutralAccordionSurface,
                 color: 'text.primary',
                 borderRadius: '8px 8px 0 0',
                 borderBottom: '1px solid',
-                borderColor: 'divider',
+                borderColor: neutralAccordionBorder,
                 '& .MuiAccordionSummary-expandIconWrapper': {
-                  color: 'text.secondary',
+                  color: readableAccentColor,
                 },
                 '&:hover': {
-                  bgcolor: 'grey.200',
+                  bgcolor: neutralAccordionHover,
                 },
               }}
             >
-              <Typography variant="h6" sx={{ fontWeight: 500, textTransform: 'capitalize' }}>
+              <Typography
+                variant="h6"
+                sx={{
+                  fontWeight: 500,
+                  textTransform: 'capitalize',
+                  color: theme.palette.text.primary,
+                }}
+              >
                 {roomType.toLowerCase().replace('_', ' ')} Rooms
               </Typography>
             </AccordionSummary>

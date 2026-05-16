@@ -37,6 +37,7 @@ import {
 } from '@mui/icons-material';
 import { Hotel } from '../../types/hotel';
 import { hotelAdminApi } from '../../services/hotelAdminApi';
+import { actionIconButtonSx } from '../../theme/sxHelpers';
 
 interface HotelDetailsManagementProps {
   hotel: Hotel | null;
@@ -403,7 +404,7 @@ const HotelDetailsManagement: React.FC<HotelDetailsManagementProps> = ({
                     Contact & Operations
                   </Typography>
                 </Box>
-                <IconButton onClick={handlePhoneEditClick} sx={{ color: theme.palette.primary.main, '&:hover': { backgroundColor: theme.palette.primary.main + '10' } }}>
+                <IconButton onClick={handlePhoneEditClick} sx={actionIconButtonSx('accent')}>
                   <EditIcon />
                 </IconButton>
               </Box>

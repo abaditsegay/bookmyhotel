@@ -51,6 +51,7 @@ import PremiumDisplayField from '../../components/common/PremiumDisplayField';
 import PremiumSelect from '../../components/common/PremiumSelect';
 import StandardDialog from '../../components/ui/StandardDialog';
 import { DataTableCard, PageHeader, SurfaceCard } from '../../components/ui';
+import { refreshActionButtonSx } from '../../theme/sxHelpers';
 import { formatEthiopianPhone, normalizeEthiopianPhone } from '../../utils/phoneUtils';
 import { getEffectiveSearchTerm } from '../../utils/search';
 import HotelEditDialog from '../../components/hotel/HotelEditDialog';
@@ -754,6 +755,7 @@ const HotelManagementAdmin: React.FC = () => {
                 }
               }}
               data-testid="hotel-management-refresh-button"
+              sx={refreshActionButtonSx}
             >
               Refresh
             </StandardButton>

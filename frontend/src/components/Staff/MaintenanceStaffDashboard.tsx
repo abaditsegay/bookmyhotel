@@ -36,7 +36,7 @@ import {
   Schedule as ScheduleIcon,
   Warning as WarningIcon
 } from '@mui/icons-material';
-import { tableHeadRowSx } from '../../theme/sxHelpers';
+import { actionIconButtonSx, tableHeadRowSx } from '../../theme/sxHelpers';
 import { staffApi } from '../../services/staffApi';
 import { MaintenanceTask } from '../../types/operations';
 import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
@@ -348,7 +348,7 @@ const MaintenanceStaffDashboard: React.FC = () => {
                           <Box sx={{ display: 'flex', gap: 1 }}>
                             {canStartTask(task) && (
                               <IconButton
-                                color="primary"
+                                sx={actionIconButtonSx('accent')}
                                 onClick={() => handleStartTask(task)}
                                 title="Start Task"
                               >
@@ -357,7 +357,7 @@ const MaintenanceStaffDashboard: React.FC = () => {
                             )}
                             {canCompleteTask(task) && (
                               <IconButton
-                                color="primary"
+                                sx={actionIconButtonSx('accent')}
                                 onClick={() => handleCompleteTask(task)}
                                 title="Complete Task"
                               >
@@ -366,7 +366,7 @@ const MaintenanceStaffDashboard: React.FC = () => {
                             )}
                             {canUpdateStatus(task) && (
                               <IconButton
-                                color="info"
+                                sx={actionIconButtonSx('info')}
                                 onClick={() => openStatusDialog(task)}
                                 title="Update Status"
                               >

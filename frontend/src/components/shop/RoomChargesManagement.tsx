@@ -38,6 +38,7 @@ import {
 } from '@mui/icons-material';
 import { format } from 'date-fns';
 import { roomChargeApiService } from '../../services/roomChargeApi';
+import { actionIconButtonSx } from '../../theme/sxHelpers';
 import { RoomCharge, RoomChargeCreateRequest, RoomChargeType } from '../../types/shop';
 import { getPremiumTableHeadSx } from './premiumStyles';
 import { guestNameBadgeSx } from '../../theme/sxHelpers';
@@ -372,7 +373,7 @@ const RoomChargesManagement: React.FC<RoomChargesProps> = ({ hotelId }) => {
                           <Tooltip title="Mark as Paid">
                             <IconButton
                               size="small"
-                              color="success"
+                              sx={actionIconButtonSx('success')}
                               onClick={() => {
                                 setSelectedCharge(charge);
                                 setPaymentDialogOpen(true);
@@ -385,7 +386,7 @@ const RoomChargesManagement: React.FC<RoomChargesProps> = ({ hotelId }) => {
                           <Tooltip title="Mark as Unpaid">
                             <IconButton
                               size="small"
-                              color="warning"
+                              sx={actionIconButtonSx('warning')}
                               onClick={() => handleMarkAsUnpaid(charge.id)}
                             >
                               <ReceiptIcon />

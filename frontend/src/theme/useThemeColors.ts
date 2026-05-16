@@ -12,12 +12,11 @@ const getBackgroundLight = (theme: Theme) => {
 export const getThemeColorHelpers = (theme: Theme) => {
   const backgroundLight = getBackgroundLight(theme);
   const isDark = theme.palette.mode === 'dark';
-  const slateBase = isDark ? '#94a3b8' : '#475569';
-
-  const primaryGradient = `linear-gradient(180deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.main} 100%)`;
-  const secondaryGradient = `linear-gradient(180deg, ${theme.palette.secondary.main} 0%, ${theme.palette.secondary.main} 100%)`;
-  const successGradient = `linear-gradient(180deg, ${theme.palette.success.main} 0%, ${theme.palette.success.main} 100%)`;
-  const darkGradient = `linear-gradient(180deg, ${theme.palette.background.default} 0%, ${theme.palette.background.default} 100%)`;
+  const slateBase = isDark ? theme.palette.text.secondary : '#475569';
+  const primarySurface = getSectionTint(theme, 'primary');
+  const secondarySurface = getSectionTint(theme, 'secondary');
+  const successSurface = alpha(theme.palette.success.main, isDark ? 0.16 : 0.08);
+  const darkSurface = theme.palette.background.default;
   const primaryText = theme.palette.text.primary;
   const secondaryText = theme.palette.text.secondary;
   const infoText = theme.palette.text.primary;
@@ -89,14 +88,14 @@ export const getThemeColorHelpers = (theme: Theme) => {
     BLACK: theme.palette.common.black,
     BLACK_ALPHA_87: alpha(theme.palette.common.black, 0.87),
     BLACK_ALPHA_60: alpha(theme.palette.common.black, 0.6),
-    GRADIENT_PRIMARY: primaryGradient,
-    GRADIENT_SECONDARY: secondaryGradient,
-    GRADIENT_ACCENT: `linear-gradient(180deg, ${theme.palette.info.main} 0%, ${theme.palette.info.main} 100%)`,
-    GRADIENT_WARM: `linear-gradient(180deg, ${theme.palette.secondary.main} 0%, ${theme.palette.secondary.main} 100%)`,
-    GRADIENT_PURPLE: `linear-gradient(180deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.main} 100%)`,
-    GRADIENT_SLATE: `linear-gradient(180deg, ${theme.palette.background.light} 0%, ${theme.palette.background.light} 100%)`,
-    GRADIENT_WHITE: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.background.paper} 100%)`,
-    GRADIENT_DARK: darkGradient,
+    GRADIENT_PRIMARY: primarySurface,
+    GRADIENT_SECONDARY: secondarySurface,
+    GRADIENT_ACCENT: infoSoft,
+    GRADIENT_WARM: secondarySurface,
+    GRADIENT_PURPLE: primarySurface,
+    GRADIENT_SLATE: theme.palette.background.light,
+    GRADIENT_WHITE: theme.palette.background.paper,
+    GRADIENT_DARK: darkSurface,
     GLASS_LIGHT: theme.palette.background.paper,
     GLASS_DARK: theme.palette.background.paper,
   } as const;
@@ -113,21 +112,21 @@ export const getThemeColorHelpers = (theme: Theme) => {
     if (mode === 'dark') {
       switch (type) {
         case 'secondary':
-          return `linear-gradient(180deg, ${theme.palette.secondary.main} 0%, ${theme.palette.secondary.main} 100%)`;
+          return secondarySurface;
         case 'success':
-          return `linear-gradient(180deg, ${theme.palette.success.main} 0%, ${theme.palette.success.main} 100%)`;
+          return successSurface;
         default:
-          return `linear-gradient(180deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.main} 100%)`;
+          return primarySurface;
       }
     }
 
     switch (type) {
       case 'secondary':
-        return secondaryGradient;
+        return secondarySurface;
       case 'success':
-        return successGradient;
+        return successSurface;
       default:
-        return primaryGradient;
+        return primarySurface;
     }
   };
 

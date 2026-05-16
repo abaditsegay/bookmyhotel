@@ -23,6 +23,16 @@ const LoginPage: React.FC = () => {
   const { t } = useTranslation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const authLinkButtonSx = {
+    px: 0,
+    minWidth: 'auto',
+    color: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.92)' : theme.palette.primary.main,
+    fontWeight: 700,
+    '&:hover': {
+      backgroundColor: 'transparent',
+      color: theme.palette.mode === 'dark' ? theme.palette.common.white : theme.palette.primary.dark,
+    },
+  };
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -320,7 +330,7 @@ const LoginPage: React.FC = () => {
                     to="/forgot-password"
                     variant="text"
                     buttonSize="small"
-                    sx={{ px: 0, minWidth: 'auto' }}
+                    sx={authLinkButtonSx}
                   >
                     {t('auth.login.forgotPassword')}
                   </StandardButton>
@@ -419,7 +429,7 @@ const LoginPage: React.FC = () => {
                     variant="text" 
                     onClick={() => setShowSignUp(true)}
                     buttonSize="small"
-                    sx={{ px: 0, minWidth: 'auto' }}
+                    sx={authLinkButtonSx}
                   >
                     {t('auth.login.createAccount')}
                   </StandardButton>
@@ -431,7 +441,7 @@ const LoginPage: React.FC = () => {
                     variant="text" 
                     onClick={() => setShowSignUp(false)}
                     buttonSize="small"
-                    sx={{ px: 0, minWidth: 'auto' }}
+                    sx={authLinkButtonSx}
                   >
                     {t('auth.login.signIn')}
                   </StandardButton>

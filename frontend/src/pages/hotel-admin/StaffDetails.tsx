@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { alpha } from '@mui/material/styles';
 import {
   Container,
   Typography,
@@ -18,6 +19,7 @@ import {
   FormGroup,
   Dialog,
   DialogContent,
+  useTheme,
 } from '@mui/material';
 import {
   Edit as EditIcon,
@@ -29,13 +31,18 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
 import { hotelAdminApi, StaffResponse } from '../../services/hotelAdminApi';
 import PremiumTextField from '../../components/common/PremiumTextField';
+import { getReadableAccentTextColor } from '../../theme/surfaces';
 
 const StaffDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { token } = useAuth();
+  const theme = useTheme();
   const { showSubmissionError } = useSubmissionError();
+  const readableAccentColor = getReadableAccentTextColor(theme);
+  const readableAccentBorder = alpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.34 : 0.18);
+  const readableAccentHover = alpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.14 : 0.08);
   
   const [staff, setStaff] = useState<StaffResponse | null>(null);
   const [editedStaff, setEditedStaff] = useState<StaffResponse | null>(null);
@@ -269,6 +276,14 @@ const StaffDetails: React.FC = () => {
               variant="outlined"
               startIcon={<CancelIcon />}
               onClick={handleCancelAndClose}
+              sx={{
+                borderColor: readableAccentBorder,
+                color: readableAccentColor,
+                '&:hover': {
+                  borderColor: readableAccentColor,
+                  backgroundColor: readableAccentHover,
+                },
+              }}
             >
               Cancel
             </Button>
@@ -277,6 +292,14 @@ const StaffDetails: React.FC = () => {
                 variant="outlined"
                 startIcon={<EditIcon />}
                 onClick={handleEdit}
+                sx={{
+                  borderColor: readableAccentBorder,
+                  color: readableAccentColor,
+                  '&:hover': {
+                    borderColor: readableAccentColor,
+                    backgroundColor: readableAccentHover,
+                  },
+                }}
               >
                 Edit
               </Button>

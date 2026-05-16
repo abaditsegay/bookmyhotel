@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { alpha } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
 import {
   Box,
   Grid,
@@ -16,24 +16,23 @@ import {
   TablePagination,
   Paper,
   Chip,
+  Alert,
   IconButton,
+  Tooltip,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
-  Alert,
   MenuItem,
-  Tooltip,
-  useMediaQuery,
-  useTheme,
-  Fab,
   List,
-  Divider
+  Divider,
+  Fab,
+  useMediaQuery,
 } from '@mui/material';
 import PremiumTextField from '../common/PremiumTextField';
 import PremiumSelect from '../common/PremiumSelect';
 import PremiumDatePicker from '../common/PremiumDatePicker';
-import { tableHeadRowSx } from '../../theme/sxHelpers';
+import { refreshActionButtonSx, tableHeadRowSx } from '../../theme/sxHelpers';
 import {
   CheckCircle as CheckCircleIcon,
   PlayArrow as PlayArrowIcon,
@@ -601,14 +600,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                 onClick={loadTasks}
                 size={isMobile ? "small" : "medium"}
                 startIcon={<RefreshIcon />}
-                sx={{
-                  borderColor: dividerColor,
-                  color: textSecondary,
-                  '&:hover': {
-                    borderColor: secondaryMain,
-                    backgroundColor: alpha(secondaryMain, 0.08)
-                  }
-                }}
+                sx={refreshActionButtonSx}
               >
                 {t('dashboard.housekeepingDashboard.refresh')}
               </Button>
@@ -971,20 +963,11 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
       )}
 
       {/* Status Update Dialog */}
-      <Dialog 
-        open={statusDialog} 
+      <Dialog
+        open={statusDialog}
         onClose={() => {
           setStatusDialog(false);
           setIsViewOnlyMode(false);
-        }} 
-        maxWidth="md" 
-        fullWidth
-        fullScreen={isMobile}
-        PaperProps={{
-          sx: {
-            borderRadius: 3,
-            boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.12)}`
-          }
         }}
       >
         <DialogTitle sx={{ 

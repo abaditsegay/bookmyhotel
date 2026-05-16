@@ -41,7 +41,7 @@ import {
   PlayArrow as StartIcon,
   CheckCircle as CompleteIcon
 } from '@mui/icons-material';
-import { tableHeadRowSx } from '../../theme/sxHelpers';
+import { actionIconButtonSx, refreshActionButtonSx, tableHeadRowSx } from '../../theme/sxHelpers';
 import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
 
 interface MaintenanceTask {
@@ -578,6 +578,7 @@ const MaintenanceDashboard: React.FC = () => {
           {currentUserRole === 'OPERATIONAL_ADMIN' && (
             <Button
               variant="contained"
+            sx={refreshActionButtonSx}
               startIcon={<AddIcon />}
               onClick={() => setCreateTaskOpen(true)}
             >
@@ -730,7 +731,7 @@ const MaintenanceDashboard: React.FC = () => {
                       <Tooltip title="Assign Task">
                         <IconButton 
                           size="small"
-                          color="primary"
+                          sx={actionIconButtonSx('accent')}
                           onClick={() => openAssignDialog(task.id)}
                         >
                           <AssignIcon fontSize="small" />
@@ -745,7 +746,7 @@ const MaintenanceDashboard: React.FC = () => {
                       <Tooltip title="Reassign Task">
                         <IconButton 
                           size="small"
-                          color="secondary"
+                          sx={actionIconButtonSx('warning')}
                           onClick={() => openAssignDialog(task.id)}
                         >
                           <AssignIcon fontSize="small" />
@@ -757,7 +758,7 @@ const MaintenanceDashboard: React.FC = () => {
                       <Tooltip title="Start Task">
                         <IconButton 
                           size="small"
-                          color="success"
+                          sx={actionIconButtonSx('success')}
                           onClick={() => handleStartTask(task.id)}
                         >
                           <StartIcon fontSize="small" />
@@ -769,7 +770,7 @@ const MaintenanceDashboard: React.FC = () => {
                       <Tooltip title="Complete Task">
                         <IconButton 
                           size="small"
-                          color="success"
+                          sx={actionIconButtonSx('success')}
                           onClick={() => openCompleteDialog(task.id)}
                         >
                           <CompleteIcon fontSize="small" />
@@ -785,6 +786,7 @@ const MaintenanceDashboard: React.FC = () => {
                             setSelectedTask(task);
                             // TODO: Implement edit functionality
                           }}
+                          sx={actionIconButtonSx('accent')}
                         >
                           <EditIcon fontSize="small" />
                         </IconButton>

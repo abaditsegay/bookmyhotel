@@ -41,7 +41,7 @@ import { frontDeskApiService, FrontDeskBooking } from '../../services/frontDeskA
 import { useDebounce } from '../../hooks/useDebounce';
 import { getEffectiveSearchTerm } from '../../utils/search';
 import BookingNotificationEvents from '../../utils/bookingNotificationEvents';
-import { guestNameBadgeSx, tableHeadRowSx } from '../../theme/sxHelpers';
+import { actionIconButtonSx, guestNameBadgeSx, refreshActionButtonSx, tableHeadRowSx } from '../../theme/sxHelpers';
 
 interface FrontDeskBookingManagementProps {
   onRefresh?: () => void;
@@ -247,6 +247,7 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
           startIcon={<RefreshIcon />}
           onClick={loadBookings}
           disabled={loading}
+          sx={refreshActionButtonSx}
         >
           Refresh
         </Button>
@@ -449,15 +450,7 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
                             <IconButton 
                               size="small"
                               onClick={() => handleViewBookingDetails(booking)}
-                              sx={{
-                                backgroundColor: '#f0f4ff',
-                                color: '#667eea',
-                                '&:hover': {
-                                  backgroundColor: '#e0e7ff',
-                                  transform: 'scale(1.1)'
-                                },
-                                transition: 'all 0.2s ease'
-                              }}
+                              sx={actionIconButtonSx('accent')}
                             >
                               <VisibilityIcon fontSize="small" />
                             </IconButton>
@@ -469,15 +462,7 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
                                 <IconButton 
                                   size="small"
                                   onClick={() => handleStatusUpdate(booking, 'CHECKED_IN')}
-                                  sx={{
-                                    backgroundColor: '#ecfdf5',
-                                    color: '#10b981',
-                                    '&:hover': {
-                                      backgroundColor: '#d1fae5',
-                                      transform: 'scale(1.1)'
-                                    },
-                                    transition: 'all 0.2s ease'
-                                  }}
+                                  sx={actionIconButtonSx('success')}
                                 >
                                   <CheckInIcon fontSize="small" />
                                 </IconButton>
@@ -490,15 +475,7 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
                               <IconButton 
                                 size="small"
                                 onClick={() => handleStatusUpdate(booking, 'CHECKED_OUT')}
-                                sx={{
-                                  backgroundColor: '#fef3c7',
-                                  color: '#f59e0b',
-                                  '&:hover': {
-                                    backgroundColor: '#fde68a',
-                                    transform: 'scale(1.1)'
-                                  },
-                                  transition: 'all 0.2s ease'
-                                }}
+                                sx={actionIconButtonSx('warning')}
                               >
                                 <CheckOutIcon fontSize="small" />
                               </IconButton>
@@ -510,7 +487,7 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
                               <Tooltip title="Mark No Show">
                                 <IconButton 
                                   size="small"
-                                  color="error"
+                                  sx={actionIconButtonSx('error')}
                                   onClick={() => handleStatusUpdate(booking, 'NO_SHOW')}
                                 >
                                   <NoShowIcon />
@@ -519,7 +496,7 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
                               <Tooltip title="Cancel Booking">
                                 <IconButton 
                                   size="small"
-                                  color="error"
+                                  sx={actionIconButtonSx('error')}
                                   onClick={() => handleStatusUpdate(booking, 'CANCELLED')}
                                 >
                                   <CancelIcon />

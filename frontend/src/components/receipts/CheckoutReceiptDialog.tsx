@@ -21,7 +21,6 @@ import {
   CircularProgress,
   Snackbar,
   Alert,
-  TextField,
   DialogTitle,
 } from '@mui/material';
 import {
@@ -32,6 +31,8 @@ import {
 import { ConsolidatedReceipt, frontDeskApiService } from '../../services/frontDeskApi';
 import { formatDateForDisplay, formatDateTimeForDisplay } from '../../utils/dateUtils';
 import { useAuth } from '../../contexts/AuthContext';
+import PremiumTextField from '../common/PremiumTextField';
+import { getReadableAccentTextColor } from '../../theme/surfaces';
 
 interface CheckoutReceiptDialogProps {
   open: boolean;
@@ -49,6 +50,17 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
   const { t } = useTranslation();
   const theme = useTheme();
   const addAlpha = alpha;
+  const readableAccentColor = getReadableAccentTextColor(theme);
+  const sectionSurface = theme.palette.mode === 'dark'
+    ? addAlpha(theme.palette.background.paper, 0.72)
+    : theme.palette.background.paper;
+  const insetSurface = theme.palette.mode === 'dark'
+    ? addAlpha(theme.palette.common.white, 0.03)
+    : addAlpha(theme.palette.text.primary, 0.018);
+  const tableHeaderSurface = addAlpha(theme.palette.text.primary, theme.palette.mode === 'dark' ? 0.08 : 0.035);
+  const accentBorder = addAlpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.34 : 0.18);
+  const accentHover = addAlpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.14 : 0.08);
+  const totalSurface = addAlpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.12 : 0.05);
   const COLORS = {
     TEXT_PRIMARY: theme.palette.text.primary,
     TEXT_SECONDARY: theme.palette.text.secondary,
@@ -583,12 +595,15 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
       }}
     >
       <DialogContent sx={{ p: 0 }}>
-        {/* Main content wrapper with white background */}
+        {/* Main content wrapper */}
         <Box sx={{ 
-          bgcolor: COLORS.WHITE, 
+          bgcolor: sectionSurface,
           m: 3, 
           borderRadius: 2,
-          boxShadow: `0 1px 3px ${addAlpha(COLORS.BLACK, 0.1)}`
+          border: `1px solid ${COLORS.BORDER_LIGHT}`,
+          boxShadow: theme.palette.mode === 'dark'
+            ? `0 12px 32px ${addAlpha(COLORS.BLACK, 0.28)}`
+            : `0 8px 24px ${addAlpha(COLORS.BLACK, 0.08)}`
         }}>
           {/* Header Section */}
           <Box sx={{ 
@@ -603,10 +618,29 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
               {receipt.hotelAddress}
             </Typography>
             <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', justifyContent: 'center', mb: 2 }}>
-              <Typography variant="body2" sx={{ fontWeight: 600, color: COLORS.TEXT_SECONDARY }}>
+              <Typography
+                variant="body2"
+                sx={{
+                  fontWeight: 600,
+                  color: COLORS.TEXT_PRIMARY,
+                  px: 1.25,
+                  py: 0.5,
+                  borderRadius: 1,
+                  bgcolor: accentHover,
+                }}
+              >
                 {t('receipts.official')}
               </Typography>
-              <Typography variant="body2" color="text.secondary">
+              <Typography
+                variant="body2"
+                sx={{
+                  color: readableAccentColor,
+                  px: 1.25,
+                  py: 0.5,
+                  borderRadius: 1,
+                  bgcolor: accentHover,
+                }}
+              >
                 {t('receipts.receiptNumber', { number: receipt.receiptNumber })}
               </Typography>
             </Box>
@@ -617,7 +651,9 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                   onClick={handlePrint} 
                   sx={{ 
                     border: `1px solid ${COLORS.BORDER_LIGHT}`,
-                    '&:hover': { bgcolor: COLORS.BG_DEFAULT },
+                    color: readableAccentColor,
+                    bgcolor: insetSurface,
+                    '&:hover': { bgcolor: accentHover },
                   }}
                 >
                   <PrintIcon fontSize="small" />
@@ -629,7 +665,9 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                   onClick={handleDownload} 
                   sx={{ 
                     border: `1px solid ${COLORS.BORDER_LIGHT}`,
-                    '&:hover': { bgcolor: COLORS.BG_DEFAULT },
+                    color: readableAccentColor,
+                    bgcolor: insetSurface,
+                    '&:hover': { bgcolor: accentHover },
                   }}
                 >
                   <DownloadIcon fontSize="small" />
@@ -641,7 +679,9 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                   onClick={handleEmail} 
                   sx={{ 
                     border: `1px solid ${COLORS.BORDER_LIGHT}`,
-                    '&:hover': { bgcolor: COLORS.BG_DEFAULT },
+                    color: readableAccentColor,
+                    bgcolor: insetSurface,
+                    '&:hover': { bgcolor: accentHover },
                   }}
                 >
                   <EmailIcon fontSize="small" />
@@ -655,8 +695,9 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
             mx: 4, 
             mt: 4,
             p: 3,
+            bgcolor: insetSurface,
             border: `1px solid ${COLORS.BORDER_LIGHT}`,
-            borderLeft: `4px solid ${theme.palette.primary.main}`
+            borderLeft: `4px solid ${readableAccentColor}`
           }}>
             <Typography 
               variant="h6" 
@@ -701,7 +742,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                   <Typography variant="caption" sx={{ color: COLORS.TEXT_SECONDARY, textTransform: 'uppercase', fontWeight: 600, fontSize: '0.7rem', letterSpacing: '0.5px' }}>
                     {t('receipts.confirmation')}:
                   </Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 700, color: theme.palette.primary.main, mt: 0.5 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 700, color: readableAccentColor, mt: 0.5 }}>
                     {receipt.confirmationNumber}
                   </Typography>
                 </Box>
@@ -722,8 +763,9 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
             mx: 4, 
             mt: 3,
             p: 3,
+            bgcolor: insetSurface,
             border: `1px solid ${COLORS.BORDER_LIGHT}`,
-            borderLeft: `4px solid ${theme.palette.primary.main}`
+            borderLeft: `4px solid ${readableAccentColor}`
           }}>
             <Typography 
               variant="h6" 
@@ -791,7 +833,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                 <TableRow>
                   <TableCell sx={{ 
                     fontWeight: 700, 
-                    bgcolor: COLORS.BG_LIGHT,
+                    bgcolor: tableHeaderSurface,
                     textTransform: 'uppercase',
                     fontSize: '0.7rem',
                     letterSpacing: '0.5px',
@@ -803,7 +845,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                   </TableCell>
                   <TableCell align="center" sx={{ 
                     fontWeight: 700, 
-                    bgcolor: COLORS.BG_LIGHT,
+                    bgcolor: tableHeaderSurface,
                     textTransform: 'uppercase',
                     fontSize: '0.7rem',
                     letterSpacing: '0.5px',
@@ -815,7 +857,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                   </TableCell>
                   <TableCell align="right" sx={{ 
                     fontWeight: 700, 
-                    bgcolor: COLORS.BG_LIGHT,
+                    bgcolor: tableHeaderSurface,
                     textTransform: 'uppercase',
                     fontSize: '0.7rem',
                     letterSpacing: '0.5px',
@@ -827,7 +869,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                   </TableCell>
                   <TableCell align="right" sx={{ 
                     fontWeight: 700, 
-                    bgcolor: COLORS.BG_LIGHT,
+                    bgcolor: tableHeaderSurface,
                     textTransform: 'uppercase',
                     fontSize: '0.7rem',
                     letterSpacing: '0.5px',
@@ -912,8 +954,8 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                       textAlign: 'right', 
                       fontWeight: 700,
                       fontSize: '1rem',
-                      bgcolor: COLORS.WHITE,
-                      border: `2px solid ${COLORS.TEXT_PRIMARY}`,
+                      bgcolor: totalSurface,
+                      border: `2px solid ${accentBorder}`,
                       borderRight: 'none'
                     }}
                   >
@@ -924,8 +966,9 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
                     sx={{ 
                       fontWeight: 700,
                       fontSize: '1rem',
-                      bgcolor: COLORS.WHITE,
-                      border: `2px solid ${COLORS.TEXT_PRIMARY}`,
+                      bgcolor: totalSurface,
+                      color: readableAccentColor,
+                      border: `2px solid ${accentBorder}`,
                       borderLeft: 'none'
                     }}
                   >
@@ -962,11 +1005,11 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
           sx={{ 
             minWidth: 120,
             textTransform: 'none',
-            borderColor: COLORS.BORDER_LIGHT,
-            color: COLORS.TEXT_SECONDARY,
+            borderColor: accentBorder,
+            color: readableAccentColor,
             '&:hover': {
-              borderColor: COLORS.TEXT_DISABLED,
-              bgcolor: COLORS.BG_LIGHT
+              borderColor: readableAccentColor,
+              bgcolor: accentHover
             }
           }}
         >
@@ -980,6 +1023,12 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
         onClose={handleCloseEmailDialog}
         maxWidth="sm"
         fullWidth
+        PaperProps={{
+          sx: {
+            bgcolor: theme.palette.background.paper,
+            border: `1px solid ${COLORS.BORDER_LIGHT}`,
+          },
+        }}
       >
         <DialogTitle>{t('receipts.emailDialog.title')}</DialogTitle>
         <DialogContent>
@@ -987,7 +1036,7 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
               {t('receipts.emailDialog.description')}
             </Typography>
-            <TextField
+            <PremiumTextField
               autoFocus
               fullWidth
               label={t('receipts.emailDialog.recipientLabel')}
@@ -1008,7 +1057,10 @@ const CheckoutReceiptDialog: React.FC<CheckoutReceiptDialogProps> = ({
           <Button 
             onClick={handleCloseEmailDialog}
             disabled={emailLoading}
-            sx={{ textTransform: 'none' }}
+            sx={{
+              textTransform: 'none',
+              color: readableAccentColor,
+            }}
           >
             {t('receipts.emailDialog.cancel')}
           </Button>

@@ -17,15 +17,13 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  FormControl,
-  InputLabel,
-  Select,
   MenuItem,
   InputAdornment,
   Chip,
   Divider,
   Switch,
   FormControlLabel,
+  useTheme,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -37,8 +35,10 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { actionIconButtonSx } from '../../theme/sxHelpers';
 import { useDebounce } from '../../hooks/useDebounce';
 import { getEffectiveSearchTerm } from '../../utils/search';
+import PremiumSelect from '../common/PremiumSelect';
 import PremiumTextField from '../common/PremiumTextField';
 import { useAuth } from '../../contexts/AuthContext';
 import { shopApiService } from '../../services/shopApi';
@@ -49,6 +49,7 @@ import { formatCurrencyWithDecimals } from '../../utils/currencyUtils';
 import { useThemeColors } from '../../theme/useThemeColors';
 import { buildApiUrl } from '../../config/apiConfig';
 import { getPremiumTableHeadSx } from './premiumStyles';
+import { getReadableAccentTextColor, getSectionTint } from '../../theme/surfaces';
 
 interface OrderItem {
   product: Product;
@@ -64,6 +65,17 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
   const { user, token } = useAuth();
   const { t } = useTranslation();
   const { COLORS, addAlpha } = useThemeColors();
+  const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
+  const neutralSurface = theme.palette.mode === 'dark'
+    ? addAlpha(theme.palette.common.white, 0.03)
+    : theme.palette.background.paper;
+  const neutralSurfaceHover = theme.palette.mode === 'dark'
+    ? addAlpha(theme.palette.common.white, 0.06)
+    : addAlpha(theme.palette.text.primary, 0.03);
+  const surfaceBorder = addAlpha(theme.palette.text.primary, theme.palette.mode === 'dark' ? 0.16 : 0.1);
+  const accentSurface = getSectionTint(theme, 'primary');
+  const accentBorder = addAlpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.34 : 0.18);
   const [products, setProducts] = useState<Product[]>([]);
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -513,21 +525,19 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                   />
                 </Grid>
                 <Grid item xs={12} md={4}>
-                  <FormControl fullWidth>
-                    <InputLabel>{t('shop.orders.creation.category')}</InputLabel>
-                    <Select
-                      value={categoryFilter}
-                      label={t('shop.orders.creation.category')}
-                      onChange={(e) => setCategoryFilter(e.target.value)}
-                    >
-                      <MenuItem value="ALL">{t('shop.orders.creation.allCategories')}</MenuItem>
-                      {Object.values(ProductCategory).map((category) => (
-                        <MenuItem key={category} value={category}>
-                          {category.replace('_', ' ')}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
+                  <PremiumSelect
+                    fullWidth
+                    label={t('shop.orders.creation.category')}
+                    value={categoryFilter}
+                    onChange={(e) => setCategoryFilter(e.target.value)}
+                  >
+                    <MenuItem value="ALL">{t('shop.orders.creation.allCategories')}</MenuItem>
+                    {Object.values(ProductCategory).map((category) => (
+                      <MenuItem key={category} value={category}>
+                        {category.replace('_', ' ')}
+                      </MenuItem>
+                    ))}
+                  </PremiumSelect>
                 </Grid>
               </Grid>
 
@@ -590,25 +600,19 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                           cursor: isOutOfStock ? 'not-allowed' : 'pointer',
                           position: 'relative',
                           border: isSelected ? '2px solid' : '1px solid',
-                          borderColor: isSelected ? COLORS.PRIMARY : addAlpha(COLORS.PRIMARY, 0.15),
-                          background: isSelected 
-                            ? `linear-gradient(135deg, ${addAlpha(COLORS.PRIMARY, 0.1)} 0%, ${addAlpha(COLORS.SECONDARY, 0.08)} 100%)`
-                            : isOutOfStock 
-                              ? addAlpha(COLORS.BLACK, 0.04) 
-                              : addAlpha(COLORS.WHITE, 0.95),
-                          backdropFilter: 'blur(10px)',
+                          borderColor: isSelected ? accentBorder : surfaceBorder,
+                          backgroundColor: isSelected
+                            ? accentSurface
+                            : isOutOfStock
+                              ? addAlpha(theme.palette.text.primary, theme.palette.mode === 'dark' ? 0.05 : 0.03)
+                              : neutralSurface,
                           opacity: isOutOfStock ? 0.55 : 1,
-                          boxShadow: isSelected 
-                            ? `0 8px 24px ${addAlpha(COLORS.PRIMARY, 0.22)}, 0 4px 8px ${addAlpha(COLORS.PRIMARY, 0.12)}`
-                            : `0 2px 8px ${addAlpha(COLORS.BLACK, 0.06)}`,
+                          boxShadow: 'none',
                           '&:hover': { 
-                            boxShadow: isOutOfStock 
-                              ? `0 2px 8px ${addAlpha(COLORS.BLACK, 0.06)}` 
-                              : isSelected 
-                                ? `0 12px 32px ${addAlpha(COLORS.PRIMARY, 0.28)}, 0 6px 12px ${addAlpha(COLORS.PRIMARY, 0.16)}`
-                                : `0 8px 24px ${addAlpha(COLORS.PRIMARY, 0.16)}`,
+                            boxShadow: isOutOfStock ? 'none' : `0 8px 24px ${addAlpha(COLORS.BLACK, theme.palette.mode === 'dark' ? 0.22 : 0.08)}`,
                             transform: isOutOfStock ? 'none' : 'translateY(-4px)',
-                            borderColor: isOutOfStock ? addAlpha(COLORS.PRIMARY, 0.15) : (isSelected ? COLORS.PRIMARY : addAlpha(COLORS.PRIMARY, 0.25))
+                            backgroundColor: isOutOfStock ? neutralSurface : (isSelected ? accentSurface : neutralSurfaceHover),
+                            borderColor: isOutOfStock ? surfaceBorder : (isSelected ? accentBorder : addAlpha(readableAccentColor, 0.2))
                           },
                           transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                         }}
@@ -621,7 +625,7 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                               position: 'absolute',
                               top: 8,
                               right: 8,
-                              background: COLORS.GRADIENT_PRIMARY,
+                              backgroundColor: readableAccentColor,
                               color: COLORS.WHITE,
                               borderRadius: '50%',
                               width: 28,
@@ -683,9 +687,9 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                               label={product.category.replace('_', ' ')}
                               size="small"
                               sx={{ 
-                                background: `linear-gradient(135deg, ${COLORS.BG_PRIMARY_SOFT} 0%, ${COLORS.BG_PRIMARY_SOFT} 100%)`,
-                                color: COLORS.PRIMARY_TEXT,
-                                border: `1px solid ${addAlpha(COLORS.PRIMARY, 0.2)}`,
+                                backgroundColor: accentSurface,
+                                color: readableAccentColor,
+                                border: `1px solid ${accentBorder}`,
                                 fontWeight: 600,
                                 fontSize: '0.7rem',
                                 letterSpacing: '0.3px',
@@ -697,12 +701,7 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                               sx={{ 
                                 fontWeight: 700,
                                 fontSize: '1rem',
-                                background: isSelected 
-                                  ? COLORS.GRADIENT_PRIMARY
-                                  : isOutOfStock ? 'none' : COLORS.GRADIENT_PRIMARY,
-                                backgroundClip: 'text',
-                                WebkitBackgroundClip: 'text',
-                                WebkitTextFillColor: isOutOfStock ? addAlpha(COLORS.BLACK, 0.38) : 'transparent'
+                                color: isOutOfStock ? 'text.disabled' : readableAccentColor,
                               }}
                             >
                               {formatCurrencyWithDecimals(product.price || 0)}
@@ -776,11 +775,10 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
         {/* Order Summary - Premium styling */}
         <Grid item xs={12} md={4}>
           <Card sx={{ 
-            background: `linear-gradient(135deg, ${addAlpha(COLORS.PRIMARY, 0.04)} 0%, ${addAlpha(COLORS.SECONDARY, 0.06)} 100%)`,
-            backdropFilter: 'blur(20px)',
-            border: '2px solid',
-            borderColor: addAlpha(COLORS.PRIMARY, 0.22),
-            boxShadow: `0 8px 32px ${addAlpha(COLORS.PRIMARY, 0.14)}, 0 4px 16px ${addAlpha(COLORS.SECONDARY, 0.12)}`,
+            backgroundColor: neutralSurface,
+            border: '1px solid',
+            borderColor: surfaceBorder,
+            boxShadow: 'none',
             position: 'sticky',
             top: 16,
             '& .MuiCardContent-root': {
@@ -793,40 +791,37 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                 alignItems: 'center', 
                 gap: 1,
                 fontWeight: 700,
-                color: COLORS.PRIMARY_TEXT,
+                color: readableAccentColor,
                 letterSpacing: '-0.01em'
               }}>
-                <ReceiptIcon sx={{ color: COLORS.PRIMARY_TEXT }} />
+                <ReceiptIcon sx={{ color: readableAccentColor }} />
                 {t('shop.orders.creation.orderSummary')}
               </Typography>
 
               {/* Purchase Type */}
               <Box sx={{ mb: 3 }}>
                 <Typography variant="subtitle2" gutterBottom>{t('shop.orders.creation.purchaseType')}</Typography>
-                <FormControl fullWidth sx={{ mb: 2 }}>
-                  <InputLabel>{t('shop.orders.creation.purchaseType')}</InputLabel>
-                  <Select
-                    value={purchaseType}
-                    label={t('shop.orders.creation.purchaseType')}
-                    onChange={(e) => {
-                      const newPurchaseType = e.target.value as 'ROOM_CHARGE' | 'ANONYMOUS';
-                      setPurchaseType(newPurchaseType);
-                      // Reset room number when switching to anonymous
-                      if (newPurchaseType === 'ANONYMOUS') {
-                        setRoomNumber('');
-                      }
-                      // Reset payment method when switching to room charge
-                      if (newPurchaseType === 'ROOM_CHARGE') {
-                        setPaymentMethod(PaymentMethod.ROOM_CHARGE);
-                      } else {
-                        setPaymentMethod(PaymentMethod.CASH);
-                      }
-                    }}
-                  >
-                    <MenuItem value="ANONYMOUS">{t('shop.orders.creation.anonymousSale')}</MenuItem>
-                    <MenuItem value="ROOM_CHARGE">{t('shop.orders.creation.roomCharge')}</MenuItem>
-                  </Select>
-                </FormControl>
+                <PremiumSelect
+                  fullWidth
+                  label={t('shop.orders.creation.purchaseType')}
+                  value={purchaseType}
+                  onChange={(e) => {
+                    const newPurchaseType = e.target.value as 'ROOM_CHARGE' | 'ANONYMOUS';
+                    setPurchaseType(newPurchaseType);
+                    if (newPurchaseType === 'ANONYMOUS') {
+                      setRoomNumber('');
+                    }
+                    if (newPurchaseType === 'ROOM_CHARGE') {
+                      setPaymentMethod(PaymentMethod.ROOM_CHARGE);
+                    } else {
+                      setPaymentMethod(PaymentMethod.CASH);
+                    }
+                  }}
+                  sx={{ mb: 2 }}
+                >
+                  <MenuItem value="ANONYMOUS">{t('shop.orders.creation.anonymousSale')}</MenuItem>
+                  <MenuItem value="ROOM_CHARGE">{t('shop.orders.creation.roomCharge')}</MenuItem>
+                </PremiumSelect>
 
                 {/* Room Number - only show for room charges */}
                 {purchaseType === 'ROOM_CHARGE' && (
@@ -857,20 +852,19 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
 
                 {isDelivery && (
                   <Box sx={{ mt: 2 }}>
-                    <FormControl fullWidth sx={{ mb: 2 }}>
-                      <InputLabel>{t('shop.orders.creation.deliveryType')}</InputLabel>
-                      <Select
-                        value={deliveryType}
-                        label={t('shop.orders.creation.deliveryType')}
-                        onChange={(e) => setDeliveryType(e.target.value as DeliveryType)}
-                      >
-                        {Object.values(DeliveryType).map((type) => (
-                          <MenuItem key={type} value={type}>
-                            {type.replace('_', ' ')}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
+                    <PremiumSelect
+                      fullWidth
+                      label={t('shop.orders.creation.deliveryType')}
+                      value={deliveryType}
+                      onChange={(e) => setDeliveryType(e.target.value as DeliveryType)}
+                      sx={{ mb: 2 }}
+                    >
+                      {Object.values(DeliveryType).map((type) => (
+                        <MenuItem key={type} value={type}>
+                          {type.replace('_', ' ')}
+                        </MenuItem>
+                      ))}
+                    </PremiumSelect>
                     <PremiumTextField
                       fullWidth
                       label={t('shop.orders.creation.deliveryAddress')}
@@ -935,7 +929,7 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                             <TableCell align="center">
                               <IconButton
                                 size="small"
-                                color="error"
+                                sx={actionIconButtonSx('error')}
                                 onClick={() => removeItem(item.product.id)}
                               >
                                 <DeleteIcon />
@@ -951,8 +945,8 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
 
               {/* Payment Status Indicator for Anonymous Sales */}
               {purchaseType === 'ANONYMOUS' && paymentCompleted && completedPaymentMethod && (
-                <Box sx={{ mb: 2, p: 2, border: 1, borderColor: 'success.main', borderRadius: 1, bgcolor: 'success.light' }}>
-                  <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'success.dark' }}>
+                <Box sx={{ mb: 2, p: 2, border: 1, borderColor: 'success.main', borderRadius: 1, bgcolor: addAlpha(theme.palette.success.main, theme.palette.mode === 'dark' ? 0.16 : 0.08) }}>
+                  <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', gap: 1, color: theme.palette.mode === 'dark' ? theme.palette.success.light : theme.palette.success.dark }}>
                     <CheckIcon fontSize="small" />
                     {t('shop.orders.creation.paymentCompleted', { method: ShopOrderUtils.formatPaymentMethod(completedPaymentMethod) })}
                     {paymentReference && (
@@ -965,7 +959,7 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
               )}
 
               {/* Total */}
-              <Divider sx={{ mb: 2, borderColor: addAlpha(COLORS.PRIMARY, 0.2) }} />
+              <Divider sx={{ mb: 2, borderColor: surfaceBorder }} />
               <Box sx={{ mb: 2 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.75 }}>
                   <Typography variant="body2" color="text.secondary">{t('shop.orders.creation.subtotal')}</Typography>
@@ -997,7 +991,7 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                     {formatCurrencyWithDecimals(getCityTaxAmount())}
                   </Typography>
                 </Box>
-                <Divider sx={{ my: 1, borderColor: addAlpha(COLORS.PRIMARY, 0.15) }} />
+                <Divider sx={{ my: 1, borderColor: surfaceBorder }} />
                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                   <Typography variant="body2" sx={{ fontWeight: 600, color: COLORS.TEXT_PRIMARY }}>
                     {t('shop.orders.creation.taxTotal')}
@@ -1014,18 +1008,15 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                 mb: 3,
                 p: 2,
                 borderRadius: 2,
-                background: `linear-gradient(135deg, ${COLORS.BG_PRIMARY_SOFT} 0%, ${COLORS.BG_SECONDARY_SOFT} 100%)`,
-                border: `1px solid ${addAlpha(COLORS.PRIMARY, 0.2)}`
+                backgroundColor: accentSurface,
+                border: `1px solid ${accentBorder}`
               }}>
-                <Typography variant="h6" sx={{ fontWeight: 700, color: COLORS.PRIMARY_TEXT }}>{t('shop.orders.creation.grandTotal')}</Typography>
+                <Typography variant="h6" sx={{ fontWeight: 700, color: readableAccentColor }}>{t('shop.orders.creation.grandTotal')}</Typography>
                 <Typography 
                   variant="h5" 
                   sx={{
                     fontWeight: 800,
-                    background: COLORS.GRADIENT_PRIMARY,
-                    backgroundClip: 'text',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent'
+                    color: readableAccentColor,
                   }}
                 >
                   {formatCurrencyWithDecimals(getGrandTotal())}
@@ -1040,7 +1031,6 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                 onClick={handleCreateOrder}
                 disabled={loading || orderItems.length === 0}
                 sx={{
-                  background: COLORS.GRADIENT_PRIMARY,
                   color: COLORS.WHITE,
                   fontWeight: 700,
                   fontSize: '1rem',
@@ -1050,12 +1040,10 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                   boxShadow: `0 4px 16px ${addAlpha(COLORS.PRIMARY, 0.3)}`,
                   transition: 'all 0.3s ease',
                   '&:hover': {
-                    background: COLORS.GRADIENT_PRIMARY,
                     boxShadow: `0 6px 24px ${addAlpha(COLORS.PRIMARY, 0.4)}`,
                     transform: 'translateY(-2px)'
                   },
                   '&.Mui-disabled': {
-                    background: COLORS.GRADIENT_PRIMARY,
                     opacity: 0.6,
                     color: COLORS.WHITE
                   }

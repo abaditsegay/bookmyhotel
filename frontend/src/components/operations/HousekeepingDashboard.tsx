@@ -40,7 +40,7 @@ import {
   PlayArrow as StartIcon,
   CheckCircle as CompleteIcon
 } from '@mui/icons-material';
-import { tableHeadRowSx } from '../../theme/sxHelpers';
+import { actionIconButtonSx, refreshActionButtonSx, tableHeadRowSx } from '../../theme/sxHelpers';
 import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
 
 
@@ -458,6 +458,7 @@ const HousekeepingDashboard: React.FC = () => {
           <Button
             variant="outlined"
             startIcon={<RefreshIcon />}
+            sx={refreshActionButtonSx}
             onClick={() => { loadTasks(); loadStaff(); }}
           >
             Refresh
@@ -589,6 +590,7 @@ const HousekeepingDashboard: React.FC = () => {
                           setSelectedTask(task);
                           setTaskDetailOpen(true);
                         }}
+                        sx={actionIconButtonSx('accent')}
                       >
                         <VisibilityIcon fontSize="small" />
                       </IconButton>
@@ -598,7 +600,7 @@ const HousekeepingDashboard: React.FC = () => {
                       <Tooltip title="Assign Task">
                         <IconButton 
                           size="small"
-                          color="primary"
+                          sx={actionIconButtonSx('accent')}
                           onClick={() => openAssignDialog(task.id)}
                         >
                           <AssignIcon fontSize="small" />
@@ -610,7 +612,7 @@ const HousekeepingDashboard: React.FC = () => {
                       <Tooltip title="Start Task">
                         <IconButton 
                           size="small"
-                          color="success"
+                          sx={actionIconButtonSx('success')}
                           onClick={() => handleStartTask(task.id)}
                         >
                           <StartIcon fontSize="small" />
@@ -622,7 +624,7 @@ const HousekeepingDashboard: React.FC = () => {
                       <Tooltip title="Complete Task">
                         <IconButton 
                           size="small"
-                          color="success"
+                          sx={actionIconButtonSx('success')}
                           onClick={() => openCompleteDialog(task.id)}
                         >
                           <CompleteIcon fontSize="small" />
@@ -637,7 +639,7 @@ const HousekeepingDashboard: React.FC = () => {
                       <Tooltip title="Reassign Task">
                         <IconButton 
                           size="small"
-                          color="secondary"
+                          sx={actionIconButtonSx('warning')}
                           onClick={() => openAssignDialog(task.id)}
                         >
                           <AssignIcon fontSize="small" />
@@ -653,6 +655,7 @@ const HousekeepingDashboard: React.FC = () => {
                             setSelectedTask(task);
                             // setEditTaskOpen(true); // TODO: Implement edit functionality
                           }}
+                          sx={actionIconButtonSx('accent')}
                         >
                           <EditIcon fontSize="small" />
                         </IconButton>

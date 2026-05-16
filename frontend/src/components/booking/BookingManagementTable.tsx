@@ -58,7 +58,7 @@ import { TableRowSkeleton } from '../common/SkeletonLoaders';
 import { NoBookings } from '../common/EmptyState';
 import PremiumTextField from '../common/PremiumTextField';
 import PremiumSelect from '../common/PremiumSelect';
-import { guestNameBadgeSx, tableHeadRowSx } from '../../theme/sxHelpers';
+import { actionIconButtonSx, guestNameBadgeSx, refreshActionButtonSx, tableHeadRowSx } from '../../theme/sxHelpers';
 
 interface BookingManagementTableProps {
   mode: 'hotel-admin' | 'front-desk';
@@ -89,8 +89,6 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
   const isDark = muiTheme.palette.mode === 'dark';
   const navigate = useNavigate();
   const primaryMain = muiTheme.palette.primary.main;
-  const primaryLight = muiTheme.palette.primary.light;
-  const primaryDark = muiTheme.palette.primary.dark;
   const dividerColor = muiTheme.palette.divider;
   
   // Memoize InputProps to prevent re-creation on every render
@@ -817,19 +815,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
             startIcon={<RefreshIcon />} 
             onClick={() => loadBookings()}
             disabled={loading}
-            sx={{
-              borderColor: 'secondary.main',
-              color: 'secondary.main',
-              fontWeight: 600,
-              '&:hover': {
-                backgroundColor: alpha(muiTheme.palette.secondary.main, 0.1),
-                borderColor: 'secondary.main'
-              },
-              '&:disabled': {
-                borderColor: dividerColor,
-                color: 'text.disabled'
-              }
-            }}
+            sx={refreshActionButtonSx}
           >
             {t('booking.management.refresh')}
           </Button>
@@ -1036,14 +1022,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                                 action,
                                 booking.guestName
                               )}
-                              sx={{
-                                color: muiTheme.palette[color].main,
-                                padding: '3px',
-                                '&:hover': {
-                                  backgroundColor: alpha(muiTheme.palette[color].main, 0.12),
-                                  transform: 'scale(1.1)'
-                                }
-                              }}
+                              sx={[actionIconButtonSx(color as 'success' | 'warning' | 'error' | 'info'), { padding: '3px' }]}
                             >
                               {icon}
                             </IconButton>
@@ -1104,18 +1083,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                             <IconButton 
                               size="small"
                               onClick={() => handleViewBookingDetails(booking)}
-                              sx={{
-                                backgroundColor: alpha(primaryMain, 0.12),
-                                color: primaryDark,
-                                border: `1px solid ${alpha(primaryMain, 0.35)}`,
-                                '&:hover': {
-                                  backgroundColor: primaryMain,
-                                  color: 'common.white',
-                                  transform: 'scale(1.15)',
-                                  boxShadow: `0 4px 12px ${alpha(primaryMain, 0.3)}`
-                                },
-                                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-                              }}
+                              sx={actionIconButtonSx('accent')}
                             >
                               <VisibilityIcon fontSize="small" />
                             </IconButton>
@@ -1128,15 +1096,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                                   <IconButton 
                                     size="small" 
                                     onClick={() => handleBookingAction(booking, 'check-in')}
-                                    sx={{
-                                      backgroundColor: alpha(muiTheme.palette.success.main, 0.1),
-                                      color: muiTheme.palette.success.main,
-                                      '&:hover': {
-                                        backgroundColor: alpha(muiTheme.palette.success.main, 0.2),
-                                        transform: 'scale(1.1)'
-                                      },
-                                      transition: 'all 0.2s ease'
-                                    }}
+                                    sx={actionIconButtonSx('success')}
                                   >
                                     <CheckInIcon fontSize="small" />
                                   </IconButton>
@@ -1150,15 +1110,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                                       setBookingForCheckout(booking);
                                       setCheckoutConfirmOpen(true);
                                     }}
-                                    sx={{
-                                      backgroundColor: alpha(muiTheme.palette.warning.main, 0.15),
-                                      color: muiTheme.palette.warning.main,
-                                      '&:hover': {
-                                        backgroundColor: alpha(muiTheme.palette.warning.main, 0.25),
-                                        transform: 'scale(1.1)'
-                                      },
-                                      transition: 'all 0.2s ease'
-                                    }}
+                                    sx={actionIconButtonSx('warning')}
                                   >
                                     <CheckOutIcon fontSize="small" />
                                   </IconButton>
@@ -1168,15 +1120,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                                 <IconButton 
                                   size="small"
                                   onClick={() => handlePrintReceipt(booking)}
-                                  sx={{
-                                    backgroundColor: alpha(muiTheme.palette.info.main, 0.15),
-                                    color: muiTheme.palette.info.main,
-                                    '&:hover': {
-                                      backgroundColor: alpha(muiTheme.palette.info.main, 0.25),
-                                      transform: 'scale(1.1)'
-                                    },
-                                    transition: 'all 0.2s ease'
-                                  }}
+                                  sx={actionIconButtonSx('info')}
                                 >
                                   <PrintIcon fontSize="small" />
                                 </IconButton>
@@ -1202,64 +1146,6 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
             page={page}
             onPageChange={handlePageChange}
             onRowsPerPageChange={handleRowsPerPageChange}
-            sx={{
-              backgroundColor: isDark
-                ? muiTheme.palette.background.paper 
-                : muiTheme.palette.grey[50],
-              borderTop: isDark
-                ? `1px solid ${alpha(muiTheme.palette.common.white, 0.1)}` 
-                : `1px solid ${dividerColor}`,
-              '& .MuiTablePagination-toolbar': {
-                padding: '12px 24px',
-                color: muiTheme.palette.text.primary,
-                gap: 2,
-              },
-              '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
-                color: 'primary.main',
-                fontWeight: 600,
-                fontSize: '0.85rem',
-                letterSpacing: '0.4px',
-                textTransform: 'uppercase'
-              },
-              '& .MuiTablePagination-select': {
-                backgroundColor: muiTheme.palette.grey[50],
-                border: `1px solid ${dividerColor}`,
-                borderLeft: `3px solid ${muiTheme.palette.secondary.main}`,
-                borderRadius: '6px',
-                padding: '6px 10px',
-                color: 'primary.main',
-                fontWeight: 600,
-                minHeight: 38,
-                '&:hover': {
-                  borderColor: dividerColor
-                },
-                '&:focus': {
-                  borderColor: primaryMain,
-                  borderLeftColor: primaryMain
-                }
-              },
-              '& .MuiTablePagination-actions button': {
-                color: isDark ? primaryLight : primaryMain,
-                backgroundColor: isDark
-                  ? alpha(primaryMain, 0.1) 
-                  : alpha(primaryMain, 0.08),
-                borderRadius: '6px',
-                margin: '0 2px',
-                transition: 'all 0.2s ease',
-                '&:hover': {
-                  backgroundColor: isDark
-                    ? alpha(primaryMain, 0.2) 
-                    : alpha(primaryMain, 0.15),
-                  transform: 'scale(1.05)'
-                },
-                '&.Mui-disabled': {
-                  color: muiTheme.palette.text.disabled,
-                  backgroundColor: isDark
-                    ? alpha(muiTheme.palette.common.white, 0.05) 
-                    : muiTheme.palette.action.disabledBackground
-                }
-              }
-            }}
           />
         </TableContainer>
       </Card>

@@ -1,6 +1,7 @@
 import { alpha, SxProps, SystemStyleObject, Theme } from '@mui/material/styles';
 
 import { designSystem } from './designSystem';
+import { getReadableAccentTextColor } from './surfaces';
 
 export type AppSx = SxProps<Theme>;
 
@@ -156,3 +157,73 @@ export const guestNameBadgeSx: AppSx = theme => ({
   lineHeight: 1.2,
   boxShadow: 'none',
 });
+
+export const refreshActionButtonSx: AppSx = theme => ({
+  fontWeight: 600,
+  borderColor: theme.palette.mode === 'dark'
+    ? alpha(theme.palette.primary.light, 0.42)
+    : theme.palette.secondary.main,
+  color: theme.palette.mode === 'dark'
+    ? theme.palette.common.white
+    : theme.palette.secondary.main,
+  backgroundColor: theme.palette.mode === 'dark'
+    ? alpha(theme.palette.primary.light, 0.22)
+    : 'transparent',
+  boxShadow: 'none',
+  '&:hover': {
+    borderColor: theme.palette.mode === 'dark'
+      ? theme.palette.primary.light
+      : theme.palette.secondary.main,
+    color: theme.palette.mode === 'dark'
+      ? theme.palette.common.white
+      : theme.palette.secondary.main,
+    backgroundColor: theme.palette.mode === 'dark'
+      ? alpha(theme.palette.primary.light, 0.3)
+      : alpha(theme.palette.secondary.main, 0.08),
+    boxShadow: 'none',
+  },
+  '&:disabled': {
+    borderColor: theme.palette.divider,
+    color: theme.palette.text.disabled,
+    backgroundColor: theme.palette.mode === 'dark'
+      ? alpha(theme.palette.common.white, 0.04)
+      : 'transparent',
+  },
+});
+
+type ActionIconTone = 'accent' | 'success' | 'warning' | 'error' | 'info' | 'neutral';
+
+const getActionIconToneColor = (theme: Theme, tone: ActionIconTone) => {
+  switch (tone) {
+    case 'accent':
+      return getReadableAccentTextColor(theme);
+    case 'neutral':
+      return theme.palette.text.secondary;
+    default:
+      return getReadableAccentTextColor(theme, tone);
+  }
+};
+
+export const actionIconButtonSx = (tone: ActionIconTone = 'neutral'): AppSx => theme => {
+  const foreground = getActionIconToneColor(theme, tone);
+
+  return {
+    color: foreground,
+    border: `1px solid ${alpha(foreground, theme.palette.mode === 'dark' ? 0.28 : 0.16)}`,
+    backgroundColor: alpha(foreground, theme.palette.mode === 'dark' ? 0.14 : 0.06),
+    transition: 'background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease',
+    '&:hover': {
+      color: foreground,
+      borderColor: alpha(foreground, theme.palette.mode === 'dark' ? 0.42 : 0.24),
+      backgroundColor: alpha(foreground, theme.palette.mode === 'dark' ? 0.22 : 0.12),
+      transform: 'scale(1.08)',
+    },
+    '&.Mui-disabled': {
+      color: theme.palette.text.disabled,
+      borderColor: theme.palette.divider,
+      backgroundColor: theme.palette.mode === 'dark'
+        ? alpha(theme.palette.common.white, 0.04)
+        : alpha(theme.palette.text.primary, 0.03),
+    },
+  };
+};

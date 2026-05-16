@@ -38,6 +38,7 @@ import { hotelAdminApi } from '../../services/hotelAdminApi';
 import { useAuth } from '../../contexts/AuthContext';
 import { formatCurrency } from '../../utils/currencyUtils';
 import { formActionsRowSx, tintedPanelSx } from '../../theme/sxHelpers';
+import { getReadableAccentTextColor } from '../../theme/surfaces';
 
 interface RoomData {
   roomNumber: string;
@@ -65,6 +66,9 @@ interface RoomBulkUploadProps {
 const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClose, hotelId }) => {
   const { token } = useAuth();
   const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
+  const readableAccentBorder = muiAlpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.34 : 0.18);
+  const readableAccentHover = muiAlpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.14 : 0.08);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
@@ -116,13 +120,13 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
   };
   const dialogTableHeaderRowSx = {
     '& .MuiTableCell-head': {
-      backgroundColor: alpha(theme.palette.text.primary, theme.palette.mode === 'dark' ? 0.08 : 0.035),
+      backgroundColor: muiAlpha(theme.palette.text.primary, theme.palette.mode === 'dark' ? 0.08 : 0.035),
       color: 'text.secondary',
       fontWeight: 700,
       fontSize: '0.8rem',
       letterSpacing: '0.05em',
       textTransform: 'uppercase',
-      borderBottom: `2px solid ${alpha(theme.palette.text.primary, theme.palette.mode === 'dark' ? 0.18 : 0.1)}`,
+      borderBottom: `2px solid ${muiAlpha(theme.palette.text.primary, theme.palette.mode === 'dark' ? 0.18 : 0.1)}`,
       py: 1.75,
     },
   };
@@ -471,7 +475,23 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
 
       {/* Stepper */}
       <Paper sx={{ p: 3, mb: 3 }}>
-        <Stepper activeStep={activeStep} orientation="vertical">
+        <Stepper
+          activeStep={activeStep}
+          orientation="vertical"
+          sx={{
+            '& .MuiStepLabel-label': {
+              color: theme.palette.text.secondary,
+              fontWeight: 500,
+            },
+            '& .MuiStepLabel-label.Mui-active, & .MuiStepLabel-label.Mui-completed': {
+              color: theme.palette.text.primary,
+              fontWeight: 600,
+            },
+            '& .MuiStepIcon-root.Mui-active, & .MuiStepIcon-root.Mui-completed': {
+              color: readableAccentColor,
+            },
+          }}
+        >
           {steps.map((label, index) => (
             <Step key={label}>
               <StepLabel>{label}</StepLabel>
@@ -495,6 +515,14 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
                         startIcon={<InfoIcon />}
                         onClick={downloadGuide}
                         buttonSize="medium"
+                        sx={{
+                          borderColor: readableAccentBorder,
+                          color: readableAccentColor,
+                          '&:hover': {
+                            borderColor: readableAccentColor,
+                            backgroundColor: readableAccentHover,
+                          },
+                        }}
                       >
                         Download Guide
                       </StandardButton>
@@ -502,7 +530,14 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
                     <StandardButton
                       variant="text"
                       onClick={() => setActiveStep(Math.max(activeStep, 1))}
-                      sx={{ mt: 1 }}
+                      sx={{
+                        mt: 1,
+                        color: readableAccentColor,
+                        '&:hover': {
+                          backgroundColor: 'transparent',
+                          color: theme.palette.common.white,
+                        },
+                      }}
                     >
                       Skip - I already have a template
                     </StandardButton>
@@ -597,6 +632,13 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
                           variant="text"
                           startIcon={<PreviewIcon />}
                           onClick={() => setPreviewDialogOpen(true)}
+                          sx={{
+                            color: readableAccentColor,
+                            '&:hover': {
+                              backgroundColor: 'transparent',
+                              color: theme.palette.common.white,
+                            },
+                          }}
                         >
                           Full Preview
                         </StandardButton>

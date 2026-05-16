@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { alpha } from '@mui/material/styles';
 import {
   Paper,
   Table,
@@ -26,6 +27,7 @@ import {
   FormControlLabel,
   Checkbox,
   FormGroup,
+  useTheme,
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -40,6 +42,7 @@ import { tableHeadRowSx } from '../../theme/sxHelpers';
 import PremiumTextField from '../../components/common/PremiumTextField';
 import PremiumSelect from '../../components/common/PremiumSelect';
 import { useNavigate } from 'react-router-dom';
+import { getReadableAccentTextColor } from '../../theme/surfaces';
 
 interface StaffFilters {
   search: string;
@@ -53,8 +56,12 @@ interface StaffManagementProps {
 
 const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) => {
   const { token } = useAuth();
+  const theme = useTheme();
   const { showSubmissionError } = useSubmissionError();
   const navigate = useNavigate();
+  const readableAccentColor = getReadableAccentTextColor(theme);
+  const readableAccentBorder = alpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.34 : 0.18);
+  const readableAccentHover = alpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.14 : 0.08);
   const [staff, setStaff] = useState<StaffResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -338,6 +345,14 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
                   variant="outlined"
                   onClick={resetFilters}
                   size="small"
+                  sx={{
+                    borderColor: readableAccentBorder,
+                    color: readableAccentColor,
+                    '&:hover': {
+                      borderColor: readableAccentColor,
+                      backgroundColor: readableAccentHover,
+                    },
+                  }}
                 >
                   Clear
                 </Button>
@@ -533,7 +548,18 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
             </Grid>
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setCreateDialogOpen(false)}>Cancel</Button>
+            <Button
+              onClick={() => setCreateDialogOpen(false)}
+              sx={{
+                color: readableAccentColor,
+                '&:hover': {
+                  backgroundColor: readableAccentHover,
+                  color: readableAccentColor,
+                },
+              }}
+            >
+              Cancel
+            </Button>
             <Button 
               onClick={handleCreateStaff}
               variant="contained"

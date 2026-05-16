@@ -23,12 +23,10 @@ import {
   TextField,
   Alert,
   CircularProgress,
-  Select,
-  MenuItem,
   FormControl,
   InputLabel,
-  useMediaQuery,
-  useTheme,
+  Select,
+  MenuItem,
   List,
   ListItem,
   ListItemText,
@@ -52,6 +50,7 @@ import {
 import { staffApi } from '../../services/staffApi';
 import { HousekeepingTask } from '../../types/operations';
 import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
+import { refreshActionButtonSx } from '../../theme/sxHelpers';
 
 const HousekeepingStaffDashboard: React.FC = () => {
   const theme = useTheme();
@@ -663,14 +662,7 @@ const HousekeepingStaffDashboard: React.FC = () => {
                 size={isMobile ? "medium" : "large"}
                 startIcon={<RefreshIcon />}
                 variant="outlined"
-                sx={{
-                  borderWidth: 1.5,
-                  fontWeight: 500,
-                  '&:hover': {
-                    borderWidth: 1.5,
-                    backgroundColor: 'action.hover',
-                  }
-                }}
+                sx={refreshActionButtonSx}
               >
                 Refresh
               </Button>

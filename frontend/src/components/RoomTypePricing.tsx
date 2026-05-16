@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { API_CONFIG } from '../config/apiConfig';
+import { useTheme } from '@mui/material/styles';
 import {
   Box,
   Card,
@@ -17,9 +18,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  FormControl,
-  InputLabel,
-  Select,
   MenuItem,
   Alert,
   Chip,
@@ -31,7 +29,9 @@ import {
   CircularProgress
 } from '@mui/material';
 import PremiumTextField from './common/PremiumTextField';
+import PremiumSelect from './common/PremiumSelect';
 import { tableHeadRowSx } from '../theme/sxHelpers';
+import { getReadableAccentTextColor } from '../theme/surfaces';
 import {
   Add as AddIcon,
   Edit as EditIcon,
@@ -58,6 +58,8 @@ interface RoomTypePricingProps {
 }
 
 const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) => {
+  const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
   const { token, user } = useAuth();
   const { showSubmissionError } = useSubmissionError();
   const [pricingList, setPricingList] = useState<RoomTypePricingResponse[]>([]);
@@ -402,7 +404,7 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
                         )}
                       </TableCell>
                       <TableCell>
-                        <Typography variant="h6" color="primary">
+                        <Typography variant="h6" sx={{ color: readableAccentColor }}>
                           {formatCurrency(pricing.basePricePerNight)}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
@@ -472,36 +474,31 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
         <DialogContent>
           <Grid container spacing={3} sx={{ mt: 1 }}>
             <Grid item xs={12} md={6}>
-              <FormControl fullWidth required
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    backgroundColor: '#fafafa',
-                    borderLeft: '2px solid #E8B86D',
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
-                      backgroundColor: 'rgba(232, 184, 109, 0.04)',
-                      '& fieldset': {
-                        borderColor: '#E8B86D',
+              <PremiumSelect
+                fullWidth
+                required
+                label="Room Type"
+                formControlProps={{
+                  sx: {
+                    '& .MuiOutlinedInput-root': {
+                      '&.Mui-focused': {
+                        boxShadow: 'none',
                       },
                     },
-                    '&.Mui-focused': {
-                      backgroundColor: '#fffef8',
-                      '& fieldset': {
-                        borderColor: '#E8B86D',
-                        borderWidth: '2px',
-                      },
-                    },
-                  },
-                  '& .MuiInputLabel-root.Mui-focused': {
-                    color: '#B8860B',
-                    fontWeight: 600,
                   },
                 }}
-              >
-                <InputLabel>Room Type</InputLabel>
-                <Select
+                sx={{
+                  '& .MuiInputLabel-root.Mui-focused': {
+                    color: readableAccentColor,
+                  },
+                  '& .MuiOutlinedInput-root': {
+                    '&.Mui-focused fieldset': {
+                      borderColor: readableAccentColor,
+                    },
+                  },
+                }}
+              
                   value={formData.roomType}
-                  label="Room Type"
                   onChange={(e) => setFormData({ ...formData, roomType: e.target.value })}
                   disabled={!!editingPricing}
                 >
@@ -514,8 +511,7 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
                       {type.label}
                     </MenuItem>
                   ))}
-                </Select>
-              </FormControl>
+              </PremiumSelect>
             </Grid>
             <Grid item xs={12} md={6}>
               <PremiumTextField
@@ -612,7 +608,7 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
                 <Typography variant="caption" display="block" color="text.secondary">
                   Base Price
                 </Typography>
-                <Typography variant="h6" color="primary">
+                <Typography variant="h6" sx={{ color: readableAccentColor }}>
                   {formatCurrency(formData.basePricePerNight)}
                 </Typography>
               </Grid>
@@ -644,7 +640,18 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialog}>Cancel</Button>
+          <Button
+            onClick={handleCloseDialog}
+            sx={{
+              color: readableAccentColor,
+              '&:hover': {
+                backgroundColor: 'transparent',
+                color: theme.palette.common.white,
+              },
+            }}
+          >
+            Cancel
+          </Button>
           <Button 
             onClick={handleSubmit} 
             variant="contained" 

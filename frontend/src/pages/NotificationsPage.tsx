@@ -46,7 +46,7 @@ import { useBookingNotifications } from '../hooks/useBookingNotifications';
 import { formatDateForDisplay, formatDateTimeForDisplay } from '../utils/dateUtils';
 import { formatEthiopianTime } from '../utils/ethiopianCalendar';
 import { getEffectiveSearchTerm } from '../utils/search';
-import { tableHeadRowSx } from '../theme/sxHelpers';
+import { refreshActionButtonSx, tableHeadRowSx } from '../theme/sxHelpers';
 import { getPageShellBackground, getSectionTint } from '../theme/surfaces';
 
 const NotificationsPage: React.FC = () => {
@@ -370,6 +370,7 @@ const NotificationsPage: React.FC = () => {
               startIcon={<RefreshIcon />}
               onClick={triggerRefresh || loadNotifications}
               disabled={loading}
+              sx={refreshActionButtonSx}
             >
               Refresh
             </Button>

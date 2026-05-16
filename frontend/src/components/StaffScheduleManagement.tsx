@@ -36,6 +36,7 @@ import {
   Add as AddIcon,
 } from '@mui/icons-material';
 import { tableHeadRowSx } from '../theme/sxHelpers';
+import { getReadableAccentTextColor } from '../theme/surfaces';
 import { useAuth } from '../contexts/AuthContext';
 import { useSubmissionError } from '../contexts/SubmissionErrorContext';
 import PremiumTextField from './common/PremiumTextField';
@@ -100,6 +101,9 @@ interface User {
 
 const StaffScheduleManagement: React.FC = () => {
   const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
+  const readableAccentBorder = alpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.36 : 0.22);
+  const readableAccentHover = alpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.16 : 0.08);
   const { token, user } = useAuth();
   const { t } = useTranslation();
   const { showSubmissionError } = useSubmissionError();
@@ -525,9 +529,9 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
         borderRadius: 3,
         boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.08)}`
       }}>
-        <Box display="flex" alignItems="center" justifyContent="space-between" mb={3} pb={2} borderBottom={`2px solid ${theme.palette.primary.main}`}>
+        <Box display="flex" alignItems="center" justifyContent="space-between" mb={3} pb={2} borderBottom={`2px solid ${readableAccentBorder}`}>
           <Box display="flex" alignItems="center">
-            <ScheduleIcon sx={{ mr: 1.5, color: 'primary.main', fontSize: 28 }} />
+            <ScheduleIcon sx={{ mr: 1.5, color: readableAccentColor, fontSize: 28 }} />
             <Typography variant="h5" component="h2" sx={{ fontWeight: 700, color: 'text.primary' }}>
               Staff Schedules
             </Typography>
@@ -557,12 +561,12 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
               onClick={() => setShowUploadModal(true)}
               startIcon={<UploadIcon />}
               sx={{
-                borderColor: 'primary.main',
-                color: 'primary.main',
+                borderColor: readableAccentBorder,
+                color: readableAccentColor,
                 fontWeight: 600,
                 '&:hover': {
-                  borderColor: 'primary.dark',
-                  backgroundColor: alpha(theme.palette.primary.main, 0.08)
+                  borderColor: readableAccentColor,
+                  backgroundColor: readableAccentHover,
                 }
               }}
             >
@@ -661,9 +665,9 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
                   color: 'text.secondary',
                   fontWeight: 600,
                   '&:hover': {
-                    borderColor: 'primary.main',
-                    backgroundColor: alpha(theme.palette.primary.main, 0.08),
-                    color: 'primary.main'
+                    borderColor: readableAccentBorder,
+                    backgroundColor: readableAccentHover,
+                    color: readableAccentColor,
                   }
                 }}
               >
@@ -764,10 +768,10 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
                           size="small"
                           onClick={() => handleEdit(schedule)}
                           sx={{
-                            color: 'primary.main',
+                            color: readableAccentColor,
                             '&:hover': {
-                              backgroundColor: alpha(theme.palette.primary.main, 0.08),
-                              color: 'primary.dark'
+                              backgroundColor: readableAccentHover,
+                              color: readableAccentColor,
                             }
                           }}
                         >
@@ -827,9 +831,9 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
                 fontWeight: 500,
               },
               '& .MuiIconButton-root': {
-                  color: 'primary.main',
+                  color: readableAccentColor,
                 '&:hover': {
-                    backgroundColor: alpha(theme.palette.primary.main, 0.08),
+                    backgroundColor: readableAccentHover,
                 },
                 '&.Mui-disabled': {
                   color: 'text.disabled',
@@ -857,12 +861,12 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
         <DialogTitle 
           sx={{ 
             pb: 2,
-            borderBottom: `2px solid ${theme.palette.primary.main}`,
-            background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(theme.palette.common.white, 0.95)} 100%)`,
+            borderBottom: `2px solid ${readableAccentBorder}`,
+            backgroundColor: alpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.08 : 0.04),
           }}
         >
           <Box display="flex" alignItems="center" gap={1.5}>
-            <ScheduleIcon sx={{ fontSize: 28, color: 'primary.main' }} />
+            <ScheduleIcon sx={{ fontSize: 28, color: readableAccentColor }} />
             <Typography variant="h5" fontWeight={700} color="text.primary">
               {editingSchedule ? 'Edit Schedule' : 'Create New Schedule'}
             </Typography>
@@ -1059,9 +1063,9 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
                 color: 'text.secondary',
                 fontWeight: 600,
                 '&:hover': {
-                  borderColor: 'primary.main',
-                  backgroundColor: alpha(theme.palette.primary.main, 0.08),
-                  color: 'primary.main'
+                  borderColor: readableAccentBorder,
+                  backgroundColor: readableAccentHover,
+                  color: readableAccentColor,
                 }
               }}
             >
@@ -1103,12 +1107,12 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
         <DialogTitle 
           sx={{ 
             pb: 2,
-            borderBottom: `2px solid ${theme.palette.primary.main}`,
-            background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(theme.palette.common.white, 0.95)} 100%)`,
+            borderBottom: `2px solid ${readableAccentBorder}`,
+            backgroundColor: alpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.08 : 0.04),
           }}
         >
           <Box display="flex" alignItems="center" gap={1.5}>
-            <UploadIcon sx={{ fontSize: 28, color: 'primary.main' }} />
+            <UploadIcon sx={{ fontSize: 28, color: readableAccentColor }} />
             <Typography variant="h5" fontWeight={700} color="text.primary">
               Upload Schedule File
             </Typography>

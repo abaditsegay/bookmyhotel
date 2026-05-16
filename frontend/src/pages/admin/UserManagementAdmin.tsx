@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { alpha, useTheme } from '@mui/material/styles';
 import { formatEthiopianPhone } from '../../utils/phoneUtils';
 import {
   Box,
@@ -54,6 +55,7 @@ interface UserFilters {
 const UserManagementAdmin: React.FC = () => {
   const { token, user: currentUser } = useAuth();
   const { showSubmissionError } = useSubmissionError();
+  const theme = useTheme();
   const [users, setUsers] = useState<UserManagementResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -391,19 +393,38 @@ const UserManagementAdmin: React.FC = () => {
     setToggleUser(null);
   };
 
-  const getRoleColor = (role: string) => {
-    switch (role) {
-      case 'SUPER_ADMIN': return 'error';
-      case 'ADMIN': return 'primary';
-      case 'HOTEL_ADMIN': return 'secondary';
-      case 'OPERATIONAL_ADMIN': return 'primary';
-      case 'FRONTDESK': return 'info';
-      case 'HOUSEKEEPING': return 'success';
-      case 'MAINTENANCE': return 'warning';
-      case 'CUSTOMER': return 'default';
-      case 'GUEST': return 'default';
-      default: return 'default';
-    }
+  const getRoleChipSx = (role: string) => {
+    const accent = (() => {
+      switch (role) {
+        case 'SUPER_ADMIN':
+          return theme.palette.error[theme.palette.mode === 'dark' ? 'light' : 'main'];
+        case 'ADMIN':
+          return theme.palette.primary[theme.palette.mode === 'dark' ? 'light' : 'main'];
+        case 'HOTEL_ADMIN':
+          return theme.palette.warning[theme.palette.mode === 'dark' ? 'light' : 'main'];
+        case 'OPERATIONAL_ADMIN':
+          return theme.palette.info[theme.palette.mode === 'dark' ? 'light' : 'main'];
+        case 'FRONTDESK':
+          return theme.palette.info[theme.palette.mode === 'dark' ? 'light' : 'main'];
+        case 'HOUSEKEEPING':
+          return theme.palette.success[theme.palette.mode === 'dark' ? 'light' : 'main'];
+        case 'MAINTENANCE':
+          return theme.palette.warning[theme.palette.mode === 'dark' ? 'light' : 'main'];
+        default:
+          return theme.palette.mode === 'dark' ? theme.palette.common.white : theme.palette.text.primary;
+      }
+    })();
+
+    return {
+      fontWeight: 700,
+      letterSpacing: '0.02em',
+      color: accent,
+      borderColor: alpha(accent, theme.palette.mode === 'dark' ? 0.38 : 0.24),
+      backgroundColor: alpha(accent, theme.palette.mode === 'dark' ? 0.14 : 0.06),
+      '& .MuiChip-label': {
+        px: 1.1,
+      },
+    };
   };
 
   const getStatusColor = (active: boolean) => {
@@ -534,9 +555,9 @@ const UserManagementAdmin: React.FC = () => {
                     <TableCell>
                       <Chip
                         label={user.roles.length > 0 ? user.roles[0].replace('_', ' ') : 'No Role'}
-                        color={getRoleColor(user.roles.length > 0 ? user.roles[0] : '') as any}
                         size="small"
                         variant="outlined"
+                        sx={getRoleChipSx(user.roles.length > 0 ? user.roles[0] : '')}
                       />
                     </TableCell>
                     <TableCell>

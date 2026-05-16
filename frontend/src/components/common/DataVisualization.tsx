@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import {
+  alpha,
   Box,
   Paper,
   Typography,
@@ -14,6 +15,7 @@ import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import TrendingFlatIcon from '@mui/icons-material/TrendingFlat';
 import { designSystem } from '../../theme/designSystem';
 import { AnimatedCounter } from './MicroInteractions';
+import { getReadableAccentTextColor } from '../../theme/surfaces';
 
 export interface ChartDataPoint {
   label: string;
@@ -62,6 +64,9 @@ const MetricCard: React.FC<MetricCardProps> = ({
   subtitle,
 }) => {
   const theme = useTheme();
+  const metricAccentColor = getReadableAccentTextColor(theme, color);
+  const metricSurface = alpha(metricAccentColor, theme.palette.mode === 'dark' ? 0.12 : 0.05);
+  const metricBorder = alpha(metricAccentColor, theme.palette.mode === 'dark' ? 0.26 : 0.14);
 
   const getTrendIcon = () => {
     switch (trend) {
@@ -91,14 +96,16 @@ const MetricCard: React.FC<MetricCardProps> = ({
     <Card
       sx={{
         height: '100%',
-        background: `linear-gradient(135deg, ${theme.palette[color].main}15 0%, ${theme.palette[color].main}05 100%)`,
-        border: `1px solid ${theme.palette[color].main}30`,
+        backgroundColor: metricSurface,
+        border: `1px solid ${metricBorder}`,
         borderRadius: designSystem.borderRadius.lg,
-        transition: 'all 0.3s ease',
+        boxShadow: 'none',
+        transition: 'background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease',
         '&:hover': {
           transform: 'translateY(-4px)',
           boxShadow: designSystem.shadows.lg,
-          borderColor: theme.palette[color].main,
+          backgroundColor: alpha(metricAccentColor, theme.palette.mode === 'dark' ? 0.18 : 0.08),
+          borderColor: alpha(metricAccentColor, theme.palette.mode === 'dark' ? 0.36 : 0.2),
         },
       }}
     >
@@ -115,7 +122,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
             )}
           </Box>
           {icon && (
-            <Box sx={{ color: theme.palette[color].main, opacity: 0.7 }}>
+            <Box sx={{ color: metricAccentColor, opacity: 0.85 }}>
               {icon}
             </Box>
           )}
@@ -125,7 +132,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
           variant="h4" 
           sx={{ 
             fontWeight: 'bold', 
-            color: theme.palette[color].main,
+            color: metricAccentColor,
             mb: 1,
           }}
         >
@@ -162,6 +169,7 @@ const BarChart: React.FC<BarChartProps> = ({
   animated = true,
 }) => {
   const theme = useTheme();
+  const fallbackAccent = getReadableAccentTextColor(theme);
   const [animationProgress, setAnimationProgress] = useState(0);
 
   React.useEffect(() => {
@@ -181,6 +189,7 @@ const BarChart: React.FC<BarChartProps> = ({
         p: 3,
         borderRadius: designSystem.borderRadius.lg,
         border: `1px solid ${theme.palette.divider}`,
+        backgroundColor: theme.palette.background.paper,
       }}
     >
       {title && (
@@ -210,7 +219,7 @@ const BarChart: React.FC<BarChartProps> = ({
                   variant="caption" 
                   sx={{ 
                     fontWeight: 600,
-                    color: item.color || theme.palette.primary.main,
+                    color: item.color || fallbackAccent,
                   }}
                 >
                   {item.value.toLocaleString()}
@@ -223,7 +232,7 @@ const BarChart: React.FC<BarChartProps> = ({
                     width: '100%',
                     maxWidth: 40,
                     height: animatedHeight,
-                    backgroundColor: item.color || theme.palette.primary.main,
+                    backgroundColor: item.color || fallbackAccent,
                     borderRadius: `${designSystem.borderRadius.sm}px ${designSystem.borderRadius.sm}px 0 0`,
                     transition: animated ? 'height 1s cubic-bezier(0.4, 0, 0.2, 1)' : 'none',
                     cursor: 'pointer',
@@ -262,6 +271,7 @@ const DonutChart: React.FC<DonutChartProps> = ({
   centerText,
 }) => {
   const theme = useTheme();
+  const fallbackAccent = getReadableAccentTextColor(theme);
   const [animationProgress, setAnimationProgress] = useState(0);
 
   React.useEffect(() => {
@@ -282,6 +292,7 @@ const DonutChart: React.FC<DonutChartProps> = ({
         borderRadius: designSystem.borderRadius.lg,
         border: `1px solid ${theme.palette.divider}`,
         textAlign: 'center',
+        backgroundColor: theme.palette.background.paper,
       }}
     >
       {title && (
@@ -298,7 +309,7 @@ const DonutChart: React.FC<DonutChartProps> = ({
             cy={size / 2}
             r={radius}
             fill="none"
-            stroke={theme.palette.grey[200]}
+            stroke={alpha(theme.palette.text.primary, theme.palette.mode === 'dark' ? 0.14 : 0.1)}
             strokeWidth={thickness}
           />
           
@@ -317,7 +328,7 @@ const DonutChart: React.FC<DonutChartProps> = ({
                 cy={size / 2}
                 r={radius}
                 fill="none"
-                stroke={item.color || theme.palette.primary.main}
+                stroke={item.color || fallbackAccent}
                 strokeWidth={thickness}
                 strokeDasharray={strokeDasharray}
                 strokeDashoffset={strokeDashoffset}
@@ -362,7 +373,7 @@ const DonutChart: React.FC<DonutChartProps> = ({
                   width: 12,
                   height: 12,
                   borderRadius: '50%',
-                  backgroundColor: item.color || theme.palette.primary.main,
+                  backgroundColor: item.color || fallbackAccent,
                 }}
               />
               <Typography variant="body2" color="text.secondary">
@@ -382,6 +393,7 @@ const ProgressChart: React.FC<{
   title?: string;
 }> = ({ data, title }) => {
   const theme = useTheme();
+  const fallbackAccent = getReadableAccentTextColor(theme);
 
   return (
     <Paper
@@ -389,6 +401,7 @@ const ProgressChart: React.FC<{
         p: 3,
         borderRadius: designSystem.borderRadius.lg,
         border: `1px solid ${theme.palette.divider}`,
+        backgroundColor: theme.palette.background.paper,
       }}
     >
       {title && (
@@ -414,10 +427,10 @@ const ProgressChart: React.FC<{
               sx={{
                 height: 8,
                 borderRadius: 4,
-                backgroundColor: theme.palette.grey[200],
+                backgroundColor: alpha(theme.palette.text.primary, theme.palette.mode === 'dark' ? 0.14 : 0.1),
                 '& .MuiLinearProgress-bar': {
                   borderRadius: 4,
-                  backgroundColor: item.color || theme.palette.primary.main,
+                  backgroundColor: item.color || fallbackAccent,
                 },
               }}
             />

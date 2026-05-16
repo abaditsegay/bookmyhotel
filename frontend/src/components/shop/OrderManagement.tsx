@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { alpha } from '@mui/material/styles';
 import {
   Box,
   Button,
@@ -29,7 +30,8 @@ import {
   ListItem,
   ListItemText,
   Tooltip,
-  Divider
+  Divider,
+  useTheme
 } from '@mui/material';
 import {
   Visibility as ViewIcon,
@@ -51,12 +53,17 @@ import { useSnackbar } from 'notistack';
 import { useTranslation } from 'react-i18next';
 import { getPremiumTableHeadSx } from './premiumStyles';
 import { getEffectiveSearchTerm } from '../../utils/search';
+import { getReadableAccentTextColor } from '../../theme/surfaces';
 
 const OrderManagement: React.FC = () => {
   const { user, token } = useAuth();
   const { t } = useTranslation();
+  const theme = useTheme();
   const { enqueueSnackbar } = useSnackbar();
   const { exportToCsv } = useCsvExport({ filename: 'orders' });
+  const readableAccentColor = getReadableAccentTextColor(theme);
+  const readableAccentBorder = alpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.34 : 0.18);
+  const readableAccentHover = alpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.14 : 0.08);
   const [orders, setOrders] = useState<ShopOrder[]>([]);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [loading, setLoading] = useState(true);
@@ -257,6 +264,14 @@ const OrderManagement: React.FC = () => {
                 onClick={handleExportToCsv}
                 disabled={sortedOrders.length === 0}
                 fullWidth
+                sx={{
+                  borderColor: readableAccentBorder,
+                  color: readableAccentColor,
+                  '&:hover': {
+                    borderColor: readableAccentColor,
+                    backgroundColor: readableAccentHover,
+                  },
+                }}
               >
                 {t('common.exportCsv')}
               </Button>
@@ -500,7 +515,7 @@ const OrderManagement: React.FC = () => {
                     <Divider sx={{ my: 2 }} />
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <Typography variant="h6">Total:</Typography>
-                      <Typography variant="h6" color="primary">
+                      <Typography variant="h6" sx={{ color: readableAccentColor }}>
                         {formatCurrencyWithDecimals(getOrderGrandTotal(selectedOrder))}
                       </Typography>
                     </Box>
@@ -535,7 +550,18 @@ const OrderManagement: React.FC = () => {
               Mark as {selectedOrder.status === ShopOrderStatus.PAID ? 'Pending' : 'Paid'}
             </Button>
           )}
-          <Button onClick={() => setViewOrderDialog(false)}>Close</Button>
+          <Button
+            onClick={() => setViewOrderDialog(false)}
+            sx={{
+              color: readableAccentColor,
+              '&:hover': {
+                backgroundColor: readableAccentHover,
+                color: readableAccentColor,
+              },
+            }}
+          >
+            Close
+          </Button>
         </DialogActions>
       </Dialog>
     </Box>

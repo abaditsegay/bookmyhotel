@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { alpha } from '@mui/material/styles';
 import {
   Box,
   Typography,
@@ -23,6 +24,7 @@ import {
   Switch,
   FormControlLabel,
   TablePagination,
+  useTheme,
 } from '@mui/material';
 import {
   Edit as EditIcon,
@@ -51,9 +53,14 @@ import { getEffectiveSearchTerm } from '../../utils/search';
 import PremiumTextField from '../common/PremiumTextField';
 import PremiumSelect from '../common/PremiumSelect';
 import { formActionsRowSx } from '../../theme/sxHelpers';
+import { getReadableAccentTextColor } from '../../theme/surfaces';
 
 const ProductManagement: React.FC = () => {
   const { t } = useTranslation();
+  const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
+  const readableAccentBorder = alpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.34 : 0.18);
+  const readableAccentHover = alpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.14 : 0.08);
   const { user, token } = useAuth();
   const { enqueueSnackbar } = useSnackbar();
   const { exportToCsv } = useCsvExport({ filename: 'products' });
@@ -720,6 +727,14 @@ const ProductManagement: React.FC = () => {
           <StandardButton 
             onClick={() => setOpenDialog(false)}
             variant="outlined"
+            sx={{
+              borderColor: readableAccentBorder,
+              color: readableAccentColor,
+              '&:hover': {
+                borderColor: readableAccentColor,
+                backgroundColor: readableAccentHover,
+              },
+            }}
           >
             {t('common.cancel')}
           </StandardButton>
@@ -772,7 +787,7 @@ const ProductManagement: React.FC = () => {
               
               {/* Basic Information */}
               <Grid item xs={12} md={6}>
-                <SurfaceCard>
+                <Box sx={{ height: '100%', px: 0.5, py: 0.25 }}>
                     <Typography variant="h6" gutterBottom>Basic Information</Typography>
                     <Box sx={{ '& > *': { mb: 0.5 } }}>
                       <Typography><strong>{t('shop.products.form.name')}:</strong> {selectedViewProduct.name}</Typography>
@@ -782,12 +797,12 @@ const ProductManagement: React.FC = () => {
                         <Typography><strong>{t('shop.products.form.description')}:</strong> {selectedViewProduct.description}</Typography>
                       )}
                     </Box>
-                </SurfaceCard>
+                </Box>
               </Grid>
 
               {/* Pricing Information */}
               <Grid item xs={12} md={6}>
-                <SurfaceCard>
+                <Box sx={{ height: '100%', px: 0.5, py: 0.25 }}>
                     <Typography variant="h6" gutterBottom>Pricing Information</Typography>
                     <Box sx={{ '& > *': { mb: 0.5 } }}>
                       <Typography><strong>{t('shop.products.form.price')}:</strong> {formatCurrencyWithDecimals(selectedViewProduct.price || 0)}</Typography>
@@ -802,12 +817,12 @@ const ProductManagement: React.FC = () => {
                         <Typography><strong>{t('shop.products.form.weight')}:</strong> {selectedViewProduct.weightGrams}g</Typography>
                       )}
                     </Box>
-                </SurfaceCard>
+                </Box>
               </Grid>
 
               {/* Stock Information */}
               <Grid item xs={12} md={6}>
-                <SurfaceCard>
+                <Box sx={{ height: '100%', px: 0.5, py: 0.25 }}>
                     <Typography variant="h6" gutterBottom>Stock Information</Typography>
                     <Box sx={{ mb: 2 }}>
                       <Chip
@@ -825,12 +840,12 @@ const ProductManagement: React.FC = () => {
                       <Typography><strong>{t('shop.products.form.minimumStock')}:</strong> {selectedViewProduct.minimumStockLevel} {t('common.units')}</Typography>
                       <Typography><strong>{t('shop.products.form.maximumStock')}:</strong> {selectedViewProduct.maximumStockLevel} {t('common.units')}</Typography>
                     </Box>
-                </SurfaceCard>
+                </Box>
               </Grid>
 
               {/* Availability Status */}
               <Grid item xs={12} md={6}>
-                <SurfaceCard>
+                <Box sx={{ height: '100%', px: 0.5, py: 0.25 }}>
                     <Typography variant="h6" gutterBottom>Product Status</Typography>
                     <Box sx={{ '& > *': { mb: 0.5 } }}>
                       <Typography>
@@ -852,23 +867,35 @@ const ProductManagement: React.FC = () => {
                         <strong>Stock Value:</strong> {formatCurrencyWithDecimals((selectedViewProduct.costPrice || 0) * selectedViewProduct.stockQuantity)}
                       </Typography>
                     </Box>
-                </SurfaceCard>
+                </Box>
               </Grid>
 
               {/* Notes */}
               {selectedViewProduct.notes && (
                 <Grid item xs={12}>
-                  <SurfaceCard>
+                  <Box sx={{ px: 0.5, py: 0.25 }}>
                       <Typography variant="h6" gutterBottom>Notes</Typography>
                       <Typography>{selectedViewProduct.notes}</Typography>
-                  </SurfaceCard>
+                  </Box>
                 </Grid>
               )}
             </Grid>
           )}
         </DialogContent>
         <DialogActions sx={{ ...formActionsRowSx, px: 3, py: 2.5 }}>
-          <StandardButton variant="text" onClick={closeViewDetailsDialog}>{t('common.close')}</StandardButton>
+          <StandardButton
+            variant="text"
+            onClick={closeViewDetailsDialog}
+            sx={{
+              color: readableAccentColor,
+              '&:hover': {
+                backgroundColor: readableAccentHover,
+                color: readableAccentColor,
+              },
+            }}
+          >
+            {t('common.close')}
+          </StandardButton>
         </DialogActions>
       </Dialog>
     </Box>

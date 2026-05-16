@@ -47,7 +47,7 @@ import {
   SupervisorAccount
 } from '@mui/icons-material';
 import { useDebounce } from '../../hooks/useDebounce';
-import { tableHeadRowSx } from '../../theme/sxHelpers';
+import { refreshActionButtonSx, tableHeadRowSx } from '../../theme/sxHelpers';
 import { getReadableAccentTextColor } from '../../theme/surfaces';
 import { getEffectiveSearchTerm } from '../../utils/search';
 import TokenManager from '../../utils/tokenManager';
@@ -225,6 +225,7 @@ const StaffDashboard: React.FC<StaffDashboardProps> = ({ currentUserRole = 'OPER
           variant="outlined"
           startIcon={<RefreshIcon />}
           onClick={loadStaffData}
+          sx={refreshActionButtonSx}
         >
           Refresh
         </Button>

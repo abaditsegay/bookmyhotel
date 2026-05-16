@@ -37,7 +37,7 @@ import {
 import { useTenant } from '../../contexts/TenantContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { hotelAdminApi } from '../../services/hotelAdminApi';
-import { guestNameBadgeSx, tableHeadRowSx } from '../../theme/sxHelpers';
+import { actionIconButtonSx, guestNameBadgeSx, refreshActionButtonSx, tableHeadRowSx } from '../../theme/sxHelpers';
 
 interface Booking {
   reservationId: number;
@@ -264,6 +264,7 @@ const HotelBookings: React.FC<HotelBookingsProps> = ({
           {mode === 'front-desk' && (
             <Button 
               variant="contained" 
+            sx={refreshActionButtonSx}
               startIcon={<AddGuestIcon />}
             >
               Walk-in Guest
@@ -349,6 +350,7 @@ const HotelBookings: React.FC<HotelBookingsProps> = ({
                             <IconButton 
                               size="small"
                               onClick={() => handleViewBookingDetails(booking)}
+                              sx={actionIconButtonSx('accent')}
                             >
                               <VisibilityIcon />
                             </IconButton>
@@ -360,7 +362,7 @@ const HotelBookings: React.FC<HotelBookingsProps> = ({
                                 <Tooltip title="Check In">
                                   <IconButton 
                                     size="small" 
-                                    color="success"
+                                    sx={actionIconButtonSx('success')}
                                     onClick={() => handleBookingAction(booking, 'check-in')}
                                   >
                                     <CheckInIcon />
@@ -371,7 +373,7 @@ const HotelBookings: React.FC<HotelBookingsProps> = ({
                                 <Tooltip title="Check Out">
                                   <IconButton 
                                     size="small" 
-                                    color="warning"
+                                    sx={actionIconButtonSx('warning')}
                                     onClick={() => handleBookingAction(booking, 'check-out')}
                                   >
                                     <CheckOutIcon />
@@ -379,7 +381,7 @@ const HotelBookings: React.FC<HotelBookingsProps> = ({
                                 </Tooltip>
                               )}
                               <Tooltip title="Print Receipt">
-                                <IconButton size="small">
+                                <IconButton size="small" sx={actionIconButtonSx('info')}>
                                   <PrintIcon />
                                 </IconButton>
                               </Tooltip>
