@@ -49,7 +49,6 @@ import {
 import { MetricCard, BarChart, DonutChart } from '../components/common/DataVisualization';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import BookIcon from '@mui/icons-material/Book';
-import { designSystem } from '../theme/designSystem';
 import { useThemeColors } from '../theme/useThemeColors';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -63,6 +62,7 @@ import {
 import AuditLogTab from './admin/AuditLogTab';
 import TabPanel from '../components/common/TabPanel';
 import { getReadableAccentTextColor, getSectionTint } from '../theme/surfaces';
+import { composeSx, infoPanelSx, surfaceCardSx } from '../theme/sxHelpers';
 
 /**
  * Dashboard page for system-wide users (ADMIN and CUSTOMER roles)
@@ -314,13 +314,10 @@ export const SystemDashboardPage: React.FC = () => {
         {/* Business Onboarding URL — share with businesses to submit hotel registration */}
         <Paper
           elevation={0}
-          sx={{
+          sx={composeSx(infoPanelSx, {
             p: 3,
             mb: 4,
-            borderRadius: 2,
-            background: `linear-gradient(135deg, ${COLORS.PRIMARY}08 0%, ${COLORS.SECONDARY}08 100%)`,
-            boxShadow: `0 10px 24px ${COLORS.PRIMARY}14`,
-          }}
+          })}
         >
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
             <LinkIcon sx={{ mr: 1, color: readableAccentColor }} />
@@ -416,7 +413,7 @@ export const SystemDashboardPage: React.FC = () => {
         <Grid container spacing={3}>
           {isSystemAdmin && (
             <Grid item xs={12} md={6}>
-              <Paper elevation={0} sx={{ p: 3, borderRadius: designSystem.borderRadius.lg, boxShadow: designSystem.shadows.card }}>
+              <Paper elevation={0} sx={composeSx(surfaceCardSx('default'), { p: 3 })}>
                 <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
                   <TrendingUp sx={{ mr: 1 }} />
                   {t('dashboard.system.systemOverview')}
@@ -457,7 +454,7 @@ export const SystemDashboardPage: React.FC = () => {
           )}
 
           <Grid item xs={12} md={isSystemAdmin ? 6 : 12}>
-            <Paper elevation={0} sx={{ p: 3, borderRadius: designSystem.borderRadius.lg, boxShadow: designSystem.shadows.card }}>
+            <Paper elevation={0} sx={composeSx(surfaceCardSx('default'), { p: 3 })}>
               <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
                 <Dashboard sx={{ mr: 1 }} />
                 {t('dashboard.system.recentActivity')}
@@ -565,7 +562,7 @@ export const SystemDashboardPage: React.FC = () => {
           {/* Charts */}
           <Grid container spacing={3}>
             <Grid item xs={12} lg={8}>
-              <Paper elevation={0} sx={{ p: 3, borderRadius: designSystem.borderRadius.lg, boxShadow: designSystem.shadows.card }}>
+              <Paper elevation={0} sx={composeSx(surfaceCardSx('default'), { p: 3 })}>
                 <Typography variant="h6" sx={{ mb: 3, fontWeight: 'bold' }}>
                   {t('dashboard.system.monthlyRevenueChart')}
                 </Typography>
@@ -578,7 +575,7 @@ export const SystemDashboardPage: React.FC = () => {
             </Grid>
             
             <Grid item xs={12} lg={4}>
-              <Paper elevation={0} sx={{ p: 3, borderRadius: designSystem.borderRadius.lg, boxShadow: designSystem.shadows.card, height: '100%' }}>
+              <Paper elevation={0} sx={composeSx(surfaceCardSx('default'), { p: 3, height: '100%' })}>
                 <Typography variant="h6" sx={{ mb: 3, fontWeight: 'bold' }}>
                   {t('dashboard.system.bookingStatusChart')}
                 </Typography>

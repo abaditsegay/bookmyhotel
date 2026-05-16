@@ -56,27 +56,29 @@ export const pageHeaderActionsSx: AppSx = {
 
 export const surfaceCardSx = (variant: 'default' | 'subtle' | 'elevated' = 'default'): AppSx => theme => {
   const borderColor = theme.palette.divider;
+  const sharedSurfaceBackground = alpha(theme.palette.background.paper, theme.palette.mode === 'dark' ? 0.84 : 0.94);
+  const sharedSurfaceRadius = Math.max(4, designSystem.borderRadius.sm / 2);
 
   const variants = {
     default: {
-      backgroundColor: theme.palette.background.paper,
+      backgroundColor: sharedSurfaceBackground,
       boxShadow: 'none',
       border: `1px solid ${borderColor}`,
     },
     subtle: {
-      backgroundColor: alpha(theme.palette.background.paper, theme.palette.mode === 'dark' ? 0.92 : 0.98),
+      backgroundColor: alpha(theme.palette.background.paper, theme.palette.mode === 'dark' ? 0.78 : 0.9),
       boxShadow: 'none',
       border: `1px solid ${borderColor}`,
     },
     elevated: {
-      backgroundColor: theme.palette.background.paper,
+      backgroundColor: sharedSurfaceBackground,
       boxShadow: theme.palette.mode === 'dark' ? '0 18px 40px rgba(2, 6, 23, 0.36)' : designSystem.shadows.card,
       border: `1px solid ${borderColor}`,
     },
   };
 
   return {
-    borderRadius: designSystem.borderRadius.lg,
+    borderRadius: sharedSurfaceRadius,
     overflow: 'hidden',
     ...variants[variant],
   };
@@ -88,16 +90,16 @@ export const surfaceCardContentSx: AppSx = {
 
 export const infoPanelSx: AppSx = theme => ({
   p: 2.5,
-  borderRadius: designSystem.borderRadius.lg,
+  borderRadius: Math.max(4, designSystem.borderRadius.sm / 2),
   border: `1px solid ${alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.2 : 0.08)}`,
-  backgroundColor: alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.14 : 0.05),
+  backgroundColor: alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.1 : 0.04),
 });
 
 export const tintedPanelSx = (accent: 'primary' | 'secondary' | 'info' | 'warning' | 'error' = 'primary'): AppSx => theme => ({
   p: { xs: 2.5, md: 3 },
-  borderRadius: designSystem.borderRadius.lg,
+  borderRadius: Math.max(4, designSystem.borderRadius.sm / 2),
   border: `1px solid ${alpha(theme.palette[accent].main, theme.palette.mode === 'dark' ? 0.24 : 0.1)}`,
-  backgroundColor: alpha(theme.palette[accent].main, theme.palette.mode === 'dark' ? 0.14 : 0.05),
+  backgroundColor: alpha(theme.palette[accent].main, theme.palette.mode === 'dark' ? 0.1 : 0.04),
 });
 
 export const orderedListSx: AppSx = {

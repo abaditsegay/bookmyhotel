@@ -21,7 +21,6 @@ import {
   HotelSearchRequest,
 } from '../types/hotel';
 import { designSystem } from '../theme/designSystem';
-import { tintedPanelSx } from '../theme/sxHelpers';
 
 const HotelSearchPage: React.FC = () => {
   const navigate = useNavigate();
@@ -105,9 +104,9 @@ const HotelSearchPage: React.FC = () => {
       </Box>
 
       {/* Find My Booking Section */}
-      <StandardCard cardVariant="gradient" sx={{ textAlign: 'center' }}>
+      <StandardCard cardVariant="default" sx={{ textAlign: 'center' }}>
         <Box sx={{ p: isMobile ? 2.5 : 4 }}>
-          <Box sx={tintedPanelSx('primary')}>
+          <Box sx={{ textAlign: 'center' }}>
             <Typography variant="h5" sx={{ fontWeight: 600, mb: 1, color: 'text.primary' }}>
               {t('hotelSearch.alreadyHaveBooking.title')}
             </Typography>

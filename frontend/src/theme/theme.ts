@@ -46,6 +46,9 @@ const getThemeOptions = (mode: AppThemeMode): ThemeOptions => {
   const elevatedBorder = scheme.border.default;
   const elevatedBorderHover = scheme.border.strong;
   const fieldBackground = scheme.background.input;
+  const sharedCardBackground = alpha(palette.background.paper, isDark ? 0.84 : 0.94);
+  const sharedSurfaceRadius = Math.max(4, designSystem.borderRadius.sm / 2);
+  const sharedDialogRadius = sharedSurfaceRadius + 2;
   const surfaceShadow = isDark
     ? `0 18px 40px ${alpha('#020617', 0.42)}`
     : designSystem.shadows.card;
@@ -239,9 +242,9 @@ const getThemeOptions = (mode: AppThemeMode): ThemeOptions => {
       MuiCard: {
         styleOverrides: {
           root: {
-            borderRadius: designSystem.borderRadius.lg,
+            borderRadius: sharedSurfaceRadius,
             border: `1px solid ${elevatedBorder}`,
-            backgroundColor: palette.background.paper,
+            backgroundColor: sharedCardBackground,
             backgroundImage: 'none',
             boxShadow: surfaceShadow,
             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -260,7 +263,7 @@ const getThemeOptions = (mode: AppThemeMode): ThemeOptions => {
             backgroundImage: 'none',
           },
           rounded: {
-            borderRadius: designSystem.borderRadius.lg,
+            borderRadius: sharedSurfaceRadius,
           },
         },
       },
@@ -334,9 +337,9 @@ const getThemeOptions = (mode: AppThemeMode): ThemeOptions => {
       MuiDialog: {
         styleOverrides: {
           paper: {
-            borderRadius: designSystem.borderRadius.xl,
+            borderRadius: sharedDialogRadius,
             boxShadow: dialogShadow,
-            backgroundColor: palette.background.paper,
+            backgroundColor: sharedCardBackground,
             border: `1px solid ${elevatedBorder}`,
           }
         }
@@ -434,7 +437,7 @@ const getThemeOptions = (mode: AppThemeMode): ThemeOptions => {
       MuiAlert: {
         styleOverrides: {
           root: {
-            borderRadius: designSystem.borderRadius.lg,
+            borderRadius: sharedSurfaceRadius,
             alignItems: 'center',
           },
           standardInfo: {

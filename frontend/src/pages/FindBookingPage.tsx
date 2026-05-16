@@ -141,7 +141,7 @@ const FindBookingPage: React.FC = () => {
         contentSx={{ p: { xs: 3, md: 5 } }}
       >
         <Box>
-          <Box sx={{ ...tintedPanelSx('primary'), mb: 4, textAlign: 'center' }}>
+          <Box sx={{ mb: 4, textAlign: 'center' }}>
             <Typography 
               variant="h5" 
               sx={{
@@ -211,7 +211,7 @@ const FindBookingPage: React.FC = () => {
           contentSx={{ p: { xs: 3, md: 5 } }}
         >
           <Box>
-            <Box sx={{ ...tintedPanelSx('primary'), display: 'flex', alignItems: 'center', mb: 4 }}>
+            <Box sx={{ ...infoPanelSx, display: 'flex', alignItems: 'center', mb: 4 }}>
               <Box>
                 <Typography 
                   variant="h4" 
@@ -344,12 +344,12 @@ const FindBookingPage: React.FC = () => {
         contentSx={{ p: { xs: 3, md: 4 } }}
       >
         <Box>
-          <Box sx={{ ...tintedPanelSx('info'), display: 'flex', alignItems: 'center', mb: 3 }}>
+          <Box sx={{ ...infoPanelSx, display: 'flex', alignItems: 'center', mb: 3 }}>
             <Typography 
               variant="h5" 
               sx={{
                 fontWeight: 700,
-                color: 'info.main',
+                color: 'text.primary',
               }}
             >
               {t('booking.find.help.title')}

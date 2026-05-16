@@ -52,7 +52,7 @@ import {
 import { staffApi } from '../../services/staffApi';
 import { HousekeepingTask } from '../../types/operations';
 import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
-import { refreshActionButtonSx } from '../../theme/sxHelpers';
+import { composeSx, refreshActionButtonSx, surfaceCardSx } from '../../theme/sxHelpers';
 
 const HousekeepingStaffDashboard: React.FC = () => {
   const theme = useTheme();
@@ -166,16 +166,16 @@ const HousekeepingStaffDashboard: React.FC = () => {
   // Elegant Mobile-optimized task card component
   const TaskCard: React.FC<{ task: HousekeepingTask }> = ({ task }) => (
     <Card 
-      sx={{ 
-        mb: 2, 
+      sx={composeSx(surfaceCardSx('subtle'), {
+        mb: 2,
         cursor: 'pointer',
-        boxShadow: `0 1px 4px ${alpha(theme.palette.common.black, 0.05)}`,
-        borderRadius: 2,
-        transition: 'all 0.2s ease',
-        '&:hover': { 
-          boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.08)}`,
+        transition: 'background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease',
+        '&:hover': {
+          backgroundColor: alpha(theme.palette.background.paper, theme.palette.mode === 'dark' ? 0.82 : 0.97),
+          borderColor: alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.28 : 0.12),
+          transform: 'translateY(-1px)',
         }
-      }}
+      })}
       onClick={() => openTaskDetails(task)}
     >
       <CardContent sx={{ pb: 1 }}>
@@ -620,11 +620,7 @@ const HousekeepingStaffDashboard: React.FC = () => {
         {error && (
           <Alert 
             severity="error" 
-            sx={{ 
-              mb: 3,
-              boxShadow: `0 4px 12px ${alpha(theme.palette.error.main, 0.15)}`,
-              borderRadius: 2
-            }} 
+            sx={{ mb: 3 }} 
             onClose={() => setError(null)}
           >
             {error}
@@ -633,11 +629,9 @@ const HousekeepingStaffDashboard: React.FC = () => {
 
         {/* Elegant Tasks Section */}
         <Card 
-          sx={{ 
-            boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.04)}`,
-            borderRadius: 2,
+          sx={composeSx(surfaceCardSx('default'), {
             overflow: 'hidden',
-          }}
+          })}
         >
           <CardContent sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
             <Box sx={{ 

@@ -40,6 +40,7 @@ import { actionIconButtonSx, tableHeadRowSx } from '../../theme/sxHelpers';
 import { staffApi } from '../../services/staffApi';
 import { MaintenanceTask } from '../../types/operations';
 import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
+import { composeSx, surfaceCardSx } from '../../theme/sxHelpers';
 
 const MaintenanceStaffDashboard: React.FC = () => {
   const { showSubmissionError } = useSubmissionError();
@@ -204,7 +205,7 @@ const MaintenanceStaffDashboard: React.FC = () => {
         {stats && (
           <Grid container spacing={3} sx={{ mb: 4 }}>
             <Grid item xs={12} sm={6} md={3}>
-              <Card>
+              <Card sx={surfaceCardSx('subtle')}>
                 <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                   <AssignmentIcon color="primary" />
                   <Box>
@@ -219,7 +220,7 @@ const MaintenanceStaffDashboard: React.FC = () => {
               </Card>
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
-              <Card>
+              <Card sx={surfaceCardSx('subtle')}>
                 <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                   <ScheduleIcon color="warning" />
                   <Box>
@@ -234,7 +235,7 @@ const MaintenanceStaffDashboard: React.FC = () => {
               </Card>
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
-              <Card>
+              <Card sx={surfaceCardSx('subtle')}>
                 <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                   <PlayArrowIcon color="info" />
                   <Box>
@@ -249,7 +250,7 @@ const MaintenanceStaffDashboard: React.FC = () => {
               </Card>
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
-              <Card>
+              <Card sx={surfaceCardSx('subtle')}>
                 <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                                     <CheckCircleIcon color="primary" />
                   <Box>
@@ -273,7 +274,7 @@ const MaintenanceStaffDashboard: React.FC = () => {
         )}
 
         {/* Tasks Table */}
-        <Card>
+        <Card sx={surfaceCardSx('default')}>
           <CardContent>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
               <Typography variant="h6">
@@ -291,7 +292,7 @@ const MaintenanceStaffDashboard: React.FC = () => {
                 </Typography>
               </Box>
             ) : (
-              <TableContainer component={Paper}>
+              <TableContainer component={Paper} sx={composeSx(surfaceCardSx('subtle'), { boxShadow: 'none' })}>
                 <Table>
                   <TableHead>
                     <TableRow

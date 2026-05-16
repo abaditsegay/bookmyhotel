@@ -196,11 +196,20 @@ const HotelListCard: React.FC<HotelListCardProps> = ({ hotel, onViewHotel }) => 
             </>
           ) : (
             /* Desktop: Side-by-side layout */
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-              <Typography variant="h5" component="h3" sx={{ fontWeight: 'bold', color: 'text.primary' }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 2, mb: 1 }}>
+              <Typography
+                variant="h5"
+                component="h3"
+                sx={{
+                  fontWeight: 'bold',
+                  color: 'text.primary',
+                  flex: 1,
+                  minWidth: 0,
+                }}
+              >
                 {hotel.name}
               </Typography>
-              <Box sx={{ textAlign: 'right' }}>
+              <Box sx={{ textAlign: 'right', flexShrink: 0, pl: 1 }}>
                 <Typography variant="h6" color="text.primary" sx={{ fontWeight: 'bold' }}>
                   {t('hotelSearch.detail.fromPrice')} {formatCurrencyWithDecimals(hotel.minPrice || 0)}
                 </Typography>

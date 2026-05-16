@@ -41,6 +41,7 @@ import HousekeepingPage from '../housekeeping/HousekeepingPage';
 import TabPanel from '../../components/common/TabPanel';
 import { getBookingStatusColor } from '../../utils/statusColors';
 import { getReadableAccentTextColor } from '../../theme/surfaces';
+import { composeSx, surfaceCardSx } from '../../theme/sxHelpers';
 
 const HotelAdminDashboard: React.FC = () => {
   const theme = useTheme();
@@ -49,6 +50,7 @@ const HotelAdminDashboard: React.FC = () => {
   const readableAccentBorder = addAlpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.34 : 0.18);
   const readableAccentSurface = addAlpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.08 : 0.04);
   const readableAccentHover = addAlpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.14 : 0.08);
+  const sharedSurfaceRadius = 4;
   const reportInsetSurface = theme.palette.mode === 'dark'
     ? addAlpha(theme.palette.common.white, 0.04)
     : theme.palette.common.white;
@@ -533,7 +535,7 @@ const HotelAdminDashboard: React.FC = () => {
                     sx={{ 
                       px: 3, 
                       py: 1.5,
-                      borderRadius: 2,
+                      borderRadius: sharedSurfaceRadius,
                       fontWeight: 'bold',
                       background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
                       '&:hover': {
@@ -556,7 +558,7 @@ const HotelAdminDashboard: React.FC = () => {
                 )}
                 
                 {hotelError && (
-                  <Alert severity="error" sx={{ mb: 4, borderRadius: 2 }}>
+                  <Alert severity="error" sx={{ mb: 4 }}>
                     <Typography variant="h6" gutterBottom>
                       {t('dashboard.hotelAdmin.unableToLoadHotel')}
                     </Typography>
@@ -569,12 +571,10 @@ const HotelAdminDashboard: React.FC = () => {
                     {/* Key Metrics Cards */}
                     <Grid container spacing={3} sx={{ mb: 4 }}>
                       <Grid item xs={12} sm={6} md={3}>
-                        <Card elevation={0} sx={{ 
-                          background: `linear-gradient(135deg, ${addAlpha(theme.palette.primary.main, 0.15)} 0%, ${addAlpha(theme.palette.primary.light, 0.1)} 100%)`,
-                          borderRadius: 3,
+                        <Card elevation={0} sx={composeSx(surfaceCardSx('subtle'), {
+                          backgroundColor: addAlpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.14 : 0.06),
                           height: '100%',
-                          boxShadow: `0 10px 24px ${addAlpha(theme.palette.primary.main, 0.12)}`,
-                        }}>
+                        })}>
                           <CardContent sx={{ textAlign: 'center', p: 3 }}>
                             <Box sx={{ 
                               width: 60, 
@@ -605,12 +605,10 @@ const HotelAdminDashboard: React.FC = () => {
                       </Grid>
                       
                       <Grid item xs={12} sm={6} md={3}>
-                        <Card elevation={0} sx={{ 
-                          background: `linear-gradient(135deg, ${addAlpha(theme.palette.success.main, 0.15)} 0%, ${addAlpha(theme.palette.success.light, 0.1)} 100%)`,
-                          borderRadius: 3,
+                        <Card elevation={0} sx={composeSx(surfaceCardSx('subtle'), {
+                          backgroundColor: addAlpha(theme.palette.success.main, theme.palette.mode === 'dark' ? 0.14 : 0.06),
                           height: '100%',
-                          boxShadow: `0 10px 24px ${addAlpha(theme.palette.success.main, 0.12)}`,
-                        }}>
+                        })}>
                           <CardContent sx={{ textAlign: 'center', p: 3 }}>
                             <Box sx={{ 
                               width: 60, 
@@ -641,12 +639,10 @@ const HotelAdminDashboard: React.FC = () => {
                       </Grid>
                       
                       <Grid item xs={12} sm={6} md={3}>
-                        <Card elevation={0} sx={{ 
-                          background: `linear-gradient(135deg, ${addAlpha(theme.palette.warning.main, 0.15)} 0%, ${addAlpha(theme.palette.warning.light, 0.1)} 100%)`,
-                          borderRadius: 3,
+                        <Card elevation={0} sx={composeSx(surfaceCardSx('subtle'), {
+                          backgroundColor: addAlpha(theme.palette.warning.main, theme.palette.mode === 'dark' ? 0.14 : 0.06),
                           height: '100%',
-                          boxShadow: `0 10px 24px ${addAlpha(theme.palette.warning.main, 0.12)}`,
-                        }}>
+                        })}>
                           <CardContent sx={{ textAlign: 'center', p: 3 }}>
                             <Box sx={{ 
                               width: 60, 
@@ -677,12 +673,10 @@ const HotelAdminDashboard: React.FC = () => {
                       </Grid>
                       
                       <Grid item xs={12} sm={6} md={3}>
-                        <Card elevation={0} sx={{ 
-                          background: `linear-gradient(135deg, ${addAlpha(theme.palette.info.main, 0.15)} 0%, ${addAlpha(theme.palette.info.light, 0.1)} 100%)`,
-                          borderRadius: 3,
+                        <Card elevation={0} sx={composeSx(surfaceCardSx('subtle'), {
+                          backgroundColor: addAlpha(theme.palette.info.main, theme.palette.mode === 'dark' ? 0.14 : 0.06),
                           height: '100%',
-                          boxShadow: `0 10px 24px ${addAlpha(theme.palette.info.main, 0.12)}`,
-                        }}>
+                        })}>
                           <CardContent sx={{ textAlign: 'center', p: 3 }}>
                             <Box sx={{ 
                               width: 60, 
@@ -717,11 +711,7 @@ const HotelAdminDashboard: React.FC = () => {
                     <Grid container spacing={3}>
                       {/* Basic Information Card */}
                       <Grid item xs={12} md={6}>
-                        <Card elevation={0} sx={{ 
-                          borderRadius: 3,
-                          height: '100%',
-                          bgcolor: theme.palette.background.paper,
-                        }}>
+                        <Card elevation={0} sx={composeSx(surfaceCardSx('default'), { height: '100%' })}>
                           <CardContent sx={{ p: 4 }}>
                             <Box sx={{ 
                               display: 'flex', 
@@ -804,11 +794,7 @@ const HotelAdminDashboard: React.FC = () => {
                       
                       {/* Contact & Operational Information Card */}
                       <Grid item xs={12} md={6}>
-                        <Card elevation={0} sx={{ 
-                          borderRadius: 3,
-                          height: '100%',
-                          bgcolor: theme.palette.background.paper,
-                        }}>
+                        <Card elevation={0} sx={composeSx(surfaceCardSx('default'), { height: '100%' })}>
                           <CardContent sx={{ p: 4 }}>
                             <Box sx={{ 
                               display: 'flex', 
@@ -916,14 +902,14 @@ const HotelAdminDashboard: React.FC = () => {
                                   flexGrow: 1, 
                                   height: 8, 
                                   backgroundColor: theme.palette.action.hover, 
-                                  borderRadius: 4,
+                                  borderRadius: sharedSurfaceRadius,
                                   mr: 2
                                 }}>
                                   <Box sx={{ 
                                     width: `${hotelData.totalRooms > 0 ? (hotelData.bookedRooms / hotelData.totalRooms) * 100 : 0}%`, 
                                     height: '100%', 
                                     backgroundColor: theme.palette.primary.main, 
-                                    borderRadius: 4
+                                    borderRadius: sharedSurfaceRadius
                                   }} />
                                 </Box>
                               </Box>

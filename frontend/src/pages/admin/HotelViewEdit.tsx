@@ -53,6 +53,7 @@ import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
 import PremiumDisplayField from '../../components/common/PremiumDisplayField';
 import PremiumTextField from '../../components/common/PremiumTextField';
 import PremiumSelect from '../../components/common/PremiumSelect';
+import { composeSx, surfaceCardSx } from '../../theme/sxHelpers';
 
 interface HotelData {
   id: number;
@@ -438,7 +439,7 @@ const HotelViewEdit: React.FC = () => {
             {/* Main Content Area */}
             <Grid item xs={12} lg={8}>
               {/* Basic Information Card */}
-              <Card elevation={0} sx={{ mb: 4, border: `1px solid ${infoBorderColor}`, borderRadius: 3 }}>
+              <Card elevation={0} sx={composeSx(surfaceCardSx('default'), { mb: 4, border: `1px solid ${infoBorderColor}` })}>
                 <CardContent sx={{ p: 4 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
                     <Avatar sx={{ bgcolor: 'primary.main', mr: 2 }}>
@@ -504,7 +505,7 @@ const HotelViewEdit: React.FC = () => {
               </Card>
 
               {/* Location Information Card */}
-              <Card elevation={0} sx={{ mb: 4, border: `1px solid ${infoBorderColor}`, borderRadius: 3 }}>
+              <Card elevation={0} sx={composeSx(surfaceCardSx('default'), { mb: 4, border: `1px solid ${infoBorderColor}` })}>
                 <CardContent sx={{ p: 4 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
                     <Avatar sx={{ bgcolor: 'secondary.main', mr: 2 }}>
@@ -570,7 +571,7 @@ const HotelViewEdit: React.FC = () => {
               </Card>
 
               {/* Operations & Settings Card */}
-              <Card elevation={0} sx={{ border: `1px solid ${infoBorderColor}`, borderRadius: 3 }}>
+              <Card elevation={0} sx={composeSx(surfaceCardSx('default'), { border: `1px solid ${infoBorderColor}` })}>
                 <CardContent sx={{ p: 4 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
                     <Avatar sx={{ bgcolor: 'info.main', mr: 2 }}>
@@ -657,7 +658,7 @@ const HotelViewEdit: React.FC = () => {
             {/* Sidebar */}
             <Grid item xs={12} lg={4}>
               {/* Status Management Card */}
-              <Card elevation={0} sx={{ mb: 4, border: `1px solid ${infoBorderColor}`, borderRadius: 3 }}>
+              <Card elevation={0} sx={composeSx(surfaceCardSx('default'), { mb: 4, border: `1px solid ${infoBorderColor}` })}>
                 <CardContent sx={{ p: 4 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
                     <Avatar sx={{ bgcolor: statusInfo.bgColor, mr: 2 }}>
@@ -716,7 +717,7 @@ const HotelViewEdit: React.FC = () => {
               </Card>
 
               {/* Analytics Card */}
-              <Card elevation={0} sx={{ mb: 4, border: `1px solid ${infoBorderColor}`, borderRadius: 3 }}>
+              <Card elevation={0} sx={composeSx(surfaceCardSx('default'), { mb: 4, border: `1px solid ${infoBorderColor}` })}>
                 <CardContent sx={{ p: 4 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
                     <Avatar sx={{ bgcolor: 'success.main', mr: 2 }}>
@@ -765,7 +766,7 @@ const HotelViewEdit: React.FC = () => {
               </Card>
 
               {/* System Information Card */}
-              <Card elevation={0} sx={{ border: `1px solid ${infoBorderColor}`, borderRadius: 3 }}>
+              <Card elevation={0} sx={composeSx(surfaceCardSx('default'), { border: `1px solid ${infoBorderColor}` })}>
                 <CardContent sx={{ p: 4 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
                     <Avatar sx={{ bgcolor: 'info.main', mr: 2 }}>

@@ -26,7 +26,7 @@ import PremiumTextField from '../components/common/PremiumTextField';
 import StandardButton from '../components/common/StandardButton';
 import { PageContainer, SurfaceCard } from '../components/common';
 import { getPageShellBackground, getReadableAccentTextColor } from '../theme/surfaces';
-import { infoPanelSx, tintedPanelSx } from '../theme/sxHelpers';
+import { infoPanelSx } from '../theme/sxHelpers';
 
 const BookingSearchPage: React.FC = () => {
   const { t } = useTranslation();
@@ -151,7 +151,7 @@ const BookingSearchPage: React.FC = () => {
 
   return (
     <PageContainer maxWidth="md" sx={{ py: { xs: 3, md: 4 }, minHeight: '100vh', backgroundColor: getPageShellBackground(theme) }}>
-      <Box sx={{ ...tintedPanelSx('primary'), mb: { xs: 3, md: 4 }, textAlign: 'center' }}>
+      <Box sx={{ mb: { xs: 3, md: 4 }, textAlign: 'center' }}>
         <Typography 
           variant={isMobile ? "h5" : "h4"} 
           component="h1" 
@@ -263,7 +263,7 @@ const BookingSearchPage: React.FC = () => {
               alignItems: { xs: 'flex-start', sm: 'flex-start' }, 
               mb: { xs: 2, md: 2 },
               gap: { xs: 1, sm: 0 },
-              ...tintedPanelSx('primary'),
+              ...infoPanelSx,
             }}>
               <Box>
                 <Typography variant={isMobile ? "h6" : "h5"} gutterBottom>
