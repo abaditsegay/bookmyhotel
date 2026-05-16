@@ -31,6 +31,7 @@ import { bookingApiService, BookingSearchResponse } from '../../services/booking
 import { formatDateForDisplay } from '../../utils/dateUtils';
 import { getRoomTypeLabel } from '../../constants/roomTypes';
 import { getReadableAccentTextColor } from '../../theme/surfaces';
+import { composeSx, surfaceCardSx } from '../../theme/sxHelpers';
 
 interface BookingSearchModalProps {
   open: boolean;
@@ -177,10 +178,11 @@ const BookingSearchModal: React.FC<BookingSearchModalProps> = ({ open, onClose }
       fullWidth
       fullScreen={isMobile}
       PaperProps={{
-        sx: {
-          borderRadius: isMobile ? 0 : 2,
+        sx: composeSx(surfaceCardSx('default'), {
+          borderRadius: isMobile ? 0 : 4,
           m: isMobile ? 0 : 1,
-        }
+          boxShadow: theme => theme.shadows[10],
+        })
       }}
     >
       <DialogTitle sx={{ m: 0, p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -288,7 +290,7 @@ const BookingSearchModal: React.FC<BookingSearchModalProps> = ({ open, onClose }
 
         {/* Booking Results */}
         {booking && (
-          <Card elevation={2}>
+          <Card elevation={0} sx={surfaceCardSx('default')}>
             <CardContent>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
                 <Box>

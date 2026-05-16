@@ -35,7 +35,7 @@ import {
   Clear as ClearIcon,
   Add as AddIcon,
 } from '@mui/icons-material';
-import { tableHeadRowSx } from '../theme/sxHelpers';
+import { composeSx, infoPanelSx, surfaceCardSx, tableHeadRowSx } from '../theme/sxHelpers';
 import { getReadableAccentTextColor } from '../theme/surfaces';
 import { useAuth } from '../contexts/AuthContext';
 import { useSubmissionError } from '../contexts/SubmissionErrorContext';
@@ -524,10 +524,9 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
 
       {/* Filters Section */}
       <Paper elevation={0} sx={{ 
-        p: 3, 
+        ...surfaceCardSx('default'),
+        p: 3,
         mb: 3,
-        borderRadius: 3,
-        boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.08)}`
       }}>
         <Box display="flex" alignItems="center" justifyContent="space-between" mb={3} pb={2} borderBottom={`2px solid ${readableAccentBorder}`}>
           <Box display="flex" alignItems="center">
@@ -575,13 +574,11 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
           </Box>
         </Box>
         
-        <Box sx={{ 
+        <Box sx={composeSx(infoPanelSx, {
           p: 2.5,
-          backgroundColor: theme.palette.background.default,
-          borderRadius: 2,
           mb: 2,
-          boxShadow: `0 6px 16px ${alpha(theme.palette.common.black, 0.05)}`,
-        }}>
+          boxShadow: 'none',
+        })}>
           <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.secondary', mb: 2.5, display: 'flex', alignItems: 'center', gap: 1 }}>
             <FilterIcon fontSize="small" />
             Filters
@@ -680,10 +677,9 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
 
       {/* Schedules Table */}
       <Paper 
-        elevation={1}
+        elevation={0}
         sx={{
-          borderRadius: 3,
-          boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.08)}`,
+          ...surfaceCardSx('default'),
           overflow: 'hidden'
         }}
       >
@@ -853,7 +849,7 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
         PaperProps={{
           elevation: 0,
           sx: { 
-            borderRadius: 3,
+            ...surfaceCardSx('default'),
             boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.12)}`,
           }
         }}
@@ -1099,7 +1095,7 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
         PaperProps={{
           elevation: 0,
           sx: { 
-            borderRadius: 3,
+            ...surfaceCardSx('default'),
             boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.12)}`,
           }
         }}
@@ -1134,7 +1130,7 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
                 border: 2, 
                 borderStyle: 'dashed',
                 borderColor: 'divider', 
-                borderRadius: 2, 
+                borderRadius: 4, 
                 p: 3, 
                 mb: 3,
                 backgroundColor: theme.palette.background.paper,

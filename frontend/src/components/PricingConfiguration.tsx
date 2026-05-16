@@ -36,6 +36,7 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import { useSubmissionError } from '../contexts/SubmissionErrorContext';
 import { getReadableAccentTextColor } from '../theme/surfaces';
+import { composeSx, infoPanelSx, surfaceCardSx } from '../theme/sxHelpers';
 
 // Utility functions for converting between percentage (0-100) and decimal (0.0-1.0) values
 const toDecimal = (percentage: number): number => {
@@ -484,7 +485,6 @@ const PricingConfigurationComponent: React.FC = () => {
         icon={<InfoIcon />}
         sx={{ 
           mb: 2,
-          borderRadius: 2,
           bgcolor: alpha(theme.palette.primary.main, 0.1),
           border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
           '& .MuiAlert-message': {
@@ -503,27 +503,17 @@ const PricingConfigurationComponent: React.FC = () => {
       <Grid container spacing={1.5}>
         {/* General Settings */}
         <Grid item xs={12} md={4}>
-          <Card sx={{ 
-            bgcolor: 'background.paper',
-            border: '1px solid',
-            borderColor: 'divider',
-            borderRadius: 3,
-            elevation: 0,
-          }}>
+          <Card sx={surfaceCardSx('default')}>
             <CardContent sx={{ p: 2.5 }}>
               {/* General Settings Section */}
-              <Box sx={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: 2, 
+              <Box sx={composeSx(infoPanelSx, {
+                display: 'flex',
+                alignItems: 'center',
+                gap: 2,
                 mb: 1.5,
                 p: 1,
-                bgcolor: 'background.default',
-                border: '1px solid',
-                borderColor: 'divider',
-                borderLeft: '4px solid #E8B86D',
-                borderRadius: 2,
-              }}>
+                borderLeft: '3px solid #E8B86D',
+              })}>
                 <SettingsIcon sx={{ color: readableAccentColor }} />
                 <Box>
                   <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5, color: readableAccentColor }}>
@@ -605,27 +595,17 @@ const PricingConfigurationComponent: React.FC = () => {
 
         {/* Tax Configuration */}
         <Grid item xs={12} md={4}>
-          <Card sx={{ 
-            bgcolor: 'background.paper',
-            border: '1px solid',
-            borderColor: 'divider',
-            borderRadius: 3,
-            elevation: 0,
-          }}>
+          <Card sx={surfaceCardSx('default')}>
             <CardContent sx={{ p: 2.5 }}>
               {/* Tax Configuration Section */}
-              <Box sx={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: 2, 
+              <Box sx={composeSx(infoPanelSx, {
+                display: 'flex',
+                alignItems: 'center',
+                gap: 2,
                 mb: 1.5,
                 p: 1,
-                bgcolor: 'background.default',
-                border: '1px solid',
-                borderColor: 'divider',
-                borderLeft: '4px solid #E8B86D',
-                borderRadius: 2,
-              }}>
+                borderLeft: '3px solid #E8B86D',
+              })}>
                 <ReceiptIcon sx={{ color: readableAccentColor }} />
                 <Box>
                   <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5, color: readableAccentColor }}>
@@ -641,7 +621,6 @@ const PricingConfigurationComponent: React.FC = () => {
                 severity="info" 
                 sx={{ 
                   mb: 1.5,
-                  borderRadius: 2,
                   bgcolor: alpha(theme.palette.info.main, 0.1),
                   border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
                 }}
@@ -686,27 +665,17 @@ const PricingConfigurationComponent: React.FC = () => {
 
         {/* Seasonal Pricing */}
         <Grid item xs={12} md={4}>
-          <Card sx={{ 
-            bgcolor: 'background.paper',
-            border: '1px solid',
-            borderColor: 'divider',
-            borderRadius: 3,
-            elevation: 0,
-          }}>
+          <Card sx={surfaceCardSx('default')}>
             <CardContent sx={{ p: 2.5 }}>
               {/* Seasonal Pricing Section */}
-              <Box sx={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: 2, 
+              <Box sx={composeSx(infoPanelSx, {
+                display: 'flex',
+                alignItems: 'center',
+                gap: 2,
                 mb: 1.5,
                 p: 1,
-                bgcolor: 'background.default',
-                border: '1px solid',
-                borderColor: 'divider',
-                borderLeft: '4px solid #E8B86D',
-                borderRadius: 2,
-              }}>
+                borderLeft: '3px solid #E8B86D',
+              })}>
                 <DiscountIcon sx={{ color: readableAccentColor }} />
                 <Box>
                   <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5, color: readableAccentColor }}>
@@ -758,27 +727,17 @@ const PricingConfigurationComponent: React.FC = () => {
 
         {/* Booking Rules */}
         <Grid item xs={12} md={4}>
-          <Card sx={{ 
-            bgcolor: 'background.paper',
-            border: '1px solid',
-            borderColor: 'divider',
-            borderRadius: 3,
-            elevation: 0,
-          }}>
+          <Card sx={surfaceCardSx('default')}>
             <CardContent sx={{ p: 2.5 }}>
               {/* Booking Rules Section */}
-              <Box sx={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: 2, 
+              <Box sx={composeSx(infoPanelSx, {
+                display: 'flex',
+                alignItems: 'center',
+                gap: 2,
                 mb: 1.5,
                 p: 1,
-                bgcolor: 'background.default',
-                border: '1px solid',
-                borderColor: 'divider',
-                borderLeft: '4px solid #E8B86D',
-                borderRadius: 2,
-              }}>
+                borderLeft: '3px solid #E8B86D',
+              })}>
                 <SettingsIcon sx={{ color: readableAccentColor }} />
                 <Box>
                   <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5, color: readableAccentColor }}>
@@ -822,26 +781,16 @@ const PricingConfigurationComponent: React.FC = () => {
 
         {/* Discounts & Fees */}
         <Grid item xs={12} md={4}>
-          <Card sx={{ 
-            bgcolor: 'background.paper',
-            border: '1px solid',
-            borderColor: 'divider',
-            borderRadius: 3,
-            elevation: 0,
-          }}>
+          <Card sx={surfaceCardSx('default')}>
             <CardContent sx={{ p: 2.5 }}>
               {/* Discounts & Fees Section */}
-              <Box sx={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: 2, 
+              <Box sx={composeSx(infoPanelSx, {
+                display: 'flex',
+                alignItems: 'center',
+                gap: 2,
                 mb: 1.5,
                 p: 1,
-                bgcolor: 'background.default',
-                border: '1px solid',
-                borderColor: 'divider',
-                borderRadius: 2,
-              }}>
+              })}>
                 <DiscountIcon sx={{ color: readableAccentColor }} />
                 <Box>
                   <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5, color: readableAccentColor }}>
@@ -915,26 +864,16 @@ const PricingConfigurationComponent: React.FC = () => {
 
         {/* Cancellation Refund Policies */}
         <Grid item xs={12} md={4}>
-          <Card sx={{ 
-            bgcolor: 'background.paper',
-            border: '1px solid',
-            borderColor: 'divider',
-            borderRadius: 3,
-            elevation: 0,
-          }}>
+          <Card sx={surfaceCardSx('default')}>
             <CardContent sx={{ p: 2.5 }}>
               {/* Cancellation Refund Policies Section */}
-              <Box sx={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: 2, 
+              <Box sx={composeSx(infoPanelSx, {
+                display: 'flex',
+                alignItems: 'center',
+                gap: 2,
                 mb: 1.5,
                 p: 1,
-                bgcolor: 'background.default',
-                border: '1px solid',
-                borderColor: 'divider',
-                borderRadius: 2,
-              }}>
+              })}>
                 <ReceiptIcon sx={{ color: readableAccentColor }} />
                 <Box>
                   <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5, color: readableAccentColor }}>
@@ -950,7 +889,6 @@ const PricingConfigurationComponent: React.FC = () => {
                 severity="info" 
                 sx={{ 
                   mb: 1.5,
-                  borderRadius: 2,
                   bgcolor: alpha(theme.palette.info.main, 0.1),
                   border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
                 }}
@@ -1003,7 +941,6 @@ const PricingConfigurationComponent: React.FC = () => {
                 severity="warning" 
                 sx={{ 
                   mt: 1.5,
-                  borderRadius: 2,
                   bgcolor: alpha(theme.palette.warning.main, 0.1),
                   border: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`
                 }}
@@ -1018,26 +955,16 @@ const PricingConfigurationComponent: React.FC = () => {
 
         {/* Notes */}
         <Grid item xs={12} md={4}>
-          <Card sx={{ 
-            bgcolor: 'background.paper',
-            border: '1px solid',
-            borderColor: 'divider',
-            borderRadius: 3,
-            elevation: 0,
-          }}>
+          <Card sx={surfaceCardSx('default')}>
             <CardContent sx={{ p: 2.5 }}>
               {/* Notes Section */}
-              <Box sx={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: 2, 
+              <Box sx={composeSx(infoPanelSx, {
+                display: 'flex',
+                alignItems: 'center',
+                gap: 2,
                 mb: 1.5,
                 p: 1,
-                bgcolor: 'background.default',
-                border: '1px solid',
-                borderColor: 'divider',
-                borderRadius: 2,
-              }}>
+              })}>
                 <InfoIcon sx={{ color: readableAccentColor }} />
                 <Box>
                   <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5, color: readableAccentColor }}>

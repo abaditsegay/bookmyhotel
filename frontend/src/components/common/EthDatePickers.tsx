@@ -165,7 +165,7 @@ const EthCalendarPopover: React.FC<CalendarPopoverProps> = ({
       anchorEl={anchorEl}
       onClose={onClose}
       anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-      PaperProps={{ sx: { p: 2, width: 320, borderRadius: 3 } }}
+      PaperProps={{ sx: { p: 2, width: 320, borderRadius: 4 } }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
         <IconButton size="small" onClick={prevMonth}><ChevronLeft /></IconButton>
@@ -410,7 +410,7 @@ const EthCalendarTimePopover: React.FC<DateTimePopoverProps> = ({
       anchorEl={anchorEl}
       onClose={onClose}
       anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-      PaperProps={{ sx: { p: 2, width: 320, borderRadius: 3 } }}
+      PaperProps={{ sx: { p: 2, width: 320, borderRadius: 4 } }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
         <IconButton size="small" onClick={prevMonth}><ChevronLeft /></IconButton>
