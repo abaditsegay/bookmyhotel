@@ -16,7 +16,8 @@ import {
   TablePagination,
   IconButton,
   Tooltip,
-  CircularProgress
+  CircularProgress,
+  useTheme
 } from '@mui/material';
 import {
   Warning as WarningIcon,
@@ -31,9 +32,12 @@ import { Product } from '../../types/shop';
 import { translateProducts } from '../../utils/productTranslation';
 import { getEffectiveSearchTerm } from '../../utils/search';
 import { getPremiumTableHeadSx } from './premiumStyles';
+import { getReadableAccentTextColor } from '../../theme/surfaces';
 
 const LowStockProducts: React.FC = () => {
   const { t } = useTranslation();
+  const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
   const { user, token } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -254,7 +258,7 @@ const LowStockProducts: React.FC = () => {
                     <TableCell align="center">
                       <Typography 
                         variant="body2" 
-                        color="primary"
+                        sx={{ color: readableAccentColor }}
                         fontWeight="medium"
                       >
                         {reorderQuantity}

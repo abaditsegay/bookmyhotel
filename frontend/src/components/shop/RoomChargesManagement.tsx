@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { alpha } from '@mui/material/styles';
 import {
   Box,
   Card,
@@ -27,7 +28,8 @@ import {
   Pagination,
   Grid,
   InputAdornment,
-  Tooltip
+  Tooltip,
+  useTheme
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -42,12 +44,16 @@ import { actionIconButtonSx } from '../../theme/sxHelpers';
 import { RoomCharge, RoomChargeCreateRequest, RoomChargeType } from '../../types/shop';
 import { getPremiumTableHeadSx } from './premiumStyles';
 import { guestNameBadgeSx } from '../../theme/sxHelpers';
+import { getReadableAccentTextColor } from '../../theme/surfaces';
 
 interface RoomChargesProps {
   hotelId: number;
 }
 
 const RoomChargesManagement: React.FC<RoomChargesProps> = ({ hotelId }) => {
+  const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
+  const paginationAccent = alpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.3 : 0.16);
   const [roomCharges, setRoomCharges] = useState<RoomCharge[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -265,7 +271,7 @@ const RoomChargesManagement: React.FC<RoomChargesProps> = ({ hotelId }) => {
         <CardContent>
           <Grid container spacing={3}>
             <Grid item xs={12} sm={6} md={3}>
-              <Typography variant="h6" color="primary">
+              <Typography variant="h6" sx={{ color: readableAccentColor }}>
                 {totalElements}
               </Typography>
               <Typography variant="body2" color="text.secondary">
@@ -408,7 +414,15 @@ const RoomChargesManagement: React.FC<RoomChargesProps> = ({ hotelId }) => {
                 count={totalPages}
                 page={page + 1}
                 onChange={(_, newPage) => setPage(newPage - 1)}
-                color="primary"
+                sx={{
+                  '& .MuiPaginationItem-root': {
+                    color: 'text.primary',
+                  },
+                  '& .Mui-selected': {
+                    backgroundColor: paginationAccent,
+                    color: readableAccentColor,
+                  },
+                }}
               />
             </Box>
           )}

@@ -7,7 +7,8 @@ import {
   Tabs,
   Alert,
   CircularProgress,
-  Paper
+  Paper,
+  useTheme
 } from '@mui/material';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -23,6 +24,7 @@ import LowStockProducts from './LowStockProducts';
 import { StatCardSkeleton } from '../common/SkeletonLoaders';
 import { premiumTabsPaperSx, premiumTabsSx } from './premiumStyles';
 import { tintedPanelSx } from '../../theme/sxHelpers';
+import { getReadableAccentTextColor } from '../../theme/surfaces';
 
 interface ShopStatCardProps {
   label: string;
@@ -92,6 +94,8 @@ const ShopStatCard: React.FC<ShopStatCardProps> = ({
 
 const ShopDashboard: React.FC = () => {
   const { t } = useTranslation();
+  const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
   const { user, token } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const [currentTab, setCurrentTab] = useState(() => {
@@ -218,7 +222,7 @@ const ShopDashboard: React.FC = () => {
               label={t('shop.dashboard.stats.totalProducts')}
               value={dashboardStats.totalProducts}
               supportingText={`${dashboardStats.activeProducts} ${t('shop.dashboard.stats.activeProducts').toLowerCase()}`}
-              valueColor="primary.main"
+              valueColor={readableAccentColor}
               supportingColor="text.secondary"
             />
           </Grid>

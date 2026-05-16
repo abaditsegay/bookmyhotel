@@ -446,6 +446,12 @@ const StaffDetails: React.FC = () => {
                               <Checkbox
                                 checked={currentStaff?.roles?.includes(role) || false}
                                 onChange={(e) => handleRoleChange(role, e.target.checked)}
+                                sx={{
+                                  color: accentBorder,
+                                  '&.Mui-checked': {
+                                    color: readableAccentColor,
+                                  },
+                                }}
                               />
                             }
                             label={role.replace('_', ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())}
@@ -462,8 +468,12 @@ const StaffDetails: React.FC = () => {
                             <Chip
                               key={role}
                               label={role.replace('_', ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())}
-                              color="primary"
                               variant="outlined"
+                              sx={{
+                                borderColor: accentBorder,
+                                color: readableAccentColor,
+                                backgroundColor: accentHover,
+                              }}
                             />
                           ))}
                         </Box>
