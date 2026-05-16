@@ -1089,7 +1089,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
                               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
                                 <Typography variant="h6" sx={{ 
                                   fontWeight: 700,
-                                  color: selectedRoomId === room.id ? 'primary.main' : 'text.primary'
+                                  color: selectedRoomId === room.id ? readableAccentColor : 'text.primary'
                                 }}>
                                   Room {room.roomNumber}
                                 </Typography>
@@ -1097,20 +1097,24 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
                                   label={`${formatCurrency(room.pricePerNight || 0)}/night`} 
                                   size="medium" 
                                   sx={{
-                                    background: selectedRoomId === room.id 
-                                      ? COLORS.GRADIENT_SECONDARY
-                                      : COLORS.GRADIENT_WARM,
-                                    color: COLORS.PRIMARY,
+                                    backgroundColor: selectedRoomId === room.id
+                                      ? addAlpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.22 : 0.14)
+                                      : addAlpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.14 : 0.08),
+                                    border: '1px solid',
+                                    borderColor: selectedRoomId === room.id
+                                      ? addAlpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.5 : 0.28)
+                                      : addAlpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.3 : 0.18),
+                                    color: readableAccentColor,
                                     fontWeight: 700,
                                     fontSize: '0.95rem',
                                     px: 2,
                                     py: 2.5,
                                     height: 'auto',
-                                    boxShadow: `0 2px 8px ${addAlpha(COLORS.SECONDARY, 0.3)}`,
+                                    boxShadow: 'none',
                                     transition: 'all 0.3s ease',
                                     '&:hover': {
-                                      background: COLORS.GRADIENT_SECONDARY,
-                                      boxShadow: `0 4px 12px ${addAlpha(COLORS.SECONDARY, 0.4)}`,
+                                      backgroundColor: addAlpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.28 : 0.18),
+                                      borderColor: addAlpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.58 : 0.34),
                                       transform: 'translateY(-1px)'
                                     }
                                   }}
@@ -1118,7 +1122,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
                               </Box>
                               <Typography variant="body1" sx={{ 
                                 fontWeight: 600, 
-                                color: 'primary.dark',
+                                color: readableAccentColor,
                                 mb: 0.5 
                               }}>
                                 {getRoomTypeLabel(room.roomType)}
