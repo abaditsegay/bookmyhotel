@@ -1,8 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  Card,
-  CardContent,
   CardMedia,
   Typography,
   Button,
@@ -15,6 +13,7 @@ import {
   useTheme,
   Stack,
 } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import {
   LocationOn as LocationIcon,
   Phone as PhoneIcon,
@@ -27,7 +26,8 @@ import { HotelSearchResult } from '../../types/hotel';
 import { formatCurrencyWithDecimals } from '../../utils/currencyUtils';
 import RoomCard from './RoomCard';
 import RoomTypeCard from './RoomTypeCard';
-import { useThemeColors } from '../../theme/useThemeColors';
+import { SurfaceCard } from '../common';
+import { tintedPanelSx } from '../../theme/sxHelpers';
 
 interface HotelDetailsCardProps {
   hotel: HotelSearchResult;
@@ -93,7 +93,6 @@ const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({
   horizontalLayout = false 
 }) => {
   const { t } = useTranslation();
-  const { COLORS, addAlpha } = useThemeColors();
   const [expanded, setExpanded] = React.useState(defaultExpanded);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -117,18 +116,17 @@ const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({
   const hotelRating = 4.2 + (hotel.id % 10) / 10; // Generates ratings between 4.2-5.1
 
   return (
-    <Card 
-      elevation={2} 
+    <SurfaceCard 
+      variantStyle="elevated"
       sx={{ 
         mb: isMobile ? 2 : 3,
-        borderRadius: 2,
         overflow: 'hidden',
         display: horizontalLayout && isLargeScreen ? 'flex' : 'block',
         flexDirection: horizontalLayout && isLargeScreen ? 'row' : 'column',
         transition: 'all 0.3s ease-in-out',
         '&:hover': {
-          transform: 'translateY(-8px)',
-          boxShadow: 6,
+          transform: isMobile ? 'none' : 'translateY(-4px)',
+          boxShadow: theme.palette.mode === 'dark' ? '0 22px 40px rgba(2, 6, 23, 0.42)' : '0 18px 36px rgba(15, 23, 42, 0.12)',
         },
       }}
     >
@@ -144,7 +142,7 @@ const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({
           flexShrink: 0,
           transition: 'transform 0.4s ease-in-out',
           '&:hover': {
-            transform: 'scale(1.05)',
+            transform: isMobile ? 'none' : 'scale(1.03)',
           },
         }}
       />
@@ -157,7 +155,7 @@ const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({
         justifyContent: 'space-between',
         minHeight: horizontalLayout && !isMobile ? '250px' : 'auto',
       }}>
-        <CardContent sx={{ p: isMobile ? 2 : 3, flex: 1 }}>
+        <Box sx={{ p: isMobile ? 2 : 3, flex: 1 }}>
         {/* Hotel Info Header */}
         <Box sx={{ mb: isMobile ? 2 : 3 }}>
           {/* Mobile Layout - Stacked */}
@@ -170,7 +168,7 @@ const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({
                   gutterBottom 
                   sx={{ 
                     fontWeight: 'bold', 
-                    color: 'primary.main',
+                    color: 'text.primary',
                     lineHeight: 1.2,
                   }}
                 >
@@ -221,14 +219,12 @@ const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({
               
               {/* Price Section - Mobile */}
               <Box 
-                sx={{ 
+                sx={{
+                  ...tintedPanelSx('secondary'),
                   textAlign: 'center',
-                  p: 2,
-                  backgroundColor: 'success.light',
-                  borderRadius: 1,
                 }}
               >
-                <Typography variant="h5" color="success.main" sx={{ fontWeight: 'bold' }}>
+                <Typography variant="h5" color="text.primary" sx={{ fontWeight: 'bold' }}>
                   {t('hotelSearch.detail.fromPrice')} {formatCurrencyWithDecimals(hotel.minPrice || 0)}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
@@ -243,7 +239,7 @@ const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({
             /* Desktop Layout - Side by Side */
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
               <Box sx={{ flexGrow: 1 }}>
-                <Typography variant="h4" component="h2" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+                <Typography variant="h4" component="h2" gutterBottom sx={{ fontWeight: 'bold', color: 'text.primary' }}>
                   {hotel.name}
                 </Typography>
                 
@@ -281,8 +277,8 @@ const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({
                 </Box>
               </Box>
               
-              <Box sx={{ textAlign: 'right', ml: 2 }}>
-                <Typography variant="h5" color="success.main" sx={{ fontWeight: 'bold' }}>
+              <Box sx={{ ...tintedPanelSx('secondary'), textAlign: 'right', ml: 2, minWidth: 200 }}>
+                <Typography variant="h5" color="text.primary" sx={{ fontWeight: 'bold' }}>
                   {t('hotelSearch.detail.fromPrice')} {formatCurrencyWithDecimals(hotel.minPrice || 0)}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
@@ -385,7 +381,16 @@ const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({
                   </Typography>
                   <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
                     {amenityHighlights.map((amenity) => (
-                      <Chip key={amenity} size="small" label={amenity} sx={{ bgcolor: addAlpha(COLORS.SECONDARY, 0.1) }} />
+                      <Chip
+                        key={amenity}
+                        size="small"
+                        label={amenity}
+                        sx={{
+                          bgcolor: alpha(theme.palette.secondary.main, theme.palette.mode === 'dark' ? 0.2 : 0.1),
+                          borderColor: alpha(theme.palette.secondary.main, theme.palette.mode === 'dark' ? 0.26 : 0.16),
+                        }}
+                        variant="outlined"
+                      />
                     ))}
                   </Stack>
                 </Box>
@@ -540,9 +545,9 @@ const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({
             </Typography>
           </Box>
         )}
-      </CardContent>
       </Box>
-    </Card>
+      </Box>
+    </SurfaceCard>
   );
 };
 

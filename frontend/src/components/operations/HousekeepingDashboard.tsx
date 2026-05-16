@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import TokenManager from '../../utils/tokenManager';
 import { API_CONFIG } from '../../config/apiConfig';
 import {
-  alpha,
   Box,
   Button,
   Typography,
@@ -31,7 +30,6 @@ import {
   TablePagination,
   CircularProgress,
   Alert,
-  useTheme
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -42,6 +40,7 @@ import {
   PlayArrow as StartIcon,
   CheckCircle as CompleteIcon
 } from '@mui/icons-material';
+import { tableHeadRowSx } from '../../theme/sxHelpers';
 import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
 
 
@@ -87,13 +86,6 @@ interface CreateTaskForm {
 }
 
 const HousekeepingDashboard: React.FC = () => {
-  const theme = useTheme();
-  const addAlpha = alpha;
-  const COLORS = {
-    GRADIENT_SLATE: `linear-gradient(135deg, ${theme.palette.primary.light} 0%, ${theme.palette.primary.main} 58%, ${theme.palette.primary.dark} 100%)`,
-    WHITE: theme.palette.common.white,
-    BLACK: theme.palette.common.black,
-  } as const;
   const { showSubmissionError } = useSubmissionError();
   const [activeTab, setActiveTab] = useState(0);
   const [tasks, setTasks] = useState<HousekeepingTask[]>([]);
@@ -519,29 +511,7 @@ const HousekeepingDashboard: React.FC = () => {
         <Table>
           <TableHead>
             <TableRow
-              sx={{
-                background: COLORS.GRADIENT_SLATE,
-                '& .MuiTableCell-head': {
-                  color: COLORS.WHITE,
-                  fontWeight: 600,
-                  fontSize: '0.95rem',
-                  letterSpacing: '0.5px',
-                  textTransform: 'uppercase',
-                  border: 'none',
-                  padding: '20px 16px',
-                  position: 'relative',
-                  textShadow: `0 1px 2px ${addAlpha(COLORS.BLACK, 0.1)}`,
-                  '&::after': {
-                    content: '""',
-                    position: 'absolute',
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    height: '3px',
-                    background: `linear-gradient(90deg, ${addAlpha(COLORS.WHITE, 0.6)} 0%, ${addAlpha(COLORS.WHITE, 0.8)} 50%, ${addAlpha(COLORS.WHITE, 0.6)} 100%)`
-                  }
-                }
-              }}
+              sx={tableHeadRowSx()}
             >
               <TableCell>Room</TableCell>
               <TableCell>Task Type</TableCell>

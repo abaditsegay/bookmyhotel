@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  alpha,
   Paper,
   Table,
   TableBody,
@@ -27,7 +26,6 @@ import {
   FormControlLabel,
   Checkbox,
   FormGroup,
-  useTheme,
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -38,6 +36,7 @@ import {
 import { hotelAdminApi, StaffResponse, StaffCreateRequest } from '../../services/hotelAdminApi';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
+import { tableHeadRowSx } from '../../theme/sxHelpers';
 import PremiumTextField from '../../components/common/PremiumTextField';
 import PremiumSelect from '../../components/common/PremiumSelect';
 import { useNavigate } from 'react-router-dom';
@@ -53,7 +52,6 @@ interface StaffManagementProps {
 }
 
 const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) => {
-  const theme = useTheme();
   const { token } = useAuth();
   const { showSubmissionError } = useSubmissionError();
   const navigate = useNavigate();
@@ -360,17 +358,7 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
             <Table>
               <TableHead>
                 <TableRow
-                  sx={{
-                    background: `linear-gradient(135deg, ${theme.palette.background.default} 0%, ${theme.palette.grey[50]} 50%, ${theme.palette.background.default} 100%)`,
-                    borderBottom: `2px solid ${theme.palette.secondary.main}`,
-                    '& .MuiTableCell-head': {
-                      color: 'primary.main',
-                      fontWeight: 700,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.4px',
-                      boxShadow: `inset 0 -1px 0 ${alpha(theme.palette.primary.main, 0.08)}`,
-                    }
-                  }}
+                  sx={tableHeadRowSx()}
                 >
                   <TableCell>Name</TableCell>
                   <TableCell>Email</TableCell>

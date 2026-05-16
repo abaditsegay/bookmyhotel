@@ -46,6 +46,7 @@ import { useBookingNotifications } from '../hooks/useBookingNotifications';
 import { formatDateForDisplay, formatDateTimeForDisplay } from '../utils/dateUtils';
 import { formatEthiopianTime } from '../utils/ethiopianCalendar';
 import { getEffectiveSearchTerm } from '../utils/search';
+import { tableHeadRowSx } from '../theme/sxHelpers';
 import { getPageShellBackground, getSectionTint } from '../theme/surfaces';
 
 const NotificationsPage: React.FC = () => {
@@ -168,29 +169,7 @@ const NotificationsPage: React.FC = () => {
     return filtered.slice(startIndex, endIndex);
   };
 
-  const tableHeaderSx = {
-    background: `linear-gradient(135deg, ${theme.palette.background.default} 0%, ${theme.palette.background.paper} 50%, ${theme.palette.background.default} 100%)`,
-    boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.22 : 0.12)}`,
-    '& .MuiTableCell-head': {
-      color: theme.palette.text.primary,
-      fontWeight: 700,
-      fontSize: '0.82rem',
-      letterSpacing: '0.5px',
-      textTransform: 'uppercase',
-      border: 'none',
-      padding: '20px 16px',
-      position: 'relative',
-      '&::after': {
-        content: '""',
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        height: '3px',
-        background: `linear-gradient(90deg, ${alpha(theme.palette.secondary.main, 0.8)} 0%, ${alpha(theme.palette.primary.main, 0.9)} 100%)`
-      }
-    }
-  };
+  const tableHeaderSx = tableHeadRowSx({ compact: true });
 
   const renderNotificationsTable = (notifications: BookingNotification[]) => (
     <TableContainer sx={{ backgroundColor: theme.palette.background.paper }}>

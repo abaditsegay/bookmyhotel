@@ -1,15 +1,23 @@
 import React from 'react';
-import { alpha, FormControl, InputLabel, Select, FormControlProps, SelectChangeEvent, SxProps, Theme, useTheme } from '@mui/material';
+import {
+  alpha,
+  FormControl,
+  FormControlProps,
+  FormHelperText,
+  InputLabel,
+  Select,
+  SelectProps,
+  SxProps,
+  Theme,
+  useTheme,
+} from '@mui/material';
+import { getColorScheme } from '../../theme/designSystem';
 
-interface PremiumSelectProps {
+interface PremiumSelectProps extends Omit<SelectProps<any>, 'label' | 'children' | 'sx'> {
   label: string;
   formControlProps?: Omit<FormControlProps, 'children'>;
   children: React.ReactNode;
-  fullWidth?: boolean;
-  required?: boolean;
-  value?: any;
-  onChange?: (event: SelectChangeEvent<any>) => void;
-  disabled?: boolean;
+  helperText?: React.ReactNode;
   sx?: SxProps<Theme>;
 }
 
@@ -26,10 +34,17 @@ const PremiumSelect: React.FC<PremiumSelectProps> = ({
   value,
   onChange,
   disabled,
+  helperText,
+  error = false,
+  size = 'medium',
+  variant = 'outlined',
   sx,
   ...otherProps
 }) => {
   const theme = useTheme();
+  const scheme = getColorScheme(theme.palette.mode === 'dark' ? 'dark' : 'light');
+  const borderColor = theme.palette.mode === 'dark' ? scheme.border.strong : scheme.border.input;
+  const hoverBorderColor = theme.palette.mode === 'dark' ? alpha(scheme.border.strong, 1) : scheme.border.strong;
 
   const baseSx: SxProps<Theme> = {
     '& .MuiInputLabel-root': {
@@ -42,27 +57,27 @@ const PremiumSelect: React.FC<PremiumSelectProps> = ({
       },
     },
     '& .MuiOutlinedInput-root': {
-      backgroundColor: alpha(theme.palette.background.paper, 0.98),
+      backgroundColor: scheme.background.input,
       borderRadius: `${theme.shape.borderRadius}px`,
       '& fieldset': {
-        borderColor: alpha(theme.palette.primary.main, 0.12),
-        borderWidth: '1px',
+        borderColor,
+        borderWidth: theme.palette.mode === 'dark' ? '1.5px' : '1px',
       },
       '&:hover fieldset': {
-        borderColor: alpha(theme.palette.primary.main, 0.24),
+        borderColor: hoverBorderColor,
       },
       '&.Mui-focused': {
-        backgroundColor: theme.palette.background.paper,
-        boxShadow: `0 0 0 4px ${alpha(theme.palette.primary.main, 0.08)}`,
+        backgroundColor: scheme.background.input,
+        boxShadow: `0 0 0 4px ${alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.18 : 0.08)}`,
         '& fieldset': {
           borderColor: theme.palette.primary.main,
-          borderWidth: '1px',
+          borderWidth: theme.palette.mode === 'dark' ? '1.5px' : '1px',
         },
       },
       '&.Mui-disabled': {
         backgroundColor: theme.palette.action.disabledBackground,
         '& fieldset': {
-          borderColor: alpha(theme.palette.primary.main, 0.08),
+          borderColor: scheme.border.default,
           borderWidth: '1px',
         },
         '& .MuiSelect-select': {
@@ -72,6 +87,7 @@ const PremiumSelect: React.FC<PremiumSelectProps> = ({
       },
       '& .MuiSelect-select': {
         color: theme.palette.text.primary,
+        WebkitTextFillColor: theme.palette.text.primary,
       },
       '& .MuiSelect-icon': {
         color: theme.palette.text.secondary,
@@ -90,6 +106,9 @@ const PremiumSelect: React.FC<PremiumSelectProps> = ({
       fullWidth={fullWidth}
       required={required}
       disabled={disabled}
+      error={error}
+      size={size}
+      variant={variant}
       {...formControlProps}
       sx={combinedSx}
     >
@@ -101,10 +120,14 @@ const PremiumSelect: React.FC<PremiumSelectProps> = ({
         onChange={onChange}
         label={label}
         disabled={disabled}
+        error={error}
+        size={size}
+        variant={variant}
         {...otherProps}
       >
         {children}
       </Select>
+      {helperText ? <FormHelperText>{helperText}</FormHelperText> : null}
     </FormControl>
   );
 };

@@ -1,7 +1,6 @@
 import React from 'react';
-import { TextField, TextFieldProps } from '@mui/material';
-import { designSystem } from '../../theme/designSystem';
-import { useThemeColors } from '../../theme/useThemeColors';
+import { TextFieldProps } from '@mui/material';
+import PremiumTextField from './PremiumTextField';
 
 interface StandardTextFieldProps extends Omit<TextFieldProps, 'size'> {
   fieldSize?: 'small' | 'medium';
@@ -49,91 +48,18 @@ const StandardTextField: React.FC<StandardTextFieldProps> = ({
   sx,
   ...props
 }) => {
-  const { COLORS, addAlpha } = useThemeColors();
-
-  const sizeConfig = {
-    small: { 
-      height: '40px',
-      '& .MuiInputBase-input': { padding: '8.5px 14px' }
-    },
-    medium: { 
-      height: '48px',
-      '& .MuiInputBase-input': { padding: '12px 14px' }
-    }
-  };
-
   return (
-    <TextField
+    <PremiumTextField
       variant={variant}
+      size={fieldSize}
       sx={{
-        // Base sizing
-        ...sizeConfig[fieldSize],
-        
-        // Border radius consistency
-        '& .MuiOutlinedInput-root': {
-          borderRadius: `${designSystem.borderRadius.sm}px`, // 4px consistent with other components
-          transition: 'all 0.2s ease-in-out',
-          
-          // Default state
-          '& fieldset': {
-            borderColor: addAlpha(COLORS.BLACK, 0.12),
-            borderWidth: '1px',
-          },
-          
-          // Hover state
-          '&:hover fieldset': {
-            borderColor: addAlpha(COLORS.BLACK, 0.25),
-            borderWidth: '1px',
-          },
-          
-          // Focus state
-          '&.Mui-focused fieldset': {
-            borderWidth: '2px',
-            boxShadow: `0 0 0 1px ${addAlpha(COLORS.BOOKED, 0.2)}`,
-          },
-          
-          // Error state
-          '&.Mui-error fieldset': {
-            borderColor: 'error.main',
-          },
-          
-          '&.Mui-error:hover fieldset': {
-            borderColor: 'error.dark',
-          },
-        },
-        
-        // Filled variant styling
-        '& .MuiFilledInput-root': {
-          borderRadius: `${designSystem.borderRadius.sm}px ${designSystem.borderRadius.sm}px 0 0`,
-          '&:before, &:after': {
-            borderRadius: 0,
-          },
-        },
-        
-        // Standard variant styling  
-        '& .MuiInput-root': {
-          '&:before': {
-            borderBottomColor: addAlpha(COLORS.BLACK, 0.12),
-          },
-          '&:hover:before': {
-            borderBottomColor: addAlpha(COLORS.BLACK, 0.25),
-          },
-        },
-        
-        // Label styling
         '& .MuiInputLabel-root': {
-          fontSize: fieldSize === 'small' ? '14px' : '16px',
-          transition: 'all 0.2s ease-in-out',
+          fontSize: fieldSize === 'small' ? '0.8rem' : '0.9rem',
         },
-        
-        // Helper text styling
         '& .MuiFormHelperText-root': {
-          marginLeft: designSystem.spacing.sm, // 8px
-          marginTop: designSystem.spacing.xs, // 4px
-          fontSize: '12px',
+          mt: 0.5,
+          mx: 0,
         },
-        
-        // Custom sx overrides
         ...sx,
       }}
       {...props}

@@ -6,14 +6,18 @@ import { alpha, useTheme } from '@mui/material';
 import { getCalendarType, useCalendarStore } from '../../contexts/store';
 import { EthDatePicker } from './EthDatePickers';
 import { useTranslation } from 'react-i18next';
+import { getColorScheme } from '../../theme/designSystem';
 
 const PremiumDatePicker: React.FC<DatePickerProps<Date>> = (props) => {
   const { i18n } = useTranslation();
   const theme = useTheme();
+  const scheme = getColorScheme(theme.palette.mode === 'dark' ? 'dark' : 'light');
   const textFieldProps = props.slotProps?.textField;
   const existingSx = typeof textFieldProps === 'object' && 'sx' in textFieldProps ? textFieldProps.sx : {};
   const { calendarType } = useCalendarStore();
   const effectiveCalendarType = getCalendarType(i18n.language, calendarType);
+  const borderColor = theme.palette.mode === 'dark' ? scheme.border.strong : scheme.border.input;
+  const fieldBorderWidth = theme.palette.mode === 'dark' ? '1.5px' : '1px';
 
   const commonProps = {
     ...props,
@@ -23,28 +27,28 @@ const PremiumDatePicker: React.FC<DatePickerProps<Date>> = (props) => {
         fullWidth: true,
         sx: {
           '& .MuiOutlinedInput-root': {
-            backgroundColor: alpha(theme.palette.background.paper, 0.98),
+            backgroundColor: scheme.background.input,
             borderRadius: `${theme.shape.borderRadius}px`,
             transition: 'all 0.2s ease-in-out',
             '& fieldset': {
-              borderColor: alpha(theme.palette.primary.main, 0.12),
-              borderWidth: '1px',
+              borderColor,
+              borderWidth: fieldBorderWidth,
             },
             '&:hover fieldset': {
-              borderColor: alpha(theme.palette.primary.main, 0.24),
+              borderColor: scheme.border.strong,
             },
             '&.Mui-focused': {
-              backgroundColor: theme.palette.background.paper,
-              boxShadow: `0 0 0 4px ${alpha(theme.palette.primary.main, 0.08)}`,
+              backgroundColor: scheme.background.input,
+              boxShadow: `0 0 0 4px ${alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.18 : 0.08)}`,
               '& fieldset': {
                 borderColor: theme.palette.primary.main,
-                borderWidth: '1px',
+                borderWidth: fieldBorderWidth,
               },
             },
             '&.Mui-disabled': {
               backgroundColor: theme.palette.action.disabledBackground,
               '& fieldset': {
-                borderColor: alpha(theme.palette.primary.main, 0.08),
+                borderColor: scheme.border.default,
                 borderWidth: '1px',
               },
             },
@@ -63,6 +67,7 @@ const PremiumDatePicker: React.FC<DatePickerProps<Date>> = (props) => {
           },
           '& .MuiInputBase-input': {
             color: theme.palette.text.primary,
+            WebkitTextFillColor: theme.palette.text.primary,
             fontSize: '0.875rem',
           },
           '& .MuiInputBase-input.Mui-disabled': {

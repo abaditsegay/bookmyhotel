@@ -11,6 +11,7 @@ import {
   Theme,
 } from '@mui/material';
 import { designSystem } from '../../theme/designSystem';
+import { surfaceCardContentSx, surfaceCardSx } from '../../theme/sxHelpers';
 
 interface PageContainerProps extends Omit<ContainerProps, 'children'> {
   children: React.ReactNode;
@@ -81,21 +82,16 @@ export const SurfaceCard: React.FC<SurfaceCardProps> = ({
   ...props
 }) => (
   <Card
-    sx={{
-      borderRadius: designSystem.borderRadius.lg,
-      boxShadow: designSystem.shadows.card,
-      ...sx,
-    }}
+    elevation={0}
+    sx={[surfaceCardSx('elevated'), sx]}
     {...props}
   >
     <CardContent
-      sx={{
-        p: designSystem.layout.cardPadding,
+      sx={[surfaceCardContentSx, {
         '&:last-child': {
           pb: designSystem.layout.cardPadding,
         },
-        ...contentSx,
-      }}
+      }, contentSx]}
     >
       {children}
     </CardContent>

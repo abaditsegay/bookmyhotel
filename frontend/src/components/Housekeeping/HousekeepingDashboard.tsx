@@ -33,6 +33,7 @@ import {
 import PremiumTextField from '../common/PremiumTextField';
 import PremiumSelect from '../common/PremiumSelect';
 import PremiumDatePicker from '../common/PremiumDatePicker';
+import { tableHeadRowSx } from '../../theme/sxHelpers';
 import {
   CheckCircle as CheckCircleIcon,
   PlayArrow as PlayArrowIcon,
@@ -60,7 +61,6 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
   const { t } = useTranslation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const primaryMain = theme.palette.primary.main;
   const secondaryMain = theme.palette.secondary.main;
   const secondaryDark = theme.palette.secondary.dark;
   const textPrimary = theme.palette.text.primary;
@@ -822,20 +822,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                   <Table>
                     <TableHead>
                       <TableRow
-                        sx={{
-                          background: `linear-gradient(135deg, ${backgroundDefault} 0%, ${theme.palette.grey[50]} 50%, ${backgroundDefault} 100%)`,
-                          borderBottom: `2px solid ${primaryMain}`,
-                          '& .MuiTableCell-head': {
-                            color: 'primary.main',
-                            fontWeight: 700,
-                            fontSize: '0.95rem',
-                            letterSpacing: '0.5px',
-                            textTransform: 'uppercase',
-                            border: 'none',
-                            padding: '20px 16px',
-                            position: 'relative'
-                          }
-                        }}
+                        sx={tableHeadRowSx()}
                       >
                         <TableCell>{t('dashboard.housekeepingDashboard.title')}</TableCell>
                         <TableCell>{t('dashboard.housekeepingDashboard.type')}</TableCell>

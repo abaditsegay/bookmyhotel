@@ -41,6 +41,7 @@ import { frontDeskApiService, FrontDeskBooking } from '../../services/frontDeskA
 import { useDebounce } from '../../hooks/useDebounce';
 import { getEffectiveSearchTerm } from '../../utils/search';
 import BookingNotificationEvents from '../../utils/bookingNotificationEvents';
+import { guestNameBadgeSx, tableHeadRowSx } from '../../theme/sxHelpers';
 
 interface FrontDeskBookingManagementProps {
   onRefresh?: () => void;
@@ -302,30 +303,7 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
             <Table>
               <TableHead>
                 <TableRow 
-                  sx={{
-                    background: 'linear-gradient(135deg, #64748b 0%, #475569 50%, #334155 100%)',
-                    boxShadow: '0 4px 12px rgba(100, 116, 139, 0.15)',
-                    '& .MuiTableCell-head': {
-                      color: '#ffffff',
-                      fontWeight: 600,
-                      fontSize: '0.95rem',
-                      letterSpacing: '0.5px',
-                      textTransform: 'uppercase',
-                      border: 'none',
-                      padding: '20px 16px',
-                      position: 'relative',
-                      textShadow: '0 1px 2px rgba(0,0,0,0.1)',
-                      '&::after': {
-                        content: '""',
-                        position: 'absolute',
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                        height: '3px',
-                        background: 'linear-gradient(90deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0.6) 100%)'
-                      }
-                    }
-                  }}
+                  sx={tableHeadRowSx()}
                 >
                   <TableCell>Confirmation #</TableCell>
                   <TableCell>Guest</TableCell>
@@ -388,8 +366,10 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
                         <Box>
                           <Typography 
                             variant="body2" 
-                            fontWeight="600"
-                            sx={{ color: '#1f2937', mb: 0.5 }}
+                            sx={(theme) => ({
+                              ...guestNameBadgeSx(theme),
+                              mb: 0.5,
+                            })}
                           >
                             {booking.guestName}
                           </Typography>

@@ -1,10 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   Grid,
-  Card,
-  CardContent,
   Typography,
-  Button,
   Box,
   Tab,
   Tabs,
@@ -14,7 +11,7 @@ import {
 } from '@mui/material';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { TabPanel } from '../common';
+import { StandardButton, SurfaceCard, TabPanel } from '../common';
 import { useAuth } from '../../contexts/AuthContext';
 import { shopApiService } from '../../services/shopApi';
 import { formatCurrencyWithDecimals } from '../../utils/currencyUtils';
@@ -25,16 +22,77 @@ import OrderCreation from './OrderCreation';
 import LowStockProducts from './LowStockProducts';
 import { StatCardSkeleton } from '../common/SkeletonLoaders';
 import { premiumTabsPaperSx, premiumTabsSx } from './premiumStyles';
-import { useThemeColors } from '../../theme/useThemeColors';
-import { useTheme } from '@mui/material/styles';
-import { getReadableAccentTextColor } from '../../theme/surfaces';
+import { tintedPanelSx } from '../../theme/sxHelpers';
+
+interface ShopStatCardProps {
+  label: string;
+  value: string | number;
+  supportingText: string;
+  accent: 'primary' | 'secondary' | 'warning' | 'info';
+  valueColor?: string;
+  supportingColor?: string;
+}
+
+const ShopStatCard: React.FC<ShopStatCardProps> = ({
+  label,
+  value,
+  supportingText,
+  accent,
+  valueColor,
+  supportingColor,
+}) => (
+  <SurfaceCard
+    sx={{ height: '100%' }}
+    contentSx={{
+      p: 0,
+      height: '100%',
+      '&:last-child': {
+        pb: 0,
+      },
+    }}
+  >
+    <Box sx={{ ...tintedPanelSx(accent), height: '100%' }}>
+      <Typography
+        gutterBottom
+        variant="caption"
+        sx={{
+          fontSize: '0.75rem',
+          fontWeight: 600,
+          textTransform: 'uppercase',
+          letterSpacing: '0.05em',
+          color: 'text.secondary',
+        }}
+      >
+        {label}
+      </Typography>
+      <Typography
+        variant="h5"
+        sx={{
+          lineHeight: 1.2,
+          fontWeight: 700,
+          color: valueColor ?? 'text.primary',
+          mb: 0.5,
+        }}
+      >
+        {value}
+      </Typography>
+      <Typography
+        variant="caption"
+        sx={{
+          fontSize: '0.75rem',
+          color: supportingColor ?? 'text.secondary',
+          fontWeight: 600,
+        }}
+      >
+        {supportingText}
+      </Typography>
+    </Box>
+  </SurfaceCard>
+);
 
 const ShopDashboard: React.FC = () => {
   const { t } = useTranslation();
   const { user, token } = useAuth();
-  const { COLORS, addAlpha } = useThemeColors();
-  const theme = useTheme();
-  const readableAccentColor = getReadableAccentTextColor(theme);
   const [searchParams, setSearchParams] = useSearchParams();
   const [currentTab, setCurrentTab] = useState(() => {
     const tabParam = searchParams.get('tab');
@@ -134,9 +192,9 @@ const ShopDashboard: React.FC = () => {
     return (
       <Alert severity="error" sx={{ mb: 2 }}>
         {error}
-        <Button onClick={loadDashboardData} size="small" sx={{ ml: 2 }}>
+        <StandardButton onClick={loadDashboardData} buttonSize="small" variant="text" sx={{ ml: 2 }}>
           {t('common.refresh')}
-        </Button>
+        </StandardButton>
       </Alert>
     );
   }
@@ -155,230 +213,47 @@ const ShopDashboard: React.FC = () => {
       ) : dashboardStats && (
         <Grid container spacing={2} sx={{ mb: 3 }}>
           <Grid item xs={12} sm={6} md={3}>
-            <Card 
-              sx={{
-                background: `linear-gradient(135deg, ${addAlpha(COLORS.PRIMARY, 0.05)} 0%, ${addAlpha(COLORS.SECONDARY, 0.05)} 100%)`,
-                backdropFilter: 'blur(10px)',
-                border: `1px solid ${addAlpha(COLORS.PRIMARY, 0.1)}`,
-                boxShadow: `0 4px 12px ${addAlpha(COLORS.BLACK, 0.08)}`,
-                transition: 'all 0.3s ease',
-                '&:hover': {
-                  transform: 'translateY(-4px)',
-                  boxShadow: `0 8px 24px ${addAlpha(COLORS.PRIMARY, 0.15)}`
-                }
-              }}
-            >
-              <CardContent sx={{ py: 2, px: 2.5 }}>
-                <Box>
-                  <Typography 
-                    color="textSecondary" 
-                    gutterBottom 
-                    variant="caption" 
-                    sx={{ 
-                      fontSize: '0.75rem',
-                      fontWeight: 600,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.5px',
-                      color: readableAccentColor
-                    }}
-                  >
-                    {t('shop.dashboard.stats.totalProducts')}
-                  </Typography>
-                  <Typography 
-                    variant="h5" 
-                    sx={{ 
-                      lineHeight: 1.2,
-                      fontWeight: 700,
-                      color: readableAccentColor,
-                      mb: 0.5
-                    }}
-                  >
-                    {dashboardStats.totalProducts}
-                  </Typography>
-                  <Typography 
-                    variant="caption" 
-                    sx={{ 
-                      fontSize: '0.75rem',
-                      color: COLORS.SECONDARY,
-                      fontWeight: 600
-                    }}
-                  >
-                    {dashboardStats.activeProducts} {t('shop.dashboard.stats.activeProducts').toLowerCase()}
-                  </Typography>
-                </Box>
-              </CardContent>
-            </Card>
+            <ShopStatCard
+              accent="primary"
+              label={t('shop.dashboard.stats.totalProducts')}
+              value={dashboardStats.totalProducts}
+              supportingText={`${dashboardStats.activeProducts} ${t('shop.dashboard.stats.activeProducts').toLowerCase()}`}
+              valueColor="primary.main"
+              supportingColor="text.secondary"
+            />
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <Card
-              sx={{
-                background: `linear-gradient(135deg, ${addAlpha(COLORS.PRIMARY, 0.05)} 0%, ${addAlpha(COLORS.SECONDARY, 0.05)} 100%)`,
-                backdropFilter: 'blur(10px)',
-                border: `1px solid ${addAlpha(COLORS.PRIMARY, 0.1)}`,
-                boxShadow: `0 4px 12px ${addAlpha(COLORS.BLACK, 0.08)}`,
-                transition: 'all 0.3s ease',
-                '&:hover': {
-                  transform: 'translateY(-4px)',
-                  boxShadow: `0 8px 24px ${addAlpha(COLORS.PRIMARY, 0.15)}`
-                }
-              }}
-            >
-              <CardContent sx={{ py: 2, px: 2.5 }}>
-                <Box>
-                  <Typography 
-                    color="textSecondary" 
-                    gutterBottom 
-                    variant="caption" 
-                    sx={{ 
-                      fontSize: '0.75rem',
-                      fontWeight: 600,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.5px',
-                      color: readableAccentColor
-                    }}
-                  >
-                    {t('shop.orders.status.pending')} {t('shop.dashboard.tabs.orders')}
-                  </Typography>
-                  <Typography 
-                    variant="h5" 
-                    sx={{ 
-                      lineHeight: 1.2,
-                      fontWeight: 700,
-                      color: readableAccentColor,
-                      mb: 0.5
-                    }}
-                  >
-                    {dashboardStats.pendingOrders}
-                  </Typography>
-                  <Typography 
-                    variant="caption" 
-                    sx={{ 
-                      fontSize: '0.75rem',
-                      color: COLORS.SECONDARY,
-                      fontWeight: 600
-                    }}
-                  >
-                    of {dashboardStats.totalOrders} {t('shop.dashboard.stats.totalOrders').toLowerCase()}
-                  </Typography>
-                </Box>
-              </CardContent>
-            </Card>
+            <ShopStatCard
+              accent="info"
+              label={`${t('shop.orders.status.pending')} ${t('shop.dashboard.tabs.orders')}`}
+              value={dashboardStats.pendingOrders}
+              supportingText={`of ${dashboardStats.totalOrders} ${t('shop.dashboard.stats.totalOrders').toLowerCase()}`}
+              valueColor="info.main"
+              supportingColor="text.secondary"
+            />
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <Card
-              sx={{
-                background: `linear-gradient(135deg, ${addAlpha(COLORS.SECONDARY, 0.1)} 0%, ${addAlpha(COLORS.PRIMARY, 0.05)} 100%)`,
-                backdropFilter: 'blur(10px)',
-                border: `1px solid ${addAlpha(COLORS.SECONDARY, 0.2)}`,
-                boxShadow: `0 4px 12px ${addAlpha(COLORS.SECONDARY, 0.15)}`,
-                transition: 'all 0.3s ease',
-                '&:hover': {
-                  transform: 'translateY(-4px)',
-                  boxShadow: `0 8px 24px ${addAlpha(COLORS.SECONDARY, 0.25)}`
-                }
-              }}
-            >
-              <CardContent sx={{ py: 2, px: 2.5 }}>
-                <Box>
-                  <Typography 
-                    color="textSecondary" 
-                    gutterBottom 
-                    variant="caption" 
-                    sx={{ 
-                      fontSize: '0.75rem',
-                      fontWeight: 600,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.5px',
-                      color: readableAccentColor
-                    }}
-                  >
-                    {t('shop.dashboard.stats.revenue')}
-                  </Typography>
-                  <Typography 
-                    variant="h5" 
-                    sx={{ 
-                      lineHeight: 1.2,
-                      fontWeight: 700,
-                      background: COLORS.GRADIENT_SECONDARY,
-                      backgroundClip: 'text',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
-                      mb: 0.5
-                    }}
-                  >
-                    ${dashboardStats.totalRevenue.toFixed(2)}
-                  </Typography>
-                  <Typography 
-                    variant="caption" 
-                    sx={{ 
-                      fontSize: '0.75rem',
-                      color: readableAccentColor,
-                      fontWeight: 600
-                    }}
-                  >
-                    {formatCurrencyWithDecimals(dashboardStats.totalRevenue || 0)}
-                  </Typography>
-                </Box>
-              </CardContent>
-            </Card>
+            <ShopStatCard
+              accent="secondary"
+              label={t('shop.dashboard.stats.revenue')}
+              value={`$${dashboardStats.totalRevenue.toFixed(2)}`}
+              supportingText={formatCurrencyWithDecimals(dashboardStats.totalRevenue || 0)}
+              valueColor="secondary.main"
+              supportingColor="text.secondary"
+            />
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <Card
-              sx={{
-                background: `linear-gradient(135deg, ${addAlpha(COLORS.PRIMARY, 0.05)} 0%, ${addAlpha(COLORS.SECONDARY, 0.05)} 100%)`,
-                backdropFilter: 'blur(10px)',
-                border: `1px solid ${addAlpha(COLORS.PRIMARY, 0.1)}`,
-                boxShadow: `0 4px 12px ${addAlpha(COLORS.BLACK, 0.08)}`,
-                transition: 'all 0.3s ease',
-                '&:hover': {
-                  transform: 'translateY(-4px)',
-                  boxShadow: `0 8px 24px ${addAlpha(COLORS.PRIMARY, 0.15)}`
-                }
-              }}
-            >
-              <CardContent sx={{ py: 2, px: 2.5 }}>
-                <Box>
-                  <Typography 
-                    color="textSecondary" 
-                    gutterBottom 
-                    variant="caption" 
-                    sx={{ 
-                      fontSize: '0.75rem',
-                      fontWeight: 600,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.5px',
-                      color: readableAccentColor
-                    }}
-                  >
-                    Low Stock Products
-                  </Typography>
-                  <Typography 
-                    variant="h5" 
-                    sx={{ 
-                      lineHeight: 1.2,
-                      fontWeight: 700,
-                      color: COLORS.WARNING,
-                      mb: 0.5
-                    }}
-                  >
-                    {dashboardStats.lowStockProducts}
-                  </Typography>
-                  <Typography 
-                    variant="caption" 
-                    sx={{ 
-                      fontSize: '0.75rem',
-                      color: COLORS.ERROR,
-                      fontWeight: 600
-                    }}
-                  >
-                    {dashboardStats.outOfStockProducts} out of stock
-                  </Typography>
-                </Box>
-              </CardContent>
-            </Card>
+            <ShopStatCard
+              accent="warning"
+              label="Low Stock Products"
+              value={dashboardStats.lowStockProducts}
+              supportingText={`${dashboardStats.outOfStockProducts} out of stock`}
+              valueColor="warning.main"
+              supportingColor="error.main"
+            />
           </Grid>
         </Grid>
       )}

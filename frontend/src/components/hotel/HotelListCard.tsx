@@ -1,13 +1,11 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  Card,
-  CardContent,
   CardMedia,
   Typography,
-  Button,
   Box,
   Rating,
+  Stack,
   useMediaQuery,
   useTheme,
 } from '@mui/material';
@@ -18,10 +16,11 @@ import {
   Visibility as ViewIcon,
 } from '@mui/icons-material';
 import { HotelSearchResult } from '../../types/hotel';
-import { useThemeColors } from '../../theme/useThemeColors';
-import { getReadableAccentTextColor } from '../../theme/surfaces';
+import { SurfaceCard } from '../common';
+import StandardButton from '../common/StandardButton';
 import { formatCurrencyWithDecimals } from '../../utils/currencyUtils';
 import { formatCurrency } from '../../utils/currencyUtils';
+import { tintedPanelSx } from '../../theme/sxHelpers';
 
 interface HotelListCardProps {
   hotel: HotelSearchResult;
@@ -56,10 +55,7 @@ const getHotelImage = (hotel: HotelSearchResult): string => {
 
 const HotelListCard: React.FC<HotelListCardProps> = ({ hotel, onViewHotel }) => {
   const { t } = useTranslation();
-  const { COLORS, addAlpha } = useThemeColors();
-  // Responsive breakpoints
   const theme = useTheme();
-  const readableAccentColor = getReadableAccentTextColor(theme);
   const isLargeScreen = useMediaQuery(theme.breakpoints.up('lg')); // 1200px+
   const isMobile = useMediaQuery(theme.breakpoints.down('md')); // Below 960px
 
@@ -92,21 +88,17 @@ const HotelListCard: React.FC<HotelListCardProps> = ({ hotel, onViewHotel }) => 
   };
 
   return (
-    <Card 
-      elevation={0}
+    <SurfaceCard 
+      variantStyle="elevated"
       sx={{ 
         display: 'flex',
         flexDirection: isLargeScreen ? 'row' : 'column',
         height: isLargeScreen ? '280px' : 'auto',
-        mb: { xs: 2, md: 2 },
-        borderRadius: 1.5,
         overflow: 'hidden',
-        boxShadow: `0 4px 12px ${addAlpha(COLORS.SECONDARY, 0.15)}`,
-        backgroundColor: COLORS.BG_PAPER,
         transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
         '&:hover': {
           transform: isMobile ? 'none' : 'translateY(-4px)',
-          boxShadow: `0 8px 20px ${addAlpha(COLORS.SECONDARY, 0.25)}`,
+          boxShadow: theme.palette.mode === 'dark' ? '0 18px 32px rgba(2, 6, 23, 0.4)' : '0 16px 32px rgba(15, 23, 42, 0.12)',
         },
         '&:active': isMobile ? {
           transform: 'scale(0.98)',
@@ -141,7 +133,7 @@ const HotelListCard: React.FC<HotelListCardProps> = ({ hotel, onViewHotel }) => 
       />
       
       {/* Hotel Content - Mobile Optimized */}
-      <CardContent sx={{ 
+      <Box sx={{ 
         flex: 1, 
         p: { xs: 2.5, sm: 3, md: 3 }, // Enhanced mobile padding
         display: 'flex', 
@@ -161,7 +153,7 @@ const HotelListCard: React.FC<HotelListCardProps> = ({ hotel, onViewHotel }) => 
                 component="h3" 
                 sx={{ 
                   fontWeight: 'bold', 
-                  color: readableAccentColor,
+                  color: 'text.primary',
                   fontSize: '1.2rem',
                   lineHeight: 1.3,
                   mb: 1,
@@ -183,8 +175,8 @@ const HotelListCard: React.FC<HotelListCardProps> = ({ hotel, onViewHotel }) => 
                 </Box>
                 <Box sx={{ textAlign: 'right' }}>
                   <Typography 
-                    variant="h6" 
-                    color={readableAccentColor} 
+                    variant="h6"
+                    color="text.primary"
                     sx={{ 
                       fontWeight: 'bold',
                       fontSize: '1.1rem',
@@ -202,11 +194,11 @@ const HotelListCard: React.FC<HotelListCardProps> = ({ hotel, onViewHotel }) => 
           ) : (
             /* Desktop: Side-by-side layout */
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
-              <Typography variant="h5" component="h3" sx={{ fontWeight: 'bold', color: readableAccentColor }}>
+              <Typography variant="h5" component="h3" sx={{ fontWeight: 'bold', color: 'text.primary' }}>
                 {hotel.name}
               </Typography>
               <Box sx={{ textAlign: 'right' }}>
-                <Typography variant="h6" color={readableAccentColor} sx={{ fontWeight: 'bold' }}>
+                <Typography variant="h6" color="text.primary" sx={{ fontWeight: 'bold' }}>
                   {t('hotelSearch.detail.fromPrice')} {formatCurrencyWithDecimals(hotel.minPrice || 0)}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
@@ -280,7 +272,7 @@ const HotelListCard: React.FC<HotelListCardProps> = ({ hotel, onViewHotel }) => 
         )}
 
         {/* Room Types Preview - Mobile Optimized */}
-        <Box sx={{ mb: { xs: 2, md: 2 }, flexGrow: 1 }}>
+        <Box sx={{ ...tintedPanelSx('secondary'), mb: { xs: 2, md: 2 }, flexGrow: 1 }}>
           <Typography 
             variant="body2" 
             color="text.secondary" 
@@ -346,39 +338,27 @@ const HotelListCard: React.FC<HotelListCardProps> = ({ hotel, onViewHotel }) => 
             )}
             
             {/* Full-width button */}
-            <Button
+            <StandardButton
               variant="contained"
-              size="large"
               startIcon={<ViewIcon />}
               fullWidth
               onClick={(e) => {
                 e.stopPropagation();
                 onViewHotel(hotel.id);
               }}
+              buttonSize="large"
               sx={{
                 minHeight: '48px',
-                borderRadius: 2,
-                fontWeight: 'bold',
                 fontSize: '1rem',
-                textTransform: 'none',
-                backgroundColor: COLORS.PRIMARY,
-                border: `2px solid ${COLORS.SECONDARY}`,
-                color: COLORS.WHITE,
-                boxShadow: `0 2px 8px ${addAlpha(COLORS.SECONDARY, 0.2)}`,
-                '&:hover': {
-                  backgroundColor: COLORS.PRIMARY_HOVER,
-                  borderColor: COLORS.SECONDARY_HOVER,
-                  boxShadow: `0 4px 12px ${addAlpha(COLORS.SECONDARY, 0.3)}`,
-                },
               }}
             >
               {t('hotelSearch.listCard.viewHotelDetails')}
-            </Button>
+            </StandardButton>
           </Box>
         ) : (
           /* Desktop: Side-by-side layout */
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 'auto' }}>
-            <Box sx={{ display: 'flex', gap: 2 }}>
+            <Stack direction="row" spacing={2} useFlexGap flexWrap="wrap">
               {hotel.phone && (
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
                   <PhoneIcon sx={{ fontSize: 14, mr: 0.5, color: 'text.secondary' }} />
@@ -395,37 +375,26 @@ const HotelListCard: React.FC<HotelListCardProps> = ({ hotel, onViewHotel }) => 
                   </Typography>
                 </Box>
               )}
-            </Box>
+            </Stack>
             
-            <Button
+            <StandardButton
               variant="contained"
               startIcon={<ViewIcon />}
               onClick={(e) => {
                 e.stopPropagation();
                 onViewHotel(hotel.id);
               }}
+              buttonSize="medium"
               sx={{
-                backgroundColor: COLORS.PRIMARY,
-                border: `2px solid ${COLORS.SECONDARY}`,
-                color: COLORS.WHITE,
-                fontWeight: 600,
-                textTransform: 'none',
-                borderRadius: 2,
                 px: 3,
-                boxShadow: `0 2px 8px ${addAlpha(COLORS.SECONDARY, 0.2)}`,
-                '&:hover': {
-                  backgroundColor: COLORS.PRIMARY_HOVER,
-                  borderColor: COLORS.SECONDARY_HOVER,
-                  boxShadow: `0 4px 12px ${addAlpha(COLORS.SECONDARY, 0.3)}`,
-                },
               }}
             >
               {t('hotelSearch.listCard.viewHotel')}
-            </Button>
+            </StandardButton>
           </Box>
         )}
-      </CardContent>
-    </Card>
+      </Box>
+    </SurfaceCard>
   );
 };
 

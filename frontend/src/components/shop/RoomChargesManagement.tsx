@@ -40,6 +40,7 @@ import { format } from 'date-fns';
 import { roomChargeApiService } from '../../services/roomChargeApi';
 import { RoomCharge, RoomChargeCreateRequest, RoomChargeType } from '../../types/shop';
 import { getPremiumTableHeadSx } from './premiumStyles';
+import { guestNameBadgeSx } from '../../theme/sxHelpers';
 
 interface RoomChargesProps {
   hotelId: number;
@@ -322,7 +323,11 @@ const RoomChargesManagement: React.FC<RoomChargesProps> = ({ hotelId }) => {
                       {formatDate(charge.chargeDate)}
                     </TableCell>
                     <TableCell>
-                      {charge.guestName || 'N/A'}
+                      {charge.guestName ? (
+                        <Typography variant="body2" sx={guestNameBadgeSx}>
+                          {charge.guestName}
+                        </Typography>
+                      ) : 'N/A'}
                     </TableCell>
                     <TableCell>
                       {charge.roomNumber || 'N/A'}

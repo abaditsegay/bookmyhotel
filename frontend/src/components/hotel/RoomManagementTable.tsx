@@ -37,6 +37,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
 import { hotelAdminApi } from '../../services/hotelAdminApi';
 import { formatCurrencyWithDecimals } from '../../utils/currencyUtils';
+import { guestNameBadgeSx } from '../../theme/sxHelpers';
 
 // Hotel admin specific room response interface (matching FrontDesk)
 interface RoomResponse {
@@ -325,7 +326,7 @@ const RoomManagementTable: React.FC<RoomManagementTableProps> = ({ onRoomUpdate 
                   </TableCell>
                   <TableCell>
                     {room.currentGuest ? (
-                      <Typography variant="body2">
+                      <Typography variant="body2" sx={guestNameBadgeSx}>
                         {room.currentGuest}
                       </Typography>
                     ) : (

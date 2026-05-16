@@ -1,7 +1,6 @@
 import React, { useState, useRef } from 'react';
 import {
   Box,
-  Button,
   Typography,
   Alert,
   LinearProgress,
@@ -22,7 +21,9 @@ import {
   StepLabel,
   StepContent,
   Snackbar,
+  useTheme,
 } from '@mui/material';
+import { alpha as muiAlpha } from '@mui/material/styles';
 import {
   CloudUpload as UploadIcon,
   Download as DownloadIcon,
@@ -32,10 +33,11 @@ import {
   Delete as DeleteIcon,
   Preview as PreviewIcon
 } from '@mui/icons-material';
+import { StandardButton } from '../common';
 import { hotelAdminApi } from '../../services/hotelAdminApi';
 import { useAuth } from '../../contexts/AuthContext';
 import { formatCurrency } from '../../utils/currencyUtils';
-import { useThemeColors } from '../../theme/useThemeColors';
+import { formActionsRowSx, tintedPanelSx } from '../../theme/sxHelpers';
 
 interface RoomData {
   roomNumber: string;
@@ -61,8 +63,8 @@ interface RoomBulkUploadProps {
 }
 
 const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClose, hotelId }) => {
-  const { COLORS, addAlpha } = useThemeColors();
   const { token } = useAuth();
+  const theme = useTheme();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
@@ -90,6 +92,40 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
   ];
 
   const requiredFields = ['roomNumber', 'roomType', 'pricePerNight', 'capacity'];
+  const importOverlaySx = {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: muiAlpha(theme.palette.background.paper, 0.86),
+    backdropFilter: 'blur(2px)',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1000,
+    borderRadius: 2,
+  } as const;
+  const stepActionRowSx = {
+    display: 'flex',
+    gap: 1.5,
+    alignItems: { xs: 'stretch', sm: 'center' },
+    flexDirection: { xs: 'column', sm: 'row' },
+    flexWrap: 'wrap',
+  };
+  const dialogTableHeaderRowSx = {
+    '& .MuiTableCell-head': {
+      backgroundColor: alpha(theme.palette.text.primary, theme.palette.mode === 'dark' ? 0.08 : 0.035),
+      color: 'text.secondary',
+      fontWeight: 700,
+      fontSize: '0.8rem',
+      letterSpacing: '0.05em',
+      textTransform: 'uppercase',
+      borderBottom: `2px solid ${alpha(theme.palette.text.primary, theme.palette.mode === 'dark' ? 0.18 : 0.1)}`,
+      py: 1.75,
+    },
+  };
 
   const downloadTemplate = () => {
     const link = document.createElement('a');
@@ -412,22 +448,7 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
     <Box sx={{ maxWidth: 1200, mx: 'auto', p: 3, position: 'relative' }}>
       {/* Full Dialog Spinner Overlay */}
       {isImporting && (
-        <Box
-          sx={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: addAlpha(COLORS.WHITE, 0.8),
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1000,
-            borderRadius: 1
-          }}
-        >
+        <Box sx={importOverlaySx}>
           <Box sx={{ textAlign: 'center' }}>
             <LinearProgress sx={{ width: 300, mb: 2 }} />
             <Typography variant="h6" sx={{ mb: 1 }}>
@@ -460,29 +481,31 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
                     <Typography variant="body2" sx={{ mb: 2 }}>
                       Download our CSV template with sample room data to get started, or skip if you already have a template.
                     </Typography>
-                    <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-                      <Button
+                    <Box sx={{ ...stepActionRowSx, mb: 2 }}>
+                      <StandardButton
                         variant="contained"
                         startIcon={<DownloadIcon />}
                         onClick={downloadTemplate}
+                        buttonSize="medium"
                       >
                         Download CSV Template
-                      </Button>
-                      <Button
+                      </StandardButton>
+                      <StandardButton
                         variant="outlined"
                         startIcon={<InfoIcon />}
                         onClick={downloadGuide}
+                        buttonSize="medium"
                       >
                         Download Guide
-                      </Button>
+                      </StandardButton>
                     </Box>
-                    <Button
+                    <StandardButton
                       variant="text"
                       onClick={() => setActiveStep(Math.max(activeStep, 1))}
                       sx={{ mt: 1 }}
                     >
                       Skip - I already have a template
-                    </Button>
+                    </StandardButton>
                   </Box>
                 )}
                 
@@ -505,13 +528,13 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
                     <Alert severity="info" sx={{ mb: 2 }}>
                       Required fields: Room Number, Room Type, Price Per Night, Capacity
                     </Alert>
-                    <Button
+                    <StandardButton
                       variant="contained"
                       onClick={() => setActiveStep(Math.max(activeStep, 2))}
                       sx={{ mt: 1 }}
                     >
                       Continue to Upload
-                    </Button>
+                    </StandardButton>
                   </Box>
                 )}
                 
@@ -523,18 +546,18 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
                     <input
                       type="file"
                       accept=".csv"
-                      style={{ display: 'none' }}
+                      hidden
                       ref={fileInputRef}
                       onChange={handleFileSelect}
                     />
-                    <Button
+                    <StandardButton
                       variant="contained"
                       startIcon={<UploadIcon />}
                       onClick={() => fileInputRef.current?.click()}
                       disabled={isProcessing}
                     >
                       Select CSV File
-                    </Button>
+                    </StandardButton>
                     {uploadedFile && (
                       <Typography variant="body2" sx={{ mt: 1, color: 'success.main' }}>
                         ✅ File selected: {uploadedFile.name}
@@ -550,7 +573,7 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
                     </Typography>
                     
                     {parsedData.length > 0 && (
-                      <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                      <Box sx={{ ...stepActionRowSx, mb: 2 }}>
                         <Chip 
                           icon={<SuccessIcon />} 
                           label={`${parsedData.length} rooms found`} 
@@ -569,13 +592,14 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
                             color="success" 
                           />
                         )}
-                        <Button
-                          size="small"
+                        <StandardButton
+                          buttonSize="small"
+                          variant="text"
                           startIcon={<PreviewIcon />}
                           onClick={() => setPreviewDialogOpen(true)}
                         >
                           Full Preview
-                        </Button>
+                        </StandardButton>
                       </Box>
                     )}
                     
@@ -651,13 +675,13 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
                     )}
                     
                     {validationErrors.length === 0 && parsedData.length > 0 && (
-                      <Button
+                      <StandardButton
                         variant="contained"
                         onClick={() => setActiveStep(Math.max(activeStep, 4))}
                         sx={{ mt: 1, mr: 1 }}
                       >
                         Continue to Import
-                      </Button>
+                      </StandardButton>
                     )}
                     
                     {validationErrors.length > 0 && parsedData.length > 0 && (
@@ -665,14 +689,14 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
                         <Alert severity="warning" sx={{ mb: 2 }}>
                           There are {validationErrors.length} validation errors. You can review them below and fix your CSV file, or continue anyway if you want to skip invalid rows.
                         </Alert>
-                        <Box sx={{ display: 'flex', gap: 2 }}>
-                          <Button
+                        <Box sx={stepActionRowSx}>
+                          <StandardButton
                             variant="outlined"
                             onClick={() => setActiveStep(Math.max(activeStep, 4))}
                           >
                             Continue Anyway (Skip Invalid Rows)
-                          </Button>
-                          <Button
+                          </StandardButton>
+                          <StandardButton
                             variant="contained"
                             color="primary"
                             onClick={() => {
@@ -687,7 +711,7 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
                             }}
                           >
                             Upload Corrected File
-                          </Button>
+                          </StandardButton>
                         </Box>
                       </Box>
                     )}
@@ -705,15 +729,15 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
                     <Typography variant="body2" sx={{ mb: 2 }}>
                       Import the validated rooms into your hotel system.
                     </Typography>
-                    <Button
+                    <StandardButton
                       variant="contained"
                       onClick={handleImportRooms}
                       disabled={isImporting || validationErrors.length > 0}
                       startIcon={<UploadIcon />}
-                      size="large"
+                      buttonSize="large"
                     >
                       Import {parsedData.length} Rooms
-                    </Button>
+                    </StandardButton>
                   </Box>
                 )}
               </StepContent>
@@ -725,13 +749,13 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
       {/* Reset Button */}
       {(uploadedFile || parsedData.length > 0) && (
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
-          <Button
+          <StandardButton
             variant="outlined"
             startIcon={<DeleteIcon />}
             onClick={resetUpload}
           >
             Start Over
-          </Button>
+          </StandardButton>
         </Box>
       )}
 
@@ -747,32 +771,7 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
           <TableContainer component={Paper} sx={{ maxHeight: 400 }}>
             <Table stickyHeader size="small">
               <TableHead>
-                <TableRow
-                  sx={{
-                    background: COLORS.GRADIENT_SLATE,
-                    boxShadow: `0 4px 12px ${addAlpha(COLORS.SLATE_500, 0.15)}`,
-                    '& .MuiTableCell-head': {
-                      color: COLORS.WHITE,
-                      fontWeight: 600,
-                      fontSize: '0.95rem',
-                      letterSpacing: '0.5px',
-                      textTransform: 'uppercase',
-                      border: 'none',
-                      padding: '20px 16px',
-                      position: 'relative',
-                      textShadow: `0 1px 2px ${addAlpha(COLORS.BLACK, 0.1)}`,
-                      '&::after': {
-                        content: '""',
-                        position: 'absolute',
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                        height: '3px',
-                        background: `linear-gradient(90deg, ${addAlpha(COLORS.WHITE, 0.6)} 0%, ${addAlpha(COLORS.WHITE, 0.8)} 50%, ${addAlpha(COLORS.WHITE, 0.6)} 100%)`
-                      }
-                    }
-                  }}
-                >
+                <TableRow sx={dialogTableHeaderRowSx}>
                   <TableCell>Room #</TableCell>
                   <TableCell>Type</TableCell>
                   <TableCell>Capacity</TableCell>
@@ -802,7 +801,9 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setPreviewDialogOpen(false)}>Close</Button>
+          <StandardButton variant="text" onClick={() => setPreviewDialogOpen(false)}>
+            Close
+          </StandardButton>
         </DialogActions>
       </Dialog>
 
@@ -826,32 +827,7 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
           <TableContainer component={Paper} sx={{ maxHeight: 300 }}>
             <Table size="small">
               <TableHead>
-                <TableRow
-                  sx={{
-                    background: COLORS.GRADIENT_SLATE,
-                    boxShadow: `0 4px 12px ${addAlpha(COLORS.SLATE_500, 0.15)}`,
-                    '& .MuiTableCell-head': {
-                      color: COLORS.WHITE,
-                      fontWeight: 600,
-                      fontSize: '0.95rem',
-                      letterSpacing: '0.5px',
-                      textTransform: 'uppercase',
-                      border: 'none',
-                      padding: '20px 16px',
-                      position: 'relative',
-                      textShadow: `0 1px 2px ${addAlpha(COLORS.BLACK, 0.1)}`,
-                      '&::after': {
-                        content: '""',
-                        position: 'absolute',
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                        height: '3px',
-                        background: `linear-gradient(90deg, ${addAlpha(COLORS.WHITE, 0.6)} 0%, ${addAlpha(COLORS.WHITE, 0.8)} 50%, ${addAlpha(COLORS.WHITE, 0.6)} 100%)`
-                      }
-                    }
-                  }}
-                >
+                <TableRow sx={dialogTableHeaderRowSx}>
                   <TableCell>Row</TableCell>
                   <TableCell>Field</TableCell>
                   <TableCell>Error</TableCell>
@@ -872,7 +848,9 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
           </TableContainer>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setErrorDialogOpen(false)}>Close</Button>
+          <StandardButton variant="text" onClick={() => setErrorDialogOpen(false)}>
+            Close
+          </StandardButton>
         </DialogActions>
       </Dialog>
 
@@ -885,20 +863,9 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
         PaperProps={{
           sx: {
             borderRadius: 3,
-            background: `linear-gradient(135deg, ${COLORS.SUCCESS} 0%, ${addAlpha(COLORS.SUCCESS, 0.85)} 100%)`,
-            color: COLORS.WHITE,
+            backgroundColor: 'background.paper',
+            color: 'text.primary',
             textAlign: 'center',
-            animation: 'slideIn 0.5s ease-out',
-            '@keyframes slideIn': {
-              '0%': {
-                transform: 'scale(0.8) translateY(-50px)',
-                opacity: 0,
-              },
-              '100%': {
-                transform: 'scale(1) translateY(0)',
-                opacity: 1,
-              },
-            },
           }
         }}
       >
@@ -910,25 +877,13 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
                 width: 80,
                 height: 80,
                 borderRadius: '50%',
-                backgroundColor: addAlpha(COLORS.WHITE, 0.2),
+                backgroundColor: muiAlpha(theme.palette.success.main, theme.palette.mode === 'dark' ? 0.24 : 0.12),
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                animation: 'bounce 0.6s ease-in-out 0.3s both',
-                '@keyframes bounce': {
-                  '0%, 20%, 50%, 80%, 100%': {
-                    transform: 'translateY(0)',
-                  },
-                  '40%': {
-                    transform: 'translateY(-10px)',
-                  },
-                  '60%': {
-                    transform: 'translateY(-5px)',
-                  },
-                },
               }}
             >
-              <SuccessIcon sx={{ fontSize: 48, color: COLORS.WHITE }} />
+              <SuccessIcon sx={{ fontSize: 48, color: 'success.main' }} />
             </Box>
 
             {/* Success Message */}
@@ -937,14 +892,14 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
             </Typography>
 
             {/* Import Statistics */}
-            <Box sx={{ width: '100%', mb: 2 }}>
+            <Box sx={{ ...tintedPanelSx('success'), width: '100%', mb: 2 }}>
               <Typography variant="h6" sx={{ mb: 2 }}>
                 Import Summary
               </Typography>
               
               <Box sx={{ display: 'flex', justifyContent: 'space-around', mb: 2 }}>
                 <Box sx={{ textAlign: 'center' }}>
-                  <Typography variant="h3" sx={{ fontWeight: 'bold', color: addAlpha(COLORS.WHITE, 0.9) }}>
+                  <Typography variant="h3" sx={{ fontWeight: 'bold', color: 'success.main' }}>
                     {importStats.successful}
                   </Typography>
                   <Typography variant="body2">
@@ -954,7 +909,7 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
                 
                 {importStats.failed > 0 && (
                   <Box sx={{ textAlign: 'center' }}>
-                    <Typography variant="h3" sx={{ fontWeight: 'bold', color: addAlpha(COLORS.WHITE, 0.7) }}>
+                    <Typography variant="h3" sx={{ fontWeight: 'bold', color: 'text.secondary' }}>
                       {importStats.failed}
                     </Typography>
                     <Typography variant="body2">
@@ -972,41 +927,32 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
                   sx={{
                     height: 8,
                     borderRadius: 4,
-                    backgroundColor: addAlpha(COLORS.WHITE, 0.3),
+                    backgroundColor: muiAlpha(theme.palette.success.main, 0.16),
                     '& .MuiLinearProgress-bar': {
-                      backgroundColor: COLORS.WHITE,
+                      backgroundColor: theme.palette.success.main,
                       borderRadius: 4,
-                      animation: 'progressFill 1s ease-out 0.5s both',
-                      '@keyframes progressFill': {
-                        '0%': {
-                          transform: 'scaleX(0)',
-                        },
-                        '100%': {
-                          transform: 'scaleX(1)',
-                        },
-                      },
                     },
                   }}
                 />
               </Box>
 
-              <Typography variant="body1" sx={{ opacity: 0.9 }}>
+              <Typography variant="body1" color="text.secondary">
                 Your rooms have been successfully imported and are now available for booking!
               </Typography>
 
               {/* Show errors if any */}
               {importStats.errors.length > 0 && (
-                <Box sx={{ mt: 2, p: 2, backgroundColor: addAlpha(COLORS.WHITE, 0.1), borderRadius: 2 }}>
+                <Box sx={{ ...tintedPanelSx('warning'), mt: 2 }}>
                   <Typography variant="body2" sx={{ mb: 1, fontWeight: 'bold' }}>
                     Import Warnings:
                   </Typography>
                   {importStats.errors.slice(0, 3).map((error, index) => (
-                    <Typography key={index} variant="caption" sx={{ display: 'block', opacity: 0.8 }}>
+                    <Typography key={index} variant="caption" sx={{ display: 'block', color: 'text.secondary' }}>
                       • {error}
                     </Typography>
                   ))}
                   {importStats.errors.length > 3 && (
-                    <Typography variant="caption" sx={{ opacity: 0.7 }}>
+                    <Typography variant="caption" color="text.secondary">
                       ... and {importStats.errors.length - 3} more
                     </Typography>
                   )}
@@ -1016,30 +962,20 @@ const RoomBulkUpload: React.FC<RoomBulkUploadProps> = ({ onUploadComplete, onClo
           </Box>
         </DialogContent>
         
-        <DialogActions sx={{ justifyContent: 'center', pb: 3 }}>
-          <Button
+        <DialogActions sx={{ ...formActionsRowSx, justifyContent: 'center', pb: 3, px: 3 }}>
+          <StandardButton
             variant="contained"
-            size="large"
+            buttonSize="large"
+            color="success"
             onClick={() => {
               setSuccessOverlayOpen(false);
               if (onClose) {
                 onClose();
               }
             }}
-            sx={{
-              backgroundColor: addAlpha(COLORS.WHITE, 0.2),
-              color: COLORS.WHITE,
-              '&:hover': {
-                backgroundColor: addAlpha(COLORS.WHITE, 0.3),
-              },
-              px: 4,
-              py: 1.5,
-              borderRadius: 2,
-              fontWeight: 'bold',
-            }}
           >
             Close & Continue
-          </Button>
+          </StandardButton>
         </DialogActions>
       </Dialog>
 

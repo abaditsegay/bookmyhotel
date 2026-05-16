@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   Box,
-  Button,
   Typography,
-  TextField,
   Grid,
   Dialog,
   DialogTitle,
@@ -19,18 +17,12 @@ import {
   IconButton,
   Chip,
   Alert,
-  FormControl,
-  InputLabel,
-  Select,
   MenuItem,
   InputAdornment,
   Tooltip,
   Switch,
   FormControlLabel,
   TablePagination,
-  Card,
-  CardContent,
-  useTheme
 } from '@mui/material';
 import {
   Edit as EditIcon,
@@ -50,21 +42,20 @@ import { translateProducts } from '../../utils/productTranslation';
 import { TableRowSkeleton } from '../common/SkeletonLoaders';
 import { getPremiumTableHeadSx } from './premiumStyles';
 import { NoProducts } from '../common/EmptyState';
+import { StandardButton, SurfaceCard } from '../common';
 import { useTableSort } from '../../hooks/useTableSort';
 import { SortableTableCell } from '../common/SortableTableCell';
 import { useCsvExport } from '../../hooks/useCsvExport';
-import { useThemeColors } from '../../theme/useThemeColors';
-import { getReadableAccentTextColor } from '../../theme/surfaces';
+import { useDebounce } from '../../hooks/useDebounce';
+import { getEffectiveSearchTerm } from '../../utils/search';
 import PremiumTextField from '../common/PremiumTextField';
 import PremiumSelect from '../common/PremiumSelect';
+import { formActionsRowSx } from '../../theme/sxHelpers';
 
 const ProductManagement: React.FC = () => {
   const { t } = useTranslation();
   const { user, token } = useAuth();
   const { enqueueSnackbar } = useSnackbar();
-  const { COLORS, addAlpha } = useThemeColors();
-  const theme = useTheme();
-  const readableAccentColor = getReadableAccentTextColor(theme);
   const { exportToCsv } = useCsvExport({ filename: 'products' });
   const [products, setProducts] = useState<Product[]>([]);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -370,25 +361,25 @@ const ProductManagement: React.FC = () => {
     <Box>
       {/* Header */}
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mb: 3, gap: 2 }}>
-        <Button
+        <StandardButton
           variant="outlined"
           startIcon={<DownloadIcon />}
           onClick={handleExportToCsv}
           disabled={sortedProducts.length === 0}
         >
           {t('common.exportCsv')}
-        </Button>
-        <Button
+        </StandardButton>
+        <StandardButton
           variant="contained"
           onClick={openCreateDialog}
         >
           {t('shop.products.addProduct')}
-        </Button>
+        </StandardButton>
       </Box>
 
       {/* Filters - matching FrontDesk style */}
       <Box sx={{ mb: 3, display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
-        <TextField
+        <PremiumTextField
           label={t('shop.products.searchPlaceholder')}
           value={searchTerm}
           onChange={handleSearchChange}
@@ -403,21 +394,20 @@ const ProductManagement: React.FC = () => {
           }}
         />
         
-        <FormControl size="small" sx={{ minWidth: 150 }}>
-          <InputLabel>{t('shop.products.form.category')}</InputLabel>
-          <Select
-            value={categoryFilter}
-            label={t('shop.products.form.category')}
-            onChange={handleCategoryChange}
-          >
-            <MenuItem value="ALL">{t('shop.products.categories.all')}</MenuItem>
-            {Object.values(ProductCategory).map((category) => (
-              <MenuItem key={category} value={category}>
-                {t(`categoryNames.${category}`)}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+        <PremiumSelect
+          size="small"
+          sx={{ minWidth: 150 }}
+          value={categoryFilter}
+          label={t('shop.products.form.category')}
+          onChange={handleCategoryChange}
+        >
+          <MenuItem value="ALL">{t('shop.products.categories.all')}</MenuItem>
+          {Object.values(ProductCategory).map((category) => (
+            <MenuItem key={category} value={category}>
+              {t(`categoryNames.${category}`)}
+            </MenuItem>
+          ))}
+        </PremiumSelect>
       </Box>
 
       {/* Error Alert */}
@@ -588,24 +578,18 @@ const ProductManagement: React.FC = () => {
         maxWidth="md" 
         fullWidth
         PaperProps={{
-          sx: {
+          sx: theme => ({
             borderRadius: 3,
-            boxShadow: `0 18px 48px ${addAlpha(COLORS.PRIMARY, 0.12)}`,
-            border: `1px solid ${addAlpha(COLORS.PRIMARY, 0.08)}`,
-            backgroundColor: theme.palette.background.paper
-          }
+            boxShadow: 'none',
+            border: `1px solid ${theme.palette.divider}`,
+            backgroundColor: theme.palette.background.paper,
+          })
         }}
       >
-        <DialogTitle sx={{ fontWeight: 700, color: readableAccentColor }}>
+        <DialogTitle sx={{ fontWeight: 700, color: 'text.primary' }}>
           {editingProduct ? t('shop.products.editProduct') : t('shop.products.addProduct')}
         </DialogTitle>
-        <DialogContent dividers sx={{
-          borderColor: addAlpha(COLORS.PRIMARY, 0.08),
-          backgroundColor: theme.palette.background.paper,
-          px: 3,
-          pt: 2,
-          pb: 3
-        }}>
+        <DialogContent dividers sx={{ borderColor: 'divider', backgroundColor: 'background.paper', px: 3, pt: 2, pb: 3 }}>
           <Grid container spacing={2} sx={{ mt: 1 }}>
             <Grid item xs={12} md={6}>
               <PremiumTextField
@@ -732,50 +716,45 @@ const ProductManagement: React.FC = () => {
             </Grid>
           </Grid>
         </DialogContent>
-        <DialogActions sx={{ px: 3, py: 2.5, gap: 1.5 }}>
-          <Button 
+        <DialogActions sx={{ ...formActionsRowSx, px: 3, py: 2.5 }}>
+          <StandardButton 
             onClick={() => setOpenDialog(false)}
             variant="outlined"
-            sx={{
-              borderColor: addAlpha(COLORS.PRIMARY, 0.3),
-              color: readableAccentColor,
-              fontWeight: 600,
-              textTransform: 'none'
-            }}
           >
             {t('common.cancel')}
-          </Button>
-          <Button
+          </StandardButton>
+          <StandardButton
             onClick={editingProduct ? handleUpdateProduct : handleCreateProduct}
             variant="contained"
-            sx={{
-              backgroundColor: COLORS.PRIMARY,
-              color: COLORS.WHITE,
-              fontWeight: 700,
-              textTransform: 'none',
-              boxShadow: `0 8px 20px ${addAlpha(COLORS.PRIMARY, 0.18)}`,
-              '&:hover': {
-                backgroundColor: COLORS.PRIMARY_HOVER,
-                boxShadow: `0 10px 24px ${addAlpha(COLORS.PRIMARY, 0.24)}`
-              }
-            }}
           >
             {editingProduct ? t('common.save') : t('common.add')}
-          </Button>
+          </StandardButton>
         </DialogActions>
       </Dialog>
 
       {/* View Details Dialog */}
-      <Dialog open={viewDetailsDialogOpen} onClose={closeViewDetailsDialog} maxWidth="md" fullWidth>
-        <DialogTitle>{t('shop.products.viewDetails')}</DialogTitle>
-        <DialogContent>
+      <Dialog
+        open={viewDetailsDialogOpen}
+        onClose={closeViewDetailsDialog}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: theme => ({
+            borderRadius: 3,
+            boxShadow: 'none',
+            border: `1px solid ${theme.palette.divider}`,
+            backgroundColor: theme.palette.background.paper,
+          }),
+        }}
+      >
+        <DialogTitle sx={{ fontWeight: 700, color: 'text.primary' }}>{t('shop.products.viewDetails')}</DialogTitle>
+        <DialogContent dividers sx={{ borderColor: 'divider', backgroundColor: 'background.paper', px: 3, py: 3 }}>
           {selectedViewProduct && (
             <Grid container spacing={3}>
               {/* Product Image */}
               {selectedViewProduct.imageUrl && (
                 <Grid item xs={12}>
-                  <Card>
-                    <CardContent>
+                  <SurfaceCard>
                       <Box
                         component="img"
                         src={selectedViewProduct.imageUrl}
@@ -787,15 +766,13 @@ const ProductManagement: React.FC = () => {
                           borderRadius: 1
                         }}
                       />
-                    </CardContent>
-                  </Card>
+                  </SurfaceCard>
                 </Grid>
               )}
               
               {/* Basic Information */}
               <Grid item xs={12} md={6}>
-                <Card>
-                  <CardContent>
+                <SurfaceCard>
                     <Typography variant="h6" gutterBottom>Basic Information</Typography>
                     <Box sx={{ '& > *': { mb: 0.5 } }}>
                       <Typography><strong>{t('shop.products.form.name')}:</strong> {selectedViewProduct.name}</Typography>
@@ -805,14 +782,12 @@ const ProductManagement: React.FC = () => {
                         <Typography><strong>{t('shop.products.form.description')}:</strong> {selectedViewProduct.description}</Typography>
                       )}
                     </Box>
-                  </CardContent>
-                </Card>
+                </SurfaceCard>
               </Grid>
 
               {/* Pricing Information */}
               <Grid item xs={12} md={6}>
-                <Card>
-                  <CardContent>
+                <SurfaceCard>
                     <Typography variant="h6" gutterBottom>Pricing Information</Typography>
                     <Box sx={{ '& > *': { mb: 0.5 } }}>
                       <Typography><strong>{t('shop.products.form.price')}:</strong> {formatCurrencyWithDecimals(selectedViewProduct.price || 0)}</Typography>
@@ -827,14 +802,12 @@ const ProductManagement: React.FC = () => {
                         <Typography><strong>{t('shop.products.form.weight')}:</strong> {selectedViewProduct.weightGrams}g</Typography>
                       )}
                     </Box>
-                  </CardContent>
-                </Card>
+                </SurfaceCard>
               </Grid>
 
               {/* Stock Information */}
               <Grid item xs={12} md={6}>
-                <Card>
-                  <CardContent>
+                <SurfaceCard>
                     <Typography variant="h6" gutterBottom>Stock Information</Typography>
                     <Box sx={{ mb: 2 }}>
                       <Chip
@@ -852,14 +825,12 @@ const ProductManagement: React.FC = () => {
                       <Typography><strong>{t('shop.products.form.minimumStock')}:</strong> {selectedViewProduct.minimumStockLevel} {t('common.units')}</Typography>
                       <Typography><strong>{t('shop.products.form.maximumStock')}:</strong> {selectedViewProduct.maximumStockLevel} {t('common.units')}</Typography>
                     </Box>
-                  </CardContent>
-                </Card>
+                </SurfaceCard>
               </Grid>
 
               {/* Availability Status */}
               <Grid item xs={12} md={6}>
-                <Card>
-                  <CardContent>
+                <SurfaceCard>
                     <Typography variant="h6" gutterBottom>Product Status</Typography>
                     <Box sx={{ '& > *': { mb: 0.5 } }}>
                       <Typography>
@@ -881,26 +852,23 @@ const ProductManagement: React.FC = () => {
                         <strong>Stock Value:</strong> {formatCurrencyWithDecimals((selectedViewProduct.costPrice || 0) * selectedViewProduct.stockQuantity)}
                       </Typography>
                     </Box>
-                  </CardContent>
-                </Card>
+                </SurfaceCard>
               </Grid>
 
               {/* Notes */}
               {selectedViewProduct.notes && (
                 <Grid item xs={12}>
-                  <Card>
-                    <CardContent>
+                  <SurfaceCard>
                       <Typography variant="h6" gutterBottom>Notes</Typography>
                       <Typography>{selectedViewProduct.notes}</Typography>
-                    </CardContent>
-                  </Card>
+                  </SurfaceCard>
                 </Grid>
               )}
             </Grid>
           )}
         </DialogContent>
-        <DialogActions>
-          <Button onClick={closeViewDetailsDialog}>{t('common.close')}</Button>
+        <DialogActions sx={{ ...formActionsRowSx, px: 3, py: 2.5 }}>
+          <StandardButton variant="text" onClick={closeViewDetailsDialog}>{t('common.close')}</StandardButton>
         </DialogActions>
       </Dialog>
     </Box>

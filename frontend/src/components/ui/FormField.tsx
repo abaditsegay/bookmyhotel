@@ -3,14 +3,13 @@
 
 import React from 'react';
 import { 
-  TextField, 
   TextFieldProps,
   FormLabel,
   FormHelperText,
   Box,
   Typography
 } from '@mui/material';
-import { designSystem } from '../../theme/designSystem';
+import PremiumTextField from '../common/PremiumTextField';
 
 interface FormFieldProps extends Omit<TextFieldProps, 'variant'> {
   /** Field label */
@@ -70,30 +69,13 @@ const FormField: React.FC<FormFieldProps> = ({
         </Typography>
       )}
 
-      <TextField
+      <PremiumTextField
         {...props}
         error={isError}
         disabled={isDisabled}
         fullWidth
         variant="outlined"
         sx={{
-          '& .MuiOutlinedInput-root': {
-            borderRadius: designSystem.borderRadius.md,
-            backgroundColor: isDisabled ? 'action.disabledBackground' : 'background.paper',
-            '& .MuiOutlinedInput-notchedOutline': {
-              borderColor: 'rgba(26, 54, 93, 0.12)',
-            },
-            '&:hover .MuiOutlinedInput-notchedOutline': {
-              borderColor: isError ? 'error.main' : 'primary.main',
-            },
-            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-              borderColor: isError ? 'error.main' : 'primary.main',
-              borderWidth: '1px',
-            },
-            '&.Mui-error .MuiOutlinedInput-notchedOutline': {
-              borderColor: 'error.main',
-            },
-          },
           '& .MuiInputLabel-root': {
             '&.Mui-focused': {
               color: isError ? 'error.main' : 'primary.main',

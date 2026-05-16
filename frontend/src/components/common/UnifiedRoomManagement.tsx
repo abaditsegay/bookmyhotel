@@ -51,6 +51,7 @@ import { ROOM_TYPES, getRoomTypeLabel } from '../../constants/roomTypes';
 import PremiumTextField from './PremiumTextField';
 import PremiumSelect from './PremiumSelect';
 import StandardButton from './StandardButton';
+import { guestNameBadgeSx } from '../../theme/sxHelpers';
 import { useThemeColors } from '../../theme/useThemeColors';
 import { getEffectiveSearchTerm } from '../../utils/search';
 
@@ -611,19 +612,20 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
             <Table>
               <TableHead>
                 <TableRow
-                  sx={{
-                    background: `linear-gradient(135deg, ${COLORS.BG_DEFAULT} 0%, ${COLORS.BG_LIGHT} 50%, ${COLORS.BG_DEFAULT} 100%)`,
-                    borderBottom: `2px solid ${COLORS.SECONDARY}`,
+                  sx={(theme) => ({
+                    backgroundColor: theme.palette.background.paper,
+                    borderBottom: `1px solid ${theme.palette.divider}`,
                     '& .MuiTableCell-head': {
-                      color: COLORS.PRIMARY,
+                      color: theme.palette.text.secondary,
                       fontWeight: 700,
                       fontSize: '0.95rem',
                       letterSpacing: '0.5px',
                       textTransform: 'uppercase',
                       border: 'none',
                       padding: '20px 16px',
+                      backgroundColor: theme.palette.background.paper,
                     }
-                  }}
+                  })}
                 >
                   <TableCell>{t(`${translationPrefix}.tableHeaders.roomNumber`)}</TableCell>
                   <TableCell>{t(`${translationPrefix}.tableHeaders.type`)}</TableCell>
@@ -664,9 +666,13 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
                       </FormControl>
                     </TableCell>
                     <TableCell>
-                      <Typography variant="body2" color="text.secondary">
-                        {room.status === 'OCCUPIED' ? (room.currentGuest || t(`${translationPrefix}.guestPresent`)) : '-'}
-                      </Typography>
+                      {room.status === 'OCCUPIED' ? (
+                        <Typography variant="body2" sx={guestNameBadgeSx}>
+                          {room.currentGuest || t(`${translationPrefix}.guestPresent`)}
+                        </Typography>
+                      ) : (
+                        <Typography variant="body2" color="text.secondary">-</Typography>
+                      )}
                     </TableCell>
                     <TableCell>{room.capacity}</TableCell>
                     <TableCell>{formatCurrency(room.pricePerNight)}</TableCell>

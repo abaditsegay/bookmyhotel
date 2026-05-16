@@ -29,7 +29,6 @@ import {
   Switch,
   FormControlLabel,
   TextField,
-  useTheme,
 } from '@mui/material';
 import {
   Edit as EditIcon,
@@ -47,6 +46,7 @@ import { roomCacheService } from '../../services/RoomCacheService';
 import { CachedRoom } from '../../services/OfflineStorageService';
 import { getRoomTypeLabel } from '../../constants/roomTypes';
 import { formatCurrencyWithDecimals } from '../../utils/currencyUtils';
+import { guestNameBadgeSx, tableHeadRowSx } from '../../theme/sxHelpers';
 
 interface RoomResponse {
   id: number;
@@ -214,7 +214,6 @@ interface FrontDeskRoomManagementProps {
 
 const FrontDeskRoomManagement: React.FC<FrontDeskRoomManagementProps> = ({ onRoomUpdate }) => {
   const { t } = useTranslation();
-  const theme = useTheme();
   const { token } = useAuth();
   const { showSubmissionError } = useSubmissionError();
 
@@ -515,30 +514,7 @@ const FrontDeskRoomManagement: React.FC<FrontDeskRoomManagementProps> = ({ onRoo
         <Table>
           <TableHead>
             <TableRow
-              sx={{
-                background: `linear-gradient(135deg, ${theme.palette.primary.light} 0%, ${theme.palette.primary.main} 58%, ${theme.palette.primary.dark} 100%)`,
-                boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.16)}`,
-                '& .MuiTableCell-head': {
-                  color: theme.palette.primary.contrastText,
-                  fontWeight: 600,
-                  fontSize: '0.95rem',
-                  letterSpacing: '0.5px',
-                  textTransform: 'uppercase',
-                  border: 'none',
-                  padding: '20px 16px',
-                  position: 'relative',
-                  textShadow: `0 1px 2px ${alpha('#0f172a', 0.16)}`,
-                  '&::after': {
-                    content: '""',
-                    position: 'absolute',
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    height: '3px',
-                    background: `linear-gradient(90deg, ${alpha(theme.palette.common.white, 0.45)} 0%, ${alpha(theme.palette.common.white, 0.75)} 50%, ${alpha(theme.palette.common.white, 0.45)} 100%)`
-                  }
-                }
-              }}
+              sx={tableHeadRowSx()}
             >
               <TableCell>{t('dashboard.frontDesk.roomManagement.tableHeaders.roomNumber')}</TableCell>
               <TableCell>{t('dashboard.frontDesk.roomManagement.tableHeaders.type')}</TableCell>
@@ -577,7 +553,7 @@ const FrontDeskRoomManagement: React.FC<FrontDeskRoomManagementProps> = ({ onRoo
                   </TableCell>
                   <TableCell>
                     {room.currentGuest ? (
-                      <Typography variant="body2">
+                      <Typography variant="body2" sx={guestNameBadgeSx}>
                         {room.currentGuest}
                       </Typography>
                     ) : (

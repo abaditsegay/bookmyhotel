@@ -8,22 +8,24 @@ import {
   Grid,
   useTheme,
   useMediaQuery,
-  Button,
+  Stack,
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { useNavigate, useLocation } from 'react-router-dom';
 import HotelListCard from '../components/hotel/HotelListCard';
 import { DataState, PageContainer } from '../components/common';
 import { PageHeader, SurfaceCard } from '../components/ui';
+import StandardButton from '../components/common/StandardButton';
 import { PublicHotelSearchLocationState, usePublicHotelSearchResults, formatHotelSearchSummary } from '../hooks/usePublicHotelSearchResults';
-import { getPageShellBackground, getReadableAccentTextColor } from '../theme/surfaces';
+import { getPageShellBackground } from '../theme/surfaces';
+import { designSystem } from '../theme/designSystem';
+import { tintedPanelSx } from '../theme/sxHelpers';
 
 const HotelListPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const theme = useTheme();
-  const readableAccentColor = getReadableAccentTextColor(theme);
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const locationState = (location.state as PublicHotelSearchLocationState | null) ?? null;
@@ -84,51 +86,40 @@ const HotelListPage: React.FC = () => {
     <PageContainer
       maxWidth="lg" 
       sx={{ 
-        py: isMobile ? 2 : 4,
-        px: isMobile ? 1 : 3,
+        py: isMobile ? 3 : 4,
         minHeight: '100vh',
-        background: getPageShellBackground(theme),
+        backgroundColor: getPageShellBackground(theme),
       }}
     >
-      {/* Combined Header and Actions Section */}
+      <Stack spacing={designSystem.layout.sectionGap.md}>
       <SurfaceCard 
         variantStyle="elevated"
         sx={{ 
-          mb: isMobile ? 3 : 4,
-          boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.15)}`,
+          boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.08)}`,
         }}
         contentSx={{ p: { xs: 2, md: 2.5 } }}
       >
-          {/* Combined Header Section */}
-          <Box sx={{ 
-            p: { xs: 1, md: 1.5 },
-            bgcolor: 'transparent',
-          }}>
+          <Stack spacing={2}>
             <PageHeader
               title={t('hotelSearch.results.title')}
               description={`${t('hotelSearch.results.descriptionPrefix')} ${searchSummary}`}
             />
             
-            <Box sx={{ 
+            <Box sx={{
+              ...tintedPanelSx('primary'),
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: isMobile ? 'flex-start' : 'center',
               flexDirection: isMobile ? 'column' : 'row',
               gap: 2,
-              mb: 2,
             }}>
               <Typography 
                 variant="body2" 
                 sx={{ 
                   display: 'inline-block',
-                  bgcolor: alpha(theme.palette.primary.main, 0.1),
-                  color: readableAccentColor,
-                  px: 2,
-                  py: 0.75,
-                  borderRadius: 1,
                   fontSize: '0.875rem',
                   fontWeight: 600,
-                  border: `1px solid ${theme.palette.secondary.main}`,
+                  color: 'text.primary',
                 }}
               >
                 {hotels.length === 1
@@ -136,29 +127,17 @@ const HotelListPage: React.FC = () => {
                   : t('hotelSearch.results.hotelsFoundPlural', { count: hotels.length })}
               </Typography>
               
-              <Button 
+              <StandardButton 
+                variant="outlined"
                 onClick={handleBackToSearch}
                 sx={{ 
-                  py: 1,
-                  px: 2.5,
-                  bgcolor: 'background.paper',
-                  color: readableAccentColor,
-                  border: `1px solid ${theme.palette.secondary.main}`,
-                  borderRadius: 1,
-                  fontWeight: 600,
-                  textTransform: 'none',
-                  fontSize: '0.875rem',
                   minWidth: 'auto',
-                  '&:hover': {
-                    bgcolor: alpha(theme.palette.secondary.main, 0.1),
-                    borderColor: theme.palette.secondary.dark,
-                  },
                 }}
               >
                 {t('hotelSearch.results.modifySearch')}
-              </Button>
+              </StandardButton>
             </Box>
-          </Box>
+          </Stack>
       </SurfaceCard>
 
       <DataState
@@ -179,21 +158,16 @@ const HotelListPage: React.FC = () => {
         }}
         minHeight="40vh"
       >
-        <Box>
-          <Grid 
-            container 
-            spacing={isMobile ? 2 : 3}
-          >
-            {hotels.map((hotel) => (
-              <Grid item xs={12} key={hotel.id}>
-                <HotelListCard
-                  hotel={hotel}
-                  onViewHotel={handleViewHotel}
-                />
-              </Grid>
-            ))}
-          </Grid>
-        </Box>
+        <Grid container spacing={isMobile ? 2 : 3}>
+          {hotels.map((hotel) => (
+            <Grid item xs={12} key={hotel.id}>
+              <HotelListCard
+                hotel={hotel}
+                onViewHotel={handleViewHotel}
+              />
+            </Grid>
+          ))}
+        </Grid>
       </DataState>
 
       {/* Success Snackbar */}
@@ -207,6 +181,7 @@ const HotelListPage: React.FC = () => {
           {successMessage}
         </Alert>
       </Snackbar>
+      </Stack>
     </PageContainer>
   );
 };

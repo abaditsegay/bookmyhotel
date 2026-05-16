@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { alpha } from '@mui/material/styles';
 import {
   Box,
   Grid,
@@ -48,6 +47,7 @@ import {
   SupervisorAccount
 } from '@mui/icons-material';
 import { useDebounce } from '../../hooks/useDebounce';
+import { tableHeadRowSx } from '../../theme/sxHelpers';
 import { getReadableAccentTextColor } from '../../theme/surfaces';
 import { getEffectiveSearchTerm } from '../../utils/search';
 import TokenManager from '../../utils/tokenManager';
@@ -359,29 +359,7 @@ const StaffDashboard: React.FC<StaffDashboardProps> = ({ currentUserRole = 'OPER
             <Table>
               <TableHead>
                 <TableRow
-                  sx={{
-                    background: `linear-gradient(135deg, ${theme.palette.grey[900]} 0%, ${theme.palette.grey[800]} 100%)`,
-                    '& .MuiTableCell-head': {
-                      color: 'common.white',
-                      fontWeight: 600,
-                      fontSize: '0.95rem',
-                      letterSpacing: '0.5px',
-                      textTransform: 'uppercase',
-                      border: 'none',
-                      padding: '20px 16px',
-                      position: 'relative',
-                      textShadow: `0 1px 2px ${alpha(theme.palette.common.black, 0.1)}`,
-                      '&::after': {
-                        content: '""',
-                        position: 'absolute',
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                        height: '3px',
-                        background: `linear-gradient(90deg, ${alpha(theme.palette.common.white, 0.6)} 0%, ${alpha(theme.palette.common.white, 0.8)} 50%, ${alpha(theme.palette.common.white, 0.6)} 100%)`
-                      }
-                    }
-                  }}
+                  sx={tableHeadRowSx()}
                 >
                   <TableCell>Staff Member</TableCell>
                   <TableCell>Role</TableCell>

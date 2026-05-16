@@ -2,13 +2,11 @@ import React, { useEffect, useMemo } from 'react';
 import { formatEthiopianPhone } from '../utils/phoneUtils';
 import { useTranslation } from 'react-i18next';
 import {
-  Container,
   Typography,
   Box,
   Breadcrumbs,
   Link,
   IconButton,
-  Button,
   Chip,
   Grid,
   CardMedia,
@@ -28,12 +26,13 @@ import { useAuth } from '../contexts/AuthContext';
 import { hotelApiService } from '../services/hotelApi';
 import RoomCard from '../components/hotel/RoomCard';
 import RoomTypeCard from '../components/hotel/RoomTypeCard';
-import { DataState } from '../components/common';
+import { DataState, PageContainer } from '../components/common';
 import { SurfaceCard } from '../components/ui';
-import { useThemeColors } from '../theme/useThemeColors';
-import { getReadableAccentTextColor } from '../theme/surfaces';
+import StandardButton from '../components/common/StandardButton';
+import { getPageShellBackground } from '../theme/surfaces';
 import { formatCurrencyWithDecimals } from '../utils/currencyUtils';
 import { formatHotelSearchSummary } from '../hooks/usePublicHotelSearchResults';
+import { tintedPanelSx } from '../theme/sxHelpers';
 import { 
   HotelSearchRequest, 
   HotelSearchResult,
@@ -46,9 +45,7 @@ const HotelDetailPage: React.FC = () => {
   const location = useLocation();
   const { hotelId } = useParams<{ hotelId: string }>();
   const { isAuthenticated } = useAuth();
-  const { COLORS, addAlpha } = useThemeColors();
   const theme = useTheme();
-  const readableAccentColor = getReadableAccentTextColor(theme);
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -241,11 +238,12 @@ const HotelDetailPage: React.FC = () => {
     Boolean(hotel?.availableRooms && hotel.availableRooms.length > 0);
 
   return (
-    <Container 
+    <PageContainer 
       maxWidth="lg" 
       sx={{ 
-        py: isMobile ? 2 : 4,
-        px: isMobile ? 1 : 3,
+        py: isMobile ? 3 : 4,
+        minHeight: '100vh',
+        backgroundColor: getPageShellBackground(theme),
       }}
     >
       {/* Back Navigation */}
@@ -364,7 +362,7 @@ const HotelDetailPage: React.FC = () => {
                 gutterBottom 
                 sx={{ 
                   fontWeight: 700, 
-                  color: readableAccentColor,
+                  color: 'text.primary',
                   lineHeight: 1.2,
                 }}
               >
@@ -391,15 +389,10 @@ const HotelDetailPage: React.FC = () => {
             {/* Price Section - Mobile */}
             {searchRequest && (
               <Box 
-                sx={{ 
-                  textAlign: 'center',
-                  p: 2,
-                  backgroundColor: addAlpha(COLORS.PRIMARY, 0.1),
-                  borderRadius: 1,
-                }}
+                sx={{ ...tintedPanelSx('primary'), textAlign: 'center' }}
               >
                 <Typography variant="h5" sx={{ 
-                  color: readableAccentColor,
+                  color: 'text.primary',
                   fontWeight: 700 
                 }}>
                   {t('hotelSearch.detail.fromPrice')} {formatCurrencyWithDecimals(hotel.minPrice || 0)}
@@ -417,7 +410,7 @@ const HotelDetailPage: React.FC = () => {
           /* Desktop Layout - Side by Side */
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
             <Box sx={{ flexGrow: 1 }}>
-              <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 700, color: readableAccentColor }}>
+              <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 700, color: 'text.primary' }}>
                 {hotel.name}
               </Typography>
               
@@ -432,9 +425,9 @@ const HotelDetailPage: React.FC = () => {
             </Box>
             
             {searchRequest && (
-              <Box sx={{ textAlign: 'right', ml: 3 }}>
+              <Box sx={{ ...tintedPanelSx('primary'), textAlign: 'right', ml: 3, minWidth: 220 }}>
                 <Typography variant="h5" sx={{ 
-                  color: readableAccentColor,
+                  color: 'text.primary',
                   fontWeight: 700 
                 }}>
                   {t('hotelSearch.detail.fromPrice')} {formatCurrencyWithDecimals(hotel.minPrice || 0)}
@@ -543,12 +536,20 @@ const HotelDetailPage: React.FC = () => {
 
             {amenityHighlights.length > 0 && (
               <Box>
-                <Typography variant="body2" sx={{ fontWeight: 700, mb: 1, color: readableAccentColor }}>
+                <Typography variant="body2" sx={{ fontWeight: 700, mb: 1, color: 'text.primary' }}>
                   {t('hotelSearch.detail.guestAmenities')}
                 </Typography>
                 <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
                   {amenityHighlights.map((amenity) => (
-                    <Chip key={amenity} size="small" label={amenity} sx={{ bgcolor: addAlpha(COLORS.PRIMARY, 0.08) }} />
+                    <Chip
+                      key={amenity}
+                      size="small"
+                      label={amenity}
+                      variant="outlined"
+                      sx={{
+                        bgcolor: theme.palette.mode === 'dark' ? 'rgba(91, 141, 239, 0.12)' : 'rgba(30, 58, 95, 0.05)',
+                      }}
+                    />
                   ))}
                 </Stack>
               </Box>
@@ -558,12 +559,7 @@ const HotelDetailPage: React.FC = () => {
 
         {/* Search Summary */}
         {searchRequest && (
-          <Box sx={{ 
-            mt: 2, 
-            p: 1.5, 
-            backgroundColor: COLORS.BG_LIGHT, 
-            borderRadius: 1 
-          }}>
+          <Box sx={{ ...tintedPanelSx('secondary'), mt: 2 }}>
             <Typography variant="body2" sx={{ color: 'text.primary', fontWeight: 600 }}>
               {t('hotelSearch.detail.showingAvailability')} {formatSearchSummary()}
             </Typography>
@@ -584,7 +580,7 @@ const HotelDetailPage: React.FC = () => {
                 fontWeight: 700, 
                 mb: isMobile ? 1.5 : 2,
                 fontSize: isMobile ? '1.1rem' : undefined,
-                color: readableAccentColor,
+                color: 'text.primary',
               }}
             >
               {useRoomTypes ? 
@@ -705,20 +701,20 @@ const HotelDetailPage: React.FC = () => {
                 {t('hotelSearch.detail.searchForAvailabilityDescription')}
               </Typography>
               <Box sx={{ mt: 3 }}>
-                <Button
+                <StandardButton
                   variant="contained"
                   onClick={() => navigate('/hotels/search')}
-                  size="large"
+                  buttonSize="large"
                 >
                   {t('hotelSearch.detail.searchHotels')}
-                </Button>
+                </StandardButton>
               </Box>
             </SurfaceCard>
           )}
         </>
         )}
       </DataState>
-    </Container>
+    </PageContainer>
   );
 };
 

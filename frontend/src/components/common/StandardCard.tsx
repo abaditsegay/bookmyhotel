@@ -1,5 +1,6 @@
 import React from 'react';
 import { Card, CardProps, useTheme } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import { designSystem } from '../../theme/designSystem';
 
 interface StandardCardProps extends Omit<CardProps, 'variant'> {
@@ -63,7 +64,7 @@ const StandardCard: React.FC<StandardCardProps> = ({
         };
       case 'gradient':
         return {
-          background: `linear-gradient(180deg, ${theme.palette.background.paper} 0%, ${theme.palette.primary[25] || '#f0f4f8'} 100%)`,
+          backgroundColor: theme.palette.background.paper,
           border: `1px solid ${theme.palette.divider}`,
           boxShadow: designSystem.shadows.sm,
           transition: 'all 0.2s ease',
@@ -74,14 +75,13 @@ const StandardCard: React.FC<StandardCardProps> = ({
         };
       case 'glass':
         return {
-          background: alpha(theme.palette.background.paper, 0.9),
-          backdropFilter: 'blur(10px)',
-          border: `1px solid ${alpha(theme.palette.primary.main, 0.08)}`,
-          boxShadow: designSystem.shadows.md,
+          backgroundColor: alpha(theme.palette.background.paper, theme.palette.mode === 'dark' ? 0.94 : 0.98),
+          border: `1px solid ${theme.palette.divider}`,
+          boxShadow: designSystem.shadows.sm,
           transition: 'all 0.2s ease',
           '&:hover': {
-            background: alpha(theme.palette.background.paper, 0.96),
-            boxShadow: designSystem.shadows.lg,
+            backgroundColor: theme.palette.background.paper,
+            boxShadow: designSystem.shadows.md,
           },
         };
       default:

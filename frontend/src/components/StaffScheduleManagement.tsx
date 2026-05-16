@@ -35,6 +35,7 @@ import {
   Clear as ClearIcon,
   Add as AddIcon,
 } from '@mui/icons-material';
+import { tableHeadRowSx } from '../theme/sxHelpers';
 import { useAuth } from '../contexts/AuthContext';
 import { useSubmissionError } from '../contexts/SubmissionErrorContext';
 import PremiumTextField from './common/PremiumTextField';
@@ -686,19 +687,7 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
           <Table>
             <TableHead>
               <TableRow
-                sx={{
-                    background: `linear-gradient(135deg, ${theme.palette.background.default} 0%, ${theme.palette.grey[50]} 50%, ${theme.palette.background.default} 100%)`,
-                  borderBottom: `2px solid ${theme.palette.primary.main}`,
-                  '& .MuiTableCell-head': {
-                    color: 'primary.main',
-                    fontWeight: 700,
-                    fontSize: '0.75rem',
-                    letterSpacing: '0.5px',
-                    textTransform: 'uppercase',
-                    border: 'none',
-                    padding: '16px',
-                  }
-                }}
+                sx={tableHeadRowSx({ compact: true })}
               >
                 <TableCell><strong>Staff Member</strong></TableCell>
                 <TableCell><strong>Hotel</strong></TableCell>

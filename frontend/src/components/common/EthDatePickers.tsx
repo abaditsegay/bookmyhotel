@@ -247,6 +247,9 @@ export function EthDatePicker(props: DatePickerProps<Date>) {
 
   const lang = getLangCode(i18n.language);
   const tfProps = (props.slotProps?.textField ?? {}) as any;
+  const mergedSx = Array.isArray(tfProps.sx)
+    ? [...tfProps.sx, props.sx].filter(Boolean)
+    : [tfProps.sx, props.sx].filter(Boolean);
 
   return (
     <Box ref={anchorRef}>
@@ -264,7 +267,7 @@ export function EthDatePicker(props: DatePickerProps<Date>) {
             </IconButton>
           ),
         }}
-        sx={props.sx}
+        sx={mergedSx}
       />
       <EthCalendarPopover
         value={props.value ?? null}
@@ -495,6 +498,9 @@ export function EthDateTimePicker(props: DateTimePickerProps<Date>) {
 
   const lang = getLangCode(i18n.language);
   const tfProps = (props.slotProps?.textField ?? {}) as any;
+  const mergedSx = Array.isArray(tfProps.sx)
+    ? [...tfProps.sx, props.sx].filter(Boolean)
+    : [tfProps.sx, props.sx].filter(Boolean);
 
   return (
     <Box ref={anchorRef}>
@@ -512,7 +518,7 @@ export function EthDateTimePicker(props: DateTimePickerProps<Date>) {
             </IconButton>
           ),
         }}
-        sx={props.sx}
+        sx={mergedSx}
       />
       <EthCalendarTimePopover
         value={props.value ?? null}

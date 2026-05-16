@@ -58,6 +58,7 @@ import { TableRowSkeleton } from '../common/SkeletonLoaders';
 import { NoBookings } from '../common/EmptyState';
 import PremiumTextField from '../common/PremiumTextField';
 import PremiumSelect from '../common/PremiumSelect';
+import { guestNameBadgeSx, tableHeadRowSx } from '../../theme/sxHelpers';
 
 interface BookingManagementTableProps {
   mode: 'hotel-admin' | 'front-desk';
@@ -874,20 +875,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
           <Table>
             <TableHead>
               <TableRow 
-                sx={{
-                  background: `linear-gradient(135deg, ${muiTheme.palette.background.default} 0%, ${muiTheme.palette.grey[50]} 50%, ${muiTheme.palette.background.default} 100%)`,
-                  borderBottom: `2px solid ${primaryMain}`,
-                  '& .MuiTableCell-head': {
-                    color: 'primary.main',
-                    fontWeight: 700,
-                    fontSize: '0.95rem',
-                    letterSpacing: '0.5px',
-                    textTransform: 'uppercase',
-                    border: 'none',
-                    padding: '20px 16px',
-                    position: 'relative'
-                  }
-                }}
+                sx={tableHeadRowSx()}
               >
                 <TableCell><strong>{t('booking.management.headers.confirmationNumber')}</strong></TableCell>
                 <TableCell><strong>{t('booking.management.headers.guest')}</strong></TableCell>
@@ -958,9 +946,8 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                       <Box>
                         <Typography 
                           variant="body2" 
-                          fontWeight="600"
                           sx={{ 
-                            color: isDark ? primaryLight : primaryDark,
+                            ...guestNameBadgeSx(muiTheme),
                             mb: 0.5 
                           }}
                         >

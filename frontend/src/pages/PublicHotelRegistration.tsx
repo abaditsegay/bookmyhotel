@@ -2,23 +2,73 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
-  Typography,
+  Stack,
   Box,
-  Button,
   Alert,
   Grid,
-  useTheme,
+  Typography,
 } from '@mui/material';
 import { Login, CheckCircle } from '@mui/icons-material';
-import { PageContainer, SurfaceCard } from '../components/common';
+import { PageContainer, StandardButton, SurfaceCard } from '../components/common';
 import PremiumTextField from '../components/common/PremiumTextField';
 import { API_CONFIG } from '../config/apiConfig';
-import { getSectionTint } from '../theme/surfaces';
+import { designSystem } from '../theme/designSystem';
+import { composeSx, formActionsRowSx, orderedListSx, tintedPanelSx } from '../theme/sxHelpers';
+
+const registrationContainerSx = {
+  minHeight: '100vh',
+  justifyContent: 'center',
+};
+
+const registrationSectionSx = {
+  py: {
+    xs: designSystem.layout.pagePaddingY.xs,
+    md: designSystem.layout.pagePaddingY.md,
+  },
+};
+
+const headerStackSx = {
+  gap: 1,
+};
+
+const formCardContentSx = {
+  p: designSystem.layout.cardPadding,
+};
+
+const successCardContentSx = {
+  ...formCardContentSx,
+  textAlign: 'center',
+};
+
+const alertSx = {
+  mb: designSystem.layout.sectionGap.md,
+};
+
+const successIconSx = {
+  fontSize: 64,
+  color: 'success.main',
+  mb: 2,
+};
+
+const formGridSx = {
+  mt: 1,
+};
+
+const orderedStepsTextSx = {
+  color: 'text.secondary',
+};
+
+const primaryActionSx = {
+  mt: designSystem.layout.sectionGap.md,
+};
+
+const primaryTintedPanelSx = tintedPanelSx('primary');
+const primaryTintedPanelWithSpacingSx = composeSx(primaryTintedPanelSx, primaryActionSx);
+const formActionsSectionSx = composeSx(formActionsRowSx, primaryActionSx);
 
 const PublicHotelRegistration: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const theme = useTheme();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
@@ -70,7 +120,9 @@ const PublicHotelRegistration: React.FC = () => {
         const errorData = await response.json().catch(() => ({}));
         let errorMessage = errorData.userFriendlyMessage || errorData.message;
         if (!errorMessage && errorData.fieldErrors) {
-          errorMessage = Object.values(errorData.fieldErrors as Record<string, string>).join('. ');
+          errorMessage = Object.keys(errorData.fieldErrors as Record<string, string>)
+            .map((field) => (errorData.fieldErrors as Record<string, string>)[field])
+            .join('. ');
         }
         throw new Error(errorMessage || t('publicHotelRegistration.messages.submitFailed'));
       }
@@ -85,6 +137,11 @@ const PublicHotelRegistration: React.FC = () => {
     navigate('/login');
   };
 
+  const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    void handleRegistrationSubmit();
+  };
+
   const isFormValid = registrationForm.hotelName.trim() !== '' &&
     registrationForm.contactPerson.trim() !== '' &&
     registrationForm.contactEmail.trim() !== '' &&
@@ -92,71 +149,76 @@ const PublicHotelRegistration: React.FC = () => {
     registrationForm.city.trim() !== '';
 
   return (
-    <PageContainer maxWidth="sm" sx={{ minHeight: '100vh', py: 4 }}>
-      <Box sx={{ py: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          {t('publicHotelRegistration.title')}
-        </Typography>
+    <PageContainer component="main" maxWidth="sm" sx={registrationContainerSx}>
+      <Stack sx={registrationSectionSx} spacing={designSystem.layout.sectionGap.md}>
+        <Stack sx={headerStackSx}>
+          <Typography variant="h4" component="h1">
+            {t('publicHotelRegistration.title')}
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            {t('publicHotelRegistration.form.subtitle')}
+          </Typography>
+        </Stack>
 
         {error && (
-          <Alert severity="error" sx={{ mb: 3 }}>
+          <Alert severity="error" sx={alertSx} role="alert">
             {error}
           </Alert>
         )}
 
         {submitted ? (
-          <SurfaceCard contentSx={{ p: 4, textAlign: 'center' }}>
-            <CheckCircle sx={{ fontSize: 64, color: 'success.main', mb: 2 }} />
-            <Typography variant="h5" gutterBottom sx={{ fontWeight: 600 }}>
+          <SurfaceCard contentSx={successCardContentSx}>
+            <CheckCircle sx={successIconSx} />
+            <Typography variant="h5" gutterBottom>
               {t('publicHotelRegistration.success.title')}
             </Typography>
             <Typography variant="body1" color="text.secondary" paragraph>
               {t('publicHotelRegistration.success.description.before')} <strong>{submittedHotelName}</strong> {t('publicHotelRegistration.success.description.after')}
             </Typography>
-            <Alert severity="info" sx={{ mb: 3, textAlign: 'left' }}>
+            <Alert severity="info" sx={alertSx}>
               {t('publicHotelRegistration.success.emailNotice.before')} <strong>{submittedEmail}</strong>. {t('publicHotelRegistration.success.emailNotice.after')}
             </Alert>
 
-            <Box sx={{ mt: 3, p: 3, bgcolor: getSectionTint(theme, 'primary'), borderRadius: 2, textAlign: 'left' }}>
+            <Box sx={primaryTintedPanelSx}>
               <Typography variant="subtitle2" gutterBottom>
                 {t('publicHotelRegistration.nextSteps.title')}
               </Typography>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                <Typography variant="body2">1. {t('publicHotelRegistration.nextSteps.step1')}</Typography>
-                <Typography variant="body2">2. {t('publicHotelRegistration.nextSteps.step2')}</Typography>
-                <Typography variant="body2">3. {t('publicHotelRegistration.nextSteps.step3')}</Typography>
-                <Typography variant="body2">4. {t('publicHotelRegistration.nextSteps.step4')}</Typography>
+              <Box component="ol" sx={orderedListSx}>
+                <li><Typography variant="body2" sx={orderedStepsTextSx}>{t('publicHotelRegistration.nextSteps.step1')}</Typography></li>
+                <li><Typography variant="body2" sx={orderedStepsTextSx}>{t('publicHotelRegistration.nextSteps.step2')}</Typography></li>
+                <li><Typography variant="body2" sx={orderedStepsTextSx}>{t('publicHotelRegistration.nextSteps.step3')}</Typography></li>
+                <li><Typography variant="body2" sx={orderedStepsTextSx}>{t('publicHotelRegistration.nextSteps.step4')}</Typography></li>
               </Box>
             </Box>
 
-            <Button
+            <StandardButton
               variant="contained"
               startIcon={<Login />}
               onClick={handleGoToLogin}
-              size="large"
-              sx={{ mt: 3 }}
+              buttonSize="large"
+              sx={primaryActionSx}
             >
               {t('publicHotelRegistration.actions.goToLogin')}
-            </Button>
+            </StandardButton>
           </SurfaceCard>
         ) : (
-          <SurfaceCard contentSx={{ p: 4 }}>
+          <SurfaceCard contentSx={formCardContentSx}>
             <Typography variant="h6" gutterBottom>
               {t('publicHotelRegistration.form.title')}
             </Typography>
-            <Typography variant="body2" color="text.secondary" paragraph>
-              {t('publicHotelRegistration.form.subtitle')}
-            </Typography>
 
-            <Grid container spacing={2} sx={{ mt: 1 }}>
+            <form noValidate onSubmit={handleFormSubmit}>
+              <Grid container spacing={2} sx={formGridSx}>
               <Grid item xs={12}>
                 <PremiumTextField
                   label={t('publicHotelRegistration.form.fields.hotelName')}
                   fullWidth
                   required
+                  disabled={loading}
                   value={registrationForm.hotelName}
                   onChange={(e) => handleRegistrationFormChange('hotelName', e.target.value)}
                   placeholder={t('publicHotelRegistration.form.placeholders.hotelName')}
+                  autoComplete="organization"
                 />
               </Grid>
 
@@ -165,9 +227,11 @@ const PublicHotelRegistration: React.FC = () => {
                   label={t('publicHotelRegistration.form.fields.contactPerson')}
                   fullWidth
                   required
+                  disabled={loading}
                   value={registrationForm.contactPerson}
                   onChange={(e) => handleRegistrationFormChange('contactPerson', e.target.value)}
                   placeholder={t('publicHotelRegistration.form.placeholders.contactPerson')}
+                  autoComplete="name"
                 />
               </Grid>
 
@@ -177,9 +241,11 @@ const PublicHotelRegistration: React.FC = () => {
                   type="email"
                   fullWidth
                   required
+                  disabled={loading}
                   value={registrationForm.contactEmail}
                   onChange={(e) => handleRegistrationFormChange('contactEmail', e.target.value)}
                   placeholder={t('publicHotelRegistration.form.placeholders.contactEmail')}
+                  autoComplete="email"
                 />
               </Grid>
 
@@ -188,9 +254,11 @@ const PublicHotelRegistration: React.FC = () => {
                   label={t('publicHotelRegistration.form.fields.address')}
                   fullWidth
                   required
+                  disabled={loading}
                   value={registrationForm.address}
                   onChange={(e) => handleRegistrationFormChange('address', e.target.value)}
                   placeholder={t('publicHotelRegistration.form.placeholders.address')}
+                  autoComplete="street-address"
                 />
               </Grid>
 
@@ -199,9 +267,11 @@ const PublicHotelRegistration: React.FC = () => {
                   label={t('publicHotelRegistration.form.fields.city')}
                   fullWidth
                   required
+                  disabled={loading}
                   value={registrationForm.city}
                   onChange={(e) => handleRegistrationFormChange('city', e.target.value)}
                   placeholder={t('publicHotelRegistration.form.placeholders.city')}
+                  autoComplete="address-level2"
                 />
               </Grid>
 
@@ -213,40 +283,41 @@ const PublicHotelRegistration: React.FC = () => {
                   disabled
                 />
               </Grid>
-            </Grid>
+              </Grid>
 
-            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: 4 }}>
-              <Button
-                variant="outlined"
-                onClick={() => navigate('/')}
-                disabled={loading}
-              >
-                {t('publicHotelRegistration.actions.cancel')}
-              </Button>
-              <Button
-                variant="contained"
-                onClick={handleRegistrationSubmit}
-                disabled={!isFormValid || loading}
-                size="large"
-              >
-                {loading ? t('publicHotelRegistration.actions.submitting') : t('publicHotelRegistration.actions.submit')}
-              </Button>
-            </Box>
+              <Box sx={formActionsSectionSx}>
+                <StandardButton
+                  variant="outlined"
+                  onClick={() => navigate('/')}
+                  disabled={loading}
+                >
+                  {t('publicHotelRegistration.actions.cancel')}
+                </StandardButton>
+                <StandardButton
+                  type="submit"
+                  variant="contained"
+                  disabled={!isFormValid || loading}
+                  buttonSize="large"
+                >
+                  {loading ? t('publicHotelRegistration.actions.submitting') : t('publicHotelRegistration.actions.submit')}
+                </StandardButton>
+              </Box>
+            </form>
 
-            <Box sx={{ mt: 4, p: 3, bgcolor: getSectionTint(theme, 'primary'), borderRadius: 2 }}>
+            <Box sx={primaryTintedPanelWithSpacingSx}>
               <Typography variant="h6" gutterBottom>
                 {t('publicHotelRegistration.nextSteps.title')}
               </Typography>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                <Typography variant="body2">1. {t('publicHotelRegistration.nextSteps.step1')}</Typography>
-                <Typography variant="body2">2. {t('publicHotelRegistration.nextSteps.step2')}</Typography>
-                <Typography variant="body2">3. {t('publicHotelRegistration.nextSteps.step3')}</Typography>
-                <Typography variant="body2">4. {t('publicHotelRegistration.nextSteps.step4')}</Typography>
+              <Box component="ol" sx={orderedListSx}>
+                <li><Typography variant="body2" sx={orderedStepsTextSx}>{t('publicHotelRegistration.nextSteps.step1')}</Typography></li>
+                <li><Typography variant="body2" sx={orderedStepsTextSx}>{t('publicHotelRegistration.nextSteps.step2')}</Typography></li>
+                <li><Typography variant="body2" sx={orderedStepsTextSx}>{t('publicHotelRegistration.nextSteps.step3')}</Typography></li>
+                <li><Typography variant="body2" sx={orderedStepsTextSx}>{t('publicHotelRegistration.nextSteps.step4')}</Typography></li>
               </Box>
             </Box>
           </SurfaceCard>
         )}
-      </Box>
+      </Stack>
     </PageContainer>
   );
 };

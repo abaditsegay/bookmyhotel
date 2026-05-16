@@ -1,8 +1,86 @@
 // Design System Configuration
-// Provides consistent spacing, colors, typography, and other design tokens
+// Centralized typography, spacing, color semantics, and surface tokens.
+
+export type DesignSystemMode = 'light' | 'dark';
+
+const semanticColorSchemes = {
+  light: {
+    background: {
+      primary: '#F6F7F9',
+      secondary: '#FFFFFF',
+      card: '#FFFFFF',
+      sidebar: '#111827',
+      input: '#FFFFFF',
+      hoverSurface: '#F8FAFC',
+    },
+    text: {
+      primary: '#111827',
+      secondary: '#4B5563',
+      muted: '#6B7280',
+      inverse: '#F9FAFB',
+    },
+    border: {
+      default: '#E5E7EB',
+      strong: '#D1D5DB',
+      divider: '#ECEFF3',
+      input: '#D1D5DB',
+    },
+    table: {
+      header: '#F3F4F6',
+      rowHover: '#F8FAFC',
+    },
+    action: {
+      primary: '#1E3A5F',
+      primaryHover: '#274B78',
+      secondary: '#FFFFFF',
+      secondaryHover: '#F8FAFC',
+      accent: '#C89B3C',
+      accentHover: '#B2872E',
+    },
+    focus: {
+      ring: '#1E3A5F',
+    },
+  },
+  dark: {
+    background: {
+      primary: '#111827',
+      secondary: '#1A2233',
+      card: '#1F2937',
+      sidebar: '#0B1220',
+      input: '#111827',
+      hoverSurface: '#243041',
+    },
+    text: {
+      primary: '#F9FAFB',
+      secondary: '#D1D5DB',
+      muted: '#9CA3AF',
+      inverse: '#111827',
+    },
+    border: {
+      default: '#374151',
+      strong: '#4B5563',
+      divider: '#2B3545',
+      input: '#4B5563',
+    },
+    table: {
+      header: '#243041',
+      rowHover: '#243041',
+    },
+    action: {
+      primary: '#5B8DEF',
+      primaryHover: '#7AA2F7',
+      secondary: '#1A2233',
+      secondaryHover: '#243041',
+      accent: '#D4A94D',
+      accentHover: '#E0B761',
+    },
+    focus: {
+      ring: '#7AA2F7',
+    },
+  },
+} as const;
 
 export const designSystem = {
-  // Consistent spacing scale
   spacing: {
     xs: 4,
     sm: 8,
@@ -10,245 +88,237 @@ export const designSystem = {
     lg: 24,
     xl: 32,
     xxl: 48,
-    xxxl: 64
+    xxxl: 64,
   },
 
-  // Font weight scale
   fontWeights: {
     regular: 400,
     medium: 500,
     semibold: 600,
-    bold: 700
+    bold: 700,
   },
 
-  // Typography hierarchy
   typography: {
-    h1: { 
-      fontSize: '2.5rem', 
-      fontWeight: 700, 
-      lineHeight: 1.2,
-      letterSpacing: '-0.01562em'
+    h1: {
+      fontSize: '2.875rem',
+      fontWeight: 700,
+      lineHeight: 1.12,
+      letterSpacing: '-0.025em',
     },
-    h2: { 
-      fontSize: '2rem', 
-      fontWeight: 600, 
-      lineHeight: 1.25,
-      letterSpacing: '-0.00833em'
+    h2: {
+      fontSize: '2.25rem',
+      fontWeight: 700,
+      lineHeight: 1.18,
+      letterSpacing: '-0.02em',
     },
-    h3: { 
-      fontSize: '1.75rem', 
-      fontWeight: 600, 
-      lineHeight: 1.3 
+    h3: {
+      fontSize: '1.875rem',
+      fontWeight: 700,
+      lineHeight: 1.24,
+      letterSpacing: '-0.015em',
     },
-    h4: { 
-      fontSize: '1.5rem', 
-      fontWeight: 600, 
-      lineHeight: 1.35 
+    h4: {
+      fontSize: '1.5rem',
+      fontWeight: 600,
+      lineHeight: 1.32,
     },
-    h5: { 
-      fontSize: '1.25rem', 
-      fontWeight: 600, 
-      lineHeight: 1.4 
+    h5: {
+      fontSize: '1.25rem',
+      fontWeight: 600,
+      lineHeight: 1.4,
     },
-    h6: { 
-      fontSize: '1.125rem', 
-      fontWeight: 600, 
-      lineHeight: 1.4 
+    h6: {
+      fontSize: '1.125rem',
+      fontWeight: 600,
+      lineHeight: 1.42,
     },
-    body1: { 
-      fontSize: '1rem', 
-      fontWeight: 400, 
-      lineHeight: 1.5 
+    body1: {
+      fontSize: '1rem',
+      fontWeight: 400,
+      lineHeight: 1.6,
     },
-    body2: { 
-      fontSize: '0.875rem', 
-      fontWeight: 400, 
-      lineHeight: 1.43 
+    body2: {
+      fontSize: '0.9375rem',
+      fontWeight: 400,
+      lineHeight: 1.55,
     },
-    caption: { 
-      fontSize: '0.75rem', 
-      fontWeight: 400, 
-      lineHeight: 1.33,
-      letterSpacing: '0.03333em'
+    caption: {
+      fontSize: '0.75rem',
+      fontWeight: 500,
+      lineHeight: 1.4,
+      letterSpacing: '0.03em',
     },
-    button: { 
-      fontSize: '0.875rem', 
-      fontWeight: 500, 
-      lineHeight: 1.75,
-      letterSpacing: '0.02857em',
-      textTransform: 'none' as const
-    }
+    button: {
+      fontSize: '0.9375rem',
+      fontWeight: 600,
+      lineHeight: 1.4,
+      letterSpacing: '0.01em',
+      textTransform: 'none' as const,
+    },
   },
 
-  // Color system with semantic meanings - Premium Business Theme
+  colorSchemes: semanticColorSchemes,
+
   colors: {
     primary: {
-      50: '#e6ecf5',
-      100: '#c0d0e6',
-      200: '#96b1d5',
-      300: '#6c92c4',
-      400: '#4d7ab8',
-      500: '#2d63ab',
-      600: '#285ba4',
-      700: '#22519a',
-      800: '#1c4791',
-      900: '#1a365d',
-      main: '#1a365d',
-      light: '#2d63ab',
-      dark: '#0f2744',
-      contrastText: '#ffffff',
-      25: '#f0f4f8'
+      25: '#F3F6FA',
+      50: '#E7EEF5',
+      100: '#D0DEEC',
+      200: '#AFC6DB',
+      300: '#88AAC6',
+      400: '#5C84A7',
+      500: '#3B6385',
+      600: '#274B78',
+      700: '#223F67',
+      800: '#1E3A5F',
+      900: '#162C46',
+      main: '#1E3A5F',
+      light: '#274B78',
+      dark: '#162C46',
+      contrastText: '#FFFFFF',
     },
     secondary: {
-      main: '#E8B86D',
-      light: '#F0C880',
-      dark: '#D4A355',
-      contrastText: '#1a365d'
+      main: '#C89B3C',
+      light: '#D6B369',
+      dark: '#A77E2E',
+      contrastText: '#111827',
     },
     success: {
-      main: '#2e7d32',
-      light: '#4caf50',
-      dark: '#1b5e20',
-      contrastText: '#ffffff'
+      main: '#2E7D32',
+      light: '#4CAF50',
+      dark: '#1F5B24',
+      contrastText: '#FFFFFF',
     },
     warning: {
-      main: '#f57c00',
-      light: '#ff9800',
-      dark: '#e65100',
-      contrastText: '#ffffff'
+      main: '#D97706',
+      light: '#F59E0B',
+      dark: '#B45309',
+      contrastText: '#FFFFFF',
     },
     error: {
-      main: '#d32f2f',
-      light: '#f44336',
-      dark: '#c62828',
-      contrastText: '#ffffff'
+      main: '#C62828',
+      light: '#EF5350',
+      dark: '#8E1F1F',
+      contrastText: '#FFFFFF',
     },
     info: {
-      main: '#63B3ED',
-      light: '#90CDF4',
-      dark: '#3182CE',
-      contrastText: '#ffffff'
+      main: '#3F6B8C',
+      light: '#5B8AA9',
+      dark: '#2C516B',
+      contrastText: '#FFFFFF',
     },
     text: {
-      primary: 'rgba(0, 0, 0, 0.87)',
-      secondary: 'rgba(0, 0, 0, 0.6)',
-      disabled: 'rgba(0, 0, 0, 0.38)',
-      hint: 'rgba(0, 0, 0, 0.38)'
+      primary: semanticColorSchemes.light.text.primary,
+      secondary: semanticColorSchemes.light.text.secondary,
+      disabled: semanticColorSchemes.light.text.muted,
+      hint: semanticColorSchemes.light.text.muted,
     },
     background: {
-      default: '#FAFAFA',
-      paper: '#FFFFFF',
-      light: '#F5F5F5'
+      default: semanticColorSchemes.light.background.primary,
+      paper: semanticColorSchemes.light.background.secondary,
+      light: semanticColorSchemes.light.background.hoverSurface,
     },
-    divider: 'rgba(0, 0, 0, 0.12)',
-    // Enhanced surface hierarchy
+    divider: semanticColorSchemes.light.border.divider,
     surfaces: {
-      elevated: '#FFFFFF',
-      base: '#FAFAFA',
-      sunken: '#F5F5F5',
-      overlay: 'rgba(0, 0, 0, 0.6)'
+      elevated: semanticColorSchemes.light.background.card,
+      base: semanticColorSchemes.light.background.primary,
+      sunken: semanticColorSchemes.light.background.hoverSurface,
+      overlay: 'rgba(17, 24, 39, 0.58)',
     },
-    // Interactive states
     interactive: {
-      primary: '#1a365d',
-      primaryHover: '#2a4a6d',
-      primaryActive: '#0f2744',
-      secondary: '#E8B86D',
-      secondaryHover: '#F0C880'
+      primary: semanticColorSchemes.light.action.primary,
+      primaryHover: semanticColorSchemes.light.action.primaryHover,
+      primaryActive: '#162C46',
+      secondary: semanticColorSchemes.light.action.accent,
+      secondaryHover: semanticColorSchemes.light.action.accentHover,
     },
-    // Hotel industry status colors
+    semantic: semanticColorSchemes.light,
     status: {
-      available: '#4CAF50',
-      booked: '#2196F3',
-      occupied: '#FF9800',
-      maintenance: '#F44336',
-      cleaning: '#FFD54F',
-      pending: '#9E9E9E',
-      checkedOut: '#607D8B'
-    }
+      available: '#2E7D32',
+      booked: '#1E3A5F',
+      occupied: '#D97706',
+      maintenance: '#C62828',
+      cleaning: '#C89B3C',
+      pending: '#6B7280',
+      checkedOut: '#4B5563',
+    },
   },
 
-  // Glass morphism effects
   effects: {
     glass: {
-      background: 'rgba(255, 255, 255, 0.7)',
-      backdropFilter: 'blur(10px)',
-      WebkitBackdropFilter: 'blur(10px)',
-      border: '1px solid rgba(255, 255, 255, 0.18)',
-      boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)'
+      background: semanticColorSchemes.light.background.card,
+      backdropFilter: 'none',
+      WebkitBackdropFilter: 'none',
+      border: `1px solid ${semanticColorSchemes.light.border.default}`,
+      boxShadow: 'none',
     },
     glassDark: {
-      background: 'rgba(30, 30, 30, 0.7)',
-      backdropFilter: 'blur(10px)',
-      WebkitBackdropFilter: 'blur(10px)',
-      border: '1px solid rgba(255, 255, 255, 0.1)',
-      boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.5)'
+      background: semanticColorSchemes.dark.background.card,
+      backdropFilter: 'none',
+      WebkitBackdropFilter: 'none',
+      border: `1px solid ${semanticColorSchemes.dark.border.default}`,
+      boxShadow: 'none',
     },
     gradient: {
-      primary: 'linear-gradient(135deg, #1a365d 0%, #0f2744 100%)',
-      secondary: 'linear-gradient(135deg, #E8B86D 0%, #D4A355 100%)',
-      accent: 'linear-gradient(135deg, #63B3ED 0%, #3182CE 100%)',
-      warm: 'linear-gradient(135deg, #F0C880 0%, #E8B86D 100%)'
-    }
+      primary: 'linear-gradient(180deg, #1E3A5F 0%, #1E3A5F 100%)',
+      secondary: 'linear-gradient(180deg, #C89B3C 0%, #C89B3C 100%)',
+      accent: 'linear-gradient(180deg, #3F6B8C 0%, #3F6B8C 100%)',
+      warm: 'linear-gradient(180deg, #D6B369 0%, #D6B369 100%)',
+    },
   },
 
-  // Elevation/Shadow system
   shadows: {
     none: 'none',
-    xs: '0 1px 2px rgba(0, 0, 0, 0.05)',
-    sm: '0 2px 4px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06)',
-    md: '0 4px 6px rgba(0, 0, 0, 0.16), 0 1px 3px rgba(0, 0, 0, 0.23)',
-    lg: '0 10px 25px rgba(0, 0, 0, 0.19), 0 6px 10px rgba(0, 0, 0, 0.23)',
-    xl: '0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22)',
-    card: '0 2px 8px rgba(25, 118, 210, 0.1)',
-    cardHover: '0 4px 16px rgba(25, 118, 210, 0.15)',
-    dialog: '0 8px 32px rgba(25, 118, 210, 0.15)'
+    xs: '0 1px 2px rgba(15, 23, 42, 0.05)',
+    sm: '0 2px 6px rgba(15, 23, 42, 0.06)',
+    md: '0 8px 20px rgba(15, 23, 42, 0.08)',
+    lg: '0 16px 34px rgba(15, 23, 42, 0.12)',
+    xl: '0 24px 56px rgba(15, 23, 42, 0.16)',
+    card: '0 8px 24px rgba(15, 23, 42, 0.08)',
+    cardHover: '0 16px 32px rgba(15, 23, 42, 0.12)',
+    dialog: '0 24px 56px rgba(15, 23, 42, 0.18)',
   },
 
-  // Border radius scale
   borderRadius: {
     none: 0,
-    sm: 4,
-    md: 8,
+    sm: 8,
+    md: 10,
     lg: 12,
-    xl: 16,
-    full: 9999
+    xl: 14,
+    full: 9999,
   },
 
-  // Breakpoints for responsive design
   breakpoints: {
     xs: 0,
     sm: 600,
     md: 960,
     lg: 1280,
-    xl: 1920
+    xl: 1920,
   },
 
-  // Shared page-shell rhythm for consistent layouts
   layout: {
     pagePaddingY: {
-      xs: 2,
-      md: 3
+      xs: 3,
+      md: 4,
     },
     pagePaddingX: {
       xs: 2,
-      md: 3
+      md: 3,
     },
     pagePaddingBottom: {
-      xs: 10,
-      md: 12
+      xs: 8,
+      md: 10,
     },
     sectionGap: {
       xs: 2,
-      md: 3
+      md: 3,
     },
     cardPadding: {
-      xs: 2,
-      md: 3
-    }
+      xs: 3,
+      md: 4,
+    },
   },
 
-  // Z-index scale
   zIndex: {
     mobileStepper: 1000,
     speedDial: 1050,
@@ -256,9 +326,11 @@ export const designSystem = {
     drawer: 1200,
     modal: 1300,
     snackbar: 1400,
-    tooltip: 1500
-  }
+    tooltip: 1500,
+  },
 };
+
+export const getColorScheme = (mode: DesignSystemMode = 'light') => designSystem.colorSchemes[mode];
 
 // Status color mappings for consistent status displays
 export const statusColors = {

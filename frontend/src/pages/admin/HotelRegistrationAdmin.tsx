@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import {
-  alpha,
   Container,
   Typography,
   Paper,
@@ -25,10 +24,10 @@ import {
   Step,
   StepLabel,
   Divider,
-  useTheme,
 } from '@mui/material';
 import { Refresh, CheckCircle, Cancel, Visibility, NavigateNext, NavigateBefore } from '@mui/icons-material';
 import PremiumDisplayField from '../../components/common/PremiumDisplayField';
+import { tableHeadRowSx } from '../../theme/sxHelpers';
 import { formatDateTimeForDisplay } from '../../utils/dateUtils';
 
 interface HotelRegistration {
@@ -68,7 +67,6 @@ interface RegistrationStatistics {
 }
 
 const HotelRegistrationAdmin: React.FC = () => {
-  const theme = useTheme();
   const [registrations, setRegistrations] = useState<HotelRegistration[]>([]);
   const [statistics, setStatistics] = useState<RegistrationStatistics | null>(null);
   const [loading, setLoading] = useState(true);
@@ -164,30 +162,7 @@ const HotelRegistrationAdmin: React.FC = () => {
     return formatDateTimeForDisplay(dateString);
   };
 
-  const adminTableHeaderSx = {
-    background: `linear-gradient(135deg, ${theme.palette.grey[600]} 0%, ${theme.palette.grey[700]} 50%, ${theme.palette.grey[800]} 100%)`,
-    boxShadow: `0 4px 12px ${alpha(theme.palette.grey[600], 0.15)}`,
-    '& .MuiTableCell-head': {
-      color: theme.palette.grey[50],
-      fontWeight: 600,
-      fontSize: '0.95rem',
-      letterSpacing: '0.5px',
-      textTransform: 'uppercase',
-      border: 'none',
-      padding: '20px 16px',
-      position: 'relative',
-      textShadow: `0 1px 2px ${alpha(theme.palette.common.black, 0.1)}`,
-      '&::after': {
-        content: '""',
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        height: '3px',
-        background: `linear-gradient(90deg, ${alpha(theme.palette.common.white, 0.6)} 0%, ${alpha(theme.palette.common.white, 0.8)} 50%, ${alpha(theme.palette.common.white, 0.6)} 100%)`,
-      },
-    },
-  } as const;
+  const adminTableHeaderSx = tableHeadRowSx();
 
   const adminSectionTitleSx = {
     color: 'primary.main',

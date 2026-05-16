@@ -1,5 +1,5 @@
 import { alpha, Theme, useTheme } from '@mui/material/styles';
-import { getReadableAccentTextColor, getSectionTint } from './surfaces';
+import { getSectionTint } from './surfaces';
 
 type GradientType = 'primary' | 'secondary' | 'success' | 'slate' | 'purple' | 'white' | 'dark';
 
@@ -14,13 +14,13 @@ export const getThemeColorHelpers = (theme: Theme) => {
   const isDark = theme.palette.mode === 'dark';
   const slateBase = isDark ? '#94a3b8' : '#475569';
 
-  const primaryGradient = `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`;
-  const secondaryGradient = `linear-gradient(135deg, ${theme.palette.secondary.main} 0%, ${theme.palette.secondary.dark} 100%)`;
-  const successGradient = `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${theme.palette.success.dark} 100%)`;
-  const darkGradient = `linear-gradient(135deg, ${theme.palette.background.default} 0%, ${theme.palette.background.paper} 100%)`;
-  const primaryText = getReadableAccentTextColor(theme);
-  const secondaryText = getReadableAccentTextColor(theme, 'secondary');
-  const infoText = getReadableAccentTextColor(theme, 'info');
+  const primaryGradient = `linear-gradient(180deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.main} 100%)`;
+  const secondaryGradient = `linear-gradient(180deg, ${theme.palette.secondary.main} 0%, ${theme.palette.secondary.main} 100%)`;
+  const successGradient = `linear-gradient(180deg, ${theme.palette.success.main} 0%, ${theme.palette.success.main} 100%)`;
+  const darkGradient = `linear-gradient(180deg, ${theme.palette.background.default} 0%, ${theme.palette.background.default} 100%)`;
+  const primaryText = theme.palette.text.primary;
+  const secondaryText = theme.palette.text.secondary;
+  const infoText = theme.palette.text.primary;
   const primarySoft = getSectionTint(theme, 'primary');
   const secondarySoft = getSectionTint(theme, 'secondary');
   const infoSoft = getSectionTint(theme, 'info');
@@ -32,7 +32,7 @@ export const getThemeColorHelpers = (theme: Theme) => {
     PRIMARY_PRESSED: theme.palette.primary.dark,
     SECONDARY: theme.palette.secondary.main,
     SECONDARY_TEXT: secondaryText,
-    SECONDARY_HOVER: theme.palette.secondary.light,
+    SECONDARY_HOVER: theme.palette.secondary.dark,
     BOOKED: theme.palette.info.main,
     PENDING: theme.palette.warning.main,
     SUCCESS: theme.palette.success.main,
@@ -53,7 +53,7 @@ export const getThemeColorHelpers = (theme: Theme) => {
     WARNING: theme.palette.warning.main,
     INFO: theme.palette.info.main,
     WHITE: theme.palette.common.white,
-    GOLD: '#ffd700',
+    GOLD: theme.palette.secondary.main,
     TEXT_PRIMARY: theme.palette.text.primary,
     TEXT_SECONDARY: theme.palette.text.secondary,
     TEXT_DISABLED: theme.palette.text.disabled,
@@ -65,8 +65,8 @@ export const getThemeColorHelpers = (theme: Theme) => {
     BG_INFO_SOFT: infoSoft,
     BG_SLATE: slateBase,
       INFO_TEXT: infoText,
-    MBIRR_ORANGE: '#FFA500',
-    TELEBIRR_GREEN: '#4CAF50',
+    MBIRR_ORANGE: theme.palette.secondary.main,
+    TELEBIRR_GREEN: theme.palette.success.main,
     BG_SUCCESS_LIGHT: alpha(theme.palette.success.main, isDark ? 0.18 : 0.1),
     BG_WARNING_LIGHT: alpha(theme.palette.warning.main, isDark ? 0.18 : 0.12),
     BG_ERROR_LIGHT: alpha(theme.palette.error.main, isDark ? 0.18 : 0.1),
@@ -79,10 +79,10 @@ export const getThemeColorHelpers = (theme: Theme) => {
     SLATE_700: '#334155',
     SLATE_800: '#1e293b',
     SLATE_900: '#0f172a',
-    PURPLE_400: '#c084fc',
-    PURPLE_500: '#a855f7',
-    PURPLE_600: '#9333ea',
-    PURPLE_700: '#7e22ce',
+    PURPLE_400: theme.palette.primary.light,
+    PURPLE_500: theme.palette.primary.main,
+    PURPLE_600: theme.palette.primary.dark,
+    PURPLE_700: theme.palette.primary.dark,
     BORDER_LIGHT: theme.palette.divider,
     BORDER_DEFAULT: theme.palette.divider,
     DIVIDER: theme.palette.divider,
@@ -91,18 +91,14 @@ export const getThemeColorHelpers = (theme: Theme) => {
     BLACK_ALPHA_60: alpha(theme.palette.common.black, 0.6),
     GRADIENT_PRIMARY: primaryGradient,
     GRADIENT_SECONDARY: secondaryGradient,
-    GRADIENT_ACCENT: `linear-gradient(135deg, ${theme.palette.info.light} 0%, ${theme.palette.info.main} 100%)`,
-    GRADIENT_WARM: `linear-gradient(135deg, ${theme.palette.secondary.light} 0%, ${theme.palette.secondary.main} 100%)`,
-    GRADIENT_PURPLE: isDark
-      ? `linear-gradient(135deg, ${alpha('#a855f7', 0.9)} 0%, ${alpha('#7c3aed', 0.92)} 100%)`
-      : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    GRADIENT_SLATE: isDark
-      ? `linear-gradient(135deg, ${theme.palette.background.light} 0%, ${theme.palette.background.paper} 50%, ${theme.palette.background.dark} 100%)`
-      : 'linear-gradient(135deg, #64748b 0%, #475569 50%, #334155 100%)',
+    GRADIENT_ACCENT: `linear-gradient(180deg, ${theme.palette.info.main} 0%, ${theme.palette.info.main} 100%)`,
+    GRADIENT_WARM: `linear-gradient(180deg, ${theme.palette.secondary.main} 0%, ${theme.palette.secondary.main} 100%)`,
+    GRADIENT_PURPLE: `linear-gradient(180deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.main} 100%)`,
+    GRADIENT_SLATE: `linear-gradient(180deg, ${theme.palette.background.light} 0%, ${theme.palette.background.light} 100%)`,
     GRADIENT_WHITE: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.background.paper} 100%)`,
     GRADIENT_DARK: darkGradient,
-    GLASS_LIGHT: alpha(theme.palette.common.white, isDark ? 0.12 : 0.72),
-    GLASS_DARK: alpha(theme.palette.background.dark, isDark ? 0.72 : 0.7),
+    GLASS_LIGHT: theme.palette.background.paper,
+    GLASS_DARK: theme.palette.background.paper,
   } as const;
 
   const getGradient = (
@@ -117,11 +113,11 @@ export const getThemeColorHelpers = (theme: Theme) => {
     if (mode === 'dark') {
       switch (type) {
         case 'secondary':
-          return `linear-gradient(135deg, ${theme.palette.secondary.light} 0%, ${theme.palette.secondary.main} 100%)`;
+          return `linear-gradient(180deg, ${theme.palette.secondary.main} 0%, ${theme.palette.secondary.main} 100%)`;
         case 'success':
-          return `linear-gradient(135deg, ${theme.palette.success.light} 0%, ${theme.palette.success.main} 100%)`;
+          return `linear-gradient(180deg, ${theme.palette.success.main} 0%, ${theme.palette.success.main} 100%)`;
         default:
-          return `linear-gradient(135deg, ${theme.palette.primary.light} 0%, ${theme.palette.primary.main} 100%)`;
+          return `linear-gradient(180deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.main} 100%)`;
       }
     }
 

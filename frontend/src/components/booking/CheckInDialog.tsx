@@ -39,6 +39,8 @@ import { buildApiUrl } from '../../config/apiConfig';
 import { useThemeColors } from '../../theme/useThemeColors';
 import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
 import { formatDateForInput } from '../../utils/dateUtils';
+import { StandardButton } from '../common';
+import { formActionsRowSx } from '../../theme/sxHelpers';
 
 interface CheckInDialogProps {
   open: boolean;
@@ -552,9 +554,9 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
           borderRadius: 4,
           zIndex: 9999,
           backgroundColor: 'background.paper',
-          boxShadow: `0 12px 40px ${addAlpha(COLORS.SECONDARY, 0.2)}`,
+          boxShadow: `0 12px 40px ${addAlpha(COLORS.SECONDARY, 0.12)}`,
           border: '1px solid',
-          borderColor: COLORS.SECONDARY,
+          borderColor: 'divider',
           overflow: 'hidden'
         }
       }}
@@ -566,8 +568,8 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
         pb: 2,
         pt: 3,
         px: 3,
-        background: `linear-gradient(135deg, ${primaryDark} 0%, ${primaryDark} 50%, ${primaryMain} 100%)`,
-        color: COLORS.WHITE,
+        backgroundColor: 'background.paper',
+        color: 'text.primary',
         position: 'relative',
         '&::after': {
           content: '""',
@@ -575,29 +577,27 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
           bottom: 0,
           left: 0,
           right: 0,
-          height: '4px',
-          background: `linear-gradient(90deg, ${primaryMain} 0%, ${primaryDark} 50%, ${primaryMain} 100%)`,
+          height: '1px',
+          backgroundColor: 'divider',
         }
       }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <Box sx={{ 
             p: 1.5, 
             borderRadius: '50%', 
-            backgroundColor: addAlpha(COLORS.WHITE, 0.15),
-            backdropFilter: 'blur(10px)'
+            backgroundColor: addAlpha(primaryMain, 0.12),
           }}>
-            <PersonIcon sx={{ color: COLORS.WHITE, fontSize: 28 }} />
+            <PersonIcon sx={{ color: 'primary.main', fontSize: 28 }} />
           </Box>
           <Box>
             <Typography variant="h5" sx={{ 
-              color: COLORS.WHITE, 
+              color: 'text.primary', 
               fontWeight: 700,
-              textShadow: `0 2px 4px ${addAlpha(COLORS.BLACK, 0.2)}`
             }}>
               Check-in Guest
             </Typography>
             <Typography variant="subtitle2" sx={{ 
-              color: addAlpha(COLORS.WHITE, 0.8), 
+              color: 'text.secondary', 
               fontWeight: 400,
               mt: 0.5
             }}>
@@ -609,8 +609,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
       
       <DialogContent sx={{ 
         p: 3, 
-        backgroundColor: COLORS.BG_LIGHT,
-        backgroundImage: `linear-gradient(135deg, ${COLORS.BG_PAPER} 0%, ${COLORS.BG_LIGHT} 100%)`
+        backgroundColor: 'background.default',
       }}>
         {error && (
           <Alert 
@@ -1309,111 +1308,46 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
       </DialogContent>
       
       <DialogActions sx={{ 
+        ...formActionsRowSx,
         p: 3,
         pt: 2,
-        background: `linear-gradient(135deg, ${COLORS.BG_PAPER} 0%, ${addAlpha(primaryMain, 0.06)} 100%)`,
+        backgroundColor: 'background.paper',
         borderTop: '1px solid',
-        borderColor: COLORS.SECONDARY,
-        gap: 2
+        borderColor: 'divider',
       }}>
-        <Button 
+        <StandardButton 
           onClick={handleClose} 
           disabled={loading}
           variant="outlined"
-          size="large"
-          sx={{
-            borderColor: COLORS.SECONDARY,
-            color: COLORS.SECONDARY,
-            borderWidth: 1,
-            borderRadius: 2,
-            px: 4,
-            py: 1.5,
-            fontWeight: 600,
-            textTransform: 'none',
-            fontSize: '1rem',
-            '&:hover': {
-              borderColor: 'primary.dark',
-              backgroundColor: addAlpha(primaryMain, 0.08),
-              borderWidth: 1
-            },
-            '&:disabled': {
-              borderColor: COLORS.BORDER_LIGHT,
-              color: COLORS.TEXT_DISABLED
-            }
-          }}
+          buttonSize="large"
+          color="secondary"
         >
           Cancel
-        </Button>
+        </StandardButton>
         
         {/* Check if guest is already checked in */}
         {booking.status === 'CHECKED_IN' ? (
-          <Button
+          <StandardButton
             onClick={handleClose}
             variant="contained"
             color="primary"
             disabled={loading}
-            size="large"
-            sx={{
-              background: COLORS.GRADIENT_SECONDARY,
-              fontWeight: 700,
-              px: 4,
-              py: 1.5,
-              borderRadius: 2,
-              textTransform: 'none',
-              fontSize: '1rem',
-              boxShadow: `0 4px 16px ${addAlpha(COLORS.SECONDARY, 0.4)}`,
-              '&:hover': {
-                background: `linear-gradient(135deg, ${primaryDark} 0%, ${primaryDark} 50%, ${primaryDark} 100%)`,
-                boxShadow: `0 6px 20px ${addAlpha(primaryDark, 0.5)}`,
-                transform: 'translateY(-2px)'
-              },
-              '&:active': {
-                transform: 'translateY(0px)'
-              },
-              transition: 'all 0.2s ease-in-out'
-            }}
+            buttonSize="large"
           >
             Close
-          </Button>
+          </StandardButton>
         ) : (
-          <Button
+          <StandardButton
             onClick={handleCheckIn}
             variant="contained"
+            color="warning"
             disabled={!currentRoomNumber || currentRoomNumber === 'To be assigned' || loading} // Enable only if room is assigned
-            startIcon={loading ? <CircularProgress size={20} sx={{ color: 'white' }} /> : null}
-            size="large"
-            sx={{
-              background: !currentRoomNumber || currentRoomNumber === 'To be assigned' || loading 
-                ? COLORS.BORDER_LIGHT 
-                : `linear-gradient(135deg, ${primaryDark} 0%, ${primaryMain} 50%, ${theme.palette.warning.dark} 100%)`,
-              color: !currentRoomNumber || currentRoomNumber === 'To be assigned' || loading ? COLORS.TEXT_DISABLED : COLORS.WHITE,
-              fontWeight: 700,
-              px: 4,
-              py: 1.5,
-              borderRadius: 2,
-              textTransform: 'none',
-              fontSize: '1rem',
-              boxShadow: !currentRoomNumber || currentRoomNumber === 'To be assigned' || loading 
-                ? 'none' 
-                : `0 4px 16px ${addAlpha(theme.palette.warning.dark, 0.4)}`,
-              '&:hover': !currentRoomNumber || currentRoomNumber === 'To be assigned' || loading ? {} : {
-                background: `linear-gradient(135deg, ${theme.palette.warning.dark} 0%, ${primaryDark} 50%, ${primaryMain} 100%)`,
-                boxShadow: `0 6px 20px ${addAlpha(theme.palette.warning.dark, 0.5)}`,
-                transform: 'translateY(-2px)'
-              },
-              '&:active': {
-                transform: 'translateY(0px)'
-              },
-              '&:disabled': {
-                background: COLORS.BORDER_LIGHT,
-                color: COLORS.TEXT_DISABLED,
-                boxShadow: 'none'
-              },
-              transition: 'all 0.2s ease-in-out'
-            }}
+            loading={loading}
+            loadingText="Checking In..."
+            buttonSize="large"
           >
-            {loading ? 'Checking In...' : 'Check In Guest'}
-          </Button>
+            Check In Guest
+          </StandardButton>
         )}
       </DialogActions>
       

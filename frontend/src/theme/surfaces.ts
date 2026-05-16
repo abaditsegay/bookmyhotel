@@ -27,11 +27,7 @@ export const getReadableAccentTextColor = (theme: Theme, accent: AccentKey = 'pr
 };
 
 export const getPageShellBackground = (theme: Theme) => {
-  if (theme.palette.mode === 'dark') {
-    return `linear-gradient(180deg, ${alpha(theme.palette.primary.light, 0.08)} 0%, ${theme.palette.background.default} 38%, ${theme.palette.background.dark} 100%)`;
-  }
-
-  return `linear-gradient(180deg, ${alpha(theme.palette.primary.main, 0.05)} 0%, ${theme.palette.background.default} 42%, ${theme.palette.background.paper} 100%)`;
+  return theme.palette.background.default;
 };
 
 export const getSectionTint = (theme: Theme, accent: AccentKey = 'primary') => {
@@ -45,10 +41,10 @@ export const getInsetSurfaceBackground = (theme: Theme, accent: AccentKey = 'pri
   const baseColor = getAccentColor(theme, accent);
 
   if (theme.palette.mode === 'dark') {
-    return `linear-gradient(180deg, ${alpha(baseColor, 0.12)} 0%, ${alpha(theme.palette.background.paper, 0.96)} 100%)`;
+    return alpha(baseColor, 0.12);
   }
 
-  return `linear-gradient(180deg, ${alpha(baseColor, 0.04)} 0%, ${theme.palette.background.paper} 100%)`;
+  return alpha(baseColor, 0.04);
 };
 
 export const getElevatedCardShadow = (theme: Theme) => {

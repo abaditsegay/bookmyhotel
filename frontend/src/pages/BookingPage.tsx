@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Container,
   Typography,
   Box,
-  Button,
   Grid,
   Alert,
   Breadcrumbs,
@@ -16,9 +14,6 @@ import {
   Radio,
   InputAdornment,
   Chip,
-  CircularProgress,
-  Card,
-  CardContent,
   Avatar,
   useTheme,
   useMediaQuery,
@@ -46,7 +41,8 @@ import { formatCurrency } from '../utils/currencyUtils';
 import { PaymentMethod } from '../types/shop';
 import NumberStepper from '../components/common/NumberStepper';
 import BookingSummary from '../components/booking/BookingSummary';
-import { StandardError } from '../components/common';
+import { PageContainer, StandardError, SurfaceCard } from '../components/common';
+import StandardButton from '../components/common/StandardButton';
 import { buildApiUrl, getDefaultPaymentGatewayMode } from '../config/apiConfig';
 import { extractBookingErrorMessage } from '../utils/errorHandling';
 import { createErrorFromResponse, getErrorSeverity, getErrorTitle } from '../utils/errorHandler';
@@ -54,7 +50,8 @@ import PremiumTextField from '../components/common/PremiumTextField';
 import PremiumDatePicker from '../components/common/PremiumDatePicker';
 import { formatEthiopianPhone } from '../utils/phoneUtils';
 import { Hotel } from '../types/hotel';
-import { getReadableAccentTextColor } from '../theme/surfaces';
+import { getPageShellBackground } from '../theme/surfaces';
+import { composeSx, formActionsRowSx, infoPanelSx, tintedPanelSx } from '../theme/sxHelpers';
 
 interface BookingPageState {
   room?: AvailableRoom;
@@ -75,7 +72,6 @@ const BookingPage: React.FC = () => {
   // Mobile responsiveness
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const readableAccentColor = getReadableAccentTextColor(theme);
 
   // Helper function to format amount for translations (without ETB prefix)
   const formatAmountForTranslation = (amount: number): string => {
@@ -491,25 +487,25 @@ const BookingPage: React.FC = () => {
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <Container 
+      <PageContainer
         maxWidth={false}
         sx={{ 
           py: isMobile ? 2 : 4,
-          px: isMobile ? 2 : 6,
+          backgroundColor: getPageShellBackground(theme),
+          minHeight: '100vh',
           maxWidth: '1400px',
           mx: 'auto',
         }}
       >
         {/* Compact Header Section */}
-        <Box sx={{ 
-          mb: isMobile ? 2 : 3,
-          p: isMobile ? 1.5 : 2,
-          backgroundColor: 'background.paper',
-          borderRadius: 2,
-          boxShadow: `0 4px 12px ${alpha(theme.palette.secondary.main, 0.15)}`,
-        }}>
+        <SurfaceCard
+          elevation={0}
+          contentSx={{ p: isMobile ? 2 : 2.5 }}
+          sx={{ mb: isMobile ? 2 : 3 }}
+        >
+        <Box sx={composeSx(tintedPanelSx('primary'), { mb: isMobile ? 1.5 : 2 })}>
           {/* Back Navigation */}
-          <Box sx={{ mb: isMobile ? 1 : 1.5 }}>
+          <Box>
             <Box sx={{ 
               display: 'flex',
               alignItems: 'center',
@@ -534,7 +530,7 @@ const BookingPage: React.FC = () => {
                   aria-label="breadcrumb"
                   sx={{
                     '& .MuiBreadcrumbs-separator': {
-                      color: readableAccentColor,
+                      color: 'primary.main',
                     },
                   }}
                 >
@@ -544,7 +540,7 @@ const BookingPage: React.FC = () => {
                     onClick={() => navigate('/')}
                     sx={{ 
                       textDecoration: 'none',
-                      color: readableAccentColor,
+                      color: 'primary.main',
                       '&:hover': {
                         textDecoration: 'underline',
                       },
@@ -558,7 +554,7 @@ const BookingPage: React.FC = () => {
                     onClick={handleBackToResults}
                     sx={{ 
                       textDecoration: 'none',
-                      color: readableAccentColor,
+                      color: 'primary.main',
                       '&:hover': {
                         textDecoration: 'underline',
                       },
@@ -654,6 +650,7 @@ const BookingPage: React.FC = () => {
             )}
           </Box>
         </Box>
+        </SurfaceCard>
 
         {/* Error Alert - still show inline for validation errors */}
         <StandardError
@@ -670,21 +667,12 @@ const BookingPage: React.FC = () => {
             {/* Room Details Section */}
             <Grid container spacing={isMobile ? 1.5 : 2} sx={{ mb: 3 }}>
               <Grid item xs={12}>
-                <Card
-                  sx={{
-                    backgroundColor: alpha(theme.palette.primary.main, 0.05),
-                  }}
-                >
-              <CardContent>
-                <Box sx={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  mb: 2,
-                }}>
-                  <HotelIcon sx={{ mr: 1, color: readableAccentColor }} />
+                <SurfaceCard elevation={0} contentSx={{ p: isMobile ? 2 : 3 }}>
+                <Box sx={composeSx(tintedPanelSx('primary'), { display: 'flex', alignItems: 'center', mb: 2 })}>
+                  <HotelIcon sx={{ mr: 1, color: 'primary.main' }} />
                   <Typography 
                     variant={isMobile ? 'subtitle1' : 'h6'} 
-                    sx={{ fontWeight: 600, color: readableAccentColor }}
+                    sx={{ fontWeight: 600, color: 'text.primary' }}
                   >
                     {t('booking.page.roomDetails')}
                   </Typography>
@@ -692,56 +680,40 @@ const BookingPage: React.FC = () => {
 
                 <Grid container spacing={isMobile ? 1.5 : 2}>
                   <Grid item xs={12} sm={6}>
-                    <Box sx={{ 
-                      p: isMobile ? 1.5 : 2,
-                      backgroundColor: theme.palette.background.paper,
-                      borderRadius: 1,
-                    }}>
+                    <Box sx={infoPanelSx}>
                       <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1 }}>
                         {t('booking.page.roomType')}
                       </Typography>
-                      <Typography variant="h6" sx={{ fontWeight: 600, mt: 0.5, color: readableAccentColor }}>
+                      <Typography variant="h6" sx={{ fontWeight: 600, mt: 0.5, color: 'text.primary' }}>
                         {roomData.roomType}
                       </Typography>
                     </Box>
                   </Grid>
 
                   <Grid item xs={12} sm={6}>
-                    <Box sx={{ 
-                      p: isMobile ? 1.5 : 2,
-                      backgroundColor: theme.palette.background.paper,
-                      borderRadius: 1,
-                    }}>
+                    <Box sx={infoPanelSx}>
                       <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1 }}>
                         {t('booking.page.hotel')}
                       </Typography>
-                      <Typography variant="h6" sx={{ fontWeight: 600, mt: 0.5, color: readableAccentColor }}>
+                      <Typography variant="h6" sx={{ fontWeight: 600, mt: 0.5, color: 'text.primary' }}>
                         {hotelName || t('booking.page.hotelInformation')}
                       </Typography>
                     </Box>
                   </Grid>
 
                   <Grid item xs={12} sm={6}>
-                    <Box sx={{ 
-                      p: isMobile ? 1.5 : 2,
-                      backgroundColor: theme.palette.background.paper,
-                      borderRadius: 1,
-                    }}>
+                    <Box sx={infoPanelSx}>
                       <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1 }}>
                         {t('booking.page.pricePerNight')}
                       </Typography>
-                      <Typography variant="h6" sx={{ fontWeight: 600, mt: 0.5, color: readableAccentColor }}>
+                      <Typography variant="h6" sx={{ fontWeight: 600, mt: 0.5, color: 'text.primary' }}>
                         💰 {formatCurrency(roomData.pricePerNight || 0)}
                       </Typography>
                     </Box>
                   </Grid>
 
                   <Grid item xs={12} sm={6}>
-                    <Box sx={{ 
-                      p: isMobile ? 1.5 : 2,
-                      backgroundColor: theme.palette.background.paper,
-                      borderRadius: 1,
-                    }}>
+                    <Box sx={infoPanelSx}>
                       <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1 }}>
                         Room subtotal
                       </Typography>
@@ -750,31 +722,25 @@ const BookingPage: React.FC = () => {
                           <Typography variant="body2" sx={{ mt: 0.5, color: 'text.secondary' }}>
                             📅 {nights} {nights !== 1 ? t('booking.page.nightsPlural') : t('booking.page.nights')}
                           </Typography>
-                          <Typography variant="h6" sx={{ fontWeight: 700, color: readableAccentColor }}>
+                          <Typography variant="h6" sx={{ fontWeight: 700, color: 'text.primary' }}>
                             {formatCurrency((roomData.pricePerNight || 0) * nights)}
                           </Typography>
                         </Box>
                       ) : (
-                        <Typography variant="h6" sx={{ fontWeight: 600, mt: 0.5, color: readableAccentColor }}>
+                        <Typography variant="h6" sx={{ fontWeight: 600, mt: 0.5, color: 'text.primary' }}>
                           {formatCurrency(roomData.pricePerNight || 0)}
                         </Typography>
                       )}
                     </Box>
                   </Grid>
                 </Grid>
-              </CardContent>
-            </Card>
+            </SurfaceCard>
           </Grid>
         </Grid>
 
             {/* Booking Form */}
             <form onSubmit={handleSubmit}>
-          <Box sx={{ 
-            p: isMobile ? 1.5 : 2, 
-            backgroundColor: 'background.paper',
-            borderRadius: 2,
-            boxShadow: `0 4px 12px ${alpha(theme.palette.secondary.main, 0.15)}`,
-          }}>
+          <SurfaceCard elevation={0} contentSx={{ p: isMobile ? 2 : 3 }}>
 
             <Grid container spacing={isMobile ? 1.5 : 2}>
               {/* Dates and Guests - stacked on mobile */}
@@ -813,21 +779,12 @@ const BookingPage: React.FC = () => {
 
               {/* Guest Information Section */}
               <Grid item xs={12}>
-                <Card
-                  sx={{
-                    backgroundColor: alpha(theme.palette.primary.main, 0.05),
-                  }}
-                >
-                  <CardContent>
-                    <Box sx={{ 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      mb: 2,
-                    }}>
-                      <PersonIcon sx={{ mr: 1, color: readableAccentColor }} />
+                <SurfaceCard elevation={0} contentSx={{ p: isMobile ? 2 : 3 }}>
+                    <Box sx={composeSx(tintedPanelSx('primary'), { display: 'flex', alignItems: 'center', mb: 2 })}>
+                      <PersonIcon sx={{ mr: 1, color: 'primary.main' }} />
                       <Typography 
                         variant={isMobile ? 'subtitle1' : 'h6'} 
-                        sx={{ fontWeight: 600, color: readableAccentColor }}
+                        sx={{ fontWeight: 600, color: 'text.primary' }}
                       >
                         {t('booking.page.guestInformation')}
                       </Typography>
@@ -835,12 +792,7 @@ const BookingPage: React.FC = () => {
 
                     {isAuthenticated && !isGuestBookingFlow ? (
                       // Display authenticated user information with enhanced styling
-                      <Box sx={{ 
-                        p: isMobile ? 1.5 : 2,
-                        backgroundColor: theme.palette.background.paper,
-                        borderRadius: 1,
-                        mb: 2,
-                      }}>
+                      <Box sx={composeSx(infoPanelSx, { mb: 2 })}>
                         <Box sx={{ 
                           display: 'flex',
                           alignItems: 'center',
@@ -869,15 +821,10 @@ const BookingPage: React.FC = () => {
                       </Box>
                     ) : (
                       // Enhanced guest input fields with professional styling
-                      <Box sx={{ 
-                        p: isMobile ? 1.5 : 2,
-                        backgroundColor: theme.palette.background.default,
-                        borderRadius: 1,
-                        mb: 2,
-                      }}>
+                      <Box sx={composeSx(infoPanelSx, { mb: 2 })}>
                         <Typography variant="body1" sx={{ 
                           fontWeight: 600,
-                          color: readableAccentColor,
+                          color: 'text.primary',
                           mb: 1.5,
                         }}>
                           {t('booking.page.guestDetails')}
@@ -944,14 +891,10 @@ const BookingPage: React.FC = () => {
                     )}
 
                     {/* Special Requests Section */}
-                    <Box sx={{ 
-                      p: isMobile ? 1.5 : 2,
-                      backgroundColor: theme.palette.background.default,
-                      borderRadius: 1,
-                    }}>
+                    <Box sx={infoPanelSx}>
                       <Typography variant="body1" sx={{ 
                         fontWeight: 600,
-                        color: readableAccentColor,
+                        color: 'text.primary',
                         mb: 1,
                       }}>
                         Special Requests (Optional)
@@ -988,7 +931,7 @@ const BookingPage: React.FC = () => {
                             }}
                             sx={{
                               cursor: 'pointer',
-                              color: readableAccentColor,
+                              color: 'text.primary',
                               backgroundColor: alpha(theme.palette.secondary.main, 0.12),
                               '&:hover': {
                                 backgroundColor: alpha(theme.palette.secondary.main, 0.18),
@@ -1001,8 +944,7 @@ const BookingPage: React.FC = () => {
                         ))}
                       </Box>
                     </Box>
-                  </CardContent>
-                </Card>
+                </SurfaceCard>
               </Grid>
 
               {/* Mobile BookingSummary - appears before payment section */}
@@ -1025,39 +967,25 @@ const BookingPage: React.FC = () => {
 
               {/* Payment Section */}
               <Grid item xs={12}>
-                <Card
-                  sx={{
-                    backgroundColor: alpha(theme.palette.primary.main, 0.05),
-                  }}
-                >
-                  <CardContent>
-                    <Box sx={{ 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      mb: 2,
-                    }}>
-                      <LockIcon sx={{ mr: 1, color: readableAccentColor }} />
+                <SurfaceCard elevation={0} contentSx={{ p: isMobile ? 2 : 3 }}>
+                    <Box sx={composeSx(tintedPanelSx('primary'), { display: 'flex', alignItems: 'center', mb: 2 })}>
+                      <LockIcon sx={{ mr: 1, color: 'primary.main' }} />
                       <Typography 
                         variant={isMobile ? 'subtitle1' : 'h6'} 
-                        sx={{ fontWeight: 600, color: readableAccentColor }}
+                        sx={{ fontWeight: 600, color: 'text.primary' }}
                       >
                         Payment Information
                       </Typography>
                     </Box>
 
                     {/* Payment Method Selection */}
-                    <Box sx={{ 
-                      p: isMobile ? 1.5 : 2,
-                      backgroundColor: theme.palette.background.default,
-                      borderRadius: 1,
-                      mb: 2,
-                    }}>
+                    <Box sx={composeSx(infoPanelSx, { mb: 2 })}>
                       <FormControl component="fieldset">
                         <FormLabel 
                           component="legend" 
                           sx={{ 
                             fontWeight: 600, 
-                            color: readableAccentColor,
+                            color: 'text.primary',
                             fontSize: isMobile ? '0.875rem' : '1rem',
                             mb: 1,
                           }}
@@ -1111,7 +1039,7 @@ const BookingPage: React.FC = () => {
                                 <Typography 
                                   variant="caption" 
                                   sx={{ 
-                                    color: readableAccentColor,
+                                    color: 'text.primary',
                                     fontWeight: 600,
                                     fontSize: '0.75rem',
                                     mt: 0.3,
@@ -1159,7 +1087,7 @@ const BookingPage: React.FC = () => {
                                 <Typography 
                                   variant="caption" 
                                   sx={{ 
-                                    color: readableAccentColor,
+                                    color: 'text.primary',
                                     fontWeight: 600,
                                     fontSize: '0.75rem',
                                     mt: 0.3,
@@ -1211,15 +1139,11 @@ const BookingPage: React.FC = () => {
 
                     {/* Credit Card Form */}
                     {paymentMethod === 'credit_card' && (
-                      <Box sx={{ 
-                        p: isMobile ? 1.5 : 2,
-                        backgroundColor: theme.palette.background.default,
-                        borderRadius: 1,
-                      }}>
+                      <Box sx={infoPanelSx}>
                         <Box sx={{ textAlign: 'center', mb: 1.5 }}>
                           <CreditCardIcon sx={{ 
                             fontSize: 32, 
-                            color: readableAccentColor,
+                            color: 'primary.main',
                             mb: 0.5 
                           }} />
                           <Typography variant="body1" sx={{ 
@@ -1319,26 +1243,22 @@ const BookingPage: React.FC = () => {
 
                     {/* Mobile Money Form */}
                     {paymentMethod === 'mobile_money' && (
-                      <Box sx={{ 
-                        p: isMobile ? 1.5 : 2,
-                        backgroundColor: theme.palette.background.default,
-                        borderRadius: 1,
-                      }}>
+                      <Box sx={infoPanelSx}>
                         <Box sx={{ textAlign: 'center', mb: 2 }}>
                           <PhoneIcon sx={{ 
                             fontSize: 40, 
-                            color: readableAccentColor,
+                            color: 'primary.main',
                             mb: 1 
                           }} />
                           <Typography variant="h6" sx={{ 
-                            color: readableAccentColor,
+                            color: 'text.primary',
                             fontWeight: 700,
                             mb: 0.5,
                           }}>
                             {t('booking.page.mobileMoneyTransfer')} - {formatCurrency(totalAmount || 0)}
                           </Typography>
                           <Typography variant="body1" sx={{ 
-                            color: readableAccentColor,
+                            color: 'text.primary',
                             fontWeight: 600,
                             fontSize: '1.1rem',
                           }}>
@@ -1454,15 +1374,11 @@ const BookingPage: React.FC = () => {
 
                     {/* Pay at Front Desk Information */}
                     {paymentMethod === 'pay_at_frontdesk' && (
-                      <Box sx={{ 
-                        p: isMobile ? 1.5 : 2,
-                        backgroundColor: theme.palette.background.paper,
-                        borderRadius: 1,
-                      }}>
+                      <Box sx={infoPanelSx}>
                         <Box sx={{ textAlign: 'center', mb: 1.5 }}>
                           <HotelIcon sx={{ 
                             fontSize: 32, 
-                            color: readableAccentColor,
+                            color: 'primary.main',
                             mb: 0.5 
                           }} />
                           <Typography variant="body1" sx={{ 
@@ -1489,15 +1405,11 @@ const BookingPage: React.FC = () => {
 
                     {/* Ethiopian Mobile Payment (M-birr) */}
                     {paymentMethod === 'mbirr' && (
-                      <Box sx={{ 
-                        p: isMobile ? 1.5 : 2,
-                        backgroundColor: theme.palette.background.default,
-                        borderRadius: 1,
-                      }}>
+                      <Box sx={infoPanelSx}>
                         <Box sx={{ textAlign: 'center', mb: 1.5 }}>
                           <PhoneIcon sx={{ 
                             fontSize: 32, 
-                            color: readableAccentColor,
+                            color: 'primary.main',
                             mb: 0.5 
                           }} />
                           <Typography variant="body1" sx={{ 
@@ -1543,15 +1455,11 @@ const BookingPage: React.FC = () => {
 
                     {/* Ethiopian Mobile Payment (Telebirr) */}
                     {paymentMethod === 'telebirr' && (
-                      <Box sx={{ 
-                        p: isMobile ? 1.5 : 2,
-                        backgroundColor: theme.palette.background.default,
-                        borderRadius: 1,
-                      }}>
+                      <Box sx={infoPanelSx}>
                         <Box sx={{ textAlign: 'center', mb: 1.5 }}>
                           <PhoneIcon sx={{ 
                             fontSize: 32, 
-                            color: readableAccentColor,
+                            color: 'primary.main',
                             mb: 0.5 
                           }} />
                           <Typography variant="body1" sx={{ 
@@ -1594,12 +1502,11 @@ const BookingPage: React.FC = () => {
                         />
                       </Box>
                     )}
-                  </CardContent>
-                </Card>
+                </SurfaceCard>
               </Grid>
 
             </Grid>
-          </Box>
+          </SurfaceCard>
 
           {/* Tax Inclusion Notice */}
           <Box
@@ -1637,16 +1544,15 @@ const BookingPage: React.FC = () => {
           <Box 
             sx={{ 
               mt: isMobile ? 3 : 4, 
-              display: 'flex', 
+              ...formActionsRowSx,
               justifyContent: isMobile ? 'stretch' : 'flex-end',
-              gap: isMobile ? 2 : 0,
             }}
           >
             {isMobile && (
-              <Button
+              <StandardButton
                 variant="outlined"
                 onClick={handleBackToResults}
-                size="large"
+                buttonSize="large"
                 sx={{ 
                   flex: '0 0 auto',
                   minWidth: 120,
@@ -1654,35 +1560,26 @@ const BookingPage: React.FC = () => {
                 }}
               >
                 Back
-              </Button>
+              </StandardButton>
             )}
-            <Button
+            <StandardButton
               type="submit"
               variant="contained"
-              disabled={loading}
-              size="large"
+              loading={loading}
+              loadingText={t('booking.page.booking')}
+              buttonSize="large"
               sx={{ 
                 minWidth: isMobile ? 'auto' : 150,
                 flex: isMobile ? 1 : '0 0 auto',
                 minHeight: 56,
-                fontWeight: 'bold',
                 fontSize: isMobile ? '1rem' : '0.875rem',
-                backgroundColor: theme.palette.primary.main,
-                boxShadow: `0 2px 8px ${alpha(theme.palette.secondary.main, 0.2)}`,
-                '&:hover': {
-                  backgroundColor: theme.palette.primary.dark,
-                  boxShadow: `0 4px 12px ${alpha(theme.palette.secondary.main, 0.3)}`,
-                },
               }}
-              startIcon={loading ? <CircularProgress size={16} /> : undefined}
             >
-              {loading 
-                ? t('booking.page.booking')
-                : isMobile 
+              {isMobile 
                   ? t('booking.page.bookWithAmount', { amount: formatAmountForTranslation(totalAmount || 0) })
                   : t('booking.page.bookNowWithAmount', { amount: formatAmountForTranslation(totalAmount || 0) })
               }
-            </Button>
+            </StandardButton>
           </Box>
         </form>
           </Grid>
@@ -1703,7 +1600,7 @@ const BookingPage: React.FC = () => {
             />
           </Grid>
         </Grid>
-      </Container>
+      </PageContainer>
     </LocalizationProvider>
   );
 };

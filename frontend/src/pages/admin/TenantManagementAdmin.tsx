@@ -34,7 +34,6 @@ import {
   Business as BusinessIcon,
   ToggleOn as ToggleOnIcon,
   ToggleOff as ToggleOffIcon,
-  ArrowBack as ArrowBackIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
@@ -48,6 +47,7 @@ import {
 } from '../../services/adminApi';
 import PremiumTextField from '../../components/common/PremiumTextField';
 import PremiumSelect from '../../components/common/PremiumSelect';
+import { tableHeadRowSx } from '../../theme/sxHelpers';
 
 interface TenantFilters {
   search: string;
@@ -55,10 +55,8 @@ interface TenantFilters {
 }
 
 const TenantManagementAdmin: React.FC = () => {
-  const theme = useTheme();
   const { token } = useAuth();
   const { showSubmissionError } = useSubmissionError();
-  const navigate = useNavigate();
   const [tenants, setTenants] = useState<TenantDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -274,20 +272,7 @@ const TenantManagementAdmin: React.FC = () => {
     setPage(0);
   };
 
-  const adminTableHeaderSx = {
-    background: `linear-gradient(135deg, ${theme.palette.background.default} 0%, ${theme.palette.grey[50]} 100%)`,
-    borderBottom: `2px solid ${theme.palette.secondary.main}`,
-    '& .MuiTableCell-head': {
-      color: 'primary.main',
-      fontWeight: 700,
-      fontSize: '0.875rem',
-      letterSpacing: '0.5px',
-      textTransform: 'uppercase',
-      border: 'none',
-      padding: '20px 16px',
-      position: 'relative',
-    },
-  } as const;
+  const adminTableHeaderSx = tableHeadRowSx({ compact: true });
 
   if (!token) {
     return (

@@ -31,6 +31,7 @@ import {
   CircularProgress
 } from '@mui/material';
 import PremiumTextField from './common/PremiumTextField';
+import { tableHeadRowSx } from '../theme/sxHelpers';
 import {
   Add as AddIcon,
   Edit as EditIcon,
@@ -376,19 +377,7 @@ const RoomTypePricing: React.FC<RoomTypePricingProps> = ({ onPricingUpdate }) =>
               <Table>
                 <TableHead>
                   <TableRow
-                    sx={{
-                      background: 'linear-gradient(135deg, #f5f5f5 0%, #fafafa 50%, #f5f5f5 100%)',
-                      borderBottom: '2px solid #E8B86D',
-                      '& .MuiTableCell-head': {
-                        color: '#B8860B',
-                        fontWeight: 700,
-                        fontSize: '0.95rem',
-                        letterSpacing: '0.5px',
-                        textTransform: 'uppercase',
-                        border: 'none',
-                        padding: '20px 16px',
-                      }
-                    }}
+                    sx={tableHeadRowSx()}
                   >
                     <TableCell>Room Type</TableCell>
                     <TableCell>Base Price</TableCell>

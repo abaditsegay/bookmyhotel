@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
   Box,
-  Button,
   Typography,
   Alert,
   Tabs,
@@ -12,15 +11,16 @@ import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import PremiumTextField from '../components/common/PremiumTextField';
 import { PageContainer, SurfaceCard, TabPanel } from '../components/common';
+import StandardButton from '../components/common/StandardButton';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { API_CONFIG } from '../config/apiConfig';
 import { useTheme, alpha } from '@mui/material/styles';
-import { getElevatedCardShadow, getPageShellBackground, getReadableAccentTextColor } from '../theme/surfaces';
+import { getPageShellBackground } from '../theme/surfaces';
+import { tintedPanelSx } from '../theme/sxHelpers';
 
 const GuestAuthPage: React.FC = () => {
   const theme = useTheme();
-  const readableAccentColor = getReadableAccentTextColor(theme);
   const { t } = useTranslation();
   const [tabValue, setTabValue] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -227,7 +227,7 @@ const GuestAuthPage: React.FC = () => {
           alignItems: 'center',
           justifyContent: 'center',
           py: 4,
-          background: getPageShellBackground(theme),
+          backgroundColor: getPageShellBackground(theme),
         }}
       >
         <SurfaceCard
@@ -235,60 +235,44 @@ const GuestAuthPage: React.FC = () => {
           sx={{ 
             width: '100%', 
             maxWidth: 500,
-            boxShadow: getElevatedCardShadow(theme),
-            borderRadius: 3,
-            overflow: 'hidden',
-            position: 'relative',
-            '&::before': {
-              content: '""',
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              height: 4,
-              background: `linear-gradient(90deg, ${theme.palette.secondary.main} 0%, ${theme.palette.secondary.dark} 100%)`,
-              zIndex: 1,
-            },
           }}
           contentSx={{ p: 4 }}
         >
-            <Typography 
-              variant="h4" 
-              component="h1" 
-              gutterBottom 
-              align="center"
-              sx={{
-                fontWeight: 'bold',
-                color: readableAccentColor,
-                mb: 1,
-              }}
-            >
-              BookMyHotel
-            </Typography>
-            <Typography 
-              variant="h6" 
-              component="h2" 
-              gutterBottom 
-              align="center" 
-              color="textSecondary"
-              sx={{ 
-                mb: 3,
-                color: theme.palette.text.secondary,
-              }}
-            >
-              {bookingData?.hotelName
-                ? t('auth.login.signInToBook', { hotelName: bookingData.hotelName })
-                : tabValue === 0
-                  ? t('auth.login.signInSubtitle')
-                  : t('auth.login.createAccountSubtitle')}
-            </Typography>
+            <Box sx={{ ...tintedPanelSx(tabValue === 0 ? 'primary' : 'secondary'), textAlign: 'center', mb: 3 }}>
+              <Typography 
+                variant="h4" 
+                component="h1" 
+                gutterBottom 
+                align="center"
+                sx={{
+                  fontWeight: 700,
+                  color: 'text.primary',
+                  mb: 1,
+                }}
+              >
+                BookMyHotel
+              </Typography>
+              <Typography 
+                variant="h6" 
+                component="h2" 
+                gutterBottom 
+                align="center" 
+                color="text.secondary"
+              >
+                {bookingData?.hotelName
+                  ? t('auth.login.signInToBook', { hotelName: bookingData.hotelName })
+                  : tabValue === 0
+                    ? t('auth.login.signInSubtitle')
+                    : t('auth.login.createAccountSubtitle')}
+              </Typography>
+            </Box>
 
             <Box 
               sx={{ 
-                borderBottom: `2px solid ${theme.palette.secondary.main}`, 
+                borderBottom: `1px solid ${theme.palette.divider}`,
                 mt: 3,
                 '& .MuiTabs-indicator': {
-                  backgroundColor: 'secondary.main',
+                  backgroundColor: tabValue === 0 ? 'primary.main' : 'secondary.main',
                   height: 3,
                 },
               }}
@@ -305,12 +289,12 @@ const GuestAuthPage: React.FC = () => {
                     fontSize: '1rem',
                     color: theme.palette.text.secondary,
                     '&:hover': {
-                      color: 'primary.main',
-                      backgroundColor: alpha(theme.palette.secondary.main, 0.08),
+                      color: 'text.primary',
+                      backgroundColor: alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.12 : 0.05),
                     },
                   },
                   '& .Mui-selected': {
-                    color: 'primary.main',
+                    color: tabValue === 0 ? theme.palette.primary.main : theme.palette.secondary.main,
                     fontWeight: 700,
                   },
                 }}
@@ -371,72 +355,30 @@ const GuestAuthPage: React.FC = () => {
                     ),
                   }}
                 />
-                <Button
+                <StandardButton
                   type="submit"
                   fullWidth
                   variant="contained"
-                  sx={{ 
-                    mt: 3, 
-                    mb: 1,
-                    py: 1.5,
-                    fontSize: '1.1rem',
-                    fontWeight: 600,
-                    textTransform: 'none',
-                    borderRadius: 2,
-                    backgroundColor: 'primary.main',
-                    color: 'common.white',
-                    '&:hover': {
-                      backgroundColor: 'primary.dark',
-                      transform: 'translateY(-1px)',
-                    },
-                    '&:active': {
-                      transform: 'translateY(0)',
-                      transition: 'transform 0.1s ease',
-                    },
-                    '&:disabled': {
-                      background: theme.palette.action.disabledBackground,
-                      color: theme.palette.action.disabled,
-                    },
-                    transition: 'all 0.2s ease',
-                  }}
-                  disabled={loading}
+                  buttonSize="large"
+                  loading={loading}
+                  loadingText={t('auth.login.signingIn')}
+                  sx={{ mt: 3, mb: 1 }}
                 >
-                  {loading ? t('auth.login.signingIn') : t('auth.login.signInButton')}
-                </Button>
+                  {t('auth.login.signInButton')}
+                </StandardButton>
                 
                 {/* Mobile-friendly fallback button */}
-                <Button
+                <StandardButton
                   fullWidth
                   variant="outlined"
-                  sx={{ 
-                    mb: 2,
-                    py: 1.5,
-                    fontSize: '1rem',
-                    fontWeight: 500,
-                    textTransform: 'none',
-                    borderRadius: 2,
-                    border: 'none',
-                    backgroundColor: alpha(theme.palette.secondary.main, 0.08),
-                    color: 'primary.main',
-                    '&:hover': {
-                      backgroundColor: alpha(theme.palette.secondary.main, 0.14),
-                      transform: 'translateY(-1px)',
-                    },
-                    '&:active': {
-                      transform: 'translateY(0)',
-                      transition: 'transform 0.1s ease',
-                    },
-                    '&:disabled': {
-                      backgroundColor: theme.palette.action.disabledBackground,
-                      color: theme.palette.action.disabled,
-                    },
-                    transition: 'all 0.2s ease',
-                  }}
+                  color="secondary"
+                  buttonSize="large"
                   disabled={loading}
+                  sx={{ mb: 2 }}
                   onClick={handleMobileLogin}
                 >
                   {loading ? t('auth.login.signingIn') : t('auth.login.mobileSignInButton')}
-                </Button>
+                </StandardButton>
               </Box>
             </TabPanel>
 
@@ -528,38 +470,18 @@ const GuestAuthPage: React.FC = () => {
                     ),
                   }}
                 />
-                <Button
+                <StandardButton
                   type="submit"
                   fullWidth
                   variant="contained"
-                  sx={{ 
-                    mt: 3, 
-                    mb: 2,
-                    py: 1.5,
-                    fontSize: '1.1rem',
-                    fontWeight: 600,
-                    textTransform: 'none',
-                    borderRadius: 2,
-                    backgroundColor: 'primary.main',
-                    color: 'common.white',
-                    '&:hover': {
-                      backgroundColor: 'primary.dark',
-                      transform: 'translateY(-1px)',
-                    },
-                    '&:active': {
-                      transform: 'translateY(0)',
-                      transition: 'transform 0.1s ease',
-                    },
-                    '&:disabled': {
-                      background: theme.palette.action.disabledBackground,
-                      color: theme.palette.action.disabled,
-                    },
-                    transition: 'all 0.2s ease',
-                  }}
-                  disabled={loading}
+                  color="secondary"
+                  buttonSize="large"
+                  loading={loading}
+                  loadingText={t('auth.login.creating')}
+                  sx={{ mt: 3, mb: 2 }}
                 >
-                  {loading ? t('auth.login.creating') : t('auth.login.createAccountButton')}
-                </Button>
+                  {t('auth.login.createAccountButton')}
+                </StandardButton>
               </Box>
             </TabPanel>
 

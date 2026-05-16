@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import {
-  TextField,
   Box,
   Typography,
   useTheme,
@@ -13,7 +12,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ErrorIcon from '@mui/icons-material/Error';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
-import { designSystem } from '../../theme/designSystem';
+import PremiumTextField from './PremiumTextField';
 
 interface ValidationRule {
   validate: (value: string) => boolean;
@@ -171,7 +170,7 @@ const EnhancedTextField: React.FC<EnhancedTextFieldProps> = ({
 
   return (
     <Box sx={sx}>
-      <TextField
+      <PremiumTextField
         fullWidth
         label={label}
         value={value}
@@ -189,7 +188,6 @@ const EnhancedTextField: React.FC<EnhancedTextFieldProps> = ({
         InputProps={{
           endAdornment: renderEndAdornment(),
           sx: {
-            borderRadius: designSystem.borderRadius.md,
             backgroundColor: theme.palette.background.paper,
             transition: 'all 0.3s ease',
             '&:hover': {

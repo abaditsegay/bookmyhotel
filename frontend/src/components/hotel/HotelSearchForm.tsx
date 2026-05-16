@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import {
-  Paper,
   Grid,
   Typography,
   Box,
+  Stack,
   useTheme,
   useMediaQuery,
 } from '@mui/material';
@@ -15,10 +15,11 @@ import { HotelSearchRequest } from '../../types/hotel';
 import StandardButton from '../common/StandardButton';
 import PremiumTextField from '../common/PremiumTextField';
 import PremiumDatePicker from '../common/PremiumDatePicker';
+import { SurfaceCard } from '../common';
 import { useNotification } from '../common/NotificationSystem';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import PeopleIcon from '@mui/icons-material/People';
-import { useThemeColors } from '../../theme/useThemeColors';
+import { formActionsRowSx } from '../../theme/sxHelpers';
 
 interface HotelSearchFormProps {
   onSearch: (searchRequest: HotelSearchRequest) => void;
@@ -40,7 +41,6 @@ const parseDateOrFallback = (value: string | undefined, fallback: Date): Date =>
 
 const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = false, initialValues = null }) => {
   const { t } = useTranslation();
-  const { COLORS, addAlpha } = useThemeColors();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { showNotification } = useNotification();
@@ -101,56 +101,37 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
   };
 
   return (
-    <Paper 
-        elevation={0}
-        sx={{
-          p: { xs: 3, sm: 4, md: 3 },
-          mb: { xs: 2, sm: 3 },
-          width: '100%',
-          maxWidth: '100%',
-          boxSizing: 'border-box',
-          borderRadius: 1,
-          background: theme.palette.background.paper,
-          boxShadow: `0 2px 8px ${addAlpha(COLORS.PRIMARY, 0.1)}`,
-        }}
-      >
-        {/* Mobile-Optimized Header */}
-        <Box sx={{ 
-          textAlign: 'center', 
-          mb: { xs: 3, md: 4 },
-          px: { xs: 1, sm: 0 },
-        }}>
+    <SurfaceCard
+      variantStyle="elevated"
+      contentSx={{
+        p: { xs: 3, sm: 4, md: 4 },
+      }}
+    >
+        <Stack sx={{ mb: { xs: 3, md: 4 }, px: { xs: 1, sm: 0 } }} spacing={2}>
           <Typography 
             variant={isMobile ? "h5" : "h4"} 
             component="h2"
             gutterBottom 
             sx={{ 
-              fontWeight: 'bold',
               fontSize: { 
                 xs: '1.5rem',   // 24px - Mobile friendly
                 sm: '1.75rem',  // 28px - Small tablet
                 md: '2rem'      // 32px - Desktop
               },
-              color: COLORS.PRIMARY_TEXT,
+              color: 'text.primary',
               lineHeight: 1.2,
-              mb: 1,
             }}
           >
             {t('hotelSearch.title')}
           </Typography>
-          {isMobile && (
-            <Typography 
-              variant="body2" 
-              color="text.secondary"
-              sx={{ 
-                fontSize: '0.9rem',
-                px: 2,
-              }}
-            >
-              {t('hotelSearch.subtitle')}
-            </Typography>
-          )}
-        </Box>
+          <Typography 
+            variant={isMobile ? 'body2' : 'body1'} 
+            color="text.secondary"
+            sx={{ px: isMobile ? 2 : 0 }}
+          >
+            {t('hotelSearch.subtitle')}
+          </Typography>
+        </Stack>
         
         <form onSubmit={handleSubmit}>
           <Grid container spacing={{ xs: 3, md: 3 }}>
@@ -164,7 +145,7 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
                 helperText={t('hotelSearch.form.destinationHelper')}
                 fullWidth
                 InputProps={{
-                  startAdornment: <LocationOnIcon sx={{ mr: 1, color: COLORS.PRIMARY_TEXT }} />,
+                  startAdornment: <LocationOnIcon sx={{ mr: 1, color: 'text.secondary' }} />,
                 }}
               />
             </Grid>
@@ -182,7 +163,7 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
                 helperText={t('hotelSearch.form.guestsHelper')}
                 fullWidth
                 InputProps={{
-                  startAdornment: <PeopleIcon sx={{ mr: 1, color: COLORS.PRIMARY_TEXT }} />,
+                  startAdornment: <PeopleIcon sx={{ mr: 1, color: 'text.secondary' }} />,
                   inputProps: { min: 1, max: 10 }
                 }}
               />
@@ -213,12 +194,7 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
 
             {/* Search Button - Mobile-Optimized */}
             <Grid item xs={12}>
-              <Box sx={{ 
-                display: 'flex', 
-                justifyContent: 'center', 
-                mt: { xs: 2, md: 3 },
-                px: { xs: 1, sm: 0 },
-              }}>
+              <Box sx={{ ...formActionsRowSx, mt: { xs: 2, md: 3 }, px: { xs: 1, sm: 0 } }}>
                 <StandardButton
                   type="submit"
                   variant="contained"
@@ -233,7 +209,7 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
                       sm: '1.1rem', 
                       md: '1rem' 
                     },
-                    fontWeight: 500,
+                    fontWeight: 600,
                     width: { 
                       xs: '100%',
                       sm: 'auto',
@@ -241,22 +217,6 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
                     maxWidth: { 
                       xs: 'none',
                       sm: '400px',
-                    },
-                    backgroundColor: COLORS.PRIMARY,
-                    border: `2px solid ${COLORS.PRIMARY}`,
-                    color: COLORS.WHITE,
-                    '&:hover': {
-                      backgroundColor: COLORS.SECONDARY,
-                      borderColor: COLORS.SECONDARY,
-                      transform: 'translateY(-1px)',
-                    },
-                    '&:active': {
-                      transform: 'translateY(0)',
-                    },
-                    '&:disabled': {
-                      backgroundColor: 'action.disabled',
-                      color: 'action.disabled',
-                      border: `2px solid ${addAlpha(COLORS.BLACK, 0.12)}`,
                     },
                   }}
                 >
@@ -266,7 +226,7 @@ const HotelSearchForm: React.FC<HotelSearchFormProps> = ({ onSearch, loading = f
             </Grid>
           </Grid>
         </form>
-      </Paper>
+      </SurfaceCard>
   );
 };
 

@@ -2,19 +2,23 @@
  * Shared premium styling helpers for shop tabs and tables.
  * Keep shop UI aligned with the brand colors and reduce inline style duplication.
  */
-import { SxProps, Theme } from '@mui/material';
+import { alpha, SxProps, Theme } from '@mui/material';
 import { getThemeColorHelpers } from '../../theme/useThemeColors';
 
 export const getPremiumTableHeadSx = (options?: { compact?: boolean }): SxProps<Theme> => {
   return (theme) => {
     const { COLORS, addAlpha } = getThemeColorHelpers(theme);
     const cellPadding = options?.compact ? '14px 12px' : '20px 16px';
+    const isDark = theme.palette.mode === 'dark';
+    const headerBackground = alpha(theme.palette.text.primary, isDark ? 0.08 : 0.035);
+    const headerBorder = alpha(theme.palette.text.primary, isDark ? 0.18 : 0.1);
 
     return {
-      background: `linear-gradient(135deg, ${addAlpha(COLORS.PRIMARY, 0.08)} 0%, ${addAlpha(COLORS.WHITE, 0.0)} 100%)`,
-      boxShadow: `0 6px 12px ${addAlpha(COLORS.PRIMARY, 0.10)}`,
+      backgroundColor: headerBackground,
+      boxShadow: 'none',
+      borderBottom: `2px solid ${headerBorder}`,
       '& .MuiTableCell-head': {
-        color: COLORS.PRIMARY,
+        color: theme.palette.text.secondary,
         fontWeight: 700,
         fontSize: options?.compact ? '0.9rem' : '0.95rem',
         letterSpacing: '0.4px',
@@ -22,15 +26,17 @@ export const getPremiumTableHeadSx = (options?: { compact?: boolean }): SxProps<
         border: 'none',
         padding: cellPadding,
         position: 'relative',
-        backgroundColor: addAlpha(COLORS.WHITE, 0.6),
+        backgroundColor: headerBackground,
         '&::after': {
           content: '""',
           position: 'absolute',
           bottom: 0,
           left: 0,
           right: 0,
-          height: '2px',
-          background: `linear-gradient(90deg, ${addAlpha(COLORS.SECONDARY, 0.8)} 0%, ${addAlpha(COLORS.PRIMARY, 0.9)} 100%)`
+          height: '1px',
+          backgroundColor: isDark
+            ? addAlpha(theme.palette.primary.light, 0.34)
+            : addAlpha(COLORS.PRIMARY, 0.22),
         }
       }
     };

@@ -2,7 +2,7 @@
 // Integrates our design system with Material-UI components
 
 import { alpha, createTheme, ThemeOptions } from '@mui/material/styles';
-import { animations, designSystem } from './designSystem';
+import { animations, designSystem, getColorScheme } from './designSystem';
 
 export type AppThemeMode = 'light' | 'dark';
 
@@ -14,7 +14,7 @@ declare module '@mui/material/styles' {
 }
 
 const getPaletteTokens = (mode: AppThemeMode) => {
-  const isDark = mode === 'dark';
+  const scheme = getColorScheme(mode);
 
   return {
     mode,
@@ -24,38 +24,41 @@ const getPaletteTokens = (mode: AppThemeMode) => {
     warning: designSystem.colors.warning,
     error: designSystem.colors.error,
     info: designSystem.colors.info,
-    text: isDark
-      ? {
-          primary: '#f8fafc',
-          secondary: 'rgba(248, 250, 252, 0.72)',
-          disabled: 'rgba(248, 250, 252, 0.42)',
-        }
-      : designSystem.colors.text,
-    background: {
-      default: isDark ? '#0f172a' : designSystem.colors.background.default,
-      paper: isDark ? '#111827' : designSystem.colors.background.paper,
-      light: isDark ? '#182235' : designSystem.colors.background.light,
-      dark: isDark ? '#020617' : '#e2e8f0',
+    text: {
+      primary: scheme.text.primary,
+      secondary: scheme.text.secondary,
+      disabled: scheme.text.muted,
     },
-    divider: isDark ? 'rgba(148, 163, 184, 0.18)' : designSystem.colors.divider,
+    background: {
+      default: scheme.background.primary,
+      paper: scheme.background.card,
+      light: scheme.background.hoverSurface,
+      dark: scheme.background.sidebar,
+    },
+    divider: scheme.border.divider,
   };
 };
 
 const getThemeOptions = (mode: AppThemeMode): ThemeOptions => {
   const isDark = mode === 'dark';
   const palette = getPaletteTokens(mode);
-  const elevatedBorder = alpha(palette.primary.main, isDark ? 0.18 : 0.08);
-  const elevatedBorderHover = alpha(palette.primary.main, isDark ? 0.28 : 0.14);
-  const fieldBackground = isDark ? alpha(palette.background.paper, 0.92) : palette.background.paper;
+  const scheme = getColorScheme(mode);
+  const elevatedBorder = scheme.border.default;
+  const elevatedBorderHover = scheme.border.strong;
+  const fieldBackground = scheme.background.input;
   const surfaceShadow = isDark
     ? `0 18px 40px ${alpha('#020617', 0.42)}`
-    : `0 10px 30px ${alpha('#0f172a', 0.06)}`;
+    : designSystem.shadows.card;
   const surfaceHoverShadow = isDark
     ? `0 24px 48px ${alpha('#020617', 0.52)}`
-    : `0 14px 34px ${alpha('#0f172a', 0.09)}`;
+    : designSystem.shadows.cardHover;
   const dialogShadow = isDark
     ? `0 36px 72px ${alpha('#020617', 0.56)}`
-    : `0 32px 72px ${alpha('#0f172a', 0.18)}`;
+    : designSystem.shadows.dialog;
+  const fieldBorderColor = isDark ? scheme.border.strong : scheme.border.input;
+  const fieldHoverBorderColor = scheme.border.strong;
+  const fieldBorderWidth = isDark ? '1.5px' : '1px';
+  const fieldFocusRing = `0 0 0 4px ${alpha(scheme.focus.ring, isDark ? 0.22 : 0.1)}`;
 
   return {
     palette,
@@ -149,17 +152,17 @@ const getThemeOptions = (mode: AppThemeMode): ThemeOptions => {
             '--app-border': elevatedBorder,
             '--app-text-primary': palette.text.primary,
             '--app-text-secondary': palette.text.secondary,
-            '--app-focus': alpha(palette.primary.main, isDark ? 0.42 : 0.34),
+            '--app-focus': alpha(scheme.focus.ring, isDark ? 0.34 : 0.2),
             '--color-primary': palette.primary.main,
             '--color-warning': palette.warning.main,
-            '--color-focus': palette.primary.main,
+            '--color-focus': scheme.focus.ring,
             '--color-focus-alt': palette.secondary.main,
             '--color-white': palette.common?.white ?? '#ffffff',
             '--color-bg-default': palette.background.default,
             '--color-bg-dark': palette.background.dark,
-            '--color-scrollbar-track': isDark ? '#0b1220' : '#f1f1f1',
-            '--color-scrollbar-thumb': isDark ? '#475569' : '#888',
-            '--color-scrollbar-thumb-hover': isDark ? '#64748b' : '#555',
+            '--color-scrollbar-track': isDark ? scheme.background.sidebar : scheme.background.primary,
+            '--color-scrollbar-thumb': isDark ? scheme.border.strong : scheme.border.strong,
+            '--color-scrollbar-thumb-hover': isDark ? scheme.text.muted : scheme.text.secondary,
           },
           'html, body, #root': {
             minHeight: '100%',
@@ -192,23 +195,24 @@ const getThemeOptions = (mode: AppThemeMode): ThemeOptions => {
             textTransform: 'none',
             fontWeight: 600,
             borderRadius: designSystem.borderRadius.md,
-            padding: '10px 20px',
+            padding: '10px 18px',
             minHeight: 44,
             transition: `all ${animations.duration.standard}ms ${animations.easing.easeInOut}`,
             boxShadow: 'none',
           },
           contained: {
-            background: palette.primary.main,
-            boxShadow: `0 10px 24px ${alpha(palette.primary.main, isDark ? 0.32 : 0.18)}`,
+            background: scheme.action.primary,
+            color: isDark ? designSystem.colorSchemes.light.text.inverse : palette.primary.contrastText,
+            boxShadow: isDark ? 'none' : `0 10px 24px ${alpha(palette.primary.main, 0.16)}`,
             '&:hover': {
-              background: palette.primary.dark,
-              boxShadow: `0 14px 28px ${alpha(palette.primary.main, isDark ? 0.38 : 0.22)}`,
+              background: scheme.action.primaryHover,
+              boxShadow: isDark ? 'none' : `0 14px 28px ${alpha(palette.primary.main, 0.2)}`,
             },
             '&:active': {
-              boxShadow: `0 8px 18px ${alpha(palette.primary.main, isDark ? 0.34 : 0.2)}`,
+              boxShadow: isDark ? 'none' : `0 8px 18px ${alpha(palette.primary.main, 0.18)}`,
             },
             '&.Mui-disabled': {
-              background: palette.background.light,
+              background: scheme.background.hoverSurface,
               color: palette.text.disabled,
               boxShadow: 'none',
               border: `1px solid ${elevatedBorder}`,
@@ -216,11 +220,12 @@ const getThemeOptions = (mode: AppThemeMode): ThemeOptions => {
           },
           outlined: {
             borderWidth: '1px',
-            borderColor: alpha(palette.primary.main, isDark ? 0.38 : 0.22),
+            borderColor: scheme.border.strong,
+            backgroundColor: 'transparent',
             '&:hover': {
               borderWidth: '1px',
-              borderColor: alpha(palette.primary.main, isDark ? 0.52 : 0.36),
-              backgroundColor: alpha(palette.primary.main, isDark ? 0.12 : 0.04),
+              borderColor: scheme.action.primary,
+              backgroundColor: alpha(palette.primary.main, isDark ? 0.14 : 0.04),
             }
           },
           text: {
@@ -236,6 +241,7 @@ const getThemeOptions = (mode: AppThemeMode): ThemeOptions => {
           root: {
             borderRadius: designSystem.borderRadius.lg,
             border: `1px solid ${elevatedBorder}`,
+            backgroundColor: palette.background.paper,
             backgroundImage: 'none',
             boxShadow: surfaceShadow,
             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -262,24 +268,6 @@ const getThemeOptions = (mode: AppThemeMode): ThemeOptions => {
       MuiTextField: {
         styleOverrides: {
           root: {
-            '& .MuiOutlinedInput-root': {
-              borderRadius: designSystem.borderRadius.md,
-              backgroundColor: fieldBackground,
-              transition: `all ${animations.duration.standard}ms ${animations.easing.easeInOut}`,
-              '& fieldset': {
-                borderColor: alpha(palette.primary.main, isDark ? 0.24 : 0.12),
-                borderWidth: '1px'
-              },
-              '&:hover fieldset': {
-                borderColor: alpha(palette.primary.main, isDark ? 0.38 : 0.22),
-                borderWidth: '1px'
-              },
-              '&.Mui-focused fieldset': {
-                borderColor: palette.primary.main,
-                borderWidth: '1px',
-                boxShadow: `0 0 0 4px ${alpha(palette.primary.main, isDark ? 0.22 : 0.1)}`
-              }
-            },
             '& .MuiInputLabel-root': {
               fontWeight: 500,
             },
@@ -293,29 +281,54 @@ const getThemeOptions = (mode: AppThemeMode): ThemeOptions => {
       MuiFormControl: {
         styleOverrides: {
           root: {
-            '& .MuiOutlinedInput-root': {
-              borderRadius: designSystem.borderRadius.md,
-              backgroundColor: fieldBackground,
-              transition: `all ${animations.duration.standard}ms ${animations.easing.easeInOut}`,
-              '& fieldset': {
-                borderColor: alpha(palette.primary.main, isDark ? 0.24 : 0.12),
-                borderWidth: '1px'
-              },
-              '&:hover fieldset': {
-                borderColor: alpha(palette.primary.main, isDark ? 0.38 : 0.22),
-                borderWidth: '1px'
-              },
-              '&.Mui-focused fieldset': {
-                borderColor: palette.primary.main,
-                borderWidth: '1px',
-                boxShadow: `0 0 0 4px ${alpha(palette.primary.main, isDark ? 0.22 : 0.1)}`
-              }
-            },
             '& .MuiInputLabel-root.Mui-focused': {
               color: palette.primary.main
             }
           }
         }
+      },
+
+      MuiOutlinedInput: {
+        styleOverrides: {
+          root: {
+            borderRadius: designSystem.borderRadius.md,
+            backgroundColor: fieldBackground,
+            color: palette.text.primary,
+            transition: `all ${animations.duration.standard}ms ${animations.easing.easeInOut}`,
+            '& .MuiOutlinedInput-notchedOutline': {
+              borderColor: fieldBorderColor,
+              borderWidth: fieldBorderWidth,
+            },
+            '&:hover .MuiOutlinedInput-notchedOutline': {
+              borderColor: fieldHoverBorderColor,
+              borderWidth: fieldBorderWidth,
+            },
+            '&.Mui-focused': {
+              boxShadow: fieldFocusRing,
+            },
+            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+              borderColor: palette.primary.main,
+              borderWidth: fieldBorderWidth,
+            },
+            '&.Mui-error .MuiOutlinedInput-notchedOutline': {
+              borderColor: palette.error.main,
+            },
+            '&.Mui-disabled': {
+              backgroundColor: scheme.background.hoverSurface,
+            },
+            '&.Mui-disabled .MuiOutlinedInput-notchedOutline': {
+              borderColor: scheme.border.default,
+            },
+          },
+          input: {
+            color: palette.text.primary,
+            WebkitTextFillColor: palette.text.primary,
+            '&::placeholder': {
+              color: palette.text.secondary,
+              opacity: 1,
+            },
+          },
+        },
       },
 
       MuiDialog: {
@@ -393,7 +406,7 @@ const getThemeOptions = (mode: AppThemeMode): ThemeOptions => {
             fontSize: '0.95rem',
             color: alpha(palette.text.primary, 0.72),
             '&.Mui-selected': {
-              color: palette.primary.main,
+              color: scheme.action.primary,
             },
           },
         },
@@ -410,7 +423,7 @@ const getThemeOptions = (mode: AppThemeMode): ThemeOptions => {
             letterSpacing: '0.04em',
             textTransform: 'uppercase',
             color: alpha(palette.text.primary, 0.7),
-            backgroundColor: alpha(palette.primary.main, isDark ? 0.12 : 0.02),
+            backgroundColor: scheme.table.header,
           },
           body: {
             fontSize: '0.92rem',
@@ -426,7 +439,7 @@ const getThemeOptions = (mode: AppThemeMode): ThemeOptions => {
           },
           standardInfo: {
             backgroundColor: alpha(palette.info.main, isDark ? 0.18 : 0.08),
-            color: isDark ? palette.text.primary : palette.primary.dark,
+            color: isDark ? palette.text.primary : palette.text.primary,
           },
         },
       },
@@ -434,8 +447,9 @@ const getThemeOptions = (mode: AppThemeMode): ThemeOptions => {
       MuiAppBar: {
         styleOverrides: {
           root: {
+            backgroundColor: alpha(scheme.background.secondary, isDark ? 0.94 : 0.88),
             boxShadow: `0 1px 0 ${elevatedBorder}`,
-            backdropFilter: 'blur(14px)',
+            backdropFilter: 'blur(10px)',
             backgroundImage: 'none',
           },
         },
@@ -444,7 +458,7 @@ const getThemeOptions = (mode: AppThemeMode): ThemeOptions => {
       MuiDivider: {
         styleOverrides: {
           root: {
-            borderColor: isDark ? elevatedBorder : designSystem.colors.primary[50]
+            borderColor: scheme.border.divider,
           }
         }
       }

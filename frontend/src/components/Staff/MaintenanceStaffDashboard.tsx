@@ -36,13 +36,12 @@ import {
   Schedule as ScheduleIcon,
   Warning as WarningIcon
 } from '@mui/icons-material';
-import { useThemeColors } from '../../theme/useThemeColors';
+import { tableHeadRowSx } from '../../theme/sxHelpers';
 import { staffApi } from '../../services/staffApi';
 import { MaintenanceTask } from '../../types/operations';
 import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
 
 const MaintenanceStaffDashboard: React.FC = () => {
-  const { COLORS, addAlpha } = useThemeColors();
   const { showSubmissionError } = useSubmissionError();
   const [tasks, setTasks] = useState<MaintenanceTask[]>([]);
   const [loading, setLoading] = useState(false);
@@ -296,30 +295,7 @@ const MaintenanceStaffDashboard: React.FC = () => {
                 <Table>
                   <TableHead>
                     <TableRow
-                      sx={{
-                        background: COLORS.GRADIENT_SLATE,
-                        boxShadow: `0 4px 12px ${addAlpha(COLORS.SLATE_500, 0.15)}`,
-                        '& .MuiTableCell-head': {
-                          color: COLORS.WHITE,
-                          fontWeight: 600,
-                          fontSize: '0.95rem',
-                          letterSpacing: '0.5px',
-                          textTransform: 'uppercase',
-                          border: 'none',
-                          padding: '20px 16px',
-                          position: 'relative',
-                          textShadow: `0 1px 2px ${addAlpha(COLORS.BLACK, 0.1)}`,
-                          '&::after': {
-                            content: '""',
-                            position: 'absolute',
-                            bottom: 0,
-                            left: 0,
-                            right: 0,
-                            height: '3px',
-                            background: `linear-gradient(90deg, ${addAlpha(COLORS.WHITE, 0.6)} 0%, ${addAlpha(COLORS.WHITE, 0.8)} 50%, ${addAlpha(COLORS.WHITE, 0.6)} 100%)`
-                          }
-                        }
-                      }}
+                      sx={tableHeadRowSx()}
                     >
                       <TableCell>Location</TableCell>
                       <TableCell>Category</TableCell>

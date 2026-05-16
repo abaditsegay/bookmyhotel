@@ -1,15 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Box, 
-  Button, 
-  Container, 
   Typography, 
   Alert, 
   useTheme,
   useMediaQuery,
   Stack,
 } from '@mui/material';
-import { alpha } from '@mui/material/styles';
 import {
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
@@ -18,12 +15,13 @@ import { useNavigate, useLocation, Link as RouterLink } from 'react-router-dom';
 import { API_CONFIG } from '../config/apiConfig';
 import { PageContainer, SurfaceCard } from '../components/common';
 import PremiumTextField from '../components/common/PremiumTextField';
-import { getElevatedCardShadow, getPageShellBackground, getReadableAccentTextColor } from '../theme/surfaces';
+import StandardButton from '../components/common/StandardButton';
+import { getPageShellBackground } from '../theme/surfaces';
+import { tintedPanelSx } from '../theme/sxHelpers';
 
 const LoginPage: React.FC = () => {
   const { t } = useTranslation();
   const theme = useTheme();
-  const readableAccentColor = getReadableAccentTextColor(theme);
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
   const [email, setEmail] = useState('');
@@ -180,10 +178,18 @@ const LoginPage: React.FC = () => {
   // Show loading state while checking authentication from localStorage
   if (isInitializing) {
     return (
-      <Container maxWidth="lg">
+      <PageContainer
+        maxWidth="sm"
+        sx={{
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: getPageShellBackground(theme),
+        }}
+      >
         <Box
           sx={{
-            minHeight: '100vh',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
@@ -193,33 +199,32 @@ const LoginPage: React.FC = () => {
         >
           <Typography variant="h6">{t('errors.loading')}</Typography>
         </Box>
-      </Container>
+      </PageContainer>
     );
   }
 
   return (
-    <Box
+    <PageContainer
+      maxWidth="sm"
       sx={{
         minHeight: '100vh',
-        background: getPageShellBackground(theme),
         display: 'flex',
-        flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
+        backgroundColor: getPageShellBackground(theme),
         py: 4,
       }}
     >
-      <PageContainer maxWidth="lg" sx={{ justifyContent: 'center', minHeight: '100vh', py: 4, pb: 4 }}>
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: { xs: 'column', md: 'row' },
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: isMobile ? 3 : 6,
-            minHeight: '90vh',
-          }}
-        >
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: { xs: 'column', md: 'row' },
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: isMobile ? 3 : 6,
+          width: '100%',
+        }}
+      >
         {/* Main Login Form */}
         <SurfaceCard
           elevation={0}
@@ -227,10 +232,6 @@ const LoginPage: React.FC = () => {
             maxWidth: 500, 
             width: '100%', 
             height: 'fit-content',
-            background: theme.palette.background.paper,
-            border: `1px solid ${theme.palette.divider}`,
-            borderRadius: 4,
-            boxShadow: getElevatedCardShadow(theme),
           }}
           contentSx={{ p: isMobile ? 3 : 5 }}
         >
@@ -244,13 +245,13 @@ const LoginPage: React.FC = () => {
             )}
 
             {/* Sign In/Up Header */}
-            <Box sx={{ mb: 3, textAlign: 'center' }}>
+            <Box sx={{ ...tintedPanelSx(showSignUp ? 'secondary' : 'primary'), mb: 3, textAlign: 'center' }}>
               <Typography 
                 variant="h5" 
                 component="h2" 
                 sx={{ 
-                  fontWeight: 'bold',
-                  color: readableAccentColor,
+                  fontWeight: 700,
+                  color: 'text.primary',
                   mb: 1,
                 }}
               >
@@ -289,7 +290,7 @@ const LoginPage: React.FC = () => {
 
             {!showSignUp ? (
               // Sign In Form
-              <Box component="form" onSubmit={handleSubmit} data-testid="login-form">
+              <form onSubmit={handleSubmit} data-testid="login-form">
                 <PremiumTextField
                   fullWidth
                   label={t('auth.login.emailLabel')}
@@ -314,54 +315,32 @@ const LoginPage: React.FC = () => {
                   inputProps={{ 'data-testid': 'password-input' }}
                 />
                 <Box sx={{ textAlign: 'right', mt: 0.5 }}>
-                  <Button
+                  <StandardButton
                     component={RouterLink}
                     to="/forgot-password"
                     variant="text"
-                    size="small"
-                    sx={{ 
-                      color: readableAccentColor,
-                      textTransform: 'none',
-                      fontWeight: 500,
-                      p: 0,
-                      minWidth: 'auto',
-                      '&:hover': { textDecoration: 'underline', background: 'transparent' },
-                    }}
+                    buttonSize="small"
+                    sx={{ px: 0, minWidth: 'auto' }}
                   >
                     {t('auth.login.forgotPassword')}
-                  </Button>
+                  </StandardButton>
                 </Box>
-                <Button
+                <StandardButton
                   type="submit"
                   fullWidth
                   variant="contained"
-                  disabled={loading}
+                  loading={loading}
+                  loadingText={t('auth.login.signingIn')}
+                  buttonSize="large"
                   data-testid="login-button"
-                  sx={{ 
-                    mt: 4, 
-                    mb: 2,
-                    py: 1.5,
-                    borderRadius: 0,
-                    fontSize: '1.1rem',
-                    fontWeight: 'bold',
-                    background: 'primary.main',
-                    boxShadow: `0 4px 15px ${alpha(theme.palette.primary.main, 0.3)}`,
-                    '&:hover': {
-                      background: 'primary.dark',
-                      boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.4)}`,
-                      transform: 'translateY(-1px)',
-                    },
-                    '&:active': {
-                      transform: 'translateY(0)',
-                    },
-                  }}
+                  sx={{ mt: 4, mb: 2 }}
                 >
-                  {loading ? t('auth.login.signingIn') : t('auth.login.signInButton')}
-                </Button>
-              </Box>
+                  {t('auth.login.signInButton')}
+                </StandardButton>
+              </form>
             ) : (
               // Sign Up Form
-              <Box component="form" onSubmit={handleRegister}>
+              <form onSubmit={handleRegister}>
                 <Stack direction="row" spacing={2}>
                   <PremiumTextField
                     fullWidth
@@ -417,66 +396,53 @@ const LoginPage: React.FC = () => {
                   required
                   autoComplete="new-password"
                 />
-                <Button
+                <StandardButton
                   type="submit"
                   fullWidth
                   variant="contained"
-                  disabled={loading}
-                  sx={{ 
-                    mt: 4, 
-                    mb: 2,
-                    py: 1.5,
-                    borderRadius: 0,
-                    fontSize: '1.1rem',
-                    fontWeight: 'bold',
-                    background: 'secondary.main',
-                    boxShadow: `0 4px 15px ${alpha(theme.palette.secondary.main, 0.3)}`,
-                    '&:hover': {
-                      background: 'secondary.dark',
-                      boxShadow: `0 6px 20px ${alpha(theme.palette.secondary.main, 0.4)}`,
-                      transform: 'translateY(-1px)',
-                    },
-                    '&:active': {
-                      transform: 'translateY(0)',
-                    },
-                  }}
+                  loading={loading}
+                  loadingText={t('auth.login.creating')}
+                  buttonSize="large"
+                  color="secondary"
+                  sx={{ mt: 4, mb: 2 }}
                 >
-                  {loading ? t('auth.login.creating') : t('auth.login.createAccountButton')}
-                </Button>
-              </Box>
+                  {t('auth.login.createAccountButton')}
+                </StandardButton>
+              </form>
             )}
 
-            <Typography variant="body2" color="textSecondary" align="center" sx={{ mt: 2 }}>
+            <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 2 }}>
               {!showSignUp ? (
                 <>
                   {t('auth.login.needAccount')}{' '}
-                  <Button 
+                  <StandardButton 
                     variant="text" 
                     onClick={() => setShowSignUp(true)}
-                    sx={{ textTransform: 'none', p: 0, minWidth: 'auto' }}
+                    buttonSize="small"
+                    sx={{ px: 0, minWidth: 'auto' }}
                   >
                     {t('auth.login.createAccount')}
-                  </Button>
+                  </StandardButton>
                 </>
               ) : (
                 <>
                   {t('auth.login.alreadyHaveAccount')}{' '}
-                  <Button 
+                  <StandardButton 
                     variant="text" 
                     onClick={() => setShowSignUp(false)}
-                    sx={{ textTransform: 'none', p: 0, minWidth: 'auto' }}
+                    buttonSize="small"
+                    sx={{ px: 0, minWidth: 'auto' }}
                   >
                     {t('auth.login.signIn')}
-                  </Button>
+                  </StandardButton>
                 </>
               )}
             </Typography>
 
         </SurfaceCard>
 
-        </Box>
-      </PageContainer>
-    </Box>
+      </Box>
+    </PageContainer>
   );
 };
 
