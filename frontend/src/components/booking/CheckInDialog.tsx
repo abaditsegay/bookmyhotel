@@ -40,7 +40,8 @@ import { useThemeColors } from '../../theme/useThemeColors';
 import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
 import { formatDateForInput } from '../../utils/dateUtils';
 import { StandardButton } from '../common';
-import { formActionsRowSx } from '../../theme/sxHelpers';
+import { getReadableAccentTextColor } from '../../theme/surfaces';
+import { composeSx, formActionsRowSx, surfaceCardSx } from '../../theme/sxHelpers';
 
 interface CheckInDialogProps {
   open: boolean;
@@ -62,13 +63,14 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
   const { showSubmissionError } = useSubmissionError();
   const { COLORS, addAlpha } = useThemeColors();
   const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
   const primaryMain = theme.palette.primary.main;
   const primaryLight = theme.palette.primary.light;
-  const primaryDark = theme.palette.primary.dark;
   const successMain = theme.palette.success.main;
   const warningMain = theme.palette.warning.main;
   const infoMain = theme.palette.info.main;
   const errorMain = theme.palette.error.main;
+  const sharedSurfaceRadius = 4;
   
   const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null);
   const [selectedRoomType, setSelectedRoomType] = useState<string>('');
@@ -550,15 +552,13 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
       maxWidth="md" 
       fullWidth
       PaperProps={{
-        sx: { 
-          borderRadius: 4,
+        sx: composeSx(surfaceCardSx('default'), {
           zIndex: 9999,
-          backgroundColor: 'background.paper',
-          boxShadow: `0 12px 40px ${addAlpha(COLORS.SECONDARY, 0.12)}`,
-          border: '1px solid',
-          borderColor: 'divider',
+          boxShadow: theme.palette.mode === 'dark'
+            ? '0 16px 36px rgba(2, 6, 23, 0.3)'
+            : '0 12px 28px rgba(15, 23, 42, 0.08)',
           overflow: 'hidden'
-        }
+        })
       }}
       sx={{
         zIndex: 9999
@@ -614,28 +614,16 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
         {error && (
           <Alert 
             severity="error" 
-            sx={{ 
-              mb: 3,
-              borderRadius: 2,
-              border: '1px solid',
-              borderColor: 'error.light',
-              '& .MuiAlert-icon': {
-                color: 'error.main'
-              }
-            }}
+            sx={{ mb: 3 }}
           >
             {error}
           </Alert>
         )}
 
         {/* Guest Information */}
-        <Paper elevation={0} sx={{ 
-          p: 3, 
+        <Paper elevation={0} sx={composeSx(surfaceCardSx('subtle'), {
+          p: 3,
           mb: 3,
-          border: '1px solid',
-          borderColor: 'primary.light',
-          borderRadius: 3,
-          background: `linear-gradient(135deg, ${COLORS.BG_PAPER} 0%, ${COLORS.BG_LIGHT} 100%)`,
           position: 'relative',
           overflow: 'hidden',
           '&::before': {
@@ -644,21 +632,21 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
             top: 0,
             left: 0,
             right: 0,
-            height: '4px',
-            background: `linear-gradient(90deg, ${primaryDark} 0%, ${primaryMain} 50%, ${primaryDark} 100%)`,
+            height: '2px',
+            backgroundColor: addAlpha(readableAccentColor, 0.5),
           }
-        }}>
+        })}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
             <Box sx={{ 
               p: 1, 
               borderRadius: '50%', 
-              backgroundColor: 'primary.main',
-              color: COLORS.WHITE
+              backgroundColor: addAlpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.18 : 0.1),
+              color: readableAccentColor
             }}>
               <PersonIcon fontSize="small" />
             </Box>
             <Typography variant="h6" sx={{ 
-              color: 'primary.main',
+              color: 'text.primary',
               fontWeight: 700
             }}>
               Guest Information
@@ -689,11 +677,11 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
                 label={booking.confirmationNumber} 
                 size="medium" 
                 sx={{
-                  backgroundColor: 'primary.main',
-                  color: COLORS.WHITE,
+                  backgroundColor: addAlpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.2 : 0.12),
+                  color: readableAccentColor,
                   fontWeight: 600,
                   '&:hover': {
-                    backgroundColor: 'primary.dark'
+                    backgroundColor: addAlpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.28 : 0.18)
                   }
                 }}
               />
@@ -724,13 +712,9 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
         </Paper>
 
         {/* Assigned Room Information */}
-        <Paper elevation={0} sx={{ 
-          p: 3, 
+        <Paper elevation={0} sx={composeSx(surfaceCardSx('subtle'), {
+          p: 3,
           mb: 3,
-          border: '1px solid',
-          borderColor: 'primary.light',
-          borderRadius: 3,
-          background: `linear-gradient(135deg, ${COLORS.BG_PAPER} 0%, ${COLORS.BG_LIGHT} 100%)`,
           position: 'relative',
           overflow: 'hidden',
           '&::before': {
@@ -739,21 +723,23 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
             top: 0,
             left: 0,
             right: 0,
-            height: '3px',
-            background: `linear-gradient(90deg, ${successMain} 0%, ${primaryDark} 50%, ${primaryMain} 100%)`,
+            height: '2px',
+            backgroundColor: addAlpha(successMain, 0.45),
           }
-        }}>
+        })}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
             <Box sx={{ 
               p: 1, 
               borderRadius: '50%', 
-              backgroundColor: currentRoomNumber && currentRoomNumber !== 'To be assigned' ? 'success.main' : 'primary.main',
-              color: COLORS.WHITE
+              backgroundColor: currentRoomNumber && currentRoomNumber !== 'To be assigned'
+                ? addAlpha(successMain, theme.palette.mode === 'dark' ? 0.18 : 0.1)
+                : addAlpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.18 : 0.1),
+              color: currentRoomNumber && currentRoomNumber !== 'To be assigned' ? successMain : readableAccentColor
             }}>
               <RoomIcon fontSize="small" />
             </Box>
             <Typography variant="h6" sx={{ 
-              color: 'primary.main',
+              color: 'text.primary',
               fontWeight: 700
             }}>
               Assigned Room
@@ -769,10 +755,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
                   </Typography>
                   <Typography variant="h5" sx={{ 
                     fontWeight: 800, 
-                    color: 'primary.main',
-                    background: `linear-gradient(45deg, ${primaryDark}, ${primaryMain})`,
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent'
+                    color: 'text.primary'
                   }}>
                     Room {currentRoomNumber}
                   </Typography>
@@ -856,13 +839,9 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
         </Paper>
 
         {/* Room Assignment */}
-        <Paper elevation={0} sx={{ 
-          p: 3, 
+        <Paper elevation={0} sx={composeSx(surfaceCardSx('subtle'), {
+          p: 3,
           mb: 3,
-          border: '1px solid',
-          borderColor: 'primary.light',
-          borderRadius: 3,
-          background: `linear-gradient(135deg, ${COLORS.BG_PAPER} 0%, ${COLORS.BG_LIGHT} 100%)`,
           position: 'relative',
           overflow: 'hidden',
           '&::before': {
@@ -871,21 +850,21 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
             top: 0,
             left: 0,
             right: 0,
-            height: '3px',
-            background: `linear-gradient(90deg, ${primaryDark} 0%, ${primaryMain} 50%, ${successMain} 100%)`,
+            height: '2px',
+            backgroundColor: addAlpha(readableAccentColor, 0.5),
           }
-        }} data-testid="room-assignment-section">
+        })} data-testid="room-assignment-section">
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
             <Box sx={{ 
               p: 1, 
               borderRadius: '50%', 
-              backgroundColor: 'primary.main',
-              color: COLORS.WHITE
+              backgroundColor: addAlpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.18 : 0.1),
+              color: readableAccentColor
             }}>
               <RoomIcon fontSize="small" />
             </Box>
             <Typography variant="h6" sx={{
-              color: 'primary.main',
+              color: 'text.primary',
               fontWeight: 700
             }}>
               Room Assignment
@@ -926,10 +905,10 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
                   {/* Room Type Filter */}
                   <FormControl fullWidth margin="normal" sx={{ mb: 3 }}>
                     <InputLabel sx={{ 
-                      color: 'primary.main',
+                      color: 'text.secondary',
                       fontWeight: 600,
                       '&.Mui-focused': {
-                        color: 'primary.main'
+                        color: 'text.primary'
                       }
                     }}>
                       Room Type
@@ -943,17 +922,17 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
                       }}
                       label="Room Type"
                       sx={{
-                        borderRadius: 2,
+                        borderRadius: sharedSurfaceRadius,
                         '& .MuiOutlinedInput-root': {
                           '& fieldset': {
-                            borderColor: 'primary.light',
+                            borderColor: 'divider',
                             borderWidth: 1
                           },
                           '&:hover fieldset': {
-                            borderColor: 'primary.main',
+                            borderColor: readableAccentColor,
                           },
                           '&.Mui-focused fieldset': {
-                            borderColor: 'primary.main',
+                            borderColor: readableAccentColor,
                             borderWidth: 1
                           }
                         }
@@ -964,10 +943,10 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
                             maxHeight: 300,
                             zIndex: 9999,
                             backgroundColor: theme.palette.background.paper,
-                            boxShadow: `0 8px 32px ${addAlpha(primaryDark, 0.2)}`,
-                            borderRadius: 12,
+                            boxShadow: theme.shadows[8],
+                            borderRadius: 4,
                             border: '1px solid',
-                            borderColor: 'primary.light'
+                            borderColor: theme.palette.divider
                           },
                         },
                         MenuListProps: {
@@ -993,7 +972,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
                         sx={{
                           backgroundColor: 'transparent',
                           '&:hover': {
-                            backgroundColor: 'primary.light'
+                            backgroundColor: theme.palette.action.hover
                           }
                         }}
                       >
@@ -1005,15 +984,15 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
                             key={roomType} 
                             value={roomType}
                             sx={{ 
-                              backgroundColor: index % 2 === 0 ? addAlpha(primaryMain, 0.04) : 'background.paper',
+                              backgroundColor: index % 2 === 0 ? addAlpha(readableAccentColor, 0.04) : 'background.paper',
                               '&:hover': {
-                                backgroundColor: 'primary.light'
+                                backgroundColor: theme.palette.action.hover
                               },
                               '&.Mui-selected': {
-                                backgroundColor: 'primary.main',
-                                color: COLORS.WHITE,
+                                backgroundColor: addAlpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.22 : 0.12),
+                                color: 'text.primary',
                                 '&:hover': {
-                                  backgroundColor: 'primary.dark'
+                                  backgroundColor: addAlpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.28 : 0.18)
                                 }
                               }
                             }}
@@ -1024,7 +1003,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
                       })}
                     </Select>
                     <Typography variant="caption" sx={{ 
-                      color: 'primary.main', 
+                      color: 'text.secondary', 
                       fontWeight: 600, 
                       mt: 1,
                       display: 'block'
@@ -1035,7 +1014,7 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
               <Typography variant="h6" sx={{ 
                 mt: 2, 
                 mb: 2,
-                color: 'primary.main',
+                color: 'text.primary',
                 fontWeight: 700,
                 display: 'flex',
                 alignItems: 'center',
@@ -1064,15 +1043,15 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
                         cursor: 'pointer',
                         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                         '&:hover': { 
-                          backgroundColor: addAlpha(primaryMain, 0.08),
-                          transform: 'translateY(-2px)',
-                          boxShadow: `0 8px 24px ${addAlpha(primaryDark, 0.15)}`,
-                          borderColor: 'primary.main'
+                          backgroundColor: addAlpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.14 : 0.08),
+                          transform: 'translateY(-1px)',
+                          boxShadow: 'none',
+                          borderColor: readableAccentColor
                         },
-                        backgroundColor: selectedRoomId === room.id ? addAlpha(primaryMain, 0.12) : 'transparent',
+                        backgroundColor: selectedRoomId === room.id ? addAlpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.18 : 0.1) : 'transparent',
                         border: selectedRoomId === room.id ? 1 : 1,
-                        borderColor: selectedRoomId === room.id ? 'primary.main' : 'primary.light',
-                        borderRadius: 3,
+                        borderColor: selectedRoomId === room.id ? readableAccentColor : 'divider',
+                        borderRadius: sharedSurfaceRadius,
                         position: 'relative',
                         overflow: 'hidden',
                         ...(selectedRoomId === room.id && {
@@ -1082,8 +1061,8 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
                             top: 0,
                             left: 0,
                             right: 0,
-                            height: '4px',
-                            background: (theme) => `linear-gradient(90deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 50%, ${theme.palette.primary.light} 100%)`,
+                            height: '2px',
+                            backgroundColor: addAlpha(readableAccentColor, 0.5),
                           }
                         })
                       }}
@@ -1098,9 +1077,9 @@ const CheckInDialog: React.FC<CheckInDialogProps> = ({
                           control={
                             <Radio 
                               sx={{
-                                color: 'primary.light',
+                                color: 'text.secondary',
                                 '&.Mui-checked': {
-                                  color: COLORS.SECONDARY,
+                                  color: readableAccentColor,
                                 },
                               }}
                             />

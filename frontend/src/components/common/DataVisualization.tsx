@@ -16,6 +16,9 @@ import TrendingFlatIcon from '@mui/icons-material/TrendingFlat';
 import { designSystem } from '../../theme/designSystem';
 import { AnimatedCounter } from './MicroInteractions';
 import { getReadableAccentTextColor } from '../../theme/surfaces';
+import { composeSx, surfaceCardSx } from '../../theme/sxHelpers';
+
+const sharedSurfaceRadius = Math.max(4, designSystem.borderRadius.sm / 2);
 
 export interface ChartDataPoint {
   label: string;
@@ -94,20 +97,18 @@ const MetricCard: React.FC<MetricCardProps> = ({
 
   return (
     <Card
-      sx={{
+      sx={composeSx(surfaceCardSx('subtle'), {
         height: '100%',
         backgroundColor: metricSurface,
         border: `1px solid ${metricBorder}`,
-        borderRadius: designSystem.borderRadius.lg,
-        boxShadow: 'none',
         transition: 'background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease',
         '&:hover': {
-          transform: 'translateY(-4px)',
-          boxShadow: designSystem.shadows.lg,
+          transform: 'translateY(-2px)',
+          boxShadow: 'none',
           backgroundColor: alpha(metricAccentColor, theme.palette.mode === 'dark' ? 0.18 : 0.08),
           borderColor: alpha(metricAccentColor, theme.palette.mode === 'dark' ? 0.36 : 0.2),
         },
-      }}
+      })}
     >
       <CardContent sx={{ p: 3 }}>
         <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 2 }}>
@@ -185,12 +186,7 @@ const BarChart: React.FC<BarChartProps> = ({
 
   return (
     <Paper
-      sx={{
-        p: 3,
-        borderRadius: designSystem.borderRadius.lg,
-        border: `1px solid ${theme.palette.divider}`,
-        backgroundColor: theme.palette.background.paper,
-      }}
+      sx={composeSx(surfaceCardSx('default'), { p: 3 })}
     >
       {title && (
         <Typography variant="h6" sx={{ mb: 3, fontWeight: 600 }}>
@@ -233,7 +229,7 @@ const BarChart: React.FC<BarChartProps> = ({
                     maxWidth: 40,
                     height: animatedHeight,
                     backgroundColor: item.color || fallbackAccent,
-                    borderRadius: `${designSystem.borderRadius.sm}px ${designSystem.borderRadius.sm}px 0 0`,
+                    borderRadius: `${sharedSurfaceRadius}px ${sharedSurfaceRadius}px 0 0`,
                     transition: animated ? 'height 1s cubic-bezier(0.4, 0, 0.2, 1)' : 'none',
                     cursor: 'pointer',
                     '&:hover': {
@@ -287,13 +283,10 @@ const DonutChart: React.FC<DonutChartProps> = ({
 
   return (
     <Paper
-      sx={{
+      sx={composeSx(surfaceCardSx('default'), {
         p: 3,
-        borderRadius: designSystem.borderRadius.lg,
-        border: `1px solid ${theme.palette.divider}`,
         textAlign: 'center',
-        backgroundColor: theme.palette.background.paper,
-      }}
+      })}
     >
       {title && (
         <Typography variant="h6" sx={{ mb: 3, fontWeight: 600 }}>
@@ -397,12 +390,7 @@ const ProgressChart: React.FC<{
 
   return (
     <Paper
-      sx={{
-        p: 3,
-        borderRadius: designSystem.borderRadius.lg,
-        border: `1px solid ${theme.palette.divider}`,
-        backgroundColor: theme.palette.background.paper,
-      }}
+      sx={composeSx(surfaceCardSx('default'), { p: 3 })}
     >
       {title && (
         <Typography variant="h6" sx={{ mb: 3, fontWeight: 600 }}>
@@ -426,10 +414,10 @@ const ProgressChart: React.FC<{
               value={item.value}
               sx={{
                 height: 8,
-                borderRadius: 4,
+                borderRadius: sharedSurfaceRadius,
                 backgroundColor: alpha(theme.palette.text.primary, theme.palette.mode === 'dark' ? 0.14 : 0.1),
                 '& .MuiLinearProgress-bar': {
-                  borderRadius: 4,
+                  borderRadius: sharedSurfaceRadius,
                   backgroundColor: item.color || fallbackAccent,
                 },
               }}

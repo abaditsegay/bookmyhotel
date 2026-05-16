@@ -14,6 +14,7 @@ import ErrorIcon from '@mui/icons-material/Error';
 import WarningIcon from '@mui/icons-material/Warning';
 import InfoIcon from '@mui/icons-material/Info';
 import { designSystem } from '../../theme/designSystem';
+import { composeSx, surfaceCardSx } from '../../theme/sxHelpers';
 
 // Animation for notification entrance
 const slideInRight = keyframes`
@@ -190,12 +191,10 @@ const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ childre
               timeout={300}
             >
               <Box
-                sx={{
+                sx={composeSx(surfaceCardSx('subtle'), {
                   backgroundColor: colors.bg,
                   border: `1px solid ${colors.border}`,
-                  borderRadius: designSystem.borderRadius.lg,
                   padding: designSystem.spacing.md,
-                  boxShadow: designSystem.shadows.lg,
                   backdropFilter: 'blur(10px)',
                   display: 'flex',
                   alignItems: 'flex-start',
@@ -203,10 +202,10 @@ const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                   animation: `${slideInRight} 0.3s ease-out`,
                   transition: 'all 0.2s ease',
                   '&:hover': {
-                    transform: 'translateY(-2px)',
-                    boxShadow: designSystem.shadows.xl,
+                    transform: 'translateY(-1px)',
+                    boxShadow: 'none',
                   },
-                }}
+                })}
               >
                 {/* Icon */}
                 <Box

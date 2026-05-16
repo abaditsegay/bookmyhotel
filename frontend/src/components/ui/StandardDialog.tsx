@@ -10,6 +10,7 @@ import {
   Theme,
   Typography,
 } from '@mui/material';
+import { composeSx, surfaceCardSx } from '../../theme/sxHelpers';
 
 interface StandardDialogProps extends Omit<DialogProps, 'title'> {
   title: React.ReactNode;
@@ -32,12 +33,13 @@ const StandardDialog: React.FC<StandardDialogProps> = ({
     <Dialog
       PaperProps={{
         ...PaperProps,
-        sx: {
-          borderRadius: 3,
-          border: theme => `1px solid ${theme.palette.divider}`,
-          boxShadow: theme => theme.shadows[12],
-          ...PaperProps?.sx,
-        },
+        sx: composeSx(
+          surfaceCardSx('default'),
+          {
+            boxShadow: theme => theme.shadows[10],
+          },
+          PaperProps?.sx,
+        ),
       }}
       {...dialogProps}
     >

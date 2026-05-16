@@ -40,6 +40,8 @@ import { roomCacheService } from '../services/RoomCacheService';
 import NumberStepper from './common/NumberStepper';
 import { useThemeColors } from '../theme/useThemeColors';
 import { formatCurrency } from '../utils/currencyUtils';
+import { getReadableAccentTextColor } from '../theme/surfaces';
+import { composeSx, infoPanelSx, surfaceCardSx } from '../theme/sxHelpers';
 
 // Define interfaces for offline walk-in booking (matching online version EXACTLY)
 interface WalkInGuestInfo {
@@ -76,8 +78,10 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
   const { token, user } = useAuth(); // Match exact order from main component
   const { tenantId } = useTenant(); // Match exact usage from main component
   const { t } = useTranslation();
-  const { COLORS, addAlpha } = useThemeColors();
+  const { COLORS } = useThemeColors();
   const theme = useTheme(); // Add theme hook
+  const readableAccentColor = getReadableAccentTextColor(theme);
+  const sharedSurfaceRadius = 4;
   
   const steps = [
     t('dashboard.hotelAdmin.offlineBooking.steps.guestInformation'),
@@ -333,28 +337,17 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
     switch (activeStep) {
       case 0:
         return (
-          <Card sx={{ 
-            bgcolor: 'background.paper',
-            border: '1px solid',
-            borderColor: 'divider',
-            borderRadius: 3,
-            elevation: 0,
-          }}>
+          <Card sx={surfaceCardSx('default')}>
             <CardContent sx={{ p: 4 }}>
               {/* Guest Information Section */}
-              <Box sx={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: 2, 
+              <Box sx={composeSx(infoPanelSx, {
+                display: 'flex',
+                alignItems: 'center',
+                gap: 2,
                 mb: 4,
-                p: 2,
-                bgcolor: 'background.default',
-                border: '1px solid',
-                borderColor: 'divider',
-                borderRadius: 2,
-              }}>
+              })}>
                 <Box>
-                  <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5, color: COLORS.PRIMARY_TEXT }}>
+                  <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5, color: 'text.primary' }}>
                     {t('dashboard.hotelAdmin.offlineBooking.guestInformation.title')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -404,20 +397,15 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
               </Grid>
 
               {/* Stay Details Section */}
-              <Box sx={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: 2, 
+              <Box sx={composeSx(infoPanelSx, {
+                display: 'flex',
+                alignItems: 'center',
+                gap: 2,
                 mb: 3,
                 mt: 4,
-                p: 2,
-                bgcolor: 'background.default',
-                border: '1px solid',
-                borderColor: 'divider',
-                borderRadius: 2,
-              }}>
+              })}>
                 <Box>
-                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5, color: COLORS.PRIMARY_TEXT }}>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5, color: 'text.primary' }}>
                     {t('dashboard.hotelAdmin.offlineBooking.bookingDetails.stayDetailsTitle')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -490,11 +478,11 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                 },
                 '&::-webkit-scrollbar-track': {
                   background: theme.palette.action.hover,
-                  borderRadius: '10px',
+                  borderRadius: `${sharedSurfaceRadius}px`,
                 },
                 '&::-webkit-scrollbar-thumb': {
                   background: theme.palette.action.disabled,
-                  borderRadius: '10px',
+                  borderRadius: `${sharedSurfaceRadius}px`,
                   '&:hover': {
                     background: theme.palette.action.focus,
                   },
@@ -526,17 +514,17 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                           sx={{ 
                             cursor: 'pointer',
                             border: selectedRoom?.id === room.id ? '3px solid' : '1px solid',
-                            borderColor: selectedRoom?.id === room.id ? COLORS.SECONDARY : 'divider',
-                            borderLeft: selectedRoom?.id === room.id ? `6px solid ${COLORS.SECONDARY}` : `3px solid ${COLORS.SECONDARY}`,
-                            backgroundColor: selectedRoom?.id === room.id ? 'action.selected' : 'background.paper',
+                            borderColor: selectedRoom?.id === room.id ? readableAccentColor : 'divider',
+                            borderLeft: selectedRoom?.id === room.id ? `4px solid ${readableAccentColor}` : `2px solid ${alpha(readableAccentColor, 0.28)}`,
+                            backgroundColor: selectedRoom?.id === room.id ? alpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.16 : 0.08) : 'background.paper',
                             elevation: 0,
-                            borderRadius: 2,
+                            borderRadius: sharedSurfaceRadius,
                             transition: 'all 0.2s ease-in-out',
                             '&:hover': {
-                              borderColor: COLORS.SECONDARY,
+                              borderColor: readableAccentColor,
                               backgroundColor: 'action.hover',
-                              transform: 'translateY(-2px)',
-                              boxShadow: 3,
+                              transform: 'translateY(-1px)',
+                              boxShadow: 'none',
                             }
                           }}
                           onClick={() => setSelectedRoom(room)}
@@ -555,8 +543,8 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                                 size="small" 
                                 variant="outlined"
                                 sx={{
-                                  borderColor: COLORS.SECONDARY,
-                                  color: COLORS.SECONDARY,
+                                  borderColor: readableAccentColor,
+                                  color: readableAccentColor,
                                   fontWeight: 'medium',
                                   fontSize: '0.75rem'
                                 }}
@@ -583,7 +571,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                               </Typography>
                             )}
                             <Typography variant="h6" sx={{
-                              color: COLORS.SECONDARY,
+                              color: readableAccentColor,
                               fontWeight: 'bold',
                               fontSize: '1.2rem'
                             }}>
@@ -629,7 +617,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                 {selectedRoom && (
                   <Typography variant="body2" sx={{ 
                     fontWeight: 'medium',
-                    color: COLORS.SECONDARY
+                    color: 'text.primary'
                   }}>
                     ✓ Room {selectedRoom.roomNumber} selected
                   </Typography>
@@ -677,11 +665,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
               textAlign: 'center',
               mb: 4,
               p: 3,
-              backgroundColor: 'background.paper',
-              borderRadius: 2,
-              border: '1px solid',
-              borderColor: 'divider',
-                boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.08)}`,
+              ...surfaceCardSx('subtle'),
             }}>
               <Typography variant="h5" sx={{ 
                 fontWeight: 700,
@@ -697,13 +681,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
             <Grid container spacing={3}>
               {/* Guest Information */}
               <Grid item xs={12} sm={6}>
-                <Card elevation={2} sx={{ 
-                  backgroundColor: 'background.paper',
-                  border: '1px solid',
-                  borderColor: 'divider',
-                  borderRadius: 2,
-                  boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.08)}`,
-                }}>
+                <Card elevation={0} sx={surfaceCardSx('default')}>
                   <CardContent sx={{ p: 3 }}>
                     <Box sx={{ 
                       display: 'flex', 
@@ -746,13 +724,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
               
               {/* Stay Details */}
               <Grid item xs={12} sm={6}>
-                <Card elevation={2} sx={{ 
-                  backgroundColor: 'background.paper',
-                  border: '1px solid',
-                  borderColor: 'divider',
-                  borderRadius: 2,
-                  boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.08)}`,
-                }}>
+                <Card elevation={0} sx={surfaceCardSx('default')}>
                   <CardContent sx={{ p: 3 }}>
                     <Box sx={{ 
                       display: 'flex',
@@ -806,13 +778,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
               
               {/* Pricing Summary */}
               <Grid item xs={12}>
-                <Card elevation={3} sx={{ 
-                  backgroundColor: 'background.paper',
-                  border: '1px solid',
-                  borderColor: 'divider',
-                  borderRadius: 2,
-                  boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.08)}`,
-                }}>
+                <Card elevation={0} sx={surfaceCardSx('default')}>
                   <CardContent sx={{ p: 3 }}>
                     <Box sx={{ 
                       display: 'flex',
@@ -871,23 +837,25 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                       justifyContent: 'space-between', 
                       alignItems: 'center',
                       p: 2,
-                      bgcolor: COLORS.SECONDARY,
-                      borderRadius: 2,
+                      bgcolor: alpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.16 : 0.08),
+                      borderRadius: sharedSurfaceRadius,
                       mb: 2,
+                      border: '1px solid',
+                      borderColor: alpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.3 : 0.14),
                     }}>
-                      <Typography variant="h5" sx={{ color: COLORS.WHITE, fontWeight: 700 }}>
+                      <Typography variant="h5" sx={{ color: 'text.primary', fontWeight: 700 }}>
                         {t('dashboard.hotelAdmin.offlineBooking.confirmation.totalAmountTitle')}
                       </Typography>
-                      <Typography variant="h4" sx={{ color: COLORS.WHITE, fontWeight: 700 }}>
+                      <Typography variant="h4" sx={{ color: 'text.primary', fontWeight: 700 }}>
                         {formatCurrency(calculateTotalAmount() || 0)}
                       </Typography>
                     </Box>
                     
                     <Box sx={{
                       p: 2,
-                      bgcolor: addAlpha(COLORS.SECONDARY, 0.1),
-                      color: COLORS.SECONDARY,
-                      borderRadius: 2,
+                      bgcolor: alpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.12 : 0.06),
+                      color: 'text.primary',
+                      borderRadius: sharedSurfaceRadius,
                       textAlign: 'center',
                       border: '1px solid',
                       borderColor: 'divider',

@@ -23,7 +23,9 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import { designSystem } from '../../theme/designSystem';
-import { tableHeadRowSx } from '../../theme/sxHelpers';
+import { composeSx, surfaceCardSx, tableHeadRowSx } from '../../theme/sxHelpers';
+
+const sharedSurfaceRadius = Math.max(4, designSystem.borderRadius.sm / 2);
 
 export type SortDirection = 'asc' | 'desc';
 
@@ -224,11 +226,10 @@ const AdvancedTable: React.FC<AdvancedTableProps> = ({
     <Box>
       <TableContainer 
         component={Paper} 
-        sx={{ 
+        sx={composeSx(surfaceCardSx('default'), {
           maxHeight,
-          borderRadius: designSystem.borderRadius.md,
-          boxShadow: designSystem.shadows.sm,
-        }}
+          boxShadow: 'none',
+        })}
       >
         <Table stickyHeader={stickyHeader} size={dense ? 'small' : 'medium'}>
           <TableHead>
@@ -422,8 +423,9 @@ const AdvancedTable: React.FC<AdvancedTableProps> = ({
         onClose={handleActionMenuClose}
         PaperProps={{
           sx: {
-            borderRadius: designSystem.borderRadius.md,
-            boxShadow: designSystem.shadows.lg,
+            borderRadius: sharedSurfaceRadius,
+            boxShadow: theme.shadows[8],
+            border: `1px solid ${theme.palette.divider}`,
           },
         }}
       >
