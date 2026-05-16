@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import {
+  Card,
   CardMedia,
   Typography,
   Button,
@@ -26,8 +27,8 @@ import { HotelSearchResult } from '../../types/hotel';
 import { formatCurrencyWithDecimals } from '../../utils/currencyUtils';
 import RoomCard from './RoomCard';
 import RoomTypeCard from './RoomTypeCard';
-import { SurfaceCard } from '../common';
-import { tintedPanelSx } from '../../theme/sxHelpers';
+import { surfaceCardSx, tintedPanelSx } from '../../theme/sxHelpers';
+import { getReadableAccentTextColor } from '../../theme/surfaces';
 
 interface HotelDetailsCardProps {
   hotel: HotelSearchResult;
@@ -98,6 +99,7 @@ const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isLargeScreen = useMediaQuery(theme.breakpoints.up('lg')); // 1200px+
+  const readableAccentColor = getReadableAccentTextColor(theme);
   
   // Determine if we should use room types or individual rooms
   const useRoomTypes = hotel.roomTypeAvailability && hotel.roomTypeAvailability.length > 0;
@@ -116,9 +118,11 @@ const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({
   const hotelRating = 4.2 + (hotel.id % 10) / 10; // Generates ratings between 4.2-5.1
 
   return (
-    <SurfaceCard 
-      variantStyle="elevated"
-      sx={{ 
+    <Card
+      elevation={0}
+      sx={[
+        surfaceCardSx('elevated'),
+        {
         mb: isMobile ? 2 : 3,
         overflow: 'hidden',
         display: horizontalLayout && isLargeScreen ? 'flex' : 'block',
@@ -128,7 +132,8 @@ const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({
           transform: isMobile ? 'none' : 'translateY(-4px)',
           boxShadow: theme.palette.mode === 'dark' ? '0 22px 40px rgba(2, 6, 23, 0.42)' : '0 18px 36px rgba(15, 23, 42, 0.12)',
         },
-      }}
+      },
+      ]}
     >
       {/* Hotel Header with Image */}
       <CardMedia
@@ -362,7 +367,7 @@ const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({
                   sx={{
                     display: 'inline-block',
                     mb: amenityHighlights.length > 0 ? 1.5 : 0,
-                    color: 'primary.main',
+                    color: readableAccentColor,
                     textDecoration: 'none',
                     fontWeight: 600,
                     '&:hover': {
@@ -428,7 +433,11 @@ const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({
             variant="outlined"
             size={isMobile ? "medium" : "small"}
             fullWidth={isMobile}
-            sx={{ minWidth: isMobile ? '100%' : 'auto' }}
+            sx={{
+              minWidth: isMobile ? '100%' : 'auto',
+              color: readableAccentColor,
+              borderColor: alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.3 : 0.2),
+            }}
           >
             {expanded ? t('hotelSearch.card.hideRooms') : t('hotelSearch.card.showAllRooms')}
           </Button>
@@ -478,9 +487,11 @@ const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({
                 <Button
                   variant="text"
                   onClick={() => setExpanded(true)}
-                  color="primary"
                   fullWidth={isMobile}
-                  sx={{ py: isMobile ? 1.5 : undefined }}
+                  sx={{
+                    py: isMobile ? 1.5 : undefined,
+                    color: readableAccentColor,
+                  }}
                 >
                   {useRoomTypes
                     ? t('hotelSearch.card.viewMoreRoomTypes', { count: hotel.roomTypeAvailability!.length - (isMobile ? 1 : 2) })
@@ -547,7 +558,7 @@ const HotelDetailsCard: React.FC<HotelDetailsCardProps> = ({
         )}
       </Box>
       </Box>
-    </SurfaceCard>
+    </Card>
   );
 };
 

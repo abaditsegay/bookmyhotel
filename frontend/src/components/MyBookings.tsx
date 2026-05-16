@@ -50,6 +50,7 @@ import { BookingResponse, BookingModificationRequest } from '../types/booking';
 import { StandardLoading, StandardError } from './common';
 import { useThemeColors } from '../theme/useThemeColors';
 import { formatDateForDisplay, formatDateTimeForDisplay } from '../utils/dateUtils';
+import { getReadableAccentTextColor } from '../theme/surfaces';
 
 const MyBookings: React.FC = () => {
   const { t } = useTranslation();
@@ -57,6 +58,9 @@ const MyBookings: React.FC = () => {
   const { showSubmissionError } = useSubmissionError();
   const { COLORS, addAlpha, getGradient } = useThemeColors();
   const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
+  const accentBorder = addAlpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.34 : 0.18);
+  const accentHover = addAlpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.14 : 0.08);
   const [bookings, setBookings] = useState<BookingResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -253,7 +257,7 @@ const MyBookings: React.FC = () => {
         return <Cancel color="error" />;
       case 'CHECKED_IN':
       case 'CHECKED_OUT':
-        return <Hotel color="primary" />;
+        return <Hotel sx={{ color: readableAccentColor }} />;
       default:
         return <Error color="error" />;
     }
@@ -328,7 +332,7 @@ const MyBookings: React.FC = () => {
             boxShadow: theme.shadows[4],
           }}
         >
-          <Hotel sx={{ fontSize: 80, color: 'primary.main', mb: 3, opacity: 0.7 }} />
+          <Hotel sx={{ fontSize: 80, color: readableAccentColor, mb: 3, opacity: 0.7 }} />
           <Typography 
             variant="h4" 
             sx={{
@@ -388,14 +392,14 @@ const MyBookings: React.FC = () => {
                         component="h2" 
                         sx={{
                           fontWeight: 'bold',
-                          color: 'primary.main',
+                          color: readableAccentColor,
                           mb: 1,
                         }}
                       >
                         🏨 {booking.hotelName}
                       </Typography>
                       <Box display="flex" alignItems="center" gap={1} mb={1}>
-                        <LocationOn fontSize="small" sx={{ color: 'primary.main' }} />
+                        <LocationOn fontSize="small" sx={{ color: readableAccentColor }} />
                         <Typography variant="body1" color="text.secondary" sx={{ fontSize: '1rem' }}>
                           {booking.hotelAddress}
                         </Typography>
@@ -444,7 +448,7 @@ const MyBookings: React.FC = () => {
                           variant="h6" 
                           sx={{
                             fontWeight: 'bold',
-                            color: 'primary.main',
+                            color: readableAccentColor,
                             mb: 2,
                             display: 'flex',
                             alignItems: 'center',
@@ -476,7 +480,7 @@ const MyBookings: React.FC = () => {
 
                     <Grid item xs={12} md={6}>
                       <Box mb={2}>
-                        <Typography variant="subtitle2" color="primary" gutterBottom>
+                        <Typography variant="subtitle2" sx={{ color: readableAccentColor }} gutterBottom>
                           {t('booking.details.stayInformation')}
                         </Typography>
                         <Box display="flex" alignItems="center" gap={1} mb={1}>
@@ -517,7 +521,7 @@ const MyBookings: React.FC = () => {
                       <Typography variant="body2" color="text.secondary">
                         {BookingService.formatCurrency(booking.pricePerNight)} / {t('booking.myBookingsPage.nightSingle')}
                       </Typography>
-                      <Typography variant="h6" color="primary">
+                      <Typography variant="h6" sx={{ color: readableAccentColor }}>
                         {t('booking.manage.totalAmount')}: {BookingService.formatCurrency(booking.totalAmount)}
                       </Typography>
                     </Box>
@@ -539,6 +543,8 @@ const MyBookings: React.FC = () => {
                     startIcon={<Email />}
                     href={`mailto:support@shegersolutions.com?subject=Booking Inquiry - ${booking.confirmationNumber}`}
                     sx={{
+                      color: readableAccentColor,
+                      borderColor: accentBorder,
                       borderRadius: 2,
                       borderWidth: 1.5,
                       px: 3,
@@ -547,6 +553,8 @@ const MyBookings: React.FC = () => {
                       textTransform: 'none',
                       backgroundColor: COLORS.BG_PAPER,
                       '&:hover': {
+                        borderColor: readableAccentColor,
+                        backgroundColor: accentHover,
                         borderWidth: 1.5,
                         transform: 'translateY(-1px)',
                         boxShadow: `0 4px 12px ${addAlpha(COLORS.BLACK, 0.15)}`,
@@ -584,10 +592,11 @@ const MyBookings: React.FC = () => {
                           <Button 
                             variant="outlined"
                             size="medium" 
-                            color="primary" 
                             disabled
                             startIcon={<Edit />}
                             sx={{
+                              color: readableAccentColor,
+                              borderColor: accentBorder,
                               borderRadius: 2,
                               px: 3,
                               py: 1.5,

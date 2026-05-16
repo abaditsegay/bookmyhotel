@@ -17,7 +17,7 @@ import { DataState, PageContainer } from '../components/common';
 import { PageHeader, SurfaceCard } from '../components/ui';
 import StandardButton from '../components/common/StandardButton';
 import { PublicHotelSearchLocationState, usePublicHotelSearchResults, formatHotelSearchSummary } from '../hooks/usePublicHotelSearchResults';
-import { getPageShellBackground } from '../theme/surfaces';
+import { getPageShellBackground, getReadableAccentTextColor } from '../theme/surfaces';
 import { designSystem } from '../theme/designSystem';
 import { tintedPanelSx } from '../theme/sxHelpers';
 
@@ -27,6 +27,7 @@ const HotelListPage: React.FC = () => {
   const location = useLocation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const readableAccentColor = getReadableAccentTextColor(theme);
 
   const locationState = (location.state as PublicHotelSearchLocationState | null) ?? null;
   const { searchRequest, hotels, successMessage: initialSuccessMessage, isLoading, error, hasSearchRequest, refetch } =
@@ -132,6 +133,8 @@ const HotelListPage: React.FC = () => {
                 onClick={handleBackToSearch}
                 sx={{ 
                   minWidth: 'auto',
+                  color: readableAccentColor,
+                  borderColor: alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.3 : 0.2),
                 }}
               >
                 {t('hotelSearch.results.modifySearch')}

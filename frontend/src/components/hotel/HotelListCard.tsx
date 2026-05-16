@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import {
+  Card,
   CardMedia,
   Typography,
   Box,
@@ -16,11 +17,10 @@ import {
   Visibility as ViewIcon,
 } from '@mui/icons-material';
 import { HotelSearchResult } from '../../types/hotel';
-import { SurfaceCard } from '../common';
 import StandardButton from '../common/StandardButton';
 import { formatCurrencyWithDecimals } from '../../utils/currencyUtils';
 import { formatCurrency } from '../../utils/currencyUtils';
-import { tintedPanelSx } from '../../theme/sxHelpers';
+import { surfaceCardSx, tintedPanelSx } from '../../theme/sxHelpers';
 
 interface HotelListCardProps {
   hotel: HotelSearchResult;
@@ -88,9 +88,11 @@ const HotelListCard: React.FC<HotelListCardProps> = ({ hotel, onViewHotel }) => 
   };
 
   return (
-    <SurfaceCard 
-      variantStyle="elevated"
-      sx={{ 
+    <Card
+      elevation={0}
+      sx={[
+        surfaceCardSx('elevated'),
+        {
         display: 'flex',
         flexDirection: isLargeScreen ? 'row' : 'column',
         height: isLargeScreen ? '280px' : 'auto',
@@ -105,7 +107,8 @@ const HotelListCard: React.FC<HotelListCardProps> = ({ hotel, onViewHotel }) => 
           transition: 'transform 0.1s ease-in-out',
         } : {},
         cursor: 'pointer',
-      }}
+      },
+      ]}
       onClick={() => onViewHotel(hotel.id)}
     >
       {/* Hotel Image - Mobile Optimized */}
@@ -394,7 +397,7 @@ const HotelListCard: React.FC<HotelListCardProps> = ({ hotel, onViewHotel }) => 
           </Box>
         )}
       </Box>
-    </SurfaceCard>
+    </Card>
   );
 };
 

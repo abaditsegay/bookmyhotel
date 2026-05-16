@@ -18,7 +18,7 @@ import { DataState, PageContainer } from '../components/common';
 import { PageHeader, SurfaceCard } from '../components/ui';
 import StandardButton from '../components/common/StandardButton';
 import { usePublicHotelSearchResults, PublicHotelSearchLocationState, formatHotelSearchSummary } from '../hooks/usePublicHotelSearchResults';
-import { getPageShellBackground } from '../theme/surfaces';
+import { getPageShellBackground, getReadableAccentTextColor } from '../theme/surfaces';
 import { designSystem } from '../theme/designSystem';
 import { tintedPanelSx } from '../theme/sxHelpers';
 import { 
@@ -33,6 +33,7 @@ const SearchResultsPage: React.FC = () => {
   const { isAuthenticated } = useAuth();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const readableAccentColor = getReadableAccentTextColor(theme);
 
   const locationState = (location.state as PublicHotelSearchLocationState | null) ?? null;
   const { searchRequest, hotels, successMessage: initialSuccessMessage, isLoading, error, hasSearchRequest, refetch } =
@@ -188,6 +189,8 @@ const SearchResultsPage: React.FC = () => {
           variant="outlined"
           sx={{ 
             minWidth: 'auto',
+            color: readableAccentColor,
+            borderColor: alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.3 : 0.2),
           }}
         >
           {t('hotelSearch.results.backToSearch')}
@@ -220,7 +223,15 @@ const SearchResultsPage: React.FC = () => {
                 ? t('hotelSearch.results.hotelsFoundSingle', { count: hotels.length })
                 : t('hotelSearch.results.hotelsFoundPlural', { count: hotels.length })}
             </Typography>
-            <StandardButton variant="outlined" onClick={handleBackToSearch} sx={{ minWidth: 'auto' }}>
+            <StandardButton
+              variant="outlined"
+              onClick={handleBackToSearch}
+              sx={{
+                minWidth: 'auto',
+                color: readableAccentColor,
+                borderColor: alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.3 : 0.2),
+              }}
+            >
               {t('hotelSearch.results.modifySearch')}
             </StandardButton>
           </Box>

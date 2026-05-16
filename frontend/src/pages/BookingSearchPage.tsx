@@ -25,13 +25,14 @@ import { formatDateForDisplay } from '../utils/dateUtils';
 import PremiumTextField from '../components/common/PremiumTextField';
 import StandardButton from '../components/common/StandardButton';
 import { PageContainer, SurfaceCard } from '../components/common';
-import { getPageShellBackground } from '../theme/surfaces';
+import { getPageShellBackground, getReadableAccentTextColor } from '../theme/surfaces';
 import { infoPanelSx, tintedPanelSx } from '../theme/sxHelpers';
 
 const BookingSearchPage: React.FC = () => {
   const { t } = useTranslation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const readableAccentColor = getReadableAccentTextColor(theme);
   
   const [searchType, setSearchType] = useState<'confirmation' | 'email'>('confirmation');
   const [confirmationNumber, setConfirmationNumber] = useState('');
@@ -301,7 +302,7 @@ const BookingSearchPage: React.FC = () => {
               <Grid item xs={6} sm={6} md={4}>
                 <Box sx={infoPanelSx}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 0.5, md: 1 } }}>
-                    <HotelIcon sx={{ mr: 1, color: 'primary.main', fontSize: { xs: '1.2rem', md: '1.5rem' } }} />
+                    <HotelIcon sx={{ mr: 1, color: readableAccentColor, fontSize: { xs: '1.2rem', md: '1.5rem' } }} />
                     <Typography variant={isMobile ? "caption" : "body2"} color="text.secondary">{t('booking.page.hotel')}</Typography>
                   </Box>
                   <Typography variant={isMobile ? "body2" : "body1"} fontWeight="medium">
@@ -316,7 +317,7 @@ const BookingSearchPage: React.FC = () => {
               <Grid item xs={6} sm={6} md={4}>
                 <Box sx={infoPanelSx}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 0.5, md: 1 } }}>
-                    <CalendarIcon sx={{ mr: 1, color: 'primary.main', fontSize: { xs: '1.2rem', md: '1.5rem' } }} />
+                    <CalendarIcon sx={{ mr: 1, color: readableAccentColor, fontSize: { xs: '1.2rem', md: '1.5rem' } }} />
                     <Typography variant={isMobile ? "caption" : "body2"} color="text.secondary">{t('booking.manage.checkIn')}</Typography>
                   </Box>
                   <Typography variant={isMobile ? "body2" : "body1"} fontWeight="medium">
@@ -328,7 +329,7 @@ const BookingSearchPage: React.FC = () => {
               <Grid item xs={6} sm={6} md={4}>
                 <Box sx={infoPanelSx}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 0.5, md: 1 } }}>
-                    <CalendarIcon sx={{ mr: 1, color: 'primary.main', fontSize: { xs: '1.2rem', md: '1.5rem' } }} />
+                    <CalendarIcon sx={{ mr: 1, color: readableAccentColor, fontSize: { xs: '1.2rem', md: '1.5rem' } }} />
                     <Typography variant={isMobile ? "caption" : "body2"} color="text.secondary">{t('booking.manage.checkOut')}</Typography>
                   </Box>
                   <Typography variant={isMobile ? "body2" : "body1"} fontWeight="medium">
@@ -361,7 +362,7 @@ const BookingSearchPage: React.FC = () => {
                   <Grid container spacing={{ xs: 2, md: 3 }}>
                     <Grid item xs={12} md={6}>
                       <Box sx={infoPanelSx}>
-                        <Typography variant={isMobile ? "subtitle1" : "h6"} gutterBottom>
+                        <Typography variant={isMobile ? "subtitle1" : "h6"} gutterBottom sx={{ color: readableAccentColor }}>
                           {t('booking.manage.guestInformation')}
                         </Typography>
                         <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 0.5, md: 1 } }}>
@@ -376,7 +377,7 @@ const BookingSearchPage: React.FC = () => {
 
                     <Grid item xs={12} md={6}>
                       <Box sx={infoPanelSx}>
-                        <Typography variant={isMobile ? "subtitle1" : "h6"} gutterBottom>
+                        <Typography variant={isMobile ? "subtitle1" : "h6"} gutterBottom sx={{ color: readableAccentColor }}>
                           {t('booking.page.hotelInformation')}
                         </Typography>
                         <Typography variant={isMobile ? "body2" : "body1"} fontWeight="medium">
@@ -390,7 +391,7 @@ const BookingSearchPage: React.FC = () => {
 
                     <Grid item xs={12} md={6}>
                       <Box sx={infoPanelSx}>
-                        <Typography variant={isMobile ? "subtitle1" : "h6"} gutterBottom>
+                        <Typography variant={isMobile ? "subtitle1" : "h6"} gutterBottom sx={{ color: readableAccentColor }}>
                           {t('booking.page.roomDetails')}
                         </Typography>
                         <Typography variant={isMobile ? "body2" : "body1"}>
@@ -404,7 +405,7 @@ const BookingSearchPage: React.FC = () => {
 
                     <Grid item xs={12} md={6}>
                       <Box sx={infoPanelSx}>
-                        <Typography variant={isMobile ? "subtitle1" : "h6"} gutterBottom>
+                        <Typography variant={isMobile ? "subtitle1" : "h6"} gutterBottom sx={{ color: readableAccentColor }}>
                           {t('booking.find.searchPage.sections.bookingInformation')}
                         </Typography>
                         <Typography variant={isMobile ? "body2" : "body2"}>

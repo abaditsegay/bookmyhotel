@@ -293,20 +293,10 @@ public class StaffController {
                 return ResponseEntity.badRequest().body("User not found");
             }
 
-            // Find the corresponding HousekeepingStaff record by email for maintenance
-            // tasks
             Long hotelId = hotelService.getHotelIdByTenantId(user.getTenantId());
-            Optional<HousekeepingStaff> staffOpt = housekeepingService.findStaffByEmailAndHotel(user.getEmail(),
-                    hotelId);
-            if (!staffOpt.isPresent()) {
-                return ResponseEntity.badRequest().body("Maintenance staff record not found");
-            }
-
-            // Get maintenance tasks (not maintenance requests) assigned to this staff
-            // member
+                // Maintenance tasks are assigned by staff email in the current data model.
             List<MaintenanceTask> tasks = maintenanceTaskRepository
-                    .findByHotelIdAndAssignedToOrderByScheduledStartTimeAsc(
-                            hotelId, staffOpt.get());
+                    .findByHotelIdAndAssignedTo_EmailOrderByCreatedAtDesc(hotelId, user.getEmail());
 
             // Convert to DTOs to avoid JSON serialization issues
             List<MaintenanceTaskDTO> taskDTOs = tasks.stream()
@@ -355,14 +345,7 @@ public class StaffController {
 
             MaintenanceTask task = taskOpt.get();
 
-            // Verify the task is assigned to this user by checking staff record
-            Optional<HousekeepingStaff> staffOpt = housekeepingService.findStaffByEmailAndHotel(user.getEmail(),
-                    hotelId);
-            if (!staffOpt.isPresent()) {
-                return ResponseEntity.badRequest().body("Staff record not found");
-            }
-
-            if (task.getAssignedTo() == null || !task.getAssignedTo().getId().equals(staffOpt.get().getId())) {
+            if (!isMaintenanceTaskAssignedToUser(task, user)) {
                 return ResponseEntity.badRequest().body("Task not assigned to you");
             }
 
@@ -400,14 +383,7 @@ public class StaffController {
 
             MaintenanceTask task = taskOpt.get();
 
-            // Verify the task is assigned to this user by checking staff record
-            Optional<HousekeepingStaff> staffOpt = housekeepingService.findStaffByEmailAndHotel(user.getEmail(),
-                    hotelId);
-            if (!staffOpt.isPresent()) {
-                return ResponseEntity.badRequest().body("Staff record not found");
-            }
-
-            if (task.getAssignedTo() == null || !task.getAssignedTo().getId().equals(staffOpt.get().getId())) {
+            if (!isMaintenanceTaskAssignedToUser(task, user)) {
                 return ResponseEntity.badRequest().body("Task not assigned to you");
             }
 
@@ -461,14 +437,7 @@ public class StaffController {
 
             MaintenanceTask task = taskOpt.get();
 
-            // Verify the task is assigned to this user by checking staff record
-            Optional<HousekeepingStaff> staffOpt = housekeepingService.findStaffByEmailAndHotel(user.getEmail(),
-                    hotelId);
-            if (!staffOpt.isPresent()) {
-                return ResponseEntity.badRequest().body("Staff record not found");
-            }
-
-            if (task.getAssignedTo() == null || !task.getAssignedTo().getId().equals(staffOpt.get().getId())) {
+            if (!isMaintenanceTaskAssignedToUser(task, user)) {
                 return ResponseEntity.badRequest().body("Task not assigned to you");
             }
 
@@ -546,18 +515,9 @@ public class StaffController {
             User user = userOpt.get();
             Long hotelId = hotelService.getHotelIdByTenantId(user.getTenantId());
 
-            // Find the corresponding HousekeepingStaff record by email for maintenance
-            // tasks
-            Optional<HousekeepingStaff> staffOpt = housekeepingService.findStaffByEmailAndHotel(user.getEmail(),
-                    hotelId);
-            if (!staffOpt.isPresent()) {
-                return ResponseEntity.badRequest().body("Maintenance staff record not found");
-            }
-
-            // Get maintenance tasks assigned to this staff member and calculate stats
+                // Maintenance tasks are resolved by assigned staff email.
             List<MaintenanceTask> allTasks = maintenanceTaskRepository
-                    .findByHotelIdAndAssignedToOrderByScheduledStartTimeAsc(
-                            hotelId, staffOpt.get());
+                    .findByHotelIdAndAssignedTo_EmailOrderByCreatedAtDesc(hotelId, user.getEmail());
 
             long totalTasks = allTasks.size();
             long pendingTasks = allTasks.stream().filter(t -> t.getStatus() == TaskStatus.OPEN).count();
@@ -574,6 +534,12 @@ public class StaffController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error getting maintenance stats: " + e.getMessage());
         }
+    }
+
+    private boolean isMaintenanceTaskAssignedToUser(MaintenanceTask task, User user) {
+        return task.getAssignedTo() != null
+                && task.getAssignedTo().getEmail() != null
+                && task.getAssignedTo().getEmail().equalsIgnoreCase(user.getEmail());
     }
 
     // Helper method to convert HousekeepingTask to DTO
