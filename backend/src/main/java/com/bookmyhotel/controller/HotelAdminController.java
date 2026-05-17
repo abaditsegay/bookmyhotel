@@ -33,6 +33,7 @@ import com.bookmyhotel.dto.BookingResponse;
 import com.bookmyhotel.dto.HotelDTO;
 import com.bookmyhotel.dto.RoomCreationRequest;
 import com.bookmyhotel.entity.HotelImage;
+import com.bookmyhotel.entity.RoomStatus;
 import com.bookmyhotel.entity.RoomType;
 import com.bookmyhotel.enums.ImageCategory;
 import com.bookmyhotel.dto.RoomCreationResponse;
@@ -147,9 +148,10 @@ public class HotelAdminController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String roomType,
+            @RequestParam(required = false) RoomStatus status,
             @RequestParam(required = false) Boolean available,
             Authentication auth) {
-        Page<RoomDTO> rooms = hotelAdminService.getHotelRooms(auth.getName(), page, size, search, roomType, available);
+        Page<RoomDTO> rooms = hotelAdminService.getHotelRooms(auth.getName(), page, size, search, roomType, status, available);
         return ResponseEntity.ok(rooms);
     }
 
@@ -230,7 +232,7 @@ public class HotelAdminController {
     public ResponseEntity<List<Map<String, Object>>> debugListRooms(Authentication auth) {
         try {
             // Get all rooms using the paginated method with a large page size
-            Page<RoomDTO> roomsPage = hotelAdminService.getHotelRooms(auth.getName(), 0, 1000, "", "", null);
+            Page<RoomDTO> roomsPage = hotelAdminService.getHotelRooms(auth.getName(), 0, 1000, "", "", null, null);
             List<RoomDTO> rooms = roomsPage.getContent();
 
             List<Map<String, Object>> debugInfo = rooms.stream().map(room -> {

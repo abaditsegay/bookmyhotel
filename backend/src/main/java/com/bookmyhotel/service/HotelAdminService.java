@@ -437,9 +437,9 @@ public class HotelAdminService {
     /**
      * Get hotel rooms with filtering
      */
-    @Cacheable(value = CacheConfig.ROOMS_BY_HOTEL_CACHE, key = "'admin:' + #adminEmail + ':page:' + #page + ':size:' + #size + ':search:' + (#search != null ? #search : 'null') + ':type:' + (#roomType != null ? #roomType : 'null') + ':available:' + (#available != null ? #available : 'null')")
+        @Cacheable(value = CacheConfig.ROOMS_BY_HOTEL_CACHE, key = "'admin:' + #adminEmail + ':page:' + #page + ':size:' + #size + ':search:' + (#search != null ? #search : 'null') + ':type:' + (#roomType != null ? #roomType : 'null') + ':status:' + (#status != null ? #status : 'null') + ':available:' + (#available != null ? #available : 'null')")
     public Page<RoomDTO> getHotelRooms(String adminEmail, int page, int size, String search, String roomType,
-            Boolean available) {
+            RoomStatus status, Boolean available) {
         // System.err.println("🔍 HotelAdminService.getHotelRooms called with
         // adminEmail: " + adminEmail);
         User admin = getUserByEmail(adminEmail);
@@ -490,6 +490,11 @@ public class HotelAdminService {
                     if (roomType != null && !roomType.trim().isEmpty()) {
                         RoomType targetType = RoomType.valueOf(roomType);
                         matches = matches && room.getRoomType().equals(targetType);
+                    }
+
+                    // Status filter
+                    if (status != null) {
+                        matches = matches && room.getStatus() == status;
                     }
 
                     // Availability filter

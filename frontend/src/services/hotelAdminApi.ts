@@ -533,7 +533,7 @@ export const hotelAdminApi = {
       }
       
       if (status && status.trim()) {
-        params.append('available', status === 'AVAILABLE' ? 'true' : 'false');
+        params.append('status', status.trim());
       }
 
       const response = await fetch(`${API_BASE_URL}/hotel-admin/rooms?${params.toString()}`, {

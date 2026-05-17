@@ -93,6 +93,7 @@ const StandardButton: React.FC<StandardButtonProps> = ({
         const tone = paletteColor in theme.palette
           ? theme.palette[paletteColor as 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'info']
           : theme.palette.primary;
+        const textVariantColor = theme.palette.mode === 'dark' ? tone.light : tone.main;
 
         return {
           ...sizeConfig,
@@ -127,9 +128,9 @@ const StandardButton: React.FC<StandardButtonProps> = ({
             },
           }),
           ...(variant === 'text' && {
-            color: tone.main,
+            color: textVariantColor,
             '&:hover': {
-              backgroundColor: alpha(tone.main, theme.palette.mode === 'dark' ? 0.14 : 0.04),
+              backgroundColor: alpha(textVariantColor, theme.palette.mode === 'dark' ? 0.16 : 0.06),
             },
           }),
           ...(typeof sx === 'function' ? sx(theme) : sx),

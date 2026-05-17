@@ -119,6 +119,16 @@ const UserManagementAdmin: React.FC = () => {
 
   const allRoleOptions = ['SUPER_ADMIN', 'ADMIN', 'HOTEL_ADMIN', 'OPERATIONAL_ADMIN', 'FRONTDESK', 'HOUSEKEEPING', 'MAINTENANCE', 'TESTER', 'CUSTOMER'];
 
+  const dialogSecondaryActionSx = {
+    color: 'text.primary',
+    borderColor: alpha(theme.palette.text.primary, theme.palette.mode === 'dark' ? 0.28 : 0.18),
+    backgroundColor: alpha(theme.palette.common.white, theme.palette.mode === 'dark' ? 0.02 : 0),
+    '&:hover': {
+      borderColor: alpha(theme.palette.text.primary, theme.palette.mode === 'dark' ? 0.42 : 0.28),
+      backgroundColor: alpha(theme.palette.text.primary, theme.palette.mode === 'dark' ? 0.1 : 0.04),
+    },
+  } as const;
+
   // Roles visible in the filter dropdown — ADMIN cannot see SUPER_ADMIN
   const callerRoleForFilter = currentUser?.role || (currentUser?.roles?.[0] ?? '');
   const roleOptions = callerRoleForFilter === 'ADMIN'
@@ -620,7 +630,7 @@ const UserManagementAdmin: React.FC = () => {
         description="Create a new platform or hotel-bound account and assign the appropriate role and tenancy scope."
         actions={
           <>
-            <StandardButton variant="text" onClick={closeCreateDialog}>Cancel</StandardButton>
+            <StandardButton variant="outlined" onClick={closeCreateDialog} sx={dialogSecondaryActionSx}>Cancel</StandardButton>
             <StandardButton onClick={handleCreateUser} variant="contained">Create User</StandardButton>
           </>
         }
@@ -764,7 +774,7 @@ const UserManagementAdmin: React.FC = () => {
         description="Update the selected account's profile and role assignment."
         actions={
           <>
-            <StandardButton variant="text" onClick={() => setEditDialogOpen(false)}>Cancel</StandardButton>
+            <StandardButton variant="outlined" onClick={() => setEditDialogOpen(false)} sx={dialogSecondaryActionSx}>Cancel</StandardButton>
             <StandardButton onClick={handleEditUser} variant="contained">Update User</StandardButton>
           </>
         }
@@ -833,7 +843,7 @@ const UserManagementAdmin: React.FC = () => {
         title={toggleUser?.isActive ? 'Deactivate User' : 'Activate User'}
         actions={
           <>
-            <StandardButton variant="text" onClick={closeToggleStatusDialog}>Cancel</StandardButton>
+            <StandardButton variant="outlined" onClick={closeToggleStatusDialog} sx={dialogSecondaryActionSx}>Cancel</StandardButton>
             <StandardButton
               onClick={handleToggleUserStatus}
               variant="contained"
@@ -870,7 +880,7 @@ const UserManagementAdmin: React.FC = () => {
         title="Reset Password"
         actions={
           <>
-            <StandardButton variant="text" onClick={() => setPasswordResetDialogOpen(false)}>Cancel</StandardButton>
+            <StandardButton variant="outlined" onClick={() => setPasswordResetDialogOpen(false)} sx={dialogSecondaryActionSx}>Cancel</StandardButton>
             <StandardButton onClick={handlePasswordReset} variant="contained" disabled={loading} loading={loading} loadingText="Sending...">
               Reset & Send Email
             </StandardButton>
@@ -893,7 +903,7 @@ const UserManagementAdmin: React.FC = () => {
         title="User Details"
         actions={
           <>
-            <StandardButton variant="text" onClick={() => setDetailsDialogOpen(false)}>Close</StandardButton>
+            <StandardButton variant="outlined" onClick={() => setDetailsDialogOpen(false)} sx={dialogSecondaryActionSx}>Close</StandardButton>
             <StandardButton
               variant="contained"
               startIcon={<EditIcon />}
