@@ -26,6 +26,7 @@ It does not cover:
 
 - [Spreadsheet-ready CSV](./manual-functional-test-plan.csv)
 - [Detailed QA execution guide](./qa/manual-qa-execution-guide.md)
+- [Condensed smoke-test checklist](./qa/manual-smoke-test-checklist.md)
 - [Hotel Admin role test plan](./qa/hotel-admin-functional-test-plan.md)
 - [Customer and guest role test plan](./qa/customer-functional-test-plan.md)
 - [Front desk role test plan](./qa/front-desk-functional-test-plan.md)
