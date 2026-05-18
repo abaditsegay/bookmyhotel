@@ -58,7 +58,7 @@ import { TableRowSkeleton } from '../common/SkeletonLoaders';
 import { NoBookings } from '../common/EmptyState';
 import PremiumTextField from '../common/PremiumTextField';
 import PremiumSelect from '../common/PremiumSelect';
-import { actionIconButtonSx, guestNameBadgeSx, refreshActionButtonSx, tableHeadRowSx } from '../../theme/sxHelpers';
+import { actionIconButtonSx, refreshActionButtonSx, tableHeadRowSx } from '../../theme/sxHelpers';
 
 interface BookingManagementTableProps {
   mode: 'hotel-admin' | 'front-desk';
@@ -933,8 +933,12 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
                         <Typography 
                           variant="body2" 
                           sx={{ 
-                            ...guestNameBadgeSx(muiTheme),
-                            mb: 0.5 
+                            display: 'block',
+                            mb: 0.35,
+                            fontWeight: 700,
+                            color: muiTheme.palette.text.primary,
+                            lineHeight: 1.25,
+                            letterSpacing: '-0.01em'
                           }}
                         >
                           {booking.guestName}
