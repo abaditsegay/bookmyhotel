@@ -47,6 +47,9 @@ const getThemeOptions = (mode: AppThemeMode): ThemeOptions => {
   const elevatedBorderHover = scheme.border.strong;
   const fieldBackground = scheme.background.input;
   const sharedCardBackground = alpha(palette.background.paper, isDark ? 0.84 : 0.94);
+  const sharedDialogBackground = isDark
+    ? alpha(palette.background.paper, 0.98)
+    : alpha(palette.background.paper, 0.995);
   const sharedSurfaceRadius = Math.max(4, designSystem.borderRadius.sm / 2);
   const sharedDialogRadius = sharedSurfaceRadius + 2;
   const surfaceShadow = isDark
@@ -336,11 +339,18 @@ const getThemeOptions = (mode: AppThemeMode): ThemeOptions => {
 
       MuiDialog: {
         styleOverrides: {
+          root: {
+            '& .MuiBackdrop-root': {
+              backgroundColor: isDark ? alpha('#020617', 0.76) : alpha('#0f172a', 0.38),
+              backdropFilter: 'blur(8px)',
+            },
+          },
           paper: {
             borderRadius: sharedDialogRadius,
             boxShadow: dialogShadow,
-            backgroundColor: sharedCardBackground,
+            backgroundColor: sharedDialogBackground,
             border: `1px solid ${elevatedBorder}`,
+            backdropFilter: 'none',
           }
         }
       },

@@ -46,6 +46,8 @@ import { adminApiService, HotelDTO, UpdateHotelRequest } from '../../services/ad
 import HotelEditDialog from '../../components/hotel/HotelEditDialog';
 import PremiumTextField from '../../components/common/PremiumTextField';
 import PremiumSelect from '../../components/common/PremiumSelect';
+import { dialogSecondaryActionSx } from '../../theme/sxHelpers';
+            <Button variant="outlined" sx={dialogSecondaryActionSx} onClick={() => setRegisterDialogOpen(false)}>Cancel</Button>
 import { tableHeadRowSx } from '../../theme/sxHelpers';
 import { getEffectiveSearchTerm } from '../../utils/search';
 
@@ -1458,6 +1460,7 @@ const HotelManagementAdmin: React.FC = () => {
           </DialogContent>
           <DialogActions>
             <Button onClick={handleCloseViewDialog}>Close</Button>
+            <Button variant="outlined" sx={dialogSecondaryActionSx} onClick={handleCloseViewDialog}>Close</Button>
             <Button 
               variant="contained" 
               startIcon={<EditIcon />}

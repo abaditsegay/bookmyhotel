@@ -38,6 +38,9 @@ import {
 import { useAuth } from '../../contexts/AuthContext';
 import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
 import { useNavigate } from 'react-router-dom';
+import { dialogSecondaryActionSx } from '../../theme/sxHelpers';
+            <Button variant="outlined" sx={dialogSecondaryActionSx} onClick={() => setCreateDialogOpen(false)}>Cancel</Button>
+            <Button variant="outlined" sx={dialogSecondaryActionSx} onClick={() => setEditDialogOpen(false)}>Cancel</Button>
 import { formatDateTimeForDisplay } from '../../utils/dateUtils';
 import { 
   adminApiService, 
@@ -648,6 +651,7 @@ const TenantManagementAdmin: React.FC = () => {
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setDetailsDialogOpen(false)}>Close</Button>
+            <Button variant="outlined" sx={dialogSecondaryActionSx} onClick={() => setDetailsDialogOpen(false)}>Close</Button>
             <Button 
               variant="contained" 
               startIcon={<EditIcon />}

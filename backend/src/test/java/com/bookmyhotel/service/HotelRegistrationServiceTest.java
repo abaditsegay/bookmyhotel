@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -262,6 +263,76 @@ class HotelRegistrationServiceTest {
         assertEquals("Owner", savedUser.getLastName());
         assertEquals(Set.of(UserRole.HOTEL_ADMIN), savedUser.getRoles());
         assertEquals(hotel, savedUser.getHotel());
+        verify(emailService).sendHotelRegistrationApprovalEmail("owner@demo.test", "Jane", "Demo Hotel", null);
+    }
+
+    @Test
+    void approveRegistrationShouldCreateAndLinkHotelWhenLegacyRegistrationHasNoApprovedHotel() {
+        HotelRegistration registration = approvedRegistrationDraft();
+        registration.setApprovedHotelId(null);
+        registration.setTenantId(null);
+
+        Hotel createdHotel = registrationHotel(20L, false);
+        User hotelAdmin = existingHotelAdmin(null);
+        ApproveRegistrationRequest request = new ApproveRegistrationRequest();
+        request.setComments("Approved legacy registration");
+
+        when(registrationRepository.findById(10L)).thenReturn(Optional.of(registration));
+        when(tenantRepository.findById("all-hotels")).thenReturn(Optional.of(defaultTenant()));
+        when(hotelRepository.findFirstByEmailIgnoreCase("owner@demo.test")).thenReturn(Optional.empty());
+        when(hotelRepository.save(any(Hotel.class))).thenAnswer(invocation -> {
+            Hotel hotel = invocation.getArgument(0);
+            if (hotel.getId() == null) {
+                hotel.setId(20L);
+            }
+            return hotel;
+        });
+        when(userRepository.findByEmail("owner@demo.test")).thenReturn(Optional.of(hotelAdmin));
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(registrationRepository.save(any(HotelRegistration.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        HotelRegistrationResponse response = hotelRegistrationService.approveRegistration(10L, request, 88L);
+
+        assertEquals(RegistrationStatus.APPROVED, response.getStatus());
+        assertEquals(20L, response.getApprovedHotelId());
+        assertEquals("all-hotels", response.getTenantId());
+        assertEquals(88L, response.getReviewedBy());
+        assertNotNull(hotelAdmin.getHotel());
+        assertEquals(20L, hotelAdmin.getHotel().getId());
+        assertTrue(hotelAdmin.getHotel().getIsActive());
+        verify(hotelRepository, times(2)).save(any(Hotel.class));
+        verify(userRepository).save(hotelAdmin);
+        verify(emailService).sendHotelRegistrationApprovalEmail("owner@demo.test", "Jane", "Demo Hotel", null);
+    }
+
+    @Test
+    void approveRegistrationShouldReuseExistingHotelWhenLegacyRegistrationLostLink() {
+        HotelRegistration registration = approvedRegistrationDraft();
+        registration.setApprovedHotelId(null);
+        registration.setTenantId(null);
+
+        Hotel existingHotel = registrationHotel(25L, false);
+        User hotelAdmin = existingHotelAdmin(null);
+        ApproveRegistrationRequest request = new ApproveRegistrationRequest();
+        request.setComments("Approved against existing hotel");
+
+        when(registrationRepository.findById(10L)).thenReturn(Optional.of(registration));
+        when(tenantRepository.findById("all-hotels")).thenReturn(Optional.of(defaultTenant()));
+        when(hotelRepository.findFirstByEmailIgnoreCase("owner@demo.test")).thenReturn(Optional.of(existingHotel));
+        when(hotelRepository.save(any(Hotel.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(userRepository.findByEmail("owner@demo.test")).thenReturn(Optional.of(hotelAdmin));
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(registrationRepository.save(any(HotelRegistration.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        HotelRegistrationResponse response = hotelRegistrationService.approveRegistration(10L, request, 89L);
+
+        assertEquals(RegistrationStatus.APPROVED, response.getStatus());
+        assertEquals(25L, response.getApprovedHotelId());
+        assertEquals("all-hotels", response.getTenantId());
+        assertEquals(25L, hotelAdmin.getHotel().getId());
+        assertTrue(existingHotel.getIsActive());
+        verify(hotelRepository, times(1)).save(existingHotel);
+        verify(userRepository).save(hotelAdmin);
         verify(emailService).sendHotelRegistrationApprovalEmail("owner@demo.test", "Jane", "Demo Hotel", null);
     }
 

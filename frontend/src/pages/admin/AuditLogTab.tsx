@@ -34,6 +34,7 @@ import { adminApiService, SystemAuditLogDto, AuditLogParams } from '../../servic
 import { useAuthenticatedApi } from '../../hooks/useAuthenticatedApi';
 import PremiumTextField from '../../components/common/PremiumTextField';
 import PremiumSelect from '../../components/common/PremiumSelect';
+import { dialogSecondaryActionSx } from '../../theme/sxHelpers';
 import { formatDateTimeForDisplay } from '../../utils/dateUtils';
 
 const ENTITY_TYPES = ['SYSTEM', 'USER', 'HOTEL', 'ROOM', 'TENANT', 'HOTEL_REGISTRATION'];
@@ -449,6 +450,7 @@ const AuditLogTab: React.FC = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDetail}>Close</Button>
+          <Button variant="outlined" sx={dialogSecondaryActionSx} onClick={handleCloseDetail}>Close</Button>
         </DialogActions>
       </Dialog>
     </Box>

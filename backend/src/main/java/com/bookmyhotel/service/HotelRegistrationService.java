@@ -315,13 +315,9 @@ public class HotelRegistrationService {
             throw new RuntimeException("Only pending or under review registrations can be approved");
         }
 
-        // Hotel was created atomically during submission — look it up, sync all
-        // registration
-        // fields (in case they were updated after initial submission), then activate
-        // it.
-        final Long hotelId = registration.getApprovedHotelId();
-        final Hotel hotel = hotelRepository.findById(hotelId)
-                .orElseThrow(() -> new RuntimeException("Hotel not found with id: " + hotelId));
+        // Legacy registrations may predate the linked-hotel workflow. Recreate and
+        // relink the hotel at approval time instead of failing the approval.
+        final Hotel hotel = resolveHotelForApproval(registration, request.getTenantId());
         hotel.setName(registration.getHotelName());
         hotel.setDescription(registration.getDescription());
         hotel.setAddress(registration.getAddress());
@@ -373,6 +369,43 @@ public class HotelRegistrationService {
         }
 
         return convertToResponse(registration);
+    }
+
+    private Hotel resolveHotelForApproval(HotelRegistration registration, String requestedTenantId) {
+        Long hotelId = registration.getApprovedHotelId();
+        if (hotelId != null) {
+            return hotelRepository.findById(hotelId)
+                    .orElseGet(() -> createLinkedHotelForApproval(registration, requestedTenantId));
+        }
+
+        return createLinkedHotelForApproval(registration, requestedTenantId);
+    }
+
+    private Hotel createLinkedHotelForApproval(HotelRegistration registration, String requestedTenantId) {
+        String resolvedTenantId = resolveDefaultTenant(
+                registration.getTenantId() != null && !registration.getTenantId().isBlank()
+                        ? registration.getTenantId()
+                        : requestedTenantId);
+        Hotel hotel = hotelRepository.findFirstByEmailIgnoreCase(registration.getContactEmail())
+            .map(existingHotel -> {
+                String existingTenantId = existingHotel.getTenantId();
+                registration.setTenantId(existingTenantId != null && !existingTenantId.isBlank()
+                    ? existingTenantId
+                    : resolvedTenantId);
+                logger.info("Reused existing hotel {} while approving registration {}",
+                    existingHotel.getId(), registration.getId());
+                return existingHotel;
+            })
+            .orElseGet(() -> {
+                Hotel createdHotel = createHotelFromRegistration(registration, resolvedTenantId, false);
+                registration.setTenantId(resolvedTenantId);
+                logger.info("Created missing linked hotel {} while approving registration {}",
+                    createdHotel.getId(), registration.getId());
+                return createdHotel;
+            });
+
+        registration.setApprovedHotelId(hotel.getId());
+        return hotel;
     }
 
     /**

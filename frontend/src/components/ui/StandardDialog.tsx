@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  alpha,
   Box,
   Dialog,
   DialogActions,
@@ -31,12 +32,24 @@ const StandardDialog: React.FC<StandardDialogProps> = ({
 }) => {
   return (
     <Dialog
+      BackdropProps={{
+        sx: theme => ({
+          backgroundColor: theme.palette.mode === 'dark'
+            ? alpha('#020617', 0.76)
+            : alpha('#0f172a', 0.38),
+          backdropFilter: 'blur(8px)',
+        }),
+      }}
       PaperProps={{
         ...PaperProps,
         sx: composeSx(
           surfaceCardSx('default'),
           {
             boxShadow: theme => theme.shadows[10],
+            backgroundColor: theme => theme.palette.mode === 'dark'
+              ? alpha(theme.palette.background.paper, 0.98)
+              : alpha(theme.palette.background.paper, 0.995),
+            backdropFilter: 'none',
           },
           PaperProps?.sx,
         ),

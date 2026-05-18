@@ -116,6 +116,23 @@ export const formActionsRowSx: AppSx = {
   flexDirection: { xs: 'column-reverse', sm: 'row' },
 };
 
+export const dialogSecondaryActionSx: AppSx = theme => ({
+  color: theme.palette.text.primary,
+  borderColor: alpha(theme.palette.text.primary, theme.palette.mode === 'dark' ? 0.28 : 0.18),
+  backgroundColor: alpha(theme.palette.common.white, theme.palette.mode === 'dark' ? 0.02 : 0),
+  '&:hover': {
+    borderColor: alpha(theme.palette.text.primary, theme.palette.mode === 'dark' ? 0.42 : 0.28),
+    backgroundColor: alpha(theme.palette.text.primary, theme.palette.mode === 'dark' ? 0.1 : 0.04),
+  },
+  '&.Mui-disabled': {
+    color: theme.palette.text.disabled,
+    borderColor: theme.palette.divider,
+    backgroundColor: theme.palette.mode === 'dark'
+      ? alpha(theme.palette.common.white, 0.03)
+      : alpha(theme.palette.text.primary, 0.02),
+  },
+});
+
 export const sectionTitleRowSx: AppSx = {
   display: 'flex',
   alignItems: 'center',

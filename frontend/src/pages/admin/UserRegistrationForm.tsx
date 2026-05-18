@@ -28,6 +28,7 @@ import { adminApiService, CreateUserRequest, TenantDTO, HotelDTO } from '../../s
 import { useAuth } from '../../contexts/AuthContext';
 import { HOTEL_SCOPED_ROLES } from '../../constants/roles';
 import PremiumTextField from '../../components/common/PremiumTextField';
+import { dialogSecondaryActionSx } from '../../theme/sxHelpers';
 
 interface UserFormData {
   // Basic Information
@@ -567,6 +568,7 @@ const UserRegistrationForm: React.FC = () => {
             onClick={handleBack}
             disabled={activeStep === 0}
             variant="outlined"
+            sx={dialogSecondaryActionSx}
           >
             Back
           </Button>

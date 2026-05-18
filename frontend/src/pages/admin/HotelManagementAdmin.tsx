@@ -51,7 +51,8 @@ import PremiumDisplayField from '../../components/common/PremiumDisplayField';
 import PremiumSelect from '../../components/common/PremiumSelect';
 import StandardDialog from '../../components/ui/StandardDialog';
 import { DataTableCard, PageHeader, SurfaceCard } from '../../components/ui';
-import { refreshActionButtonSx } from '../../theme/sxHelpers';
+import { dialogSecondaryActionSx, refreshActionButtonSx, tableHeadRowSx } from '../../theme/sxHelpers';
+import { getReadableAccentTextColor } from '../../theme/surfaces';
 import { formatEthiopianPhone, normalizeEthiopianPhone } from '../../utils/phoneUtils';
 import { getEffectiveSearchTerm } from '../../utils/search';
 import HotelEditDialog from '../../components/hotel/HotelEditDialog';
@@ -594,9 +595,11 @@ const HotelManagementAdmin: React.FC = () => {
 
   const adminSectionTitleSx = {
     mb: 1,
-    color: 'primary.main',
+    color: getReadableAccentTextColor(theme),
     fontWeight: 600,
   } as const;
+
+  const adminTableHeaderSx = tableHeadRowSx();
 
   const adminSectionTitleWithTopSpacingSx = {
     ...adminSectionTitleSx,
@@ -612,11 +615,14 @@ const HotelManagementAdmin: React.FC = () => {
   } as const;
 
   const adminOutlinedActionSx = {
-    borderColor: 'primary.main',
-    color: 'primary.main',
+    borderColor: alpha(getReadableAccentTextColor(theme), theme.palette.mode === 'dark' ? 0.52 : 0.28),
+    color: getReadableAccentTextColor(theme),
+    backgroundColor: theme.palette.mode === 'dark'
+      ? alpha(getReadableAccentTextColor(theme), 0.1)
+      : 'transparent',
     '&:hover': {
-      borderColor: 'primary.dark',
-      backgroundColor: alpha(theme.palette.primary.main, 0.08),
+      borderColor: getReadableAccentTextColor(theme),
+      backgroundColor: alpha(getReadableAccentTextColor(theme), theme.palette.mode === 'dark' ? 0.18 : 0.08),
     },
   } as const;
 
@@ -835,7 +841,7 @@ const HotelManagementAdmin: React.FC = () => {
         >
           <Table>
             <TableHead>
-              <TableRow>
+              <TableRow sx={adminTableHeaderSx}>
                     <TableCell>Hotel Name</TableCell>
                     <TableCell>Location</TableCell>
                     <TableCell>Tenant</TableCell>
@@ -985,7 +991,7 @@ const HotelManagementAdmin: React.FC = () => {
                   <Typography color="text.secondary" gutterBottom>
                     Approved
                   </Typography>
-                  <Typography variant="h4" sx={{ color: 'primary.main' }}>
+                  <Typography variant="h4" sx={{ color: getReadableAccentTextColor(theme) }}>
                     {registrationStats.approved}
                   </Typography>
                 </SurfaceCard>
@@ -1009,7 +1015,7 @@ const HotelManagementAdmin: React.FC = () => {
           >
             <Table>
               <TableHead>
-                <TableRow>
+                <TableRow sx={adminTableHeaderSx}>
                     <TableCell>Hotel Name</TableCell>
                     <TableCell>Contact Person</TableCell>
                     <TableCell>Email</TableCell>
@@ -1034,7 +1040,7 @@ const HotelManagementAdmin: React.FC = () => {
                         <Typography variant="subtitle2">
                           {registration.hotelName}
                         </Typography>
-                        <Typography variant="body2" color="textSecondary">
+                        <Typography variant="body2" color="text.secondary">
                           {registration.address}
                         </Typography>
                       </TableCell>
@@ -1077,7 +1083,7 @@ const HotelManagementAdmin: React.FC = () => {
           title="Register New Hotel"
           actions={
             <>
-              <Button onClick={() => setRegisterDialogOpen(false)} data-testid="hotel-registration-cancel-button">Cancel</Button>
+              <Button variant="outlined" sx={dialogSecondaryActionSx} onClick={() => setRegisterDialogOpen(false)} data-testid="hotel-registration-cancel-button">Cancel</Button>
               <Button 
                 variant="contained" 
                 onClick={handleRegistrationSubmit}
@@ -1317,7 +1323,7 @@ const HotelManagementAdmin: React.FC = () => {
           }
           actions={registrationEditMode ? (
             <>
-              <Button onClick={handleCancelRegistrationEdit}>Cancel</Button>
+              <Button variant="outlined" sx={dialogSecondaryActionSx} onClick={handleCancelRegistrationEdit}>Cancel</Button>
               <Box sx={{ flex: 1 }} />
               {registrationWizardStep === 0 ? (
                 <Button
@@ -1794,7 +1800,7 @@ const HotelManagementAdmin: React.FC = () => {
           title="Hotel Details"
           actions={
             <>
-              <Button onClick={handleCloseViewDialog}>Close</Button>
+              <Button variant="outlined" sx={dialogSecondaryActionSx} onClick={handleCloseViewDialog}>Close</Button>
               <Button 
                 variant="contained" 
                 startIcon={<EditIcon />}

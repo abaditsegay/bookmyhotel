@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
+  useTheme,
   Container,
   Typography,
   Paper,
@@ -27,7 +28,8 @@ import {
 } from '@mui/material';
 import { Refresh, CheckCircle, Cancel, Visibility, NavigateNext, NavigateBefore } from '@mui/icons-material';
 import PremiumDisplayField from '../../components/common/PremiumDisplayField';
-import { tableHeadRowSx } from '../../theme/sxHelpers';
+import { dialogSecondaryActionSx, tableHeadRowSx } from '../../theme/sxHelpers';
+import { getReadableAccentTextColor } from '../../theme/surfaces';
 import { formatDateTimeForDisplay } from '../../utils/dateUtils';
 
 interface HotelRegistration {
@@ -67,6 +69,7 @@ interface RegistrationStatistics {
 }
 
 const HotelRegistrationAdmin: React.FC = () => {
+  const theme = useTheme();
   const [registrations, setRegistrations] = useState<HotelRegistration[]>([]);
   const [statistics, setStatistics] = useState<RegistrationStatistics | null>(null);
   const [loading, setLoading] = useState(true);
@@ -163,16 +166,17 @@ const HotelRegistrationAdmin: React.FC = () => {
   };
 
   const adminTableHeaderSx = tableHeadRowSx();
+  const readableAccentText = getReadableAccentTextColor(theme);
 
   const adminSectionTitleSx = {
-    color: 'primary.main',
+    color: readableAccentText,
     fontWeight: 600,
   } as const;
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
       <Typography variant="h4" component="h1" gutterBottom sx={{
-        color: 'primary.main',
+        color: readableAccentText,
         fontWeight: 600
       }}>
         Hotel Registration Management
@@ -184,7 +188,7 @@ const HotelRegistrationAdmin: React.FC = () => {
           <Grid item xs={12} sm={6} md={2.4}>
             <Card>
               <CardContent>
-                <Typography color="textSecondary" gutterBottom>
+                <Typography color="text.secondary" gutterBottom>
                   Total
                 </Typography>
                 <Typography variant="h4">
@@ -196,7 +200,7 @@ const HotelRegistrationAdmin: React.FC = () => {
           <Grid item xs={12} sm={6} md={2.4}>
             <Card>
               <CardContent>
-                <Typography color="textSecondary" gutterBottom>
+                <Typography color="text.secondary" gutterBottom>
                   Pending
                 </Typography>
                 <Typography variant="h4" color="warning.main">
@@ -208,7 +212,7 @@ const HotelRegistrationAdmin: React.FC = () => {
           <Grid item xs={12} sm={6} md={2.4}>
             <Card>
               <CardContent>
-                <Typography color="textSecondary" gutterBottom>
+                <Typography color="text.secondary" gutterBottom>
                   Under Review
                 </Typography>
                 <Typography variant="h4" color="info.main">
@@ -220,7 +224,7 @@ const HotelRegistrationAdmin: React.FC = () => {
           <Grid item xs={12} sm={6} md={2.4}>
             <Card>
               <CardContent>
-                <Typography color="textSecondary" gutterBottom>
+                <Typography color="text.secondary" gutterBottom>
                   Approved
                 </Typography>
                 <Typography variant="h4" color="success.main">
@@ -232,7 +236,7 @@ const HotelRegistrationAdmin: React.FC = () => {
           <Grid item xs={12} sm={6} md={2.4}>
             <Card>
               <CardContent>
-                <Typography color="textSecondary" gutterBottom>
+                <Typography color="text.secondary" gutterBottom>
                   Rejected
                 </Typography>
                 <Typography variant="h4" color="error.main">
@@ -277,7 +281,7 @@ const HotelRegistrationAdmin: React.FC = () => {
                   <Typography variant="subtitle2">
                     {registration.hotelName}
                   </Typography>
-                  <Typography variant="body2" color="textSecondary">
+                  <Typography variant="body2" color="text.secondary">
                     {registration.address}
                   </Typography>
                 </TableCell>
@@ -587,7 +591,7 @@ const HotelRegistrationAdmin: React.FC = () => {
         <DialogActions sx={{ px: 3, pb: 2 }}>
           {wizardStep === 0 ? (
             <>
-              <Button onClick={() => setDialogOpen(false)}>Cancel</Button>
+              <Button variant="outlined" sx={dialogSecondaryActionSx} onClick={() => setDialogOpen(false)}>Cancel</Button>
               <Box sx={{ flex: 1 }} />
               <Button
                 variant="contained"
@@ -600,13 +604,15 @@ const HotelRegistrationAdmin: React.FC = () => {
           ) : (
             <>
               <Button
+                variant="outlined"
+                sx={dialogSecondaryActionSx}
                 startIcon={<NavigateBefore />}
                 onClick={() => setWizardStep(0)}
               >
                 Back
               </Button>
               <Box sx={{ flex: 1 }} />
-              <Button onClick={() => setDialogOpen(false)}>Cancel</Button>
+              <Button variant="outlined" sx={dialogSecondaryActionSx} onClick={() => setDialogOpen(false)}>Cancel</Button>
               {actionType !== 'view' && (
                 <>
                   {actionType === 'approve' && (

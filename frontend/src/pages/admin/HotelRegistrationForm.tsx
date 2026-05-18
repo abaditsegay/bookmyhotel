@@ -26,6 +26,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuthenticatedApi } from '../../hooks/useAuthenticatedApi';
 import { useTenant } from '../../contexts/TenantContext';
 import PremiumTextField from '../../components/common/PremiumTextField';
+import { dialogSecondaryActionSx } from '../../theme/sxHelpers';
 
 interface HotelFormData {
   // Basic Information
@@ -399,6 +400,7 @@ const HotelRegistrationForm: React.FC = () => {
             onClick={handleBack}
             disabled={activeStep === 0}
             variant="outlined"
+            sx={dialogSecondaryActionSx}
           >
             Back
           </Button>
