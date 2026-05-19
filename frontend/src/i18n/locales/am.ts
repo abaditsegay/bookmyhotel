@@ -1827,7 +1827,7 @@ export const amTranslations = {
       description: "ምዝገባዎን ማግኘት ካልቻሉ ወይም ስለ ሂደቱ ጥያቄዎች ካሉዎት:",
       tip1: "ከምዝገባዎ ጋር ትክክለኛውን ኢሜይል እየተጠቀሙ መሆኑን ያረጋግጡ",
       tip2: "ለማሳወቂያ ኢሜይሎች የስፓም/ጃንክ ፎልደርዎን ያረጋግጡ",
-      tip3: "የድጋፍ ቡድናችንን በ support@shegersolutions.com ያግኙ"
+      tip3: "የድጋፍ ቡድናችንን በ support@bakaroo.com ያግኙ"
     },
     errors: {
       enterEmail: "እባክዎ የኢሜይል አድራሻዎን ያስገቡ",
@@ -2835,7 +2835,7 @@ export const amTranslations = {
       title: "ያግኙን",
       description: "ጥያቄዎች አሉዎት ወይም እርዳታ ይፈልጋሉ? ቡድናችን ለቦታ ማስያዝ፣ ለሽርክና ወይም ለማንኛውም ጥያቄ ለመርዳት ዝግጁ ነው።",
       emailLabel: "ኢሜይል",
-      email: "support@shegersolutions.com",
+      email: "info@bakaroo.com",
       phoneLabel: "ስልክ",
       phone: "+251-911-000-000"
     },

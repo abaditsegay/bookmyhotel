@@ -747,7 +747,7 @@ const BookingConfirmationPage: React.FC = () => {
           sx={{ 
             fontWeight: 'bold', 
             mb: 1.5,
-            color: 'text.primary',
+            color: theme.palette.success.contrastText ?? theme.palette.common.white,
           }}
         >
           {t('bookingConfirmation.title')}
@@ -756,7 +756,7 @@ const BookingConfirmationPage: React.FC = () => {
           variant="body1" 
           sx={{ 
             mb: isMobile ? 2 : 3, 
-            color: 'text.secondary',
+            color: alpha(theme.palette.common.white, theme.palette.mode === 'dark' ? 0.82 : 0.88),
             fontSize: isMobile ? '0.95rem' : '1rem',
           }}
         >
@@ -776,7 +776,7 @@ const BookingConfirmationPage: React.FC = () => {
             className="print-chip"
             sx={{ 
               bgcolor: alpha(theme.palette.success.main, theme.palette.mode === 'dark' ? 0.18 : 0.12), 
-              color: 'text.primary', 
+              color: theme.palette.success.contrastText ?? theme.palette.common.white,
               fontWeight: 'bold', 
               fontSize: isMobile ? '1rem' : '1.3rem',
               px: isMobile ? 2 : 3,

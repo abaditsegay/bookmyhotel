@@ -375,7 +375,7 @@
 
             <div style="margin-top: 25px; text-align: center; color: #64748b;">
                 <p style="margin: 0;">
-                    <strong>Need assistance?</strong> Contact <span th:text="${booking.hotelName}">the hotel</span> directly or reach out to our customer support team.
+                    <strong>Need assistance?</strong> Contact <span th:text="${booking.hotelName}">the hotel</span> directly or reach out to our customer support team at <a th:href="${'mailto:' + supportEmail}" th:text="${supportEmail}">support@bakaroo.com</a>.
                 </p>
             </div>
         </div>

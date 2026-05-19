@@ -42,6 +42,12 @@ public class EmailService {
     @Value("${app.url:http://localhost:3000}")
     private String appUrl;
 
+    @Value("${app.email.info:info@bakaroo.com}")
+    private String infoEmail;
+
+    @Value("${app.email.support:support@bakaroo.com}")
+    private String supportEmail;
+
     // OAuth2 configuration values - with defaults to avoid startup errors
     @Value("${microsoft.graph.client-id:}")
     private String oauthClientId;
@@ -350,6 +356,9 @@ public class EmailService {
      */
     private Context createContext(Map<String, Object> templateData) {
         Context context = new Context();
+        templateData.putIfAbsent("fromEmail", fromEmail);
+        templateData.putIfAbsent("infoEmail", infoEmail);
+        templateData.putIfAbsent("supportEmail", supportEmail);
         context.setVariables(templateData);
         return context;
     }

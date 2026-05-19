@@ -66,6 +66,7 @@ export const useNotifications = (enabled: boolean = true) => {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [accessDenied, setAccessDenied] = useState(false);
 
   const calculateStats = (notificationList: BookingNotification[]) => {
     const unread = notificationList.filter(n => n.status === 'UNREAD');
@@ -85,6 +86,12 @@ export const useNotifications = (enabled: boolean = true) => {
       setStats({ totalUnread: 0, unreadCancellations: 0, unreadModifications: 0 });
       setLoading(false);
       setError(null);
+      setAccessDenied(false);
+      return;
+    }
+
+    if (accessDenied) {
+      setLoading(false);
       return;
     }
 
@@ -97,6 +104,7 @@ export const useNotifications = (enabled: boolean = true) => {
         // console.log('🔑 System admin detected - skipping notifications API call');
         setNotifications([]);
         setStats({ totalUnread: 0, unreadCancellations: 0, unreadModifications: 0 });
+        setAccessDenied(false);
         setLoading(false);
         return;
       }
@@ -106,6 +114,7 @@ export const useNotifications = (enabled: boolean = true) => {
         // console.log('🚫 User does not have required role for notifications');
         setNotifications([]);
         setStats({ totalUnread: 0, unreadCancellations: 0, unreadModifications: 0 });
+        setAccessDenied(false);
         setLoading(false);
         return;
       }
@@ -117,16 +126,36 @@ export const useNotifications = (enabled: boolean = true) => {
         const notificationList = response.data.content || [];
         setNotifications(notificationList);
         setStats(calculateStats(notificationList));
+        setAccessDenied(false);
       } else {
         throw new Error(response.error || 'Failed to load notifications');
       }
     } catch (err: any) {
+      if (err?.status === 403 || err?.response?.status === 403) {
+        setNotifications([]);
+        setStats({ totalUnread: 0, unreadCancellations: 0, unreadModifications: 0 });
+        setAccessDenied(true);
+        setError('Notifications are unavailable for this account.');
+        return;
+      }
+
       const errorMessage = err.response?.data?.message || err.message || 'Failed to load notifications';
       setError(errorMessage);
     } finally {
       setLoading(false);
     }
-  }, [enabled, hasRole]);
+  }, [accessDenied, enabled, hasRole]);
+
+  useEffect(() => {
+    if (!enabled || !token) {
+      setAccessDenied(false);
+      return;
+    }
+
+    if (hasRole('HOTEL_ADMIN') || hasRole('FRONTDESK')) {
+      setAccessDenied(false);
+    }
+  }, [enabled, hasRole, token]);
 
   const markAsRead = async (notificationId: number) => {
     // Skip for super admin or users without proper roles
@@ -258,7 +287,7 @@ export const useNotifications = (enabled: boolean = true) => {
 
   // Event-based refresh: Refresh when user returns to the page/tab
   useEffect(() => {
-    if (!enabled) {
+    if (!enabled || accessDenied) {
       return;
     }
 
@@ -283,7 +312,7 @@ export const useNotifications = (enabled: boolean = true) => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('focus', handleFocus);
     };
-  }, [enabled, loadNotifications, loading, token]);
+  }, [accessDenied, enabled, loadNotifications, loading, token]);
 
   return {
     notifications,

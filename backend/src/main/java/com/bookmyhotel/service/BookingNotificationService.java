@@ -48,6 +48,12 @@ public class BookingNotificationService {
     @Value("${app.url:http://localhost:3000}")
     private String appUrl;
 
+    @Value("${app.email.info:info@bakaroo.com}")
+    private String infoEmail;
+
+    @Value("${app.email.support:support@bakaroo.com}")
+    private String supportEmail;
+
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("MMMM dd, yyyy");
 
     /**
@@ -377,6 +383,8 @@ public class BookingNotificationService {
      */
     private Context createContext(Map<String, Object> templateData) {
         Context context = new Context();
+        templateData.putIfAbsent("infoEmail", infoEmail);
+        templateData.putIfAbsent("supportEmail", supportEmail);
         context.setVariables(templateData);
         return context;
     }

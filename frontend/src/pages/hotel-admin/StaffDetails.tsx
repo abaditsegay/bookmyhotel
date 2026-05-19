@@ -447,7 +447,7 @@ const StaffDetails: React.FC = () => {
                                 checked={currentStaff?.roles?.includes(role) || false}
                                 onChange={(e) => handleRoleChange(role, e.target.checked)}
                                 sx={{
-                                  color: accentBorder,
+                                  color: readableAccentBorder,
                                   '&.Mui-checked': {
                                     color: readableAccentColor,
                                   },
@@ -470,9 +470,9 @@ const StaffDetails: React.FC = () => {
                               label={role.replace('_', ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())}
                               variant="outlined"
                               sx={{
-                                borderColor: accentBorder,
+                                borderColor: readableAccentBorder,
                                 color: readableAccentColor,
-                                backgroundColor: accentHover,
+                                backgroundColor: readableAccentHover,
                               }}
                             />
                           ))}

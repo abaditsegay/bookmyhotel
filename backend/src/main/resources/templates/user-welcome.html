@@ -253,7 +253,7 @@
             <div class="support-section">
                 <h4>Need Help Getting Started?</h4>
                 <p>Our support team is here to help you make the most of your BookMyHotel experience.</p>
-                <p>Visit our <a th:href="${appUrl + '/help'}" style="color: #f57c00;">Help Center</a> or contact us anytime.</p>
+                <p>Visit our <a th:href="${appUrl + '/help'}" style="color: #f57c00;">Help Center</a> or contact us anytime at <a th:href="${'mailto:' + supportEmail}" th:text="${supportEmail}" style="color: #f57c00;">support@bakaroo.com</a>.</p>
             </div>
         </div>
 
@@ -271,6 +271,10 @@
             
             <p style="margin-top: 20px;">
                 © 2025 <span th:text="${appName}">BookMyHotel</span>. All rights reserved.
+            </p>
+
+            <p style="font-size: 12px; color: #999; margin-top: 15px;">
+                General inquiries: <a th:href="${'mailto:' + infoEmail}" th:text="${infoEmail}">info@bakaroo.com</a>
             </p>
             
             <p style="font-size: 12px; color: #999; margin-top: 15px;">

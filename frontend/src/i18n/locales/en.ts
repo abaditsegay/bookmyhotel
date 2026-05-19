@@ -1935,7 +1935,7 @@ export const enTranslations = {
       description: "If you can't find your registration or have questions about the process:",
       tip1: "Make sure you're using the exact email address from your registration",
       tip2: "Check your spam/junk folder for notification emails",
-      tip3: "Contact our support team at support@shegersolutions.com"
+      tip3: "Contact our support team at support@bakaroo.com"
     },
     errors: {
       enterEmail: "Please enter your email address",
@@ -2970,7 +2970,7 @@ export const enTranslations = {
       title: "Contact Us",
       description: "Have questions or need assistance? Our team is here to help you with bookings, partnerships, or any inquiries.",
       emailLabel: "Email",
-      email: "support@shegersolutions.com",
+      email: "info@bakaroo.com",
       phoneLabel: "Phone",
       phone: "+251-911-000-000"
     },

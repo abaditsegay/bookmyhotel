@@ -1915,7 +1915,7 @@ export const omTranslations = {
       description: "Galmee keessan argachuu yoo dadhabdan yookaan adeemsa irratti gaaffii yoo qabaattan:",
       tip1: "Imeelii sirrii galmee keessaniin fayyadamtan akka jirattan mirkaneeffadhaa",
       tip2: "Imeelii beeksisaa argachuuf galmee spam/junk ilaalaa",
-      tip3: "Garee deeggarsa keenya support@shegersolutions.com irratti quunnamaa"
+      tip3: "Garee deeggarsa keenya support@bakaroo.com irratti quunnamaa"
     },
     errors: {
       enterEmail: "Maaloo teessoo imeelii keessan galchaa",
@@ -2920,7 +2920,7 @@ export const omTranslations = {
       title: "Nu Quunnamaa",
       description: "Gaaffii qabduu ykn gargaarsa barbaadduu? Gareen keenya beellama, michummaa ykn gaaffii kamiifuu isin gargaaruuf qophiidha.",
       emailLabel: "Imeelii",
-      email: "support@shegersolutions.com",
+      email: "info@bakaroo.com",
       phoneLabel: "Bilbila",
       phone: "+251-911-000-000"
     },
