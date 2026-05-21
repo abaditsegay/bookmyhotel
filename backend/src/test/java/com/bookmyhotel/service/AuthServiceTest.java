@@ -28,6 +28,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.bookmyhotel.dto.auth.LoginRequest;
 import com.bookmyhotel.dto.auth.LoginResponse;
+import com.bookmyhotel.dto.auth.RegistrationResponse;
 import com.bookmyhotel.dto.auth.RegisterRequest;
 import com.bookmyhotel.entity.Hotel;
 import com.bookmyhotel.entity.HotelRegistration;
@@ -67,12 +68,15 @@ class AuthServiceTest {
     @Mock
     private HotelRegistrationRepository hotelRegistrationRepository;
 
+    @Mock
+    private EmailVerificationService emailVerificationService;
+
     @Spy
     @InjectMocks
     private AuthService authService;
 
     @Test
-    void registerShouldCreateCustomerSessionAndIgnoreWelcomeEmailFailure() {
+    void registerShouldCreateUnverifiedCustomerAndSendVerificationEmail() {
         RegisterRequest request = new RegisterRequest("guest@example.com", "Secret123!", "Guest", "User", "+251900000001");
         PasswordSecurityService.PasswordValidationResult valid = new PasswordSecurityService.PasswordValidationResult(true, List.of());
 
@@ -84,22 +88,14 @@ class AuthServiceTest {
             saved.setId(15L);
             return saved;
         });
-        doThrow(new RuntimeException("smtp down")).when(emailService)
-                .sendUserWelcomeEmail("guest@example.com", "Guest", "User");
-        when(jwtUtil.generateToken(any(User.class))).thenReturn("access-token");
-        when(refreshTokenService.generateRefreshToken(15L)).thenReturn("refresh-token");
 
-        LoginResponse response = authService.register(request);
+        RegistrationResponse response = authService.register(request);
 
-        assertEquals("access-token", response.getToken());
-        assertEquals("refresh-token", response.getRefreshToken());
         assertEquals("guest@example.com", response.getEmail());
-        assertEquals(Set.of(UserRole.CUSTOMER), response.getRoles());
-        assertNull(response.getHotelId());
-        assertNull(response.getHotelName());
-        assertNull(response.getTenantId());
-        verify(sessionManagementService).createSession(15L, "access-token", null, null);
+        assertTrue(response.isVerificationRequired());
         verify(userRepository).save(any(User.class));
+        verify(emailVerificationService).sendVerificationEmail(any(User.class));
+        verify(sessionManagementService, never()).createSession(any(), any(), any(), any());
     }
 
     @Test
@@ -111,9 +107,6 @@ class AuthServiceTest {
         when(passwordSecurityService.validatePassword("Secret123!")).thenReturn(valid);
         when(passwordEncoder.encode("Secret123!")).thenReturn("encoded-password");
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        when(jwtUtil.generateToken(any(User.class))).thenReturn("access-token");
-        when(refreshTokenService.generateRefreshToken(null)).thenReturn("refresh-token");
-
         authService.register(request);
 
         verify(userRepository).save(any(User.class));
@@ -124,6 +117,7 @@ class AuthServiceTest {
                         && "User".equals(savedUser.getLastName())
                         && "+251900000001".equals(savedUser.getPhone())
                         && Boolean.TRUE.equals(savedUser.getIsActive())
+                        && Boolean.FALSE.equals(savedUser.getEmailVerified())
                         && Set.of(UserRole.CUSTOMER).equals(savedUser.getRoles())
                         && savedUser.getTenantId() == null));
     }
@@ -282,6 +276,21 @@ class AuthServiceTest {
     }
 
     @Test
+    void loginShouldRejectUnverifiedCustomerAccounts() {
+        User user = customerUser();
+        user.setEmailVerified(false);
+
+        when(userRepository.findByEmail("customer@example.com")).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("Secret123!", "encoded-password")).thenReturn(true);
+
+        IllegalStateException exception = assertThrows(IllegalStateException.class,
+            () -> authService.login(new LoginRequest("customer@example.com", "Secret123!"), null, null));
+
+        assertEquals("Please verify your email address before signing in.", exception.getMessage());
+        verify(jwtUtil, never()).generateToken(any(User.class));
+    }
+
+    @Test
     void validateTokenShouldReturnOnlyActiveUsersForValidTokens() {
         User activeUser = customerUser();
         User inactiveUser = customerUser();
@@ -321,6 +330,7 @@ class AuthServiceTest {
         user.setLastName("User");
         user.setRoles(Set.of(UserRole.CUSTOMER));
         user.setIsActive(true);
+        user.setEmailVerified(true);
         return user;
     }
 

@@ -18,6 +18,7 @@ import { API_CONFIG } from '../config/apiConfig';
 import { useTheme, alpha } from '@mui/material/styles';
 import { getPageShellBackground } from '../theme/surfaces';
 import { tintedPanelSx } from '../theme/sxHelpers';
+import { extractAuthErrorMessage } from '../utils/authErrorMessage';
 
 const GuestAuthPage: React.FC = () => {
   const theme = useTheme();
@@ -48,6 +49,25 @@ const GuestAuthPage: React.FC = () => {
   // Get the intended destination from navigation state
   const intendedDestination = location.state?.from || '/';
   const bookingData = location.state?.bookingData;
+
+  useEffect(() => {
+    const verificationStatus = new URLSearchParams(location.search).get('verified');
+
+    if (verificationStatus === 'success') {
+      setTabValue(0);
+      setSuccess(t('auth.login.emailVerificationSuccess'));
+      setError('');
+      clearError();
+      return;
+    }
+
+    if (verificationStatus === 'invalid') {
+      setTabValue(0);
+      setError(t('auth.login.emailVerificationFailed'));
+      setSuccess('');
+      clearError();
+    }
+  }, [location.search, t, clearError]);
 
   // Redirect already authenticated users to their intended destination
   useEffect(() => {
@@ -119,6 +139,7 @@ const GuestAuthPage: React.FC = () => {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    clearError();
 
     // Validation
     if (registerPassword !== confirmPassword) {
@@ -155,42 +176,21 @@ const GuestAuthPage: React.FC = () => {
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || t('auth.login.registrationFailed'));
+        const errorMessage = await extractAuthErrorMessage(response, t('auth.login.registrationFailed'));
+        throw new Error(errorMessage);
       }
 
       const registrationData = await response.json();
-      
-      // Store authentication data (same format as login)
-      const user = {
-        id: registrationData.id.toString(),
-        email: registrationData.email,
-        firstName: registrationData.firstName || '',
-        lastName: registrationData.lastName || '',
-        phone: '',
-        role: Array.isArray(registrationData.roles) ? registrationData.roles[0] : registrationData.roles,
-        roles: Array.isArray(registrationData.roles) ? registrationData.roles : [registrationData.roles],
-        hotelId: undefined,
-        hotelName: undefined,
-        createdAt: new Date().toISOString(),
-        lastLogin: new Date().toISOString(),
-        isActive: true,
-      };
 
-      // Store in localStorage (mimicking the login process)
-      localStorage.setItem('auth_token', registrationData.token);
-      localStorage.setItem('auth_user', JSON.stringify(user));
-
-      setSuccess(t('auth.login.registrationSuccess'));
-
-      // Small delay to show success message
-      setTimeout(() => {
-        if (bookingData) {
-          navigate('/booking', { state: bookingData });
-        } else {
-          navigate(intendedDestination);
-        }
-      }, 1500);
+      setTabValue(0);
+      setSuccess(registrationData.message || t('auth.login.registrationSuccess'));
+      setError('');
+      setRegisterEmail('');
+      setRegisterPassword('');
+      setConfirmPassword('');
+      setFirstName('');
+      setLastName('');
+      setPhone('');
     } catch (err) {
       setError(err instanceof Error ? err.message : t('auth.login.registrationFailed'));
     } finally {

@@ -93,9 +93,9 @@ const extractAuthErrorMessage = async (response: Response): Promise<string> => {
   try {
     const errorData = JSON.parse(errorText);
     const detailedMessage = [
-      errorData?.details,
-      errorData?.message,
       errorData?.userFriendlyMessage,
+      errorData?.message,
+      errorData?.details,
       errorData?.error,
     ].find((value): value is string => typeof value === 'string' && value.trim().length > 0);
 

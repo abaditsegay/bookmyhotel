@@ -38,62 +38,40 @@ class PasswordSecurityServiceTest {
     }
 
     @Test
-    void validatePasswordShouldAccumulateConfiguredPolicyErrors() {
+    void validatePasswordShouldRejectPasswordsShorterThanMinimumLength() {
         ReflectionTestUtils.setField(passwordSecurityService, "minLength", 10);
-        ReflectionTestUtils.setField(passwordSecurityService, "maxLength", 12);
-        ReflectionTestUtils.setField(passwordSecurityService, "requireUppercase", true);
-        ReflectionTestUtils.setField(passwordSecurityService, "requireLowercase", true);
-        ReflectionTestUtils.setField(passwordSecurityService, "requireDigits", true);
-        ReflectionTestUtils.setField(passwordSecurityService, "requireSpecialChars", true);
 
-        PasswordSecurityService.PasswordValidationResult result = passwordSecurityService.validatePassword("abc");
+        PasswordSecurityService.PasswordValidationResult result = passwordSecurityService.validatePassword("abc123");
 
         assertFalse(result.isValid());
-        assertIterableEquals(List.of(
-                "Password must be at least 10 characters long",
-                "Password must contain at least one uppercase letter",
-                "Password must contain at least one digit",
-                "Password must contain at least one special character (!@#$%^&*()_+-=[]{}|;':\"\\,.<>/?)"),
-                result.getErrors());
+        assertIterableEquals(List.of("Password must be at least 10 characters long"), result.getErrors());
     }
 
     @Test
     void validatePasswordShouldRejectPasswordsAboveConfiguredMaximumLength() {
         ReflectionTestUtils.setField(passwordSecurityService, "maxLength", 8);
 
-        PasswordSecurityService.PasswordValidationResult result = passwordSecurityService.validatePassword("Abc123!xyz");
+        PasswordSecurityService.PasswordValidationResult result = passwordSecurityService.validatePassword("Abc123wxyz");
 
         assertFalse(result.isValid());
         assertIterableEquals(List.of("Password cannot exceed 8 characters"), result.getErrors());
     }
 
     @Test
-    void validatePasswordShouldAcceptPasswordMeetingConfiguredRequirements() {
-        ReflectionTestUtils.setField(passwordSecurityService, "minLength", 8);
-        ReflectionTestUtils.setField(passwordSecurityService, "requireUppercase", true);
-        ReflectionTestUtils.setField(passwordSecurityService, "requireLowercase", true);
-        ReflectionTestUtils.setField(passwordSecurityService, "requireDigits", true);
-        ReflectionTestUtils.setField(passwordSecurityService, "requireSpecialChars", true);
-
-        PasswordSecurityService.PasswordValidationResult result = passwordSecurityService.validatePassword("Abcd123!");
+    void validatePasswordShouldAcceptAlphanumericPasswordMeetingMinimumLength() {
+        PasswordSecurityService.PasswordValidationResult result = passwordSecurityService.validatePassword("abc123");
 
         assertTrue(result.isValid());
         assertTrue(result.getErrors().isEmpty());
     }
 
     @Test
-    void validatePasswordShouldRejectCommonWeakPatternsEvenWhenComplexityRulesPass() {
-        ReflectionTestUtils.setField(passwordSecurityService, "minLength", 8);
-        ReflectionTestUtils.setField(passwordSecurityService, "requireUppercase", true);
-        ReflectionTestUtils.setField(passwordSecurityService, "requireLowercase", true);
-        ReflectionTestUtils.setField(passwordSecurityService, "requireDigits", true);
-        ReflectionTestUtils.setField(passwordSecurityService, "requireSpecialChars", true);
-
+    void validatePasswordShouldRejectNonAlphanumericCharacters() {
         PasswordSecurityService.PasswordValidationResult result = passwordSecurityService
-                .validatePassword("Password123!");
+                .validatePassword("abc123!");
 
         assertFalse(result.isValid());
-        assertIterableEquals(List.of("Password contains common weak patterns and is not secure"), result.getErrors());
+        assertIterableEquals(List.of("Password must contain only letters and numbers"), result.getErrors());
     }
 
     @Test

@@ -268,6 +268,33 @@ public class EmailService {
         }
     }
 
+    public void sendEmailVerificationEmail(String email, String firstName, String verificationUrl) {
+        if (!microsoftGraphEmailService.isConfigured()) {
+            logger.warn("Microsoft Graph OAuth2 is not configured. Cannot send verification email to: {}", email);
+            throw new IllegalStateException(
+                    "Email service is not configured. Microsoft Graph OAuth2 credentials are required.");
+        }
+
+        try {
+            logger.info("Sending email verification message to: {} via Microsoft Graph OAuth2", email);
+
+            Map<String, Object> templateData = new HashMap<>();
+            templateData.put("firstName", firstName);
+            templateData.put("verificationUrl", verificationUrl);
+            templateData.put("appName", appName);
+            templateData.put("appUrl", appUrl);
+
+            String htmlContent = templateEngine.process("email-verification", createContext(templateData));
+            String subject = String.format("Verify your %s account", appName);
+
+            microsoftGraphEmailService.sendEmail(email, subject, htmlContent);
+            logger.info("Successfully sent verification email to: {}", email);
+        } catch (Exception e) {
+            logger.error("Failed to send verification email via Microsoft Graph to: {}", email, e);
+            throw new RuntimeException("Failed to send verification email", e);
+        }
+    }
+
     /**
      * Prepare booking email template data
      */

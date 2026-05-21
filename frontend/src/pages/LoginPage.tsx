@@ -18,6 +18,7 @@ import PremiumTextField from '../components/common/PremiumTextField';
 import StandardButton from '../components/common/StandardButton';
 import { getPageShellBackground } from '../theme/surfaces';
 import { tintedPanelSx } from '../theme/sxHelpers';
+import { extractAuthErrorMessage } from '../utils/authErrorMessage';
 
 const LoginPage: React.FC = () => {
   const { t } = useTranslation();
@@ -56,6 +57,25 @@ const LoginPage: React.FC = () => {
   // Get redirect info from location state
   const redirectTo = location.state?.redirectTo;
   const bookingData = location.state?.bookingData;
+
+  useEffect(() => {
+    const verificationStatus = new URLSearchParams(location.search).get('verified');
+
+    if (verificationStatus === 'success') {
+      setSuccess(t('auth.login.emailVerificationSuccess'));
+      setError('');
+      setShowSignUp(false);
+      clearError();
+      return;
+    }
+
+    if (verificationStatus === 'invalid') {
+      setError(t('auth.login.emailVerificationFailed'));
+      setSuccess('');
+      setShowSignUp(false);
+      clearError();
+    }
+  }, [location.search, t, clearError]);
 
   // Redirect already authenticated users to their appropriate dashboard
   useEffect(() => {
@@ -138,42 +158,21 @@ const LoginPage: React.FC = () => {
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || 'Registration failed');
+        const errorMessage = await extractAuthErrorMessage(response, t('auth.login.registrationFailed'));
+        throw new Error(errorMessage);
       }
 
       const registrationData = await response.json();
-      
-      // Store authentication data (same format as login)
-      const user = {
-        id: registrationData.id.toString(),
-        email: registrationData.email,
-        firstName: registrationData.firstName || '',
-        lastName: registrationData.lastName || '',
-        phone: '',
-        role: Array.isArray(registrationData.roles) ? registrationData.roles[0] : registrationData.roles,
-        roles: Array.isArray(registrationData.roles) ? registrationData.roles : [registrationData.roles],
-        hotelId: undefined,
-        hotelName: undefined,
-        createdAt: new Date().toISOString(),
-        lastLogin: new Date().toISOString(),
-        isActive: true,
-      };
 
-      // Store in localStorage (mimicking the login process)
-      localStorage.setItem('auth_token', registrationData.token);
-      localStorage.setItem('auth_user', JSON.stringify(user));
-
-      setSuccess(t('auth.login.registrationSuccess'));
-
-      // Small delay to show success message
-      setTimeout(() => {
-        if (redirectTo && bookingData) {
-          navigate(redirectTo, { state: bookingData });
-        } else {
-          navigate('/');
-        }
-      }, 1500);
+      setSuccess(registrationData.message || t('auth.login.registrationSuccess'));
+      setError('');
+      setShowSignUp(false);
+      setRegisterEmail('');
+      setRegisterPassword('');
+      setConfirmPassword('');
+      setFirstName('');
+      setLastName('');
+      setPhone('');
     } catch (err) {
       setError(err instanceof Error ? err.message : t('auth.login.registrationFailed'));
     } finally {

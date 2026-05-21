@@ -71,13 +71,13 @@ app.jwt.secret=bookmyhotelverylongsecretkeythatisatleast512bitslongforsecuritywi
 app.jwt.expiration=86400000
 
 # Microsoft Graph Configuration
-microsoft.graph.client-id=8e1e8dd6-e1df-48a9-9ffd-499aa6b04130
-microsoft.graph.tenant-id=d7e8b101-46f9-4942-8442-45e0903b9467
+microsoft.graph.client-id=c5f74266-dc72-4f08-9d8f-3cb29bed2d3e
+microsoft.graph.tenant-id=cd04f00e-4e75-4bb5-9951-de00a707a2eb
 microsoft.graph.client-secret=\${MICROSOFT_GRAPH_CLIENT_SECRET}
 microsoft.graph.scopes=https://graph.microsoft.com/.default
 
 # Email Configuration
-app.email.from=noreply@251solutions.com
+app.email.from=noreply@bakaroo.com
 
 # CORS Configuration
 app.cors.allowed-origins=http://${INSTANCE_IP}:3000,http://localhost:3000

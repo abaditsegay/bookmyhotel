@@ -22,10 +22,12 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.bookmyhotel.dto.auth.LoginResponse;
+import com.bookmyhotel.dto.auth.RegistrationResponse;
 import com.bookmyhotel.entity.UserRole;
 import com.bookmyhotel.repository.UserRepository;
 import com.bookmyhotel.service.AuthRateLimitService;
 import com.bookmyhotel.service.AuthService;
+import com.bookmyhotel.service.EmailVerificationService;
 import com.bookmyhotel.service.PasswordResetService;
 import com.bookmyhotel.service.PasswordSecurityService;
 import com.bookmyhotel.service.RefreshTokenService;
@@ -64,6 +66,9 @@ class AuthControllerWebMvcIntegrationTest {
     @Mock
     private AuthRateLimitService authRateLimitService;
 
+    @Mock
+    private EmailVerificationService emailVerificationService;
+
     private MockMvc mockMvc;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -80,8 +85,27 @@ class AuthControllerWebMvcIntegrationTest {
         ReflectionTestUtils.setField(controller, "systemAuditService", systemAuditService);
         ReflectionTestUtils.setField(controller, "userRepository", userRepository);
         ReflectionTestUtils.setField(controller, "authRateLimitService", authRateLimitService);
+        ReflectionTestUtils.setField(controller, "emailVerificationService", emailVerificationService);
 
         mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
+    }
+
+    @Test
+    void registerShouldReturnServiceUnavailableWhenVerificationEmailFails() throws Exception {
+        when(authService.register(any())).thenThrow(
+                new IllegalStateException("We could not send your verification email right now. Please try registering again in a moment."));
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(java.util.Map.of(
+                                "email", "guest@example.com",
+                                "password", "password123",
+                                "firstName", "Guest",
+                                "lastName", "User"))))
+                .andExpect(status().isServiceUnavailable())
+                .andExpect(jsonPath("$.details").value("We could not send your verification email right now. Please try registering again in a moment."))
+                .andExpect(jsonPath("$.userFriendlyMessage").value("We could not send your verification email right now. Please try registering again in a moment."))
+                .andExpect(jsonPath("$.path").value("/api/auth/register"));
     }
 
     @Test

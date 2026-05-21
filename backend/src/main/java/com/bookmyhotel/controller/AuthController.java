@@ -4,12 +4,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.bookmyhotel.dto.auth.RegistrationResponse;
 import com.bookmyhotel.audit.AuditTaxonomy;
 import com.bookmyhotel.dto.auth.LoginRequest;
 import com.bookmyhotel.dto.auth.LoginResponse;
@@ -20,6 +24,7 @@ import com.bookmyhotel.exception.RateLimitExceededException;
 import com.bookmyhotel.exception.ResourceAlreadyExistsException;
 import com.bookmyhotel.service.AuthRateLimitService;
 import com.bookmyhotel.service.AuthService;
+import com.bookmyhotel.service.EmailVerificationService;
 import com.bookmyhotel.service.PasswordResetService;
 import com.bookmyhotel.service.PasswordSecurityService;
 import com.bookmyhotel.service.RefreshTokenService;
@@ -65,13 +70,19 @@ public class AuthController {
     @Autowired
     private AuthRateLimitService authRateLimitService;
 
+    @Autowired
+    private EmailVerificationService emailVerificationService;
+
+    @Value("${app.url:http://localhost:3000}")
+    private String appUrl;
+
     /**
      * User registration endpoint for guest users
      */
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest registerRequest, HttpServletRequest request) {
         try {
-            LoginResponse response = authService.register(registerRequest);
+            RegistrationResponse response = authService.register(registerRequest);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (ResourceAlreadyExistsException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
@@ -82,6 +93,29 @@ public class AuthController {
                             "User with this email already exists",
                             "An account with this email already exists.",
                             request.getRequestURI()));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                    .body(buildErrorResponse(
+                            HttpStatus.SERVICE_UNAVAILABLE,
+                            "Registration Error",
+                            "Registration could not be completed",
+                            e.getMessage(),
+                            e.getMessage(),
+                            request.getRequestURI()));
+        } catch (IllegalArgumentException e) {
+            String userFriendlyMessage = e.getMessage() != null
+                && e.getMessage().startsWith("Password does not meet security requirements:")
+                    ? "Use at least 6 characters and only letters or numbers."
+                    : "Please review your registration details and try again.";
+
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(buildErrorResponse(
+                    HttpStatus.BAD_REQUEST,
+                    "Registration Error",
+                    "Registration could not be completed",
+                    e.getMessage(),
+                    userFriendlyMessage,
+                    request.getRequestURI()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(buildErrorResponse(
@@ -91,6 +125,20 @@ public class AuthController {
                             e.getMessage(),
                             "We could not complete registration right now. Please try again later.",
                             request.getRequestURI()));
+        }
+    }
+
+    @GetMapping("/verify-email")
+    public ResponseEntity<Void> verifyEmail(@RequestParam("token") String token) {
+        try {
+            emailVerificationService.verifyEmail(token);
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .header("Location", appUrl + "/login?verified=success")
+                    .build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .header("Location", appUrl + "/login?verified=invalid")
+                    .build();
         }
     }
 
@@ -137,6 +185,17 @@ public class AuthController {
                     "Login failed",
                     "Invalid email or password",
                     "The email or password you entered is incorrect. Please try again.",
+                    request.getRequestURI()));
+        } catch (IllegalStateException e) {
+            logAuthEvent(AuditTaxonomy.Action.LOGIN_FAILED, null, loginRequest.getEmail(), null, null, null, request, false,
+                    e.getMessage());
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(buildErrorResponse(
+                    HttpStatus.FORBIDDEN,
+                    "Email Verification Required",
+                    "Login failed",
+                    e.getMessage(),
+                    "Please verify your email before signing in. Check your inbox for the verification link.",
                     request.getRequestURI()));
         } catch (Exception e) {
                 logAuthEvent(AuditTaxonomy.Action.LOGIN_FAILED, null, loginRequest.getEmail(), null, null, null, request, false,

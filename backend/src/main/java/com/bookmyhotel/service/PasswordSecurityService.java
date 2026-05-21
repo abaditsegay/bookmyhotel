@@ -13,19 +13,19 @@ import org.springframework.stereotype.Service;
 @Service
 public class PasswordSecurityService {
 
-    @Value("${security.password.min-length:8}")
+    @Value("${security.password.min-length:6}")
     private int minLength;
 
-    @Value("${security.password.require-uppercase:true}")
+    @Value("${security.password.require-uppercase:false}")
     private boolean requireUppercase;
 
-    @Value("${security.password.require-lowercase:true}")
+    @Value("${security.password.require-lowercase:false}")
     private boolean requireLowercase;
 
-    @Value("${security.password.require-digits:true}")
+    @Value("${security.password.require-digits:false}")
     private boolean requireDigits;
 
-    @Value("${security.password.require-special-chars:true}")
+    @Value("${security.password.require-special-chars:false}")
     private boolean requireSpecialChars;
 
     @Value("${security.password.max-length:128}")
@@ -36,11 +36,7 @@ public class PasswordSecurityService {
     private static final Pattern LOWERCASE_PATTERN = Pattern.compile("[a-z]");
     private static final Pattern DIGIT_PATTERN = Pattern.compile("[0-9]");
     private static final Pattern SPECIAL_CHAR_PATTERN = Pattern.compile("[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?]");
-
-    // Common weak passwords to check against
-    private static final List<String> COMMON_WEAK_PASSWORDS = List.of(
-            "password", "123456", "password123", "admin", "qwerty", "letmein",
-            "welcome", "monkey", "1234567890", "password1", "123456789", "12345678");
+    private static final Pattern ALPHANUMERIC_PATTERN = Pattern.compile("^[A-Za-z0-9]+$");
 
     /**
      * Validate password against security policy
@@ -70,6 +66,11 @@ public class PasswordSecurityService {
             isValid = false;
         }
 
+        if (!ALPHANUMERIC_PATTERN.matcher(password).matches()) {
+            errors.add("Password must contain only letters and numbers");
+            isValid = false;
+        }
+
         // Check uppercase requirement
         if (requireUppercase && !UPPERCASE_PATTERN.matcher(password).find()) {
             errors.add("Password must contain at least one uppercase letter");
@@ -92,16 +93,6 @@ public class PasswordSecurityService {
         if (requireSpecialChars && !SPECIAL_CHAR_PATTERN.matcher(password).find()) {
             errors.add("Password must contain at least one special character (!@#$%^&*()_+-=[]{}|;':\"\\,.<>/?)");
             isValid = false;
-        }
-
-        // Reject common weak passwords even when the rest of the policy passes.
-        String lowerPassword = password.toLowerCase();
-        for (String weakPassword : COMMON_WEAK_PASSWORDS) {
-            if (lowerPassword.contains(weakPassword)) {
-                errors.add("Password contains common weak patterns and is not secure");
-                isValid = false;
-                break;
-            }
         }
 
         // Check for repeating characters - DISABLED for less restrictive policy
