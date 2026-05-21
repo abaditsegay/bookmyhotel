@@ -217,6 +217,24 @@ const BookingConfirmationPage: React.FC = () => {
     BORDER_DEFAULT: theme.palette.divider,
   } as const;
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const successHeroBackground = theme.palette.mode === 'dark'
+    ? alpha(theme.palette.success.main, 0.18)
+    : alpha(theme.palette.success.main, 0.1);
+  const successHeroBorder = theme.palette.mode === 'dark'
+    ? alpha(theme.palette.success.main, 0.3)
+    : alpha(theme.palette.success.main, 0.18);
+  const successHeroTitleColor = theme.palette.mode === 'dark'
+    ? theme.palette.common.white
+    : theme.palette.text.primary;
+  const successHeroSubtitleColor = theme.palette.mode === 'dark'
+    ? alpha(theme.palette.common.white, 0.82)
+    : theme.palette.text.secondary;
+  const confirmationChipBackground = theme.palette.mode === 'dark'
+    ? alpha(theme.palette.success.main, 0.2)
+    : alpha(theme.palette.success.main, 0.14);
+  const confirmationChipTextColor = theme.palette.mode === 'dark'
+    ? theme.palette.common.white
+    : theme.palette.success.dark;
   
   const [booking, setBooking] = useState<BookingData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -730,8 +748,8 @@ const BookingConfirmationPage: React.FC = () => {
         <Box sx={{
           p: isMobile ? 3 : 4,
           borderRadius: 2,
-          backgroundColor: alpha(theme.palette.success.main, theme.palette.mode === 'dark' ? 0.16 : 0.08),
-          border: `1px solid ${alpha(theme.palette.success.main, theme.palette.mode === 'dark' ? 0.32 : 0.14)}`,
+          backgroundColor: successHeroBackground,
+          border: `1px solid ${successHeroBorder}`,
         }}>
         <CheckCircleIcon 
           sx={{ 
@@ -747,7 +765,7 @@ const BookingConfirmationPage: React.FC = () => {
           sx={{ 
             fontWeight: 'bold', 
             mb: 1.5,
-            color: theme.palette.success.contrastText ?? theme.palette.common.white,
+            color: successHeroTitleColor,
           }}
         >
           {t('bookingConfirmation.title')}
@@ -756,7 +774,7 @@ const BookingConfirmationPage: React.FC = () => {
           variant="body1" 
           sx={{ 
             mb: isMobile ? 2 : 3, 
-            color: alpha(theme.palette.common.white, theme.palette.mode === 'dark' ? 0.82 : 0.88),
+            color: successHeroSubtitleColor,
             fontSize: isMobile ? '0.95rem' : '1rem',
           }}
         >
@@ -775,8 +793,8 @@ const BookingConfirmationPage: React.FC = () => {
             variant="filled"
             className="print-chip"
             sx={{ 
-              bgcolor: alpha(theme.palette.success.main, theme.palette.mode === 'dark' ? 0.18 : 0.12), 
-              color: theme.palette.success.contrastText ?? theme.palette.common.white,
+              bgcolor: confirmationChipBackground,
+              color: confirmationChipTextColor,
               fontWeight: 'bold', 
               fontSize: isMobile ? '1rem' : '1.3rem',
               px: isMobile ? 2 : 3,
@@ -786,6 +804,7 @@ const BookingConfirmationPage: React.FC = () => {
               '& .MuiChip-label': {
                 fontSize: isMobile ? '1rem' : '1.3rem',
                 fontWeight: 'bold',
+                color: confirmationChipTextColor,
                 padding: isMobile ? '6px 10px' : '8px 12px',
               }
             }}
@@ -868,7 +887,10 @@ const BookingConfirmationPage: React.FC = () => {
             flexDirection: isMobile ? 'column' : 'row',
             gap: isMobile ? 2 : 0,
             textAlign: isMobile ? 'center' : 'left',
-            ...tintedPanelSx('primary'),
+            p: 0,
+            borderRadius: 0,
+            border: 'none',
+            backgroundColor: 'transparent',
           }}
         >
           <Box sx={{ order: isMobile ? 2 : 1 }}>

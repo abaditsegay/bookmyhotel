@@ -5,15 +5,13 @@
 
 set -e
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ENV_FILE="$SCRIPT_DIR/.env"
+
 # Configuration
 LIGHTSAIL_IP="44.204.49.94"
 LIGHTSAIL_USER="ubuntu"
 SSH_KEY="$HOME/.ssh/bookmyhotel-aws"
-CONFIG_ENV="${1:-prod}"  # Allow specifying prod or prod-new (default: prod)
-MEMORY_XMX="${2:-1g}"    # Configurable max memory (default: 1g)
-MEMORY_XMS="${3:-512m}"  # Configurable initial memory (default: 512m)
-UAT_SHARED_HOTEL_ID="${4:-${APP_UAT_SHARED_HOTEL_ID:-1}}"
-UAT_SHARED_HOTEL_NAME="${5:-${APP_UAT_SHARED_HOTEL_NAME:-Grand Plaza Hotel}}"
 APP_NAME="bookmyhotel"
 BACKEND_DIR="/opt/${APP_NAME}"
 SERVICE_NAME="${APP_NAME}-backend"
@@ -37,6 +35,26 @@ print_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
+shell_quote() {
+    printf '%q' "$1"
+}
+
+if [ -f "$ENV_FILE" ]; then
+    set -a
+    # shellcheck disable=SC1090
+    . "$ENV_FILE"
+    set +a
+    print_status "Loaded deployment environment from $ENV_FILE"
+else
+    print_warning "No .env file found at $ENV_FILE; deploy will use current shell environment only"
+fi
+
+CONFIG_ENV="${1:-prod}"  # Allow specifying prod or prod-new (default: prod)
+MEMORY_XMX="${2:-1g}"    # Configurable max memory (default: 1g)
+MEMORY_XMS="${3:-512m}"  # Configurable initial memory (default: 512m)
+UAT_SHARED_HOTEL_ID="${4:-${APP_UAT_SHARED_HOTEL_ID:-1}}"
+UAT_SHARED_HOTEL_NAME="${5:-${APP_UAT_SHARED_HOTEL_NAME:-Grand Plaza Hotel}}"
+
 # Check if SSH key exists
 if [ ! -f "$SSH_KEY" ]; then
     print_error "SSH key file not found: $SSH_KEY"
@@ -56,7 +74,6 @@ print_status "UAT shared hotel name: ${UAT_SHARED_HOTEL_NAME}"
 
 # Step 1: Build the application locally
 print_status "Building Spring Boot application..."
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LOCAL_BACKEND_DIR="$SCRIPT_DIR/backend"
 
 print_status "Script directory: $SCRIPT_DIR"
@@ -121,6 +138,27 @@ printf 'app.uat.shared-hotel-name=%s\n' '${UAT_SHARED_HOTEL_NAME}' >> "\$TMP_FIL
 mv "\$TMP_FILE" "\$CONFIG_FILE"
 EOF
 
+print_status "Uploading runtime environment from .env..."
+REMOTE_ENV_CONTENT=$(cat <<EOF
+MICROSOFT_GRAPH_CLIENT_ID=$(shell_quote "${MICROSOFT_GRAPH_CLIENT_ID:-}")
+MICROSOFT_GRAPH_TENANT_ID=$(shell_quote "${MICROSOFT_GRAPH_TENANT_ID:-}")
+MICROSOFT_GRAPH_CLIENT_SECRET=$(shell_quote "${MICROSOFT_GRAPH_CLIENT_SECRET:-}")
+APP_EMAIL_FROM=$(shell_quote "${APP_EMAIL_FROM:-}")
+IMAGE_UPLOAD_BASE_DIRECTORY=$(shell_quote "/opt/bookmyhotel/uploads/images")
+IMAGE_UPLOAD_BASE_URL=$(shell_quote "https://bookmystay.shegersolutions.com/uploads/images")
+EOF
+)
+
+ssh $SSH_OPTS $LIGHTSAIL_USER@$LIGHTSAIL_IP << EOF
+set -e
+cat > /tmp/bookmyhotel.env <<'ENVFILE'
+$REMOTE_ENV_CONTENT
+ENVFILE
+sudo mv /tmp/bookmyhotel.env /opt/bookmyhotel/config/bookmyhotel.env
+sudo chown root:root /opt/bookmyhotel/config/bookmyhotel.env
+sudo chmod 600 /opt/bookmyhotel/config/bookmyhotel.env
+EOF
+
 # Step 5: Create systemd service
 print_status "Creating systemd service..."
 ssh $SSH_OPTS $LIGHTSAIL_USER@$LIGHTSAIL_IP << EOF
@@ -133,6 +171,7 @@ After=network.target
 Type=simple
 User=ubuntu
 WorkingDirectory=/opt/bookmyhotel
+EnvironmentFile=/opt/bookmyhotel/config/bookmyhotel.env
 ExecStart=/usr/bin/java -jar -Xmx${MEMORY_XMX} -Xms${MEMORY_XMS} -Dspring.profiles.active=${CONFIG_ENV} app.jar --spring.config.additional-location=file:./config/
 Restart=always
 RestartSec=10
@@ -143,8 +182,6 @@ SyslogIdentifier=bookmyhotel-backend
 # Environment variables
 Environment=JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
 Environment=SPRING_PROFILES_ACTIVE=${CONFIG_ENV}
-Environment="IMAGE_UPLOAD_BASE_DIRECTORY=/opt/bookmyhotel/uploads/images"
-Environment="IMAGE_UPLOAD_BASE_URL=https://bookmystay.shegersolutions.com/uploads/images"
 
 [Install]
 WantedBy=multi-user.target

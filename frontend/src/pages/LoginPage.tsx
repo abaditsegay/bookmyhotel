@@ -244,6 +244,29 @@ const LoginPage: React.FC = () => {
           }}
           contentSx={{ p: isMobile ? 3 : 5 }}
         >
+            <Box
+              sx={{
+                width: 'min(220px, 68%)',
+                mx: 'auto',
+                mb: 2,
+                overflow: 'hidden',
+              }}
+            >
+              <Box
+                component="img"
+                src="/logos/logo.png"
+                alt="BookMyHotel logo"
+                sx={{
+                  display: 'block',
+                  width: '112%',
+                  maxWidth: 'none',
+                  height: 'auto',
+                  ml: '-5%',
+                  mt: '-4%',
+                  mb: '-6%',
+                }}
+              />
+            </Box>
             
             {bookingData && (
               <Alert severity="info" sx={{ mb: 3 }}>

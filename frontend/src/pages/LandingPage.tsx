@@ -10,7 +10,6 @@ import {
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import {
-  Hotel as HotelIcon,
   Search as SearchIcon,
   Security as SecurityIcon,
   Speed as SpeedIcon,
@@ -86,28 +85,42 @@ const LandingPage: React.FC = () => {
       {/* Hero Section */}
       <Box
         sx={{
-          background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-          color: 'common.white',
+          background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.82)} 0%, ${alpha(theme.palette.primary.dark, 0.76)} 55%, ${alpha(theme.palette.secondary.main, 0.68)} 100%)`,
+          color: 'text.primary',
           py: isMobile ? 5 : 8,
           position: 'relative',
           overflow: 'hidden',
+          borderBottom: `1px solid ${alpha(theme.palette.common.black, 0.12)}`,
         }}
       >
         <Container maxWidth="lg">
           <Box sx={{ textAlign: 'center', mb: isMobile ? 3 : 5 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2 }}>
-              <HotelIcon sx={{ fontSize: isMobile ? 36 : 48, mr: 1.5 }} />
-              <Typography
-                variant={isMobile ? 'h4' : 'h3'}
-                component="h1"
-                sx={{ fontWeight: 800, letterSpacing: '-0.02em' }}
-              >
-                {t('landing.hero.title')}
-              </Typography>
+            <Box
+              sx={{
+                width: isMobile ? 'min(280px, 72vw)' : 'min(420px, 48vw)',
+                mx: 'auto',
+                mb: 2,
+                overflow: 'hidden',
+              }}
+            >
+              <Box
+                component="img"
+                src="/logos/logo.png"
+                alt={t('landing.hero.title')}
+                sx={{
+                  display: 'block',
+                  width: '104%',
+                  maxWidth: 'none',
+                  height: 'auto',
+                  ml: '-1%',
+                  mt: '-4%',
+                  mb: '-6%',
+                }}
+              />
             </Box>
             <Typography
               variant={isMobile ? 'body1' : 'h6'}
-              sx={{ opacity: 0.9, maxWidth: 600, mx: 'auto', fontWeight: 400 }}
+              sx={{ color: alpha(theme.palette.common.white, 0.88), maxWidth: 600, mx: 'auto', fontWeight: 400 }}
             >
               {t('landing.hero.subtitle')}
             </Typography>
