@@ -36,6 +36,7 @@ import { useTenant } from '../../contexts/TenantContext';
 import { useNavigate } from 'react-router-dom';
 import LanguageSelector from '../common/LanguageSelector';
 import CalendarSelector from '../common/CalendarSelector';
+import ThemeToggle from '../common/ThemeToggle';
 
 /**
  * Navigation bar for system-wide users (CUSTOMER and ADMIN roles)
@@ -225,7 +226,8 @@ export const SystemWideNavbar: React.FC = () => {
         )}
 
         {/* User menu */}
-        <div>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <ThemeToggle variant="menu" size="small" />
           <IconButton
             size="large"
             aria-label="account of current user"
@@ -267,7 +269,7 @@ export const SystemWideNavbar: React.FC = () => {
               {t('navigation.logout')}
             </MenuItem>
           </Menu>
-        </div>
+        </Box>
       </Toolbar>
       
       {/* Mobile Navigation Drawer */}
@@ -293,6 +295,14 @@ export const SystemWideNavbar: React.FC = () => {
         </Box>
         
         <List>
+          <ListItem disablePadding>
+            <ListItemButton>
+              <ThemeToggle variant="button" size="small" showLabel />
+            </ListItemButton>
+          </ListItem>
+
+          <Divider sx={{ my: 1 }} />
+
           {/* System Admin Navigation */}
           {isSystemAdmin && (
             <>

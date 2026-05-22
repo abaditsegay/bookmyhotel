@@ -37,6 +37,7 @@ import { useNotifications } from '../../hooks/useNotifications';
 import { getReadableAccentTextColor } from '../../theme/surfaces';
 import NetworkStatusIndicator from '../NetworkStatusIndicator';
 import LanguageSelector from '../common/LanguageSelector';
+import ThemeToggle from '../common/ThemeToggle';
 
 const Navbar: React.FC = () => {
   const { t } = useTranslation();
@@ -296,6 +297,10 @@ const Navbar: React.FC = () => {
       </Box>
       <Divider />
       <List>
+        <ListItem sx={{ justifyContent: 'center', py: 1.5 }}>
+          <ThemeToggle variant="button" size="small" showLabel />
+        </ListItem>
+        <Divider />
         {navigationItems.map((item, index) => (
           <ListItem
             key={item.path || index}
@@ -570,6 +575,8 @@ const Navbar: React.FC = () => {
 
           {/* Right Section: User Actions */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1, justifyContent: 'flex-end' }}>
+            <ThemeToggle variant="menu" size="small" />
+
             {/* Show navigation on right for users with hotel name displayed */}
             {user && user.hotelName && shouldShowHotelName() && !isMobile && (
               <DesktopNavigation />

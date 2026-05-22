@@ -39,7 +39,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { buildApiUrl } from '../config/apiConfig';
 import { formatCurrencyWithDecimals } from '../utils/currencyUtils';
 import { formatDateForDisplay, formatDateLongForDisplay, formatDateTimeForDisplay } from '../utils/dateUtils';
-import { getPageShellBackground } from '../theme/surfaces';
+import { getPageShellBackground, getReadableAccentTextColor } from '../theme/surfaces';
 import { formActionsRowSx, tintedPanelSx } from '../theme/sxHelpers';
 
 // Print-specific CSS styles
@@ -217,6 +217,8 @@ const BookingConfirmationPage: React.FC = () => {
     BORDER_DEFAULT: theme.palette.divider,
   } as const;
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const readablePrimaryTextColor = getReadableAccentTextColor(theme, 'primary');
+  const readableInfoTextColor = getReadableAccentTextColor(theme, 'info');
   const successHeroBackground = theme.palette.mode === 'dark'
     ? alpha(theme.palette.success.main, 0.18)
     : alpha(theme.palette.success.main, 0.1);
@@ -235,6 +237,12 @@ const BookingConfirmationPage: React.FC = () => {
   const confirmationChipTextColor = theme.palette.mode === 'dark'
     ? theme.palette.common.white
     : theme.palette.success.dark;
+  const infoAlertBackground = theme.palette.mode === 'dark'
+    ? alpha(theme.palette.info.main, 0.16)
+    : alpha(theme.palette.info.main, 0.08);
+  const infoAlertBorder = theme.palette.mode === 'dark'
+    ? alpha(theme.palette.info.light, 0.32)
+    : alpha(theme.palette.info.main, 0.18);
   
   const [booking, setBooking] = useState<BookingData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -360,17 +368,6 @@ const BookingConfirmationPage: React.FC = () => {
     })}`;
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'booked': return 'primary';
-      case 'pending': return 'warning';
-      case 'cancelled': return 'error';
-      case 'checked in': return 'info';
-      case 'checked out': return 'default';
-      default: return 'default';
-    }
-  };
-
   const formatPaymentStatus = (status: string) => {
     switch (status.toUpperCase()) {
       case 'PAY_AT_FRONTDESK': return t('bookingConfirmation.status.payAtFrontDesk');
@@ -425,6 +422,43 @@ const BookingConfirmationPage: React.FC = () => {
     }
 
     return formatted;
+  };
+
+  const getStatusChipSx = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'booked':
+      case 'confirmed':
+        return {
+          backgroundColor: alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.22 : 0.12),
+          color: readablePrimaryTextColor,
+          border: `1px solid ${alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.4 : 0.2)}`,
+        };
+      case 'checked in':
+      case 'checked_in':
+        return {
+          backgroundColor: alpha(theme.palette.info.main, theme.palette.mode === 'dark' ? 0.22 : 0.12),
+          color: readableInfoTextColor,
+          border: `1px solid ${alpha(theme.palette.info.main, theme.palette.mode === 'dark' ? 0.4 : 0.2)}`,
+        };
+      case 'pending':
+        return {
+          backgroundColor: alpha(theme.palette.warning.main, theme.palette.mode === 'dark' ? 0.2 : 0.1),
+          color: theme.palette.mode === 'dark' ? theme.palette.warning.light : theme.palette.warning.dark,
+          border: `1px solid ${alpha(theme.palette.warning.main, theme.palette.mode === 'dark' ? 0.36 : 0.2)}`,
+        };
+      case 'cancelled':
+        return {
+          backgroundColor: alpha(theme.palette.error.main, theme.palette.mode === 'dark' ? 0.18 : 0.08),
+          color: theme.palette.mode === 'dark' ? theme.palette.error.light : theme.palette.error.dark,
+          border: `1px solid ${alpha(theme.palette.error.main, theme.palette.mode === 'dark' ? 0.34 : 0.18)}`,
+        };
+      default:
+        return {
+          backgroundColor: alpha(theme.palette.text.primary, theme.palette.mode === 'dark' ? 0.12 : 0.05),
+          color: 'text.primary',
+          border: `1px solid ${alpha(theme.palette.divider, theme.palette.mode === 'dark' ? 0.9 : 1)}`,
+        };
+    }
   };
 
   // Calculate price breakdown with taxes
@@ -899,7 +933,7 @@ const BookingConfirmationPage: React.FC = () => {
               gutterBottom 
               sx={{ 
                 fontWeight: 'bold', 
-                color: theme.palette.primary.main,
+                color: readablePrimaryTextColor,
                 mb: isMobile ? 1 : 'initial',
               }}
             >
@@ -932,12 +966,12 @@ const BookingConfirmationPage: React.FC = () => {
               </Typography>
               <Chip
                 label={BookingService.getStatusDisplayLabel(booking.status)}
-                color={getStatusColor(booking.status) as any}
                 variant="filled"
                 className="print-chip"
                 sx={{ 
                   fontWeight: 'bold', 
                   fontSize: isMobile ? '0.8rem' : '0.9rem',
+                  ...getStatusChipSx(booking.status),
                 }}
               />
             </Box>
@@ -964,7 +998,7 @@ const BookingConfirmationPage: React.FC = () => {
                   fontWeight: '500',
                   fontSize: isMobile ? '0.8rem' : '0.9rem',
                   backgroundColor: alpha(theme.palette.warning.main, theme.palette.mode === 'dark' ? 0.18 : 0.08),
-                  color: theme.palette.warning.dark,
+                  color: theme.palette.mode === 'dark' ? theme.palette.warning.light : theme.palette.warning.dark,
                   borderColor: theme.palette.warning.main,
                   '&:hover': {
                     backgroundColor: alpha(theme.palette.warning.main, theme.palette.mode === 'dark' ? 0.24 : 0.12),
@@ -1410,6 +1444,11 @@ const BookingConfirmationPage: React.FC = () => {
         sx={{ 
           mb: 4, 
           p: 3,
+          backgroundColor: infoAlertBackground,
+          border: `1px solid ${infoAlertBorder}`,
+          '& .MuiAlert-icon': {
+            color: readableInfoTextColor,
+          },
           '& .MuiAlert-message': {
             width: '100%'
           }
@@ -1420,23 +1459,23 @@ const BookingConfirmationPage: React.FC = () => {
         </Typography>
         <Box sx={{ '& > div': { mb: 1 } }}>
           <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-            <Box component="span" sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'primary.main', mr: 2, flexShrink: 0 }} />
+            <Box component="span" sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: readablePrimaryTextColor, mr: 2, flexShrink: 0 }} />
             <strong>{t('bookingConfirmation.importantInfo.roomAssignment')}</strong>
           </Typography>
           <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-            <Box component="span" sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'primary.main', mr: 2, flexShrink: 0 }} />
+            <Box component="span" sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: readablePrimaryTextColor, mr: 2, flexShrink: 0 }} />
             {t('bookingConfirmation.importantInfo.bringId')}
           </Typography>
           <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-            <Box component="span" sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'primary.main', mr: 2, flexShrink: 0 }} />
+            <Box component="span" sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: readablePrimaryTextColor, mr: 2, flexShrink: 0 }} />
             {t('bookingConfirmation.importantInfo.checkInTime')}
           </Typography>
           <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-            <Box component="span" sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'primary.main', mr: 2, flexShrink: 0 }} />
+            <Box component="span" sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: readablePrimaryTextColor, mr: 2, flexShrink: 0 }} />
             {t('bookingConfirmation.importantInfo.changesContact')}
           </Typography>
           <Typography variant="body1" sx={{ display: 'flex', alignItems: 'center' }}>
-            <Box component="span" sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'primary.main', mr: 2, flexShrink: 0 }} />
+            <Box component="span" sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: readablePrimaryTextColor, mr: 2, flexShrink: 0 }} />
             {t('bookingConfirmation.importantInfo.keepConfirmation')}
           </Typography>
         </Box>
@@ -1526,7 +1565,10 @@ const BookingConfirmationPage: React.FC = () => {
                 checked={includeItinerary}
                 onChange={(e) => setIncludeItinerary(e.target.checked)}
                 sx={{ 
-                  color: COLORS.PRIMARY,
+                  color: readablePrimaryTextColor,
+                  '&.Mui-checked': {
+                    color: readablePrimaryTextColor,
+                  },
                   '& .MuiSvgIcon-root': {
                     fontSize: isMobile ? '1.5rem' : '1.25rem',
                   }

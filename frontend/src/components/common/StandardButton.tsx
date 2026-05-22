@@ -2,6 +2,7 @@ import React from 'react';
 import { Button, ButtonProps, CircularProgress } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { designSystem } from '../../theme/designSystem';
+import { getReadableAccentTextColor } from '../../theme/surfaces';
 
 interface StandardButtonProps extends Omit<ButtonProps, 'size'> {
   buttonSize?: 'small' | 'medium' | 'large';
@@ -94,6 +95,10 @@ const StandardButton: React.FC<StandardButtonProps> = ({
           ? theme.palette[paletteColor as 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'info']
           : theme.palette.primary;
         const textVariantColor = theme.palette.mode === 'dark' ? tone.light : tone.main;
+        const readableAccentColor = getReadableAccentTextColor(
+          theme,
+          (paletteColor in theme.palette ? paletteColor : 'primary') as 'primary' | 'secondary' | 'info' | 'warning' | 'error'
+        );
 
         return {
           ...sizeConfig,
@@ -118,13 +123,13 @@ const StandardButton: React.FC<StandardButtonProps> = ({
           }),
           ...(variant === 'outlined' && {
             borderWidth: '1px',
-            borderColor: tone.main,
-            color: tone.main,
+            borderColor: theme.palette.mode === 'dark' ? alpha(readableAccentColor, 0.7) : tone.main,
+            color: readableAccentColor,
             backgroundColor: 'transparent',
             '&:hover': {
               borderWidth: '1px',
-              borderColor: tone.main,
-              backgroundColor: alpha(tone.main, theme.palette.mode === 'dark' ? 0.14 : 0.04),
+              borderColor: theme.palette.mode === 'dark' ? readableAccentColor : tone.main,
+              backgroundColor: alpha(theme.palette.mode === 'dark' ? readableAccentColor : tone.main, theme.palette.mode === 'dark' ? 0.14 : 0.04),
             },
           }),
           ...(variant === 'text' && {
