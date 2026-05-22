@@ -220,23 +220,21 @@ const BookingConfirmationPage: React.FC = () => {
   const readablePrimaryTextColor = getReadableAccentTextColor(theme, 'primary');
   const readableInfoTextColor = getReadableAccentTextColor(theme, 'info');
   const successHeroBackground = theme.palette.mode === 'dark'
-    ? alpha(theme.palette.success.main, 0.18)
-    : alpha(theme.palette.success.main, 0.1);
+    ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.98)} 0%, ${alpha(theme.palette.success.dark, 0.18)} 100%)`
+    : `linear-gradient(135deg, ${theme.palette.success.dark} 0%, ${theme.palette.success.main} 100%)`;
   const successHeroBorder = theme.palette.mode === 'dark'
-    ? alpha(theme.palette.success.main, 0.3)
-    : alpha(theme.palette.success.main, 0.18);
+    ? alpha(theme.palette.success.main, 0.24)
+    : alpha(theme.palette.success.dark, 0.36);
   const successHeroTitleColor = theme.palette.mode === 'dark'
     ? theme.palette.common.white
-    : theme.palette.text.primary;
+    : alpha(theme.palette.common.white, 0.96);
   const successHeroSubtitleColor = theme.palette.mode === 'dark'
     ? alpha(theme.palette.common.white, 0.82)
-    : theme.palette.text.secondary;
+    : alpha(theme.palette.common.white, 0.84);
   const confirmationChipBackground = theme.palette.mode === 'dark'
-    ? alpha(theme.palette.success.main, 0.2)
-    : alpha(theme.palette.success.main, 0.14);
-  const confirmationChipTextColor = theme.palette.mode === 'dark'
-    ? theme.palette.common.white
-    : theme.palette.success.dark;
+    ? alpha(theme.palette.success.main, 0.18)
+    : alpha(theme.palette.success.dark, 0.28);
+  const confirmationChipTextColor = alpha(theme.palette.common.white, theme.palette.mode === 'dark' ? 0.98 : 0.96);
   const infoAlertBackground = theme.palette.mode === 'dark'
     ? alpha(theme.palette.info.main, 0.16)
     : alpha(theme.palette.info.main, 0.08);
@@ -777,13 +775,21 @@ const BookingConfirmationPage: React.FC = () => {
         elevation={0}
         className="print-paper print-header"
         contentSx={{ p: isMobile ? 3 : 4 }}
-        sx={{ mb: isMobile ? 3 : 4, textAlign: 'center' }}
+        sx={{
+          mb: isMobile ? 3 : 4,
+          textAlign: 'center',
+          background: successHeroBackground,
+          border: `1px solid ${successHeroBorder}`,
+          boxShadow: theme.palette.mode === 'dark'
+            ? `0 18px 40px ${alpha(theme.palette.common.black, 0.34)}`
+            : `0 18px 40px ${alpha(theme.palette.success.dark, 0.18)}`,
+        }}
       >
         <Box sx={{
           p: isMobile ? 3 : 4,
           borderRadius: 2,
-          backgroundColor: successHeroBackground,
-          border: `1px solid ${successHeroBorder}`,
+          backgroundColor: 'transparent',
+          border: 'none',
         }}>
         <CheckCircleIcon 
           sx={{ 
