@@ -43,6 +43,21 @@ import { getBookingStatusColor } from '../../utils/statusColors';
 import { getReadableAccentTextColor } from '../../theme/surfaces';
 import { composeSx, surfaceCardSx } from '../../theme/sxHelpers';
 
+const HOTEL_ADMIN_OFFLINE_TAB = 8;
+
+const normalizeHotelAdminTab = (requestedTab: number, isOnline: boolean) => {
+  if (!Number.isFinite(requestedTab)) {
+    return isOnline ? 0 : HOTEL_ADMIN_OFFLINE_TAB;
+  }
+
+  const clampedTab = Math.max(0, Math.min(requestedTab, HOTEL_ADMIN_OFFLINE_TAB));
+  if (isOnline) {
+    return clampedTab === HOTEL_ADMIN_OFFLINE_TAB ? 0 : clampedTab;
+  }
+
+  return HOTEL_ADMIN_OFFLINE_TAB;
+};
+
 const HotelAdminDashboard: React.FC = () => {
   const theme = useTheme();
   const addAlpha = alpha;
@@ -71,6 +86,7 @@ const HotelAdminDashboard: React.FC = () => {
   const { token, user } = useAuth();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
   
   // Get initial tab from URL parameter, default to 0 if not present
   const getInitialTab = () => {
@@ -79,16 +95,30 @@ const HotelAdminDashboard: React.FC = () => {
     return isNaN(tab) || tab < 0 || tab > 8 ? 0 : tab;
   };
   
-  const [activeTab, setActiveTab] = useState(getInitialTab);
+  const [activeTab, setActiveTab] = useState(() => normalizeHotelAdminTab(getInitialTab(), navigator.onLine));
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   // Sync tab state with URL parameters when they change externally
   useEffect(() => {
     const tabParam = searchParams.get('tab');
     const urlTab = tabParam ? parseInt(tabParam, 10) : 0;
-    const validTab = isNaN(urlTab) || urlTab < 0 || urlTab > 8 ? 0 : urlTab;
-    // console.log(`🔗 HotelAdmin: URL tab changed to ${urlTab}, setting valid tab to ${validTab}`);
-    setActiveTab(validTab);
-  }, [searchParams]); // Remove activeTab from dependencies to prevent circular updates
+    const nextTab = normalizeHotelAdminTab(urlTab, isOnline);
+    if (nextTab !== activeTab) {
+      setActiveTab(nextTab);
+    }
+  }, [activeTab, isOnline, searchParams]);
 
   // Nested tabs state for Hotel Details tab
   const [hotelDetailsTab, setHotelDetailsTab] = useState(0);
@@ -151,14 +181,6 @@ const HotelAdminDashboard: React.FC = () => {
   useEffect(() => {
     // Tab changes are now handled by individual components
   }, [activeTab, token]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Sync tab state with URL parameter changes (for browser back/forward navigation)
-  useEffect(() => {
-    const currentTab = getInitialTab();
-    if (currentTab !== activeTab) {
-      setActiveTab(currentTab);
-    }
-  }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Role-based access control - check after all hooks
   const hasHotelAdminAccess = user?.roles?.includes('HOTEL_ADMIN') || user?.role === 'HOTEL_ADMIN';
@@ -463,19 +485,19 @@ const HotelAdminDashboard: React.FC = () => {
               },
             }}
           >
-            <Tab label={t('dashboard.hotelAdmin.tabs.hotelDetail')} />
-            <Tab label={t('dashboard.hotelAdmin.tabs.staff')} />
-            <Tab label={t('dashboard.hotelAdmin.tabs.rooms')} />
-            <Tab label={t('dashboard.hotelAdmin.tabs.bookings')} />
-            <Tab label={t('dashboard.hotelAdmin.tabs.staffSchedules')} />
-            <Tab label={t('dashboard.hotelAdmin.tabs.housekeeping')} />
-            <Tab label={t('dashboard.hotelAdmin.tabs.reports')} />
-            <Tab label={t('dashboard.hotelAdmin.tabs.pricingTax')} />
-            <Tab label={t('dashboard.hotelAdmin.tabs.offlineBookings')} />
+            <Tab value={0} disabled={!isOnline} label={t('dashboard.hotelAdmin.tabs.hotelDetail')} />
+            <Tab value={1} disabled={!isOnline} label={t('dashboard.hotelAdmin.tabs.staff')} />
+            <Tab value={2} disabled={!isOnline} label={t('dashboard.hotelAdmin.tabs.rooms')} />
+            <Tab value={3} disabled={!isOnline} label={t('dashboard.hotelAdmin.tabs.bookings')} />
+            <Tab value={4} disabled={!isOnline} label={t('dashboard.hotelAdmin.tabs.staffSchedules')} />
+            <Tab value={5} disabled={!isOnline} label={t('dashboard.hotelAdmin.tabs.housekeeping')} />
+            <Tab value={6} disabled={!isOnline} label={t('dashboard.hotelAdmin.tabs.reports')} />
+            <Tab value={7} disabled={!isOnline} label={t('dashboard.hotelAdmin.tabs.pricingTax')} />
+            <Tab value={HOTEL_ADMIN_OFFLINE_TAB} disabled={isOnline} label={t('dashboard.hotelAdmin.tabs.offlineBookings')} />
           </Tabs>
         </Box>
 
-        <TabPanel value={activeTab} index={0} idPrefix="hotel-admin" contentSx={{ p: 3 }}>
+        {isOnline && <TabPanel value={activeTab} index={0} idPrefix="hotel-admin" contentSx={{ p: 3 }}>
           {/* Hotel Details Tab with nested tabs */}
           <Box>
             {/* Nested tabs for Hotel Details */}
@@ -928,7 +950,7 @@ const HotelAdminDashboard: React.FC = () => {
               <HotelImageManagement />
             </TabPanel>
           </Box>
-        </TabPanel>
+        </TabPanel>}
 
         <TabPanel value={activeTab} index={1} idPrefix="hotel-admin" contentSx={{ p: 3 }}>
           {/* Staff Management Tab */}
