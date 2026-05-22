@@ -7,6 +7,7 @@ public enum PaymentStatus {
     PENDING("Payment is pending"),
     PROCESSING("Payment is being processed"),
     COMPLETED("Payment has been completed"),
+    REFUND_PENDING("Refund has been approved and is awaiting processing"),
     REFUNDED("Payment has been refunded"),
     PARTIALLY_REFUNDED("Payment has been partially refunded"),
     FAILED("Payment has failed"),

@@ -1,5 +1,7 @@
 package com.bookmyhotel.controller;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -30,6 +32,7 @@ import com.bookmyhotel.dto.ConsolidatedReceiptResponse;
 import com.bookmyhotel.dto.FrontDeskStats;
 import com.bookmyhotel.dto.HotelDTO;
 import com.bookmyhotel.dto.RoomResponse;
+import com.bookmyhotel.dto.WalkInBookingRequest;
 import com.bookmyhotel.entity.Reservation;
 import com.bookmyhotel.entity.ReservationStatus;
 import com.bookmyhotel.entity.Room;
@@ -37,7 +40,8 @@ import com.bookmyhotel.entity.RoomStatus;
 import com.bookmyhotel.exception.ResourceNotFoundException;
 import com.bookmyhotel.repository.ReservationRepository;
 import com.bookmyhotel.repository.RoomRepository;
-import com.bookmyhotel.service.BookingService;
+import com.bookmyhotel.security.BookingSecurity;
+import com.bookmyhotel.security.HotelSecurity;
 import com.bookmyhotel.service.CheckoutReceiptService;
 import com.bookmyhotel.service.FrontDeskService;
 
@@ -68,6 +72,12 @@ public class FrontDeskController {
     @Autowired
     private com.bookmyhotel.service.BookingService bookingService;
 
+    @Autowired
+    private BookingSecurity bookingSecurity;
+
+    @Autowired
+    private HotelSecurity hotelSecurity;
+
     /**
      * Get paginated bookings for front desk
      */
@@ -88,6 +98,10 @@ public class FrontDeskController {
      */
     @GetMapping("/bookings/{reservationId}")
     public ResponseEntity<BookingResponse> getBookingDetails(@PathVariable Long reservationId) {
+        if (!bookingSecurity.canAccessReservation(reservationId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         BookingResponse booking = frontDeskService.getBookingDetails(reservationId);
         return ResponseEntity.ok(booking);
     }
@@ -99,6 +113,11 @@ public class FrontDeskController {
     public ResponseEntity<BookingResponse> searchByPaymentReference(@PathVariable String paymentReference) {
         try {
             BookingResponse booking = bookingService.findByPaymentReferencePublic(paymentReference);
+
+            if (booking.getHotelId() == null || !hotelSecurity.canAccessHotel(booking.getHotelId())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+
             return ResponseEntity.ok(booking);
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.notFound().build();
@@ -114,6 +133,10 @@ public class FrontDeskController {
             @RequestParam Long roomId,
             @RequestParam(required = false) String roomType) {
 
+        if (!bookingSecurity.canAccessReservation(reservationId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         BookingResponse booking = frontDeskService.updateBookingRoomAssignment(reservationId, roomId, roomType);
         return ResponseEntity.ok(booking);
     }
@@ -125,6 +148,10 @@ public class FrontDeskController {
     public ResponseEntity<BookingResponse> updateBookingStatus(
             @PathVariable Long reservationId,
             @RequestParam String status) {
+
+        if (!bookingSecurity.canAccessReservation(reservationId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
 
         BookingResponse booking = frontDeskService.updateBookingStatus(reservationId, status);
         return ResponseEntity.ok(booking);
@@ -138,6 +165,10 @@ public class FrontDeskController {
             @PathVariable Long reservationId,
             @RequestParam String paymentStatus) {
 
+        if (!bookingSecurity.canAccessReservation(reservationId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         BookingResponse booking = frontDeskService.updateBookingPaymentStatus(reservationId, paymentStatus);
         return ResponseEntity.ok(booking);
     }
@@ -149,6 +180,10 @@ public class FrontDeskController {
     public ResponseEntity<BookingResponse> updateBookingPaymentType(
             @PathVariable Long reservationId,
             @RequestParam String paymentType) {
+
+        if (!bookingSecurity.canAccessReservation(reservationId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
 
         BookingResponse booking = frontDeskService.updateBookingPaymentType(reservationId, paymentType);
         return ResponseEntity.ok(booking);
@@ -162,6 +197,10 @@ public class FrontDeskController {
             @PathVariable Long reservationId,
             @Valid @RequestBody BookingRequest request) {
 
+        if (!bookingSecurity.canAccessReservation(reservationId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         BookingResponse booking = frontDeskService.updateBooking(reservationId, request);
         return ResponseEntity.ok(booking);
     }
@@ -171,6 +210,10 @@ public class FrontDeskController {
      */
     @PostMapping("/bookings/{reservationId}/checkin-simple")
     public ResponseEntity<BookingResponse> checkIn(@PathVariable Long reservationId) {
+        if (!bookingSecurity.canAccessReservation(reservationId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         BookingResponse booking = frontDeskService.checkIn(reservationId);
         return ResponseEntity.ok(booking);
     }
@@ -183,6 +226,10 @@ public class FrontDeskController {
             @PathVariable Long reservationId,
             @RequestParam Long roomId,
             @RequestParam(required = false) String roomType) {
+
+        if (!bookingSecurity.canAccessReservation(reservationId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
 
         BookingResponse booking = frontDeskService.checkInWithRoomAssignment(reservationId, roomId, roomType);
         return ResponseEntity.ok(booking);
@@ -199,13 +246,21 @@ public class FrontDeskController {
             @RequestParam(required = false) String checkOutDate,
             @RequestParam(defaultValue = "1") Integer guests) {
 
+        if (!hotelSecurity.canAccessHotel(hotelId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         try {
             List<RoomResponse> availableRooms;
 
             if (checkInDate != null && checkOutDate != null) {
                 // Use date-based filtering to exclude occupied rooms
-                java.time.LocalDate checkIn = java.time.LocalDate.parse(checkInDate);
-                java.time.LocalDate checkOut = java.time.LocalDate.parse(checkOutDate);
+                LocalDate checkIn = LocalDate.parse(checkInDate);
+                LocalDate checkOut = LocalDate.parse(checkOutDate);
+
+                if (!checkOut.isAfter(checkIn)) {
+                    return ResponseEntity.badRequest().build();
+                }
 
                 availableRooms = frontDeskService.getAvailableRoomsForDateRange(hotelId, checkIn, checkOut, guests);
             } else {
@@ -214,6 +269,8 @@ public class FrontDeskController {
             }
 
             return ResponseEntity.ok(availableRooms);
+        } catch (DateTimeParseException e) {
+            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
             // System.err.println("Failed to get available rooms: " + e.getMessage());
             logger.error("Operation failed", e);
@@ -226,6 +283,10 @@ public class FrontDeskController {
      */
     @PostMapping("/bookings/{reservationId}/checkout")
     public ResponseEntity<CheckoutResponse> checkOut(@PathVariable Long reservationId) {
+        if (!bookingSecurity.canAccessReservation(reservationId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         CheckoutResponse response = frontDeskService.checkOut(reservationId);
         return ResponseEntity.ok(response);
     }
@@ -239,6 +300,10 @@ public class FrontDeskController {
     public ResponseEntity<CheckoutResponse> checkOutWithReceipt(
             @PathVariable Long reservationId,
             Authentication authentication) {
+
+        if (!bookingSecurity.canAccessReservation(reservationId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
 
         try {
             logger.info("Processing checkout with receipt for reservation ID: {} by user: {}",
@@ -268,6 +333,10 @@ public class FrontDeskController {
      */
     @GetMapping("/bookings/{reservationId}/receipt")
     public ResponseEntity<ConsolidatedReceiptResponse> getConsolidatedReceipt(@PathVariable Long reservationId) {
+        if (!bookingSecurity.canAccessReservation(reservationId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         ConsolidatedReceiptResponse receipt = frontDeskService.getConsolidatedReceipt(reservationId);
         return ResponseEntity.ok(receipt);
     }
@@ -438,8 +507,15 @@ public class FrontDeskController {
     @PostMapping("/walk-in-booking")
     @PreAuthorize("hasRole('FRONTDESK') or hasRole('HOTEL_ADMIN') or hasRole('SUPER_ADMIN')")
     public ResponseEntity<BookingResponse> createWalkInBooking(
-            @Valid @RequestBody BookingRequest request,
+            @Valid @RequestBody WalkInBookingRequest request,
             Authentication auth) {
+
+        Long currentHotelId = hotelSecurity.getCurrentUserHotelId();
+        if (currentHotelId != null) {
+            request.setHotelId(currentHotelId);
+        } else if (request.getHotelId() == null || !hotelSecurity.canAccessHotel(request.getHotelId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
 
         // Set payment method to front desk payment for walk-in bookings
         if (request.getPaymentMethodId() == null || request.getPaymentMethodId().isEmpty()) {
@@ -459,9 +535,8 @@ public class FrontDeskController {
         BookingResponse response = bookingService.createBooking(request, null);
 
         // Log the walk-in booking creation for audit purposes
-        String staffEmail = auth.getName();
         // System.out.println("Walk-in booking created by front desk staff: " +
-        // staffEmail +
+        // auth.getName() +
         // " with confirmation number: " + response.getConfirmationNumber() +
         // " for guest email: " + request.getGuestEmail());
 

@@ -233,7 +233,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
   // Initialize room caching when component loads
   useEffect(() => {
     const initializeRooms = async () => {
-      if (hotelId && token && !roomsLoaded) {
+      if (resolvedHotelId && token && !roomsLoaded) {
         try {
           // Initialize offline storage first
           await offlineStorage.init();
@@ -242,7 +242,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
           await loadRoomsFromCache();
           
           // Start periodic refresh for this hotel
-          roomCacheService.startPeriodicRefresh(hotelId);
+          roomCacheService.startPeriodicRefresh(resolvedHotelId);
         } catch (error) {
           // console.error('Failed to initialize rooms:', error);
           setRoomsLoaded(true); // Prevent infinite retry
@@ -256,7 +256,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
     return () => {
       roomCacheService.stopPeriodicRefresh();
     };
-  }, [hotelId, token, roomsLoaded, loadRoomsFromCache]);
+  }, [resolvedHotelId, token, roomsLoaded, loadRoomsFromCache]);
 
   // Memoized change handlers (matching online version)
   // Memoized change handlers to prevent input focus loss (matching online component exactly)

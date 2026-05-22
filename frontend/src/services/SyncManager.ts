@@ -133,6 +133,7 @@ class SyncManager {
 
       if (response.ok) {
         await offlineStorage.updateBookingStatus(booking.id, 'SYNCED');
+        await offlineStorage.releaseRoomOccupancy(booking.roomId, booking.id);
         return { success: true };
       } else {
         const errorText = await this.getErrorMessage(response);

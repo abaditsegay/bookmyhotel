@@ -327,7 +327,7 @@ public class FrontDeskService {
         Map<String, Object> oldSnapshot = createReservationSnapshot(reservation);
 
         // Validate that dates are valid
-        if (request.getCheckInDate().isAfter(request.getCheckOutDate()) ||
+        if (!request.getCheckOutDate().isAfter(request.getCheckInDate()) ||
                 request.getCheckInDate().isBefore(LocalDate.now())) {
             throw new IllegalArgumentException("Invalid check-in or check-out dates");
         }
@@ -368,6 +368,10 @@ public class FrontDeskService {
             // If room type changed, we might need to clear the specific room assignment
             // unless a specific room is provided
             if (request.getRoomId() == null && reservation.getAssignedRoom() != null) {
+                if (reservation.getStatus() == ReservationStatus.CHECKED_IN) {
+                    throw new IllegalStateException("Checked-in bookings must keep an assigned room");
+                }
+
                 // Free up the current room
                 Room currentRoom = reservation.getAssignedRoom();
                 currentRoom.setStatus(RoomStatus.AVAILABLE);
@@ -378,27 +382,39 @@ public class FrontDeskService {
 
         // Handle room assignment change
         if (request.getRoomId() != null) {
-            Room newRoom = roomRepository.findById(request.getRoomId())
+            Room newRoom = roomRepository.findByIdForUpdate(request.getRoomId())
                     .orElseThrow(() -> new ResourceNotFoundException("Room not found with id: " + request.getRoomId()));
 
-            // Verify room is available (unless it's the same room already assigned)
-            if (!newRoom.equals(reservation.getAssignedRoom()) && newRoom.getStatus() != RoomStatus.AVAILABLE) {
-                throw new IllegalStateException("Selected room is not available");
+            Room currentAssignedRoom = reservation.getAssignedRoom();
+            boolean sameAssignedRoom = isSameRoom(currentAssignedRoom, newRoom);
+
+            assertRoomBelongsToReservationHotel(reservation, newRoom);
+
+            if (request.getRoomType() != null && request.getRoomType() != newRoom.getRoomType()) {
+                throw new IllegalArgumentException("Selected room does not match requested room type");
             }
 
-            // Free up current room if different
-            if (reservation.getAssignedRoom() != null && !reservation.getAssignedRoom().equals(newRoom)) {
-                Room currentRoom = reservation.getAssignedRoom();
-                currentRoom.setStatus(RoomStatus.AVAILABLE);
-                roomRepository.save(currentRoom);
+            if (!sameAssignedRoom) {
+                assertRoomAssignableForReservation(reservation, newRoom);
+
+                // Free up current room if different
+                if (currentAssignedRoom != null) {
+                    Room currentRoom = currentAssignedRoom;
+                    currentRoom.setStatus(RoomStatus.AVAILABLE);
+                    roomRepository.save(currentRoom);
+                }
             }
 
             // Assign new room
             reservation.setAssignedRoom(newRoom);
-            if (reservation.getStatus() == ReservationStatus.BOOKED) {
+            reservation.setRoomType(newRoom.getRoomType());
+
+            if (reservation.getStatus() == ReservationStatus.CHECKED_IN) {
                 newRoom.setStatus(RoomStatus.OCCUPIED);
-                roomRepository.save(newRoom);
+            } else {
+                newRoom.setStatus(RoomStatus.AVAILABLE);
             }
+            roomRepository.save(newRoom);
 
             // Update pricing based on new room
             recalculateBookingTotal(reservation, newRoom.getPricePerNight());
@@ -441,7 +457,7 @@ public class FrontDeskService {
                 .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
         Map<String, Object> oldSnapshot = createReservationSnapshot(reservation);
 
-        Room room = roomRepository.findById(roomId)
+        Room room = roomRepository.findByIdForUpdate(roomId)
                 .orElseThrow(() -> new ResourceNotFoundException("Room not found with id: " + roomId));
 
         // Validate that check-in is allowed (same validation as checkIn method)
@@ -453,27 +469,28 @@ public class FrontDeskService {
             throw new IllegalStateException("Early check-in is not allowed");
         }
 
-        // Verify room is available
-        if (room.getStatus() != RoomStatus.AVAILABLE) {
-            throw new IllegalStateException("Room is not available for check-in");
+        if (roomType != null && !room.getRoomType().name().equalsIgnoreCase(roomType)) {
+            throw new IllegalArgumentException("Selected room does not match requested room type");
         }
 
-        // Update room assignment
-        reservation.setRoom(room);
+        assertRoomBelongsToReservationHotel(reservation, room);
 
-        // Update room type if provided and different
-        if (roomType != null && !roomType.equals(reservation.getRoomType().name())) {
-            try {
-                RoomType newRoomType = RoomType.valueOf(roomType.toUpperCase());
-                reservation.setRoomType(newRoomType);
-                // Recalculate total based on new room type
-                recalculateBookingTotal(reservation, room.getPricePerNight());
-            } catch (IllegalArgumentException e) {
-                throw new IllegalArgumentException("Invalid room type: " + roomType);
+        Room previousRoom = reservation.getRoom();
+        boolean sameAssignedRoom = isSameRoom(previousRoom, room);
+        if (!sameAssignedRoom) {
+            assertRoomAssignableForReservation(reservation, room);
+
+            if (previousRoom != null) {
+                previousRoom.setStatus(RoomStatus.AVAILABLE);
+                roomRepository.save(previousRoom);
             }
         }
 
-        // Set status to checked in
+        // Assign new room
+        reservation.setRoom(room);
+        reservation.setUpdatedAt(LocalDateTime.now());
+        reservation.setRoomType(room.getRoomType());
+        recalculateBookingTotal(reservation, room.getPricePerNight());
         reservation.setStatus(ReservationStatus.CHECKED_IN);
         reservation.setActualCheckInTime(LocalDateTime.now());
 
@@ -561,62 +578,33 @@ public class FrontDeskService {
         }
 
         // Get the new room
-        Room newRoom = roomRepository.findById(newRoomId)
+        Room newRoom = roomRepository.findByIdForUpdate(newRoomId)
                 .orElseThrow(() -> new ResourceNotFoundException("Room not found with id: " + newRoomId));
 
-        // Verify new room is available
-        if (newRoom.getStatus() != RoomStatus.AVAILABLE) {
-            throw new IllegalStateException("Selected room is not available");
-        }
-
-        // Additional check: Ensure room is not booked by OTHER reservations during this
-        // booking's dates
-        // We need to exclude the current reservation from this check
-        Long hotelId = hotelService.getHotelIdByTenantId(TenantContext.getTenantId());
-        boolean isBookedByOthers = reservationRepository.existsByAssignedRoomAndDateRangeExcludingReservation(
-                newRoomId,
-                reservation.getCheckInDate(),
-                reservation.getCheckOutDate(),
-                reservationId,
-                hotelId);
-
-        if (isBookedByOthers) {
-            logger.warn("Room {} is already booked by another reservation for dates {} to {}",
-                    newRoom.getRoomNumber(), reservation.getCheckInDate(), reservation.getCheckOutDate());
-            throw new IllegalStateException("Selected room is currently occupied");
-        }
-
-        // Also check if the room is administratively available (isAvailable flag)
-        if (!newRoom.getIsAvailable()) {
-            throw new IllegalStateException("Selected room is not available for booking");
-        }
-
-        // If there was a previously assigned room, handle its status based on
-        // reservation status
         Room previousRoom = reservation.getRoom();
-        if (previousRoom != null) {
-            // For checked-in guests, the previous room becomes available again
-            // For booked bookings, the room was already available, so just ensure it
-            // stays available
-            previousRoom.setStatus(RoomStatus.AVAILABLE);
-            roomRepository.save(previousRoom);
+        boolean sameAssignedRoom = isSameRoom(previousRoom, newRoom);
+
+        assertRoomBelongsToReservationHotel(reservation, newRoom);
+
+        if (newRoomType != null && !newRoom.getRoomType().name().equalsIgnoreCase(newRoomType)) {
+            throw new IllegalArgumentException("Selected room does not match requested room type");
+        }
+
+        if (!sameAssignedRoom) {
+            assertRoomAssignableForReservation(reservation, newRoom);
+
+            // If there was a previously assigned room, handle its status based on
+            // reservation status.
+            if (previousRoom != null) {
+                previousRoom.setStatus(RoomStatus.AVAILABLE);
+                roomRepository.save(previousRoom);
+            }
         }
 
         // Assign new room
         reservation.setRoom(newRoom);
-
-        // Update room type if provided and different
-        if (newRoomType != null && !newRoomType.equals(reservation.getRoomType().name())) {
-            try {
-                RoomType roomType = RoomType.valueOf(newRoomType.toUpperCase());
-                reservation.setRoomType(roomType);
-
-                // Recalculate total based on new room's price
-                recalculateBookingTotal(reservation, newRoom.getPricePerNight());
-            } catch (IllegalArgumentException e) {
-                throw new IllegalArgumentException("Invalid room type: " + newRoomType);
-            }
-        }
+        reservation.setRoomType(newRoom.getRoomType());
+        recalculateBookingTotal(reservation, newRoom.getPricePerNight());
 
         // Set room status based on reservation status
         if (reservation.getStatus() == ReservationStatus.CHECKED_IN) {
@@ -745,12 +733,16 @@ public class FrontDeskService {
             throw new IllegalStateException("Early check-in is not allowed");
         }
 
+        Room room = reservation.getRoom();
+        if (room == null) {
+            throw new IllegalStateException("An assigned room is required before check-in");
+        }
+
         // Update reservation status
         reservation.setStatus(ReservationStatus.CHECKED_IN);
         reservation.setActualCheckInTime(LocalDateTime.now());
 
         // Update room status to occupied
-        Room room = reservation.getRoom();
         room.setStatus(RoomStatus.OCCUPIED);
         roomRepository.save(room);
 
@@ -908,6 +900,51 @@ public class FrontDeskService {
             logger.error("Failed to get current user email: {}", e.getMessage(), e);
         }
         return "front-desk-staff@bookmyhotel.com"; // Fallback
+    }
+
+    private void assertRoomBelongsToReservationHotel(Reservation reservation, Room room) {
+        Long reservationHotelId = reservation.getHotel() != null ? reservation.getHotel().getId() : null;
+        Long roomHotelId = room.getHotel() != null ? room.getHotel().getId() : null;
+
+        if (reservationHotelId == null || roomHotelId == null || !reservationHotelId.equals(roomHotelId)) {
+            throw new IllegalStateException("Selected room does not belong to the reservation hotel");
+        }
+    }
+
+    private void assertRoomAssignableForReservation(Reservation reservation, Room room) {
+        if (room.getStatus() != RoomStatus.AVAILABLE) {
+            throw new IllegalStateException("Room is not available for check-in");
+        }
+
+        if (!Boolean.TRUE.equals(room.getIsAvailable())) {
+            throw new IllegalStateException("Selected room is not available for booking");
+        }
+
+        Long hotelId = reservation.getHotel() != null ? reservation.getHotel().getId() : null;
+        if (hotelId == null) {
+            throw new IllegalStateException("Reservation hotel is not set");
+        }
+
+        boolean isBookedByOthers = reservationRepository.existsByAssignedRoomAndDateRangeExcludingReservation(
+                room.getId(),
+                reservation.getCheckInDate(),
+                reservation.getCheckOutDate(),
+                reservation.getId(),
+                hotelId);
+
+        if (isBookedByOthers) {
+            logger.warn("Room {} is already booked by another reservation for dates {} to {}",
+                    room.getRoomNumber(), reservation.getCheckInDate(), reservation.getCheckOutDate());
+            throw new IllegalStateException("Selected room is currently occupied");
+        }
+    }
+
+    private boolean isSameRoom(Room firstRoom, Room secondRoom) {
+        if (firstRoom == null || secondRoom == null) {
+            return false;
+        }
+
+        return firstRoom.getId() != null && firstRoom.getId().equals(secondRoom.getId());
     }
 
     /**

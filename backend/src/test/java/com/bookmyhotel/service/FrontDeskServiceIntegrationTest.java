@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -20,7 +19,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 import com.bookmyhotel.dto.BookingResponse;
 import com.bookmyhotel.entity.GuestInfo;
@@ -38,7 +36,6 @@ import com.bookmyhotel.repository.RoomRepository;
 import com.bookmyhotel.repository.TenantRepository;
 import com.bookmyhotel.support.MySqlIntegrationTestSupport;
 
-@Testcontainers
 @SpringBootTest(properties = {
         "spring.flyway.enabled=false",
         "spring.jpa.hibernate.ddl-auto=none",
@@ -233,6 +230,136 @@ class FrontDeskServiceIntegrationTest extends MySqlIntegrationTestSupport {
         assertEquals(RoomStatus.AVAILABLE, persistedAssignedRoom.getStatus());
         assertEquals(RoomStatus.AVAILABLE, persistedOriginalRoom.getStatus());
     }
+
+        @Test
+        void updateBookingShouldKeepAssignedRoomAvailableForBookedReservation() {
+        Hotel hotel = createHotel("frontdesk-update-booked");
+        Room originalRoom = createRoom(hotel, "409");
+        Room reassignedRoom = createRoom(hotel, "410", RoomType.DELUXE, new BigDecimal("2500.00"));
+        Reservation reservation = createReservation(hotel, originalRoom, ReservationStatus.BOOKED, PaymentStatus.PENDING,
+            "FD-UPDATE-001");
+
+        when(bookingService.convertToBookingResponse(any(Reservation.class))).thenAnswer(invocation -> {
+            Reservation updatedReservation = invocation.getArgument(0);
+            BookingResponse response = new BookingResponse();
+            response.setReservationId(updatedReservation.getId());
+            response.setStatus(updatedReservation.getStatus().name());
+            response.setRoomNumber(updatedReservation.getRoom() != null ? updatedReservation.getRoom().getRoomNumber() : null);
+            return response;
+        });
+
+        com.bookmyhotel.dto.BookingRequest request = new com.bookmyhotel.dto.BookingRequest();
+        request.setCheckInDate(reservation.getCheckInDate());
+        request.setCheckOutDate(reservation.getCheckOutDate());
+        request.setGuests(2);
+        request.setGuestName("Front Desk Guest");
+        request.setGuestEmail("frontdesk.guest@example.com");
+        request.setGuestPhone("+251900000300");
+        request.setRoomId(reassignedRoom.getId());
+
+        BookingResponse response = frontDeskService.updateBooking(reservation.getId(), request);
+
+        assertEquals("BOOKED", response.getStatus());
+        assertEquals("410", response.getRoomNumber());
+
+        Reservation persistedReservation = reservationRepository.findById(reservation.getId()).orElseThrow();
+        Room persistedOriginalRoom = roomRepository.findById(originalRoom.getId()).orElseThrow();
+        Room persistedReassignedRoom = roomRepository.findById(reassignedRoom.getId()).orElseThrow();
+
+        assertEquals(RoomType.DELUXE, persistedReservation.getRoomType());
+        assertEquals(new BigDecimal("5000.00"), persistedReservation.getTotalAmount());
+        assertEquals(RoomStatus.AVAILABLE, persistedOriginalRoom.getStatus());
+        assertEquals(RoomStatus.AVAILABLE, persistedReassignedRoom.getStatus());
+        }
+
+        @Test
+        void checkInGuestShouldRequireAssignedRoom() {
+        Hotel hotel = createHotel("frontdesk-checkin-no-room");
+        Room room = createRoom(hotel, "411");
+            Reservation reservation = createReservation(hotel, room, ReservationStatus.BOOKED, PaymentStatus.PENDING,
+            "FD-CHECKIN-004");
+        reservation.setRoom(null);
+            Reservation reservationWithoutRoom = reservationRepository.save(reservation);
+
+        IllegalStateException exception = assertThrows(
+            IllegalStateException.class,
+                () -> frontDeskService.checkInGuest(reservationWithoutRoom.getId()));
+
+        assertEquals("An assigned room is required before check-in", exception.getMessage());
+        }
+
+        @Test
+        void checkInWithRoomAssignmentShouldRejectRoomFromDifferentHotel() {
+        Hotel reservationHotel = createHotel("frontdesk-cross-hotel-a");
+        Hotel otherHotel = createHotel("frontdesk-cross-hotel-b");
+        Room originalRoom = createRoom(reservationHotel, "412");
+        Room otherHotelRoom = createRoom(otherHotel, "501", RoomType.DELUXE, new BigDecimal("2600.00"));
+        Reservation reservation = createReservation(reservationHotel, originalRoom, ReservationStatus.BOOKED, PaymentStatus.PENDING,
+            "FD-CHECKIN-005");
+
+        IllegalStateException exception = assertThrows(
+            IllegalStateException.class,
+            () -> frontDeskService.checkInWithRoomAssignment(
+                reservation.getId(),
+                otherHotelRoom.getId(),
+                RoomType.DELUXE.name()));
+
+        assertEquals("Selected room does not belong to the reservation hotel", exception.getMessage());
+        }
+
+        @Test
+        void checkInWithRoomAssignmentShouldRejectRoomBookedByAnotherReservationForSameDates() {
+        Hotel hotel = createHotel("frontdesk-overlap");
+        Room originalRoom = createRoom(hotel, "413");
+        Room contestedRoom = createRoom(hotel, "414", RoomType.DELUXE, new BigDecimal("2500.00"));
+        Reservation reservation = createReservation(hotel, originalRoom, ReservationStatus.BOOKED, PaymentStatus.PENDING,
+            "FD-CHECKIN-006");
+        createReservation(hotel, contestedRoom, ReservationStatus.BOOKED, PaymentStatus.PENDING, "FD-CHECKIN-007");
+
+        IllegalStateException exception = assertThrows(
+            IllegalStateException.class,
+            () -> frontDeskService.checkInWithRoomAssignment(
+                reservation.getId(),
+                contestedRoom.getId(),
+                RoomType.DELUXE.name()));
+
+        assertEquals("Selected room is currently occupied", exception.getMessage());
+        }
+
+        @Test
+        void updateBookingRoomAssignmentShouldAlignRoomTypeAndPriceToAssignedRoom() {
+        Hotel hotel = createHotel("frontdesk-reassign-align");
+        Room originalRoom = createRoom(hotel, "415");
+        Room deluxeRoom = createRoom(hotel, "416", RoomType.DELUXE, new BigDecimal("2500.00"));
+        Reservation reservation = createReservation(hotel, originalRoom, ReservationStatus.BOOKED, PaymentStatus.PENDING,
+            "FD-ASSIGN-004");
+
+        when(bookingService.convertToBookingResponse(any(Reservation.class))).thenAnswer(invocation -> {
+            Reservation updatedReservation = invocation.getArgument(0);
+            BookingResponse response = new BookingResponse();
+            response.setReservationId(updatedReservation.getId());
+            response.setStatus(updatedReservation.getStatus().name());
+            response.setRoomNumber(updatedReservation.getRoom() != null ? updatedReservation.getRoom().getRoomNumber() : null);
+            return response;
+        });
+
+        BookingResponse response = frontDeskService.updateBookingRoomAssignment(
+            reservation.getId(),
+            deluxeRoom.getId(),
+            null);
+
+        assertEquals("BOOKED", response.getStatus());
+        assertEquals("416", response.getRoomNumber());
+
+        Reservation persistedReservation = reservationRepository.findById(reservation.getId()).orElseThrow();
+        Room persistedOriginalRoom = roomRepository.findById(originalRoom.getId()).orElseThrow();
+        Room persistedDeluxeRoom = roomRepository.findById(deluxeRoom.getId()).orElseThrow();
+
+        assertEquals(RoomType.DELUXE, persistedReservation.getRoomType());
+        assertEquals(new BigDecimal("5000.00"), persistedReservation.getTotalAmount());
+        assertEquals(RoomStatus.AVAILABLE, persistedOriginalRoom.getStatus());
+        assertEquals(RoomStatus.AVAILABLE, persistedDeluxeRoom.getStatus());
+        }
 
     private Hotel createHotel(String suffix) {
         Tenant tenant = new Tenant();

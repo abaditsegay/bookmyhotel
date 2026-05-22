@@ -1,11 +1,15 @@
 package com.bookmyhotel.service;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
@@ -15,9 +19,15 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.bookmyhotel.dto.BookingResponse;
+import com.bookmyhotel.dto.BookingRequest;
+import com.bookmyhotel.entity.GuestInfo;
 import com.bookmyhotel.entity.Hotel;
 import com.bookmyhotel.entity.PaymentStatus;
 import com.bookmyhotel.entity.Reservation;
+import com.bookmyhotel.entity.ReservationStatus;
+import com.bookmyhotel.entity.Room;
+import com.bookmyhotel.entity.RoomStatus;
+import com.bookmyhotel.entity.RoomType;
 import com.bookmyhotel.repository.HotelRepository;
 import com.bookmyhotel.repository.ReservationRepository;
 import com.bookmyhotel.repository.RoomRepository;
@@ -90,5 +100,190 @@ class FrontDeskServiceTest {
                 eq("Front desk updated payment status"),
                 eq(true),
                 eq("FINANCIAL"));
+    }
+
+    @Test
+    void checkInGuestShouldRequireAssignedRoom() {
+        Reservation reservation = buildReservation(610L, buildHotel(41L), null, ReservationStatus.BOOKED);
+
+        when(reservationRepository.findById(610L)).thenReturn(Optional.of(reservation));
+
+        IllegalStateException exception = assertThrows(
+                IllegalStateException.class,
+                () -> frontDeskService.checkInGuest(610L));
+
+        assertEquals("An assigned room is required before check-in", exception.getMessage());
+    }
+
+    @Test
+    void checkInWithRoomAssignmentShouldRejectRoomFromDifferentHotel() {
+        Hotel reservationHotel = buildHotel(51L);
+        Hotel otherHotel = buildHotel(52L);
+        Room currentRoom = buildRoom(710L, reservationHotel, "701", RoomType.STANDARD, "1800.00", RoomStatus.AVAILABLE);
+        Room otherHotelRoom = buildRoom(711L, otherHotel, "801", RoomType.DELUXE, "2500.00", RoomStatus.AVAILABLE);
+        Reservation reservation = buildReservation(611L, reservationHotel, currentRoom, ReservationStatus.BOOKED);
+
+        when(reservationRepository.findById(611L)).thenReturn(Optional.of(reservation));
+        when(roomRepository.findByIdForUpdate(711L)).thenReturn(Optional.of(otherHotelRoom));
+
+        IllegalStateException exception = assertThrows(
+                IllegalStateException.class,
+                () -> frontDeskService.checkInWithRoomAssignment(611L, 711L, RoomType.DELUXE.name()));
+
+        assertEquals("Selected room does not belong to the reservation hotel", exception.getMessage());
+    }
+
+    @Test
+    void checkInWithRoomAssignmentShouldRejectOverlappingAssignment() {
+        Hotel hotel = buildHotel(61L);
+        Room currentRoom = buildRoom(720L, hotel, "702", RoomType.STANDARD, "1800.00", RoomStatus.AVAILABLE);
+        Room contestedRoom = buildRoom(721L, hotel, "703", RoomType.DELUXE, "2500.00", RoomStatus.AVAILABLE);
+        Reservation reservation = buildReservation(612L, hotel, currentRoom, ReservationStatus.BOOKED);
+
+        when(reservationRepository.findById(612L)).thenReturn(Optional.of(reservation));
+        when(roomRepository.findByIdForUpdate(721L)).thenReturn(Optional.of(contestedRoom));
+        when(reservationRepository.existsByAssignedRoomAndDateRangeExcludingReservation(
+                721L,
+                reservation.getCheckInDate(),
+                reservation.getCheckOutDate(),
+                612L,
+                61L)).thenReturn(true);
+
+        IllegalStateException exception = assertThrows(
+                IllegalStateException.class,
+                () -> frontDeskService.checkInWithRoomAssignment(612L, 721L, RoomType.DELUXE.name()));
+
+        assertEquals("Selected room is currently occupied", exception.getMessage());
+    }
+
+    @Test
+    void updateBookingShouldKeepBookedAssignedRoomAvailableAndAlignRoomType() {
+        Hotel hotel = buildHotel(71L);
+        Room originalRoom = buildRoom(730L, hotel, "704", RoomType.STANDARD, "1800.00", RoomStatus.AVAILABLE);
+        Room newRoom = buildRoom(731L, hotel, "705", RoomType.DELUXE, "2500.00", RoomStatus.AVAILABLE);
+        Reservation reservation = buildReservation(613L, hotel, originalRoom, ReservationStatus.BOOKED);
+        BookingRequest request = new BookingRequest();
+        request.setCheckInDate(reservation.getCheckInDate());
+        request.setCheckOutDate(reservation.getCheckOutDate());
+        request.setGuests(2);
+        request.setGuestName("Front Desk Guest");
+        request.setGuestEmail("frontdesk@example.com");
+        request.setGuestPhone("+251900000700");
+        request.setRoomId(731L);
+
+        when(reservationRepository.findById(613L)).thenReturn(Optional.of(reservation));
+        when(roomRepository.findByIdForUpdate(731L)).thenReturn(Optional.of(newRoom));
+        when(roomRepository.save(any(Room.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(reservationRepository.save(reservation)).thenReturn(reservation);
+        when(reservationRepository.existsByAssignedRoomAndDateRangeExcludingReservation(
+                731L,
+                reservation.getCheckInDate(),
+                reservation.getCheckOutDate(),
+                613L,
+                71L)).thenReturn(false);
+        when(bookingService.convertToBookingResponse(reservation)).thenAnswer(invocation -> {
+            Reservation updatedReservation = invocation.getArgument(0);
+            BookingResponse response = new BookingResponse();
+            response.setReservationId(updatedReservation.getId());
+            response.setStatus(updatedReservation.getStatus().name());
+            response.setRoomNumber(updatedReservation.getRoom().getRoomNumber());
+            return response;
+        });
+
+        BookingResponse response = frontDeskService.updateBooking(613L, request);
+
+        assertEquals("BOOKED", response.getStatus());
+        assertEquals("705", response.getRoomNumber());
+        assertEquals(RoomType.DELUXE, reservation.getRoomType());
+        assertEquals(new BigDecimal("5000.00"), reservation.getTotalAmount());
+        assertEquals(RoomStatus.AVAILABLE, originalRoom.getStatus());
+        assertEquals(RoomStatus.AVAILABLE, newRoom.getStatus());
+    }
+
+    @Test
+    void updateBookingRoomAssignmentShouldAlignRoomTypeWithoutExplicitType() {
+        Hotel hotel = buildHotel(81L);
+        Room originalRoom = buildRoom(740L, hotel, "706", RoomType.STANDARD, "1800.00", RoomStatus.AVAILABLE);
+        Room newRoom = buildRoom(741L, hotel, "707", RoomType.DELUXE, "2500.00", RoomStatus.AVAILABLE);
+        Reservation reservation = buildReservation(614L, hotel, originalRoom, ReservationStatus.BOOKED);
+
+        when(reservationRepository.findById(614L)).thenReturn(Optional.of(reservation));
+        when(roomRepository.findByIdForUpdate(741L)).thenReturn(Optional.of(newRoom));
+        when(roomRepository.save(any(Room.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(reservationRepository.save(reservation)).thenReturn(reservation);
+        when(reservationRepository.existsByAssignedRoomAndDateRangeExcludingReservation(
+                741L,
+                reservation.getCheckInDate(),
+                reservation.getCheckOutDate(),
+                614L,
+                81L)).thenReturn(false);
+        when(bookingService.convertToBookingResponse(reservation)).thenAnswer(invocation -> {
+            Reservation updatedReservation = invocation.getArgument(0);
+            BookingResponse response = new BookingResponse();
+            response.setReservationId(updatedReservation.getId());
+            response.setStatus(updatedReservation.getStatus().name());
+            response.setRoomNumber(updatedReservation.getRoom().getRoomNumber());
+            return response;
+        });
+
+        BookingResponse response = frontDeskService.updateBookingRoomAssignment(614L, 741L, null);
+
+        assertEquals("BOOKED", response.getStatus());
+        assertEquals("707", response.getRoomNumber());
+        assertEquals(RoomType.DELUXE, reservation.getRoomType());
+        assertEquals(new BigDecimal("5000.00"), reservation.getTotalAmount());
+        assertEquals(RoomStatus.AVAILABLE, originalRoom.getStatus());
+        assertEquals(RoomStatus.AVAILABLE, newRoom.getStatus());
+        assertDoesNotThrow(() -> verify(hotelActivityAuditService).logActivity(
+                eq(hotel),
+                eq("RESERVATION"),
+                eq(614L),
+                eq("ROOM_ASSIGNMENT_CHANGE"),
+                any(),
+                any(),
+                any(),
+                eq("Front desk updated booking room assignment"),
+                eq(true),
+                eq("FINANCIAL")));
+    }
+
+    private Hotel buildHotel(Long hotelId) {
+        Hotel hotel = new Hotel();
+        hotel.setId(hotelId);
+        hotel.setName("Hotel " + hotelId);
+        return hotel;
+    }
+
+    private Room buildRoom(Long roomId, Hotel hotel, String roomNumber, RoomType roomType, String pricePerNight,
+            RoomStatus status) {
+        Room room = new Room();
+        room.setId(roomId);
+        room.setHotel(hotel);
+        room.setRoomNumber(roomNumber);
+        room.setRoomType(roomType);
+        room.setPricePerNight(new BigDecimal(pricePerNight));
+        room.setStatus(status);
+        room.setIsAvailable(true);
+        room.setCapacity(2);
+        return room;
+    }
+
+    private Reservation buildReservation(Long reservationId, Hotel hotel, Room room, ReservationStatus status) {
+        Reservation reservation = new Reservation();
+        reservation.setId(reservationId);
+        reservation.setHotel(hotel);
+        reservation.setRoom(room);
+        reservation.setRoomType(room != null ? room.getRoomType() : RoomType.STANDARD);
+        reservation.setCheckInDate(LocalDate.now());
+        reservation.setCheckOutDate(LocalDate.now().plusDays(2));
+        reservation.setStatus(status);
+        reservation.setPaymentStatus(PaymentStatus.PENDING);
+        reservation.setPaymentMethod("cash");
+        reservation.setPricePerNight(room != null ? room.getPricePerNight() : new BigDecimal("1800.00"));
+        reservation.setTotalAmount(new BigDecimal("3600.00"));
+        reservation.setConfirmationNumber("FD-" + reservationId);
+        reservation.setGuestInfo(new GuestInfo("Front Desk Guest", "frontdesk@example.com", "+251900000700"));
+        reservation.setNumberOfGuests(2);
+        return reservation;
     }
 }

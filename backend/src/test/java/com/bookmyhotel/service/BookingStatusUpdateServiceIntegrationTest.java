@@ -15,8 +15,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 import com.bookmyhotel.dto.BookingResponse;
 import com.bookmyhotel.entity.GuestInfo;
@@ -34,7 +32,6 @@ import com.bookmyhotel.repository.RoomRepository;
 import com.bookmyhotel.repository.TenantRepository;
 import com.bookmyhotel.support.MySqlIntegrationTestSupport;
 
-@Testcontainers
 @SpringBootTest(properties = {
         "spring.flyway.enabled=false",
         "spring.jpa.hibernate.ddl-auto=none",
@@ -43,9 +40,6 @@ import com.bookmyhotel.support.MySqlIntegrationTestSupport;
 })
 @SuppressWarnings("removal")
 class BookingStatusUpdateServiceIntegrationTest extends MySqlIntegrationTestSupport {
-
-    @Container
-    static final org.testcontainers.containers.MySQLContainer<?> MYSQL = MySqlIntegrationTestSupport.MYSQL;
 
     @Autowired
     private BookingStatusUpdateService bookingStatusUpdateService;

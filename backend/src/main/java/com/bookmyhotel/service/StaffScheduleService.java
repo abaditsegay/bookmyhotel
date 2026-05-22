@@ -111,12 +111,13 @@ public class StaffScheduleService {
     public StaffScheduleResponse updateSchedule(Long scheduleId, StaffScheduleRequest request, String adminEmail) {
         logger.info("Updating schedule ID: {}", scheduleId);
 
-        // Validate request
-        validateScheduleRequest(request);
-
         // Get existing schedule
         StaffSchedule schedule = staffScheduleRepository.findById(scheduleId)
                 .orElseThrow(() -> new ResourceNotFoundException("Schedule not found"));
+
+        // Reuse create-time validation, but allow updates to historical schedules when
+        // the schedule date itself is unchanged.
+        validateScheduleRequestForUpdate(request, schedule);
 
         // Get staff user
         User staff = userRepository.findById(request.getStaffId())
@@ -302,6 +303,26 @@ public class StaffScheduleService {
         }
 
         // Validate reasonable shift duration (not more than 16 hours)
+        long hoursWorked = java.time.Duration.between(request.getStartTime(), request.getEndTime()).toHours();
+        if (hoursWorked > 16) {
+            throw new IllegalArgumentException("Shift duration cannot exceed 16 hours");
+        }
+    }
+
+    private void validateScheduleRequestForUpdate(StaffScheduleRequest request, StaffSchedule existingSchedule) {
+        if (request.getEndTime().isBefore(request.getStartTime()) ||
+                request.getEndTime().equals(request.getStartTime())) {
+            throw new IllegalArgumentException("End time must be after start time");
+        }
+
+        boolean changingToDifferentDate = existingSchedule == null
+                || existingSchedule.getScheduleDate() == null
+                || !existingSchedule.getScheduleDate().equals(request.getScheduleDate());
+
+        if (changingToDifferentDate && request.getScheduleDate().isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("Cannot schedule in the past");
+        }
+
         long hoursWorked = java.time.Duration.between(request.getStartTime(), request.getEndTime()).toHours();
         if (hoursWorked > 16) {
             throw new IllegalArgumentException("Shift duration cannot exceed 16 hours");

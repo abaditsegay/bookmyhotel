@@ -1,6 +1,7 @@
 package com.bookmyhotel.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bookmyhotel.dto.ConsolidatedReceiptResponse;
+import com.bookmyhotel.security.BookingSecurity;
 import com.bookmyhotel.service.CheckoutReceiptService;
 
 @RestController
@@ -21,9 +23,16 @@ public class CheckoutReceiptController {
     @Autowired
     private CheckoutReceiptService checkoutReceiptService;
 
+    @Autowired
+    private BookingSecurity bookingSecurity;
+
     @PostMapping("/{reservationId}/final")
     public ResponseEntity<ConsolidatedReceiptResponse> generateCheckoutReceipt(
             @PathVariable Long reservationId) {
+        if (!bookingSecurity.canAccessReservation(reservationId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         try {
             ConsolidatedReceiptResponse receipt = checkoutReceiptService.generateFinalReceipt(reservationId, "system");
             return ResponseEntity.ok(receipt);
@@ -36,6 +45,10 @@ public class CheckoutReceiptController {
     public ResponseEntity<ConsolidatedReceiptResponse> generateTenantCheckoutReceipt(
             @PathVariable String tenantName,
             @PathVariable Long reservationId) {
+        if (!bookingSecurity.canAccessReservation(reservationId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         try {
             ConsolidatedReceiptResponse receipt = checkoutReceiptService.generateFinalReceipt(reservationId, "system");
             return ResponseEntity.ok(receipt);
@@ -47,6 +60,10 @@ public class CheckoutReceiptController {
     @GetMapping("/{reservationId}/preview")
     public ResponseEntity<ConsolidatedReceiptResponse> generateReceiptPreview(
             @PathVariable Long reservationId) {
+        if (!bookingSecurity.canAccessReservation(reservationId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         try {
             ConsolidatedReceiptResponse receipt = checkoutReceiptService.generateCheckoutReceipt(reservationId,
                     "system");
@@ -60,6 +77,10 @@ public class CheckoutReceiptController {
     public ResponseEntity<ConsolidatedReceiptResponse> generateTenantReceiptPreview(
             @PathVariable String tenantName,
             @PathVariable Long reservationId) {
+        if (!bookingSecurity.canAccessReservation(reservationId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         try {
             ConsolidatedReceiptResponse receipt = checkoutReceiptService.generateCheckoutReceipt(reservationId,
                     "system");
@@ -73,6 +94,10 @@ public class CheckoutReceiptController {
     public ResponseEntity<String> emailReceipt(
             @PathVariable Long reservationId,
             @RequestBody(required = false) java.util.Map<String, String> requestBody) {
+        if (!bookingSecurity.canAccessReservation(reservationId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         try {
             String customEmail = requestBody != null ? requestBody.get("email") : null;
             checkoutReceiptService.emailReceipt(reservationId, "system", customEmail);
@@ -87,6 +112,10 @@ public class CheckoutReceiptController {
             @PathVariable String tenantName,
             @PathVariable Long reservationId,
             @RequestBody(required = false) java.util.Map<String, String> requestBody) {
+        if (!bookingSecurity.canAccessReservation(reservationId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         try {
             String customEmail = requestBody != null ? requestBody.get("email") : null;
             checkoutReceiptService.emailReceipt(reservationId, "system", customEmail);

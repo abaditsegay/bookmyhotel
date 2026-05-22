@@ -12,6 +12,7 @@ import static org.mockito.Mockito.when;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
@@ -24,11 +25,16 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import com.bookmyhotel.dto.BookingModificationResponse;
 import com.bookmyhotel.dto.BookingRequest;
 import com.bookmyhotel.dto.BookingResponse;
 import com.bookmyhotel.dto.payment.PaymentInitiationResponse;
 import com.bookmyhotel.entity.Hotel;
+import com.bookmyhotel.entity.PaymentStatus;
 import com.bookmyhotel.entity.Reservation;
+import com.bookmyhotel.entity.ReservationStatus;
+import com.bookmyhotel.entity.Room;
+import com.bookmyhotel.entity.RoomStatus;
 import com.bookmyhotel.entity.RoomType;
 import com.bookmyhotel.entity.User;
 import com.bookmyhotel.exception.BookingException;
@@ -189,6 +195,77 @@ class BookingServiceTest {
         verify(hotelRepository, never()).findByIdForUpdate(any());
     }
 
+    @Test
+    void createBookingByRoomTypeShouldKeepWalkInWithSpecificRoomCheckedIn() {
+        BookingRequest request = anonymousRequest();
+        request.setRoomId(10L);
+        request.setPaymentMethodId("pay_at_frontdesk");
+
+        Hotel hotel = hotel(1L, "Grand Plaza");
+        Room room = room(10L, hotel, RoomType.STANDARD, "101");
+
+        stubAnonymousBookingHappyPath(request, hotel, 45L, new BigDecimal("100.00"));
+        when(roomRepository.findByIdForUpdate(10L)).thenReturn(Optional.of(room));
+        when(roomRepository.isRoomAvailable(10L, request.getCheckInDate(), request.getCheckOutDate())).thenReturn(true);
+        when(roomRepository.save(room)).thenReturn(room);
+        when(bookingTokenService.generateManagementUrl(45L, "guest@example.com", "http://frontend.test"))
+                .thenReturn("http://frontend.test/manage/token-45");
+
+        BookingResponse response = bookingService.createBookingByRoomType(request, null);
+
+        assertEquals(45L, response.getReservationId());
+        assertEquals("CHECKED_IN", response.getStatus());
+        assertEquals("PENDING", response.getPaymentStatus());
+        assertEquals("101", response.getRoomNumber());
+        assertEquals(RoomStatus.OCCUPIED, room.getStatus());
+    }
+
+    @Test
+    void createBookingByRoomTypeShouldRejectSameDayStay() {
+        BookingRequest request = anonymousRequest();
+        request.setCheckOutDate(request.getCheckInDate());
+
+        BookingException exception = assertThrows(BookingException.class,
+                () -> bookingService.createBookingByRoomType(request, null));
+
+        assertEquals("Check-out date must be after check-in date", exception.getMessage());
+        verify(hotelRepository, never()).findByIdForUpdate(any());
+    }
+
+        @Test
+        void cancelCustomerBookingShouldMarkCompletedPaymentAsRefundPendingWhenRefundIsDue() {
+        Reservation reservation = cancellableReservation(99L,
+            LocalDate.now(ZoneId.of("Africa/Addis_Ababa")).plusDays(10),
+            PaymentStatus.COMPLETED);
+
+        when(reservationRepository.findById(99L)).thenReturn(Optional.of(reservation));
+        when(hotelPricingConfigService.getActiveConfiguration(1L)).thenReturn(null);
+        when(reservationRepository.save(any(Reservation.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        BookingModificationResponse response = bookingService.cancelCustomerBooking(99L, "Change of plans",
+            "guest@example.com");
+
+        assertEquals(true, response.isSuccess());
+        assertEquals(PaymentStatus.REFUND_PENDING.name(), response.getUpdatedBooking().getPaymentStatus());
+        }
+
+        @Test
+        void cancelCustomerBookingShouldMarkCompletedPaymentAsForfeitedWhenNoRefundIsDue() {
+        Reservation reservation = cancellableReservation(100L,
+            LocalDate.now(ZoneId.of("Africa/Addis_Ababa")),
+            PaymentStatus.COMPLETED);
+
+        when(reservationRepository.findById(100L)).thenReturn(Optional.of(reservation));
+        when(hotelPricingConfigService.getActiveConfiguration(1L)).thenReturn(null);
+        when(reservationRepository.save(any(Reservation.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        BookingModificationResponse response = bookingService.cancelCustomerBooking(100L, "Same day cancellation",
+            "guest@example.com");
+
+        assertEquals(true, response.isSuccess());
+        assertEquals(PaymentStatus.FORFEITED.name(), response.getUpdatedBooking().getPaymentStatus());
+        }
+
     private void stubAnonymousBookingHappyPath(BookingRequest request, Hotel hotel, Long reservationId, BigDecimal basePrice) {
         when(reservationRepository.findOverlappingActiveReservations(
                 request.getGuestEmail(),
@@ -244,6 +321,19 @@ class BookingServiceTest {
         return hotel;
     }
 
+    private Room room(Long id, Hotel hotel, RoomType roomType, String roomNumber) {
+        Room room = new Room();
+        room.setId(id);
+        room.setHotel(hotel);
+        room.setRoomType(roomType);
+        room.setRoomNumber(roomNumber);
+        room.setPricePerNight(new BigDecimal("100.00"));
+        room.setCapacity(2);
+        room.setStatus(RoomStatus.AVAILABLE);
+        room.setIsAvailable(true);
+        return room;
+    }
+
     private User user(String email, String firstName, String lastName, String phone) {
         User user = new User();
         user.setEmail(email);
@@ -251,5 +341,21 @@ class BookingServiceTest {
         user.setLastName(lastName);
         user.setPhone(phone);
         return user;
+    }
+
+    private Reservation cancellableReservation(Long id, LocalDate checkInDate, PaymentStatus paymentStatus) {
+        Reservation reservation = new Reservation();
+        reservation.setId(id);
+        reservation.setHotel(hotel(1L, "Grand Plaza"));
+        reservation.setGuest(user("guest@example.com", "Guest", "User", "+251911000001"));
+        reservation.setCheckInDate(checkInDate);
+        reservation.setCheckOutDate(checkInDate.plusDays(2));
+        reservation.setRoomType(RoomType.STANDARD);
+        reservation.setPricePerNight(new BigDecimal("100.00"));
+        reservation.setTotalAmount(new BigDecimal("200.00"));
+        reservation.setStatus(ReservationStatus.BOOKED);
+        reservation.setPaymentStatus(paymentStatus);
+        reservation.setConfirmationNumber("BK00000099");
+        return reservation;
     }
 }

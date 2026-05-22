@@ -123,6 +123,48 @@ class StaffScheduleServiceTest {
     }
 
     @Test
+    void updateScheduleShouldAllowEditingHistoricalScheduleWhenDateIsUnchanged() {
+        Hotel hotel = hotel(1L, "Grand Plaza");
+        User staff = user(11L, "Staff", "Member", "staff@example.com", hotel);
+        LocalDate pastDate = LocalDate.now().minusDays(2);
+
+        StaffSchedule existing = schedule(476L, staff, hotel, pastDate, LocalTime.of(8, 0), LocalTime.of(16, 0));
+        StaffScheduleRequest request = request(11L, 1L, pastDate, LocalTime.of(9, 0), LocalTime.of(17, 0));
+        request.setNotes("Adjusted after shift swap");
+
+        when(staffScheduleRepository.findById(476L)).thenReturn(Optional.of(existing));
+        when(userRepository.findById(11L)).thenReturn(Optional.of(staff));
+        when(hotelRepository.findById(1L)).thenReturn(Optional.of(hotel));
+        when(staffScheduleRepository.findConflictingSchedules(11L, pastDate, LocalTime.of(9, 0), LocalTime.of(17, 0), 476L))
+                .thenReturn(List.of());
+        when(staffScheduleRepository.save(existing)).thenReturn(existing);
+
+        StaffScheduleResponse response = staffScheduleService.updateSchedule(476L, request, "admin@example.com");
+
+        assertEquals(476L, response.getId());
+        assertEquals(LocalTime.of(9, 0), response.getStartTime());
+        assertEquals(LocalTime.of(17, 0), response.getEndTime());
+        assertEquals("Adjusted after shift swap", response.getNotes());
+        verify(staffScheduleRepository).findConflictingSchedules(11L, pastDate, LocalTime.of(9, 0), LocalTime.of(17, 0), 476L);
+        verify(staffScheduleRepository).save(existing);
+    }
+
+    @Test
+    void updateScheduleShouldRejectMovingScheduleToDifferentPastDate() {
+        Hotel hotel = hotel(1L, "Grand Plaza");
+        User staff = user(11L, "Staff", "Member", "staff@example.com", hotel);
+        StaffSchedule existing = schedule(477L, staff, hotel, LocalDate.now().plusDays(1), LocalTime.of(8, 0), LocalTime.of(16, 0));
+        StaffScheduleRequest request = request(11L, 1L, LocalDate.now().minusDays(1), LocalTime.of(8, 0), LocalTime.of(16, 0));
+
+        when(staffScheduleRepository.findById(477L)).thenReturn(Optional.of(existing));
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> staffScheduleService.updateSchedule(477L, request, "admin@example.com"));
+
+        assertEquals("Cannot schedule in the past", exception.getMessage());
+    }
+
+    @Test
     void getSchedulesWithFiltersShouldDefaultToAdminHotelAndApplyFilters() {
         Hotel hotel = hotel(1L, "Grand Plaza");
         User admin = user(10L, "Admin", "User", "admin@example.com", hotel);

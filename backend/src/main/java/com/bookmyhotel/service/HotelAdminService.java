@@ -1542,9 +1542,10 @@ public class HotelAdminService {
      * Update booking status
      */
     @Transactional
-    public BookingResponse updateBookingStatus(Long reservationId, ReservationStatus newStatus) {
+    public BookingResponse updateBookingStatus(Long reservationId, ReservationStatus newStatus, Long hotelId) {
         Reservation reservation = reservationRepository.findById(reservationId)
             .orElseThrow(() -> new RuntimeException("Reservation not found with id: " + reservationId));
+        assertReservationBelongsToHotel(reservation, hotelId);
         Map<String, Object> oldSnapshot = createReservationSnapshot(reservation);
         BookingResponse response = bookingStatusUpdateService.updateBookingStatus(reservationId, newStatus, "hotel admin");
         Reservation updatedReservation = reservationRepository.findById(reservationId)
@@ -1567,9 +1568,10 @@ public class HotelAdminService {
      * Update booking payment status
      */
     @Transactional
-    public BookingResponse updateBookingPaymentStatus(Long reservationId, String paymentStatus) {
+    public BookingResponse updateBookingPaymentStatus(Long reservationId, String paymentStatus, Long hotelId) {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new RuntimeException("Reservation not found with id: " + reservationId));
+        assertReservationBelongsToHotel(reservation, hotelId);
 
         Map<String, Object> oldSnapshot = createReservationSnapshot(reservation);
 
@@ -1598,9 +1600,10 @@ public class HotelAdminService {
      * Update booking payment type (e.g., CASH, BANK, MOBILE)
      */
     @Transactional
-    public BookingResponse updateBookingPaymentType(Long reservationId, String paymentType) {
+    public BookingResponse updateBookingPaymentType(Long reservationId, String paymentType, Long hotelId) {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new RuntimeException("Reservation not found with id: " + reservationId));
+        assertReservationBelongsToHotel(reservation, hotelId);
 
         Map<String, Object> oldSnapshot = createReservationSnapshot(reservation);
 
@@ -1685,6 +1688,12 @@ public class HotelAdminService {
                 "Hotel admin deleted a booking",
                 true,
                 AuditTaxonomy.ComplianceCategory.FINANCIAL);
+    }
+
+    private void assertReservationBelongsToHotel(Reservation reservation, Long hotelId) {
+        if (reservation == null || hotelId == null || !hotelId.equals(reservation.getHotelId())) {
+            throw new RuntimeException("Booking does not belong to your hotel");
+        }
     }
 
     /**

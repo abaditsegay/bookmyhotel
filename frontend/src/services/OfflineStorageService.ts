@@ -962,33 +962,25 @@ export class OfflineStorageService {
     await this.init();
 
     return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction(['cachedRooms', 'cachedBookings'], 'readonly');
+      const transaction = this.db!.transaction(['cachedRooms', 'cachedBookings', 'offlineBookings'], 'readonly');
       const roomStore = transaction.objectStore('cachedRooms');
-      const bookingStore = transaction.objectStore('cachedBookings');
+      const cachedBookingStore = transaction.objectStore('cachedBookings');
+      const offlineBookingStore = transaction.objectStore('offlineBookings');
       
       let availableRooms: CachedRoom[] = [];
-      let roomsProcessed = false;
-      let bookingsProcessed = false;
       const occupiedRoomIds = new Set<number>();
-
-      const checkComplete = () => {
-        if (roomsProcessed && bookingsProcessed) {
-          // console.log(`🔍 OfflineStorage: Found ${availableRooms.length} available rooms for ${guestCount} guests from ${checkInDate} to ${checkOutDate}`);
-          resolve(availableRooms);
-        }
-      };
 
       transaction.onerror = () => {
         // console.error('❌ OfflineStorage: Transaction error in getAvailableRoomsForDateRange:', transaction.error);
         reject(transaction.error);
       };
 
-      // First, get all bookings that overlap with the requested date range
-      const bookingIndex = bookingStore.index('hotelId');
-      const bookingRequest = bookingIndex.getAll(hotelId);
+      // First, get cached server bookings that overlap with the requested date range.
+      const cachedBookingIndex = cachedBookingStore.index('hotelId');
+      const cachedBookingRequest = cachedBookingIndex.getAll(hotelId);
 
-      bookingRequest.onsuccess = () => {
-        const bookings = bookingRequest.result as CachedBooking[];
+      cachedBookingRequest.onsuccess = () => {
+        const bookings = cachedBookingRequest.result as CachedBooking[];
         // console.log(`📊 OfflineStorage: Checking ${bookings.length} cached bookings for conflicts`);
         
         // Find rooms occupied during the requested date range
@@ -1000,57 +992,111 @@ export class OfflineStorageService {
           }
         });
 
-        bookingsProcessed = true;
-        
-        // Now get all rooms for the hotel
-        const roomIndex = roomStore.index('hotelId');
-        const roomRequest = roomIndex.getAll(hotelId);
+        // Then include locally saved offline bookings so synced/manual-review items
+        // still block the room until fresh server data is re-cached.
+        const offlineBookingIndex = offlineBookingStore.index('hotelId');
+        const offlineBookingRequest = offlineBookingIndex.getAll(hotelId);
 
-        roomRequest.onsuccess = () => {
-          const allRooms = roomRequest.result as CachedRoom[];
-          // console.log(`🏨 OfflineStorage: Processing ${allRooms.length} total rooms for hotel ${hotelId}`);
-          
-          availableRooms = allRooms.filter(room => {
-            // Room must have sufficient capacity
-            if (room.capacity < guestCount) {
-              // console.debug(`❌ Room ${room.roomNumber}: insufficient capacity (${room.capacity} < ${guestCount})`);
-              return false;
+        offlineBookingRequest.onsuccess = () => {
+          const offlineBookings = offlineBookingRequest.result as OfflineBooking[];
+
+          offlineBookings.forEach(booking => {
+            if (booking.roomId && this.datesOverlap(booking.checkInDate, booking.checkOutDate, checkInDate, checkOutDate)) {
+              occupiedRoomIds.add(booking.roomId);
             }
-            
-            // Room must not be occupied by cached bookings
-            if (occupiedRoomIds.has(room.id)) {
-              // console.log(`❌ Room ${room.roomNumber}: occupied by cached booking`);
-              return false;
-            }
-            
-            // Room must not be marked as offline occupied for overlapping dates
-            if (room.offlineStatus === 'occupied' && room.occupiedFrom && room.occupiedTo) {
-              if (this.datesOverlap(room.occupiedFrom, room.occupiedTo, checkInDate, checkOutDate)) {
-                // console.log(`❌ Room ${room.roomNumber}: offline occupied from ${room.occupiedFrom} to ${room.occupiedTo}`);
-                return false;
-              }
-            }
-            
-            if (!room.isAvailable) {
-              // console.debug(`❌ Room ${room.roomNumber}: marked as unavailable`);
-              return false;
-            }
-            
-            // console.debug(`✅ Room ${room.roomNumber}: available (capacity: ${room.capacity}, guests: ${guestCount})`);
-            return true;
           });
 
-          roomsProcessed = true;
-          checkComplete();
-        };        roomRequest.onerror = () => {
-          // console.error('❌ OfflineStorage: Error loading rooms:', roomRequest.error);
-          reject(roomRequest.error);
+          // Now get all rooms for the hotel.
+          const roomIndex = roomStore.index('hotelId');
+          const roomRequest = roomIndex.getAll(hotelId);
+
+          roomRequest.onsuccess = () => {
+            const allRooms = roomRequest.result as CachedRoom[];
+            // console.log(`🏨 OfflineStorage: Processing ${allRooms.length} total rooms for hotel ${hotelId}`);
+            
+            availableRooms = allRooms.filter(room => {
+              // Room must have sufficient capacity
+              if (room.capacity < guestCount) {
+                // console.debug(`❌ Room ${room.roomNumber}: insufficient capacity (${room.capacity} < ${guestCount})`);
+                return false;
+              }
+              
+              // Room must not be occupied by cached or offline bookings.
+              if (occupiedRoomIds.has(room.id)) {
+                // console.log(`❌ Room ${room.roomNumber}: occupied by cached or offline booking`);
+                return false;
+              }
+              
+              // Room must not be marked as offline occupied for overlapping dates.
+              if (room.offlineStatus === 'occupied' && room.occupiedFrom && room.occupiedTo) {
+                if (this.datesOverlap(room.occupiedFrom, room.occupiedTo, checkInDate, checkOutDate)) {
+                  // console.log(`❌ Room ${room.roomNumber}: offline occupied from ${room.occupiedFrom} to ${room.occupiedTo}`);
+                  return false;
+                }
+              }
+              
+              if (!room.isAvailable) {
+                // console.debug(`❌ Room ${room.roomNumber}: marked as unavailable`);
+                return false;
+              }
+              
+              // console.debug(`✅ Room ${room.roomNumber}: available (capacity: ${room.capacity}, guests: ${guestCount})`);
+              return true;
+            });
+
+            // console.log(`🔍 OfflineStorage: Found ${availableRooms.length} available rooms for ${guestCount} guests from ${checkInDate} to ${checkOutDate}`);
+            resolve(availableRooms);
+          };
+
+          roomRequest.onerror = () => {
+            // console.error('❌ OfflineStorage: Error loading rooms:', roomRequest.error);
+            reject(roomRequest.error);
+          };
+        };
+
+        offlineBookingRequest.onerror = () => {
+          // console.error('❌ OfflineStorage: Error loading offline bookings:', offlineBookingRequest.error);
+          reject(offlineBookingRequest.error);
         };
       };
 
-      bookingRequest.onerror = () => {
-        // console.error('❌ OfflineStorage: Error loading bookings:', bookingRequest.error);
-        reject(bookingRequest.error);
+      cachedBookingRequest.onerror = () => {
+        // console.error('❌ OfflineStorage: Error loading cached bookings:', cachedBookingRequest.error);
+        reject(cachedBookingRequest.error);
+      };
+    });
+  }
+
+  async releaseRoomOccupancy(roomId: number | undefined, bookingId: string): Promise<void> {
+    if (!roomId) {
+      return;
+    }
+
+    await this.init();
+
+    return new Promise((resolve, reject) => {
+      const transaction = this.db!.transaction(['cachedRooms'], 'readwrite');
+      const store = transaction.objectStore('cachedRooms');
+
+      transaction.oncomplete = () => resolve();
+      transaction.onerror = () => reject(transaction.error);
+
+      const getRequest = store.get(roomId);
+      getRequest.onsuccess = () => {
+        const room = getRequest.result as CachedRoom | undefined;
+        if (!room || room.occupiedBy !== bookingId) {
+          return;
+        }
+
+        store.put({
+          ...room,
+          isAvailable: true,
+          offlineStatus: 'available',
+          occupiedBy: undefined,
+          occupiedFrom: undefined,
+          occupiedTo: undefined,
+          lastUpdated: new Date().toISOString(),
+        });
       };
     });
   }

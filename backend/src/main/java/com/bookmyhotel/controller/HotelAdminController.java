@@ -1,7 +1,8 @@
 package com.bookmyhotel.controller;
 
-import java.io.IOException;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,20 +29,17 @@ import com.bookmyhotel.dto.BatchRoomCreateRequest;
 import com.bookmyhotel.dto.BatchRoomCreateResponse;
 import com.bookmyhotel.dto.BookingModificationRequest;
 import com.bookmyhotel.dto.BookingModificationResponse;
-import com.bookmyhotel.dto.BookingRequest;
 import com.bookmyhotel.dto.BookingResponse;
 import com.bookmyhotel.dto.HotelDTO;
 import com.bookmyhotel.dto.RoomCreationRequest;
-import com.bookmyhotel.entity.HotelImage;
-import com.bookmyhotel.entity.RoomStatus;
-import com.bookmyhotel.entity.RoomType;
-import com.bookmyhotel.enums.ImageCategory;
 import com.bookmyhotel.dto.RoomCreationResponse;
 import com.bookmyhotel.dto.RoomDTO;
 import com.bookmyhotel.dto.RoomTypePricingDTO;
 import com.bookmyhotel.dto.UserDTO;
+import com.bookmyhotel.dto.WalkInBookingRequest;
 import com.bookmyhotel.entity.HotelImage;
 import com.bookmyhotel.entity.ReservationStatus;
+import com.bookmyhotel.entity.RoomStatus;
 import com.bookmyhotel.entity.RoomType;
 import com.bookmyhotel.enums.ImageCategory;
 import com.bookmyhotel.service.BookingService;
@@ -340,7 +338,7 @@ public class HotelAdminController {
             throw new RuntimeException("Invalid status value: " + status);
         }
 
-        BookingResponse updated = hotelAdminService.updateBookingStatus(reservationId, reservationStatus);
+        BookingResponse updated = hotelAdminService.updateBookingStatus(reservationId, reservationStatus, hotel.getId());
         return ResponseEntity.ok(updated);
     }
 
@@ -356,7 +354,8 @@ public class HotelAdminController {
         // Verify the reservation belongs to the hotel admin's hotel
         HotelDTO hotel = hotelAdminService.getMyHotel(auth.getName());
 
-        BookingResponse updated = hotelAdminService.updateBookingPaymentStatus(reservationId, paymentStatus);
+        BookingResponse updated = hotelAdminService.updateBookingPaymentStatus(reservationId, paymentStatus,
+            hotel.getId());
         return ResponseEntity.ok(updated);
     }
 
@@ -371,7 +370,8 @@ public class HotelAdminController {
 
         HotelDTO hotel = hotelAdminService.getMyHotel(auth.getName());
 
-        BookingResponse updated = hotelAdminService.updateBookingPaymentType(reservationId, paymentType);
+        BookingResponse updated = hotelAdminService.updateBookingPaymentType(reservationId, paymentType,
+            hotel.getId());
         return ResponseEntity.ok(updated);
     }
 
@@ -488,10 +488,12 @@ public class HotelAdminController {
      */
     @PostMapping("/walk-in-booking")
     public ResponseEntity<BookingResponse> createWalkInBooking(
-            @Valid @RequestBody BookingRequest request,
+            @Valid @RequestBody WalkInBookingRequest request,
             Authentication auth) {
 
         String userEmail = auth.getName();
+        HotelDTO hotel = hotelAdminService.getMyHotel(userEmail);
+        request.setHotelId(hotel.getId());
 
         // Set payment method to front desk payment for walk-in bookings
         if (request.getPaymentMethodId() == null || request.getPaymentMethodId().isEmpty()) {
@@ -529,11 +531,12 @@ public class HotelAdminController {
 
         try {
             // Parse dates
-            java.time.LocalDate checkIn = java.time.LocalDate.parse(checkInDate);
-            java.time.LocalDate checkOut = java.time.LocalDate.parse(checkOutDate);
+            LocalDate checkIn = LocalDate.parse(checkInDate);
+            LocalDate checkOut = LocalDate.parse(checkOutDate);
 
-            // Get hotel admin's hotel
-            HotelDTO hotel = hotelAdminService.getMyHotel(auth.getName());
+            if (!checkOut.isAfter(checkIn)) {
+                return ResponseEntity.badRequest().build();
+            }
 
             // Get rooms that are truly available for the date range (not occupied/assigned)
             List<RoomDTO> availableRooms = hotelAdminService.getAvailableRoomsForDateRange(
@@ -541,6 +544,8 @@ public class HotelAdminController {
 
             return ResponseEntity.ok(availableRooms);
 
+        } catch (DateTimeParseException e) {
+            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
             // System.err.println("Failed to get available rooms: " + e.getMessage());
             logger.error("Operation failed", e);
