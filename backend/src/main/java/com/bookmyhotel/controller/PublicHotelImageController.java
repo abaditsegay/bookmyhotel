@@ -1,6 +1,7 @@
 package com.bookmyhotel.controller;
 
 import com.bookmyhotel.entity.HotelImage;
+import com.bookmyhotel.service.HotelService;
 import com.bookmyhotel.service.HotelImageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -27,10 +28,12 @@ import java.util.Optional;
 public class PublicHotelImageController {
 
     private final HotelImageService hotelImageService;
+    private final HotelService hotelService;
 
     @Autowired
-    public PublicHotelImageController(HotelImageService hotelImageService) {
+    public PublicHotelImageController(HotelImageService hotelImageService, HotelService hotelService) {
         this.hotelImageService = hotelImageService;
+        this.hotelService = hotelService;
     }
 
     @Operation(summary = "Get hotel images", description = "Retrieve all active images for a hotel (public access)")
@@ -40,8 +43,10 @@ public class PublicHotelImageController {
             @Parameter(description = "Hotel ID") @PathVariable Long hotelId) {
 
         try {
-            // Get images for all tenants - we need to find the tenant for this hotel
-            // For now, we'll check all tenant images until we find this hotel
+            if (!isPublicHotel(hotelId)) {
+                return ResponseEntity.notFound().build();
+            }
+
             List<HotelImage> images = hotelImageService.getHotelImagesPublic(hotelId);
 
             Map<String, Object> response = new HashMap<>();
@@ -66,6 +71,10 @@ public class PublicHotelImageController {
             @Parameter(description = "Hotel ID") @PathVariable Long hotelId) {
 
         try {
+            if (!isPublicHotel(hotelId)) {
+                return ResponseEntity.notFound().build();
+            }
+
             Optional<HotelImage> heroImage = hotelImageService.getHotelHeroImagePublic(hotelId);
 
             Map<String, Object> response = new HashMap<>();
@@ -111,5 +120,11 @@ public class PublicHotelImageController {
         response.put("createdAt", image.getCreatedAt());
         response.put("updatedAt", image.getUpdatedAt());
         return response;
+    }
+
+    private boolean isPublicHotel(Long hotelId) {
+        return hotelService.getHotelById(hotelId)
+                .map(hotel -> Boolean.TRUE.equals(hotel.getIsPubliclyListed()))
+                .orElse(false);
     }
 }

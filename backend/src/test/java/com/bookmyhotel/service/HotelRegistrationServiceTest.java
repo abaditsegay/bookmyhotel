@@ -62,34 +62,17 @@ class HotelRegistrationServiceTest {
     private HotelRegistrationService hotelRegistrationService;
 
     @Test
-    void submitRegistrationShouldCreateDefaultTenantHotelAndAdminUser() {
+    void submitRegistrationShouldCreatePendingDraftOnly() {
         HotelRegistrationRequest request = request();
-        Tenant tenant = defaultTenant();
 
         when(registrationRepository.findByContactEmail("owner@demo.test")).thenReturn(Optional.empty());
         when(userRepository.findByEmail("owner@demo.test")).thenReturn(Optional.empty());
-        when(tenantRepository.save(any(Tenant.class))).thenAnswer(invocation -> invocation.getArgument(0));
-        when(passwordEncoder.encode(any(String.class))).thenReturn("encoded-password");
         when(registrationRepository.save(any(HotelRegistration.class))).thenAnswer(invocation -> {
             HotelRegistration registration = invocation.getArgument(0);
             if (registration.getId() == null) {
                 registration.setId(10L);
             }
             return registration;
-        });
-        when(hotelRepository.save(any(Hotel.class))).thenAnswer(invocation -> {
-            Hotel hotel = invocation.getArgument(0);
-            hotel.setId(20L);
-            return hotel;
-        });
-        org.mockito.Mockito.doReturn(Optional.empty())
-            .doReturn(Optional.of(tenant))
-            .when(tenantRepository)
-            .findById("all-hotels");
-        when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
-            User user = invocation.getArgument(0);
-            user.setId(30L);
-            return user;
         });
 
         HotelRegistrationSubmitResponse response = hotelRegistrationService.submitRegistration(request);
@@ -99,14 +82,9 @@ class HotelRegistrationServiceTest {
         assertEquals("owner@demo.test", response.getLoginEmail());
         assertEquals("PENDING", response.getStatus());
         assertTrue(response.getMessage().contains("Registration submitted successfully"));
-        verify(tenantRepository).save(any(Tenant.class));
-        verify(hotelRepository).save(any(Hotel.class));
-        verify(userRepository).save(any(User.class));
-        verify(emailService).sendHotelAdminWelcomeEmail(
-            eq("owner@demo.test"),
-            eq("Jane"),
-            eq("Demo Hotel"),
-                any(String.class));
+        verify(hotelRepository, never()).save(any(Hotel.class));
+        verify(userRepository, never()).save(any(User.class));
+        verify(emailService, never()).sendHotelAdminWelcomeEmail(any(String.class), any(String.class), any(String.class), any(String.class));
     }
 
     @Test
@@ -131,7 +109,6 @@ class HotelRegistrationServiceTest {
                 () -> hotelRegistrationService.submitRegistration(request()));
 
         assertEquals("A user account with this email already exists", exception.getMessage());
-        verify(tenantRepository, never()).save(any(Tenant.class));
         verify(hotelRepository, never()).save(any(Hotel.class));
     }
 
@@ -174,14 +151,11 @@ class HotelRegistrationServiceTest {
     }
 
     @Test
-    void submitRegistrationShouldSucceedWhenWelcomeEmailFails() {
+    void submitRegistrationShouldNotCreateOperationalRecordsBeforeApproval() {
         HotelRegistrationRequest request = request();
-        Tenant tenant = defaultTenant();
 
         when(registrationRepository.findByContactEmail("owner@demo.test")).thenReturn(Optional.empty());
         when(userRepository.findByEmail("owner@demo.test")).thenReturn(Optional.empty());
-        when(tenantRepository.findById("all-hotels")).thenReturn(Optional.of(tenant));
-        when(passwordEncoder.encode(any(String.class))).thenReturn("encoded-password");
         when(registrationRepository.save(any(HotelRegistration.class))).thenAnswer(invocation -> {
             HotelRegistration registration = invocation.getArgument(0);
             if (registration.getId() == null) {
@@ -189,24 +163,14 @@ class HotelRegistrationServiceTest {
             }
             return registration;
         });
-        when(hotelRepository.save(any(Hotel.class))).thenAnswer(invocation -> {
-            Hotel hotel = invocation.getArgument(0);
-            hotel.setId(20L);
-            return hotel;
-        });
-        when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
-            User user = invocation.getArgument(0);
-            user.setId(30L);
-            return user;
-        });
-        org.mockito.Mockito.doThrow(new RuntimeException("smtp down")).when(emailService)
-                .sendHotelAdminWelcomeEmail(any(String.class), any(String.class), any(String.class), any(String.class));
 
         HotelRegistrationSubmitResponse response = hotelRegistrationService.submitRegistration(request);
 
         assertEquals(10L, response.getRegistrationId());
         assertEquals("PENDING", response.getStatus());
-        verify(userRepository).save(any(User.class));
+        verify(hotelRepository, never()).save(any(Hotel.class));
+        verify(userRepository, never()).save(any(User.class));
+        verify(emailService, never()).sendHotelAdminWelcomeEmail(any(String.class), any(String.class), any(String.class), any(String.class));
     }
 
     @Test
@@ -276,9 +240,10 @@ class HotelRegistrationServiceTest {
         User hotelAdmin = existingHotelAdmin(null);
         ApproveRegistrationRequest request = new ApproveRegistrationRequest();
         request.setComments("Approved legacy registration");
+        request.setTenantId("tenant-1");
 
         when(registrationRepository.findById(10L)).thenReturn(Optional.of(registration));
-        when(tenantRepository.findById("all-hotels")).thenReturn(Optional.of(defaultTenant()));
+        when(tenantRepository.findById("tenant-1")).thenReturn(Optional.of(activeTenant("tenant-1")));
         when(hotelRepository.findFirstByEmailIgnoreCase("owner@demo.test")).thenReturn(Optional.empty());
         when(hotelRepository.save(any(Hotel.class))).thenAnswer(invocation -> {
             Hotel hotel = invocation.getArgument(0);
@@ -295,7 +260,7 @@ class HotelRegistrationServiceTest {
 
         assertEquals(RegistrationStatus.APPROVED, response.getStatus());
         assertEquals(20L, response.getApprovedHotelId());
-        assertEquals("all-hotels", response.getTenantId());
+    assertEquals("tenant-1", response.getTenantId());
         assertEquals(88L, response.getReviewedBy());
         assertNotNull(hotelAdmin.getHotel());
         assertEquals(20L, hotelAdmin.getHotel().getId());
@@ -315,9 +280,11 @@ class HotelRegistrationServiceTest {
         User hotelAdmin = existingHotelAdmin(null);
         ApproveRegistrationRequest request = new ApproveRegistrationRequest();
         request.setComments("Approved against existing hotel");
+        request.setTenantId("tenant-1");
+        existingHotel.setTenant(activeTenant("tenant-1"));
 
         when(registrationRepository.findById(10L)).thenReturn(Optional.of(registration));
-        when(tenantRepository.findById("all-hotels")).thenReturn(Optional.of(defaultTenant()));
+        when(tenantRepository.findById("tenant-1")).thenReturn(Optional.of(activeTenant("tenant-1")));
         when(hotelRepository.findFirstByEmailIgnoreCase("owner@demo.test")).thenReturn(Optional.of(existingHotel));
         when(hotelRepository.save(any(Hotel.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(userRepository.findByEmail("owner@demo.test")).thenReturn(Optional.of(hotelAdmin));
@@ -328,7 +295,7 @@ class HotelRegistrationServiceTest {
 
         assertEquals(RegistrationStatus.APPROVED, response.getStatus());
         assertEquals(25L, response.getApprovedHotelId());
-        assertEquals("all-hotels", response.getTenantId());
+    assertEquals("tenant-1", response.getTenantId());
         assertEquals(25L, hotelAdmin.getHotel().getId());
         assertTrue(existingHotel.getIsActive());
         verify(hotelRepository, times(1)).save(existingHotel);
@@ -390,6 +357,15 @@ class HotelRegistrationServiceTest {
         tenant.setId("all-hotels");
         tenant.setName("All Hotels");
         tenant.setSubdomain("all");
+        tenant.setIsActive(true);
+        return tenant;
+    }
+
+    private Tenant activeTenant(String tenantId) {
+        Tenant tenant = new Tenant();
+        tenant.setId(tenantId);
+        tenant.setName("Tenant " + tenantId);
+        tenant.setSubdomain(tenantId);
         tenant.setIsActive(true);
         return tenant;
     }

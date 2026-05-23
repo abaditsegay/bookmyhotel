@@ -75,6 +75,8 @@ public class StaffScheduleService {
         Hotel hotel = hotelRepository.findById(request.getHotelId())
                 .orElseThrow(() -> new ResourceNotFoundException("Hotel not found"));
 
+        validateScheduleAccess(admin, staff, hotel);
+
         // Check for schedule conflicts
         checkScheduleConflicts(request.getStaffId(), request.getScheduleDate(),
                 request.getStartTime(), request.getEndTime(), null);
@@ -112,8 +114,10 @@ public class StaffScheduleService {
         logger.info("Updating schedule ID: {}", scheduleId);
 
         // Get existing schedule
-        StaffSchedule schedule = staffScheduleRepository.findById(scheduleId)
-                .orElseThrow(() -> new ResourceNotFoundException("Schedule not found"));
+        User admin = userRepository.findByEmail(adminEmail)
+            .orElseThrow(() -> new ResourceNotFoundException("Admin user not found"));
+
+        StaffSchedule schedule = findAuthorizedSchedule(scheduleId, admin);
 
         // Reuse create-time validation, but allow updates to historical schedules when
         // the schedule date itself is unchanged.
@@ -126,6 +130,8 @@ public class StaffScheduleService {
         // Get hotel
         Hotel hotel = hotelRepository.findById(request.getHotelId())
                 .orElseThrow(() -> new ResourceNotFoundException("Hotel not found"));
+
+        validateScheduleAccess(admin, staff, hotel);
 
         // Check for schedule conflicts (excluding current schedule)
         checkScheduleConflicts(request.getStaffId(), request.getScheduleDate(),
@@ -199,6 +205,28 @@ public class StaffScheduleService {
         return schedules.stream()
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());
+    }
+
+    private StaffSchedule findAuthorizedSchedule(Long scheduleId, User admin) {
+        return staffScheduleRepository.findById(scheduleId)
+                .filter(schedule -> canManageHotel(admin, schedule.getHotel()))
+                .orElseThrow(() -> new ResourceNotFoundException("Schedule not found"));
+    }
+
+    private void validateScheduleAccess(User admin, User staff, Hotel hotel) {
+        if (!canManageHotel(admin, hotel)) {
+            throw new IllegalArgumentException("You do not have access to manage schedules for this hotel");
+        }
+
+        if (staff.getHotel() == null || staff.getHotel().getId() == null || !staff.getHotel().getId().equals(hotel.getId())) {
+            throw new IllegalArgumentException("Staff member does not belong to the selected hotel");
+        }
+    }
+
+    private boolean canManageHotel(User admin, Hotel hotel) {
+        return admin.getHotel() == null ||
+                (hotel != null && hotel.getId() != null && admin.getHotel().getId() != null
+                        && admin.getHotel().getId().equals(hotel.getId()));
     }
 
     /**

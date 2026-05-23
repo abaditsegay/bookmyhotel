@@ -79,7 +79,14 @@ public class HotelService {
         }
 
         List<Hotel> hotels = hotelRepository.findByTenant_IdAndIsActiveTrue(tenantId);
-        // Return the first active hotel for the tenant
-        return hotels.isEmpty() ? null : hotels.get(0).getId();
+        if (hotels.isEmpty()) {
+            return null;
+        }
+
+        if (hotels.size() > 1) {
+            throw new IllegalStateException("Explicit hotel context is required for multi-hotel tenants");
+        }
+
+        return hotels.get(0).getId();
     }
 }

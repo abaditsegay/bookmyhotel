@@ -1468,8 +1468,6 @@ public class FrontDeskService {
      * Convert room to room response with consistent business logic
      */
     private RoomResponse convertToRoomResponse(Room room) {
-        String tenantId = TenantContext.getTenantId();
-
         RoomResponse response = new RoomResponse();
         response.setId(room.getId());
         response.setRoomNumber(room.getRoomNumber());
@@ -1478,9 +1476,10 @@ public class FrontDeskService {
         response.setCapacity(room.getCapacity());
         response.setDescription(room.getDescription());
 
-        // Check if room is currently occupied by a checked-in guest (hotel-aware)
-        Long hotelId = hotelService.getHotelIdByTenantId(TenantContext.getTenantId());
-        boolean isCurrentlyBooked = roomRepository.isRoomCurrentlyBooked(room.getId(), hotelId);
+        // Use the room's owning hotel directly so room loading stays stable even when a
+        // tenant owns multiple hotels.
+        Long hotelId = room.getHotel() != null ? room.getHotel().getId() : null;
+        boolean isCurrentlyBooked = hotelId != null && roomRepository.isRoomCurrentlyBooked(room.getId(), hotelId);
 
         // Update room status to OCCUPIED if a checked-in guest is in the room and
         // status is AVAILABLE

@@ -1433,6 +1433,17 @@ public class BookingService {
     }
 
     /**
+     * Find booking by payment reference within the current tenant context.
+     */
+    public BookingResponse findByPaymentReference(String paymentReference) {
+        Reservation reservation = reservationRepository.findByPaymentReference(paymentReference)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Booking not found with payment reference: " + paymentReference));
+
+        return convertToBookingResponse(reservation);
+    }
+
+    /**
      * Find booking by payment reference (public search across all tenants)
      */
     public BookingResponse findByPaymentReferencePublic(String paymentReference) {

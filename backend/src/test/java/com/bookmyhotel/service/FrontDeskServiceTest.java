@@ -277,7 +277,6 @@ class FrontDeskServiceTest {
 
         when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
         when(roomRepository.findByHotelIdWithReservationsOrderByRoomNumber(hotel.getId())).thenReturn(List.of(room));
-        when(hotelService.getHotelIdByTenantId(any())).thenReturn(hotel.getId());
 
         Page<RoomResponse> response = frontDeskService.getAllRooms(PageRequest.of(0, 10), null, null, null);
 
@@ -301,7 +300,6 @@ class FrontDeskServiceTest {
 
         when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
         when(roomRepository.findByHotelIdWithReservationsOrderByRoomNumber(hotel.getId())).thenReturn(List.of(room));
-        when(hotelService.getHotelIdByTenantId(any())).thenReturn(hotel.getId());
         when(roomRepository.isRoomCurrentlyBooked(room.getId(), hotel.getId())).thenReturn(true);
 
         Page<RoomResponse> response = frontDeskService.getAllRooms(PageRequest.of(0, 10), null, null, null);
@@ -309,6 +307,30 @@ class FrontDeskServiceTest {
         assertEquals(1, response.getTotalElements());
         assertEquals(RoomStatus.OCCUPIED, response.getContent().get(0).getStatus());
         assertEquals("Front Desk Guest", response.getContent().get(0).getCurrentGuest());
+    }
+
+    @Test
+    void getAllRoomsShouldNotDependOnSingleHotelPerTenantForOccupancyComputation() {
+        Hotel hotel = buildHotel(94L);
+        User user = buildUser("frontdesk@example.com", hotel);
+        Room room = buildRoom(753L, hotel, "711", RoomType.STANDARD, "1800.00", RoomStatus.AVAILABLE);
+        Reservation reservation = buildReservation(618L, hotel, room, ReservationStatus.CHECKED_IN);
+        room.setReservations(List.of(reservation));
+
+        SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(
+                user.getEmail(),
+                "n/a",
+                List.of(new SimpleGrantedAuthority("ROLE_FRONT_DESK"))));
+
+        when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
+        when(roomRepository.findByHotelIdWithReservationsOrderByRoomNumber(hotel.getId())).thenReturn(List.of(room));
+        when(roomRepository.isRoomCurrentlyBooked(room.getId(), hotel.getId())).thenReturn(true);
+
+        Page<RoomResponse> response = frontDeskService.getAllRooms(PageRequest.of(0, 10), null, null, null);
+
+        assertEquals(1, response.getTotalElements());
+        assertEquals(RoomStatus.OCCUPIED, response.getContent().get(0).getStatus());
+        assertEquals(hotel.getId(), response.getContent().get(0).getHotelId());
     }
 
     @Test

@@ -27,7 +27,8 @@ export const extractBookingErrorMessage = (error: unknown): string => {
     
     // Check for specific backend error messages (exact matches) - highest priority
     if (originalMessage.includes('An active reservation already exists for this email address') ||
-        originalMessage.includes('You already have a confirmed booking')) {
+        originalMessage.includes('You already have a confirmed booking') ||
+        originalMessage.includes('You already have a booked reservation')) {
       return '⚠️ This email address already has an active booking. Please use a different email address or contact the front desk to modify the existing booking.';
     }
     
@@ -86,6 +87,10 @@ export const extractBookingErrorMessage = (error: unknown): string => {
     
     if (message.includes('guest already has') || message.includes('customer already') || message.includes('booking already exists')) {
       return '⚠️ A booking already exists for this guest. Please check existing bookings or use a different email address.';
+    }
+
+    if (message.includes('you already have a booked reservation')) {
+      return originalMessage;
     }
     
     if (message.includes('no available rooms') || 

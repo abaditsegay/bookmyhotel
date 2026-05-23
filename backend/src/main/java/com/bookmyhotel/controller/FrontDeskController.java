@@ -112,7 +112,7 @@ public class FrontDeskController {
     @GetMapping("/bookings/search/payment-reference/{paymentReference}")
     public ResponseEntity<BookingResponse> searchByPaymentReference(@PathVariable String paymentReference) {
         try {
-            BookingResponse booking = bookingService.findByPaymentReferencePublic(paymentReference);
+            BookingResponse booking = bookingService.findByPaymentReference(paymentReference);
 
             if (booking.getHotelId() == null || !hotelSecurity.canAccessHotel(booking.getHotelId())) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
