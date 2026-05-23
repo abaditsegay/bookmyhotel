@@ -1469,11 +1469,12 @@ public class FrontDeskService {
         response.setCapacity(room.getCapacity());
         response.setDescription(room.getDescription());
 
-        // Check if room is currently booked (hotel-aware)
+        // Check if room is currently occupied by a checked-in guest (hotel-aware)
         Long hotelId = hotelService.getHotelIdByTenantId(TenantContext.getTenantId());
         boolean isCurrentlyBooked = roomRepository.isRoomCurrentlyBooked(room.getId(), hotelId);
 
-        // Update room status to OCCUPIED if currently booked and status is AVAILABLE
+        // Update room status to OCCUPIED if a checked-in guest is in the room and
+        // status is AVAILABLE
         // This ensures consistent status display across Hotel Admin and Front Desk
         if (isCurrentlyBooked && room.getStatus() == RoomStatus.AVAILABLE) {
             response.setStatus(RoomStatus.OCCUPIED);

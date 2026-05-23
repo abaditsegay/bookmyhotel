@@ -2,6 +2,7 @@ package com.bookmyhotel.service;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -10,13 +11,20 @@ import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.bookmyhotel.dto.BookingResponse;
 import com.bookmyhotel.dto.BookingRequest;
@@ -28,6 +36,8 @@ import com.bookmyhotel.entity.ReservationStatus;
 import com.bookmyhotel.entity.Room;
 import com.bookmyhotel.entity.RoomStatus;
 import com.bookmyhotel.entity.RoomType;
+import com.bookmyhotel.entity.User;
+import com.bookmyhotel.dto.RoomResponse;
 import com.bookmyhotel.repository.HotelRepository;
 import com.bookmyhotel.repository.ReservationRepository;
 import com.bookmyhotel.repository.RoomRepository;
@@ -68,6 +78,11 @@ class FrontDeskServiceTest {
 
     @InjectMocks
     private FrontDeskService frontDeskService;
+
+    @AfterEach
+    void clearSecurityContext() {
+        SecurityContextHolder.clearContext();
+    }
 
     @Test
     void shouldAuditPaymentStatusUpdate() {
@@ -247,11 +262,67 @@ class FrontDeskServiceTest {
                 eq("FINANCIAL")));
     }
 
+    @Test
+    void getAllRoomsShouldKeepBookedRoomAvailableUntilCheckIn() {
+        Hotel hotel = buildHotel(91L);
+        User user = buildUser("frontdesk@example.com", hotel);
+        Room room = buildRoom(750L, hotel, "708", RoomType.STANDARD, "1800.00", RoomStatus.AVAILABLE);
+        Reservation reservation = buildReservation(615L, hotel, room, ReservationStatus.BOOKED);
+        room.setReservations(List.of(reservation));
+
+        SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(
+                user.getEmail(),
+                "n/a",
+                List.of(new SimpleGrantedAuthority("ROLE_FRONT_DESK"))));
+
+        when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
+        when(roomRepository.findByHotelIdWithReservationsOrderByRoomNumber(hotel.getId())).thenReturn(List.of(room));
+        when(hotelService.getHotelIdByTenantId(any())).thenReturn(hotel.getId());
+
+        Page<RoomResponse> response = frontDeskService.getAllRooms(PageRequest.of(0, 10), null, null, null);
+
+        assertEquals(1, response.getTotalElements());
+        assertEquals(RoomStatus.AVAILABLE, response.getContent().get(0).getStatus());
+        assertNull(response.getContent().get(0).getCurrentGuest());
+    }
+
+    @Test
+    void getAllRoomsShouldShowOccupiedForCheckedInReservationWithGuestName() {
+        Hotel hotel = buildHotel(92L);
+        User user = buildUser("frontdesk@example.com", hotel);
+        Room room = buildRoom(751L, hotel, "709", RoomType.STANDARD, "1800.00", RoomStatus.AVAILABLE);
+        Reservation reservation = buildReservation(616L, hotel, room, ReservationStatus.CHECKED_IN);
+        room.setReservations(List.of(reservation));
+
+        SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(
+                user.getEmail(),
+                "n/a",
+                List.of(new SimpleGrantedAuthority("ROLE_FRONT_DESK"))));
+
+        when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
+        when(roomRepository.findByHotelIdWithReservationsOrderByRoomNumber(hotel.getId())).thenReturn(List.of(room));
+        when(hotelService.getHotelIdByTenantId(any())).thenReturn(hotel.getId());
+        when(roomRepository.isRoomCurrentlyBooked(room.getId(), hotel.getId())).thenReturn(true);
+
+        Page<RoomResponse> response = frontDeskService.getAllRooms(PageRequest.of(0, 10), null, null, null);
+
+        assertEquals(1, response.getTotalElements());
+        assertEquals(RoomStatus.OCCUPIED, response.getContent().get(0).getStatus());
+        assertEquals("Front Desk Guest", response.getContent().get(0).getCurrentGuest());
+    }
+
     private Hotel buildHotel(Long hotelId) {
         Hotel hotel = new Hotel();
         hotel.setId(hotelId);
         hotel.setName("Hotel " + hotelId);
         return hotel;
+    }
+
+    private User buildUser(String email, Hotel hotel) {
+        User user = new User();
+        user.setEmail(email);
+        user.setHotel(hotel);
+        return user;
     }
 
     private Room buildRoom(Long roomId, Hotel hotel, String roomNumber, RoomType roomType, String pricePerNight,

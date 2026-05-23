@@ -1303,10 +1303,12 @@ public class HotelAdminService {
         dto.setCapacity(room.getCapacity());
         dto.setDescription(room.getDescription());
 
-        // Check if room is currently booked (use room's hotel ID)
+        // Check if room is currently occupied by a checked-in guest (use room's
+        // hotel ID)
         boolean isCurrentlyBooked = roomRepository.isRoomCurrentlyBooked(room.getId(), room.getHotelId());
 
-        // Update room status to OCCUPIED if currently booked and status is AVAILABLE
+        // Update room status to OCCUPIED if a checked-in guest is in the room and
+        // status is AVAILABLE
         if (isCurrentlyBooked && room.getStatus() == RoomStatus.AVAILABLE) {
             dto.setStatus(RoomStatus.OCCUPIED);
         } else {
