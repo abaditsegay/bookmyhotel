@@ -311,6 +311,22 @@ class FrontDeskServiceTest {
         assertEquals("Front Desk Guest", response.getContent().get(0).getCurrentGuest());
     }
 
+    @Test
+    void updateRoomStatusShouldRejectOccupiedWithoutCheckedInReservation() {
+        Hotel hotel = buildHotel(93L);
+        Room room = buildRoom(752L, hotel, "710", RoomType.STANDARD, "1800.00", RoomStatus.AVAILABLE);
+        room.setReservations(List.of(
+                buildReservation(617L, hotel, room, ReservationStatus.BOOKED)));
+
+        when(roomRepository.findById(752L)).thenReturn(Optional.of(room));
+
+        RuntimeException exception = assertThrows(
+                RuntimeException.class,
+                () -> frontDeskService.updateRoomStatus(752L, RoomStatus.OCCUPIED.name(), null));
+
+        assertEquals("Cannot set room to OCCUPIED - no checked-in guest is assigned", exception.getMessage());
+    }
+
     private Hotel buildHotel(Long hotelId) {
         Hotel hotel = new Hotel();
         hotel.setId(hotelId);

@@ -64,16 +64,16 @@ class AutomatedRoomStatusServiceTest {
     }
 
     @Test
-    void checkRoomStatusConsistencyShouldKeepOccupiedWhenBookedReservationStartsToday() {
+    void checkRoomStatusConsistencyShouldMarkAvailableWhenOnlyBookedReservationStartsToday() {
         Room room = room("103", RoomStatus.OCCUPIED, true,
                 reservation(ReservationStatus.BOOKED, LocalDate.now(), LocalDate.now().plusDays(2)));
         when(roomRepository.findById(12L)).thenReturn(Optional.of(room));
 
         automatedRoomStatusService.checkRoomStatusConsistency(12L);
 
-        assertEquals(RoomStatus.OCCUPIED, room.getStatus());
+        assertEquals(RoomStatus.AVAILABLE, room.getStatus());
         verify(roomRepository).findById(12L);
-        verify(roomRepository, never()).save(room);
+        verify(roomRepository).save(room);
     }
 
     @Test

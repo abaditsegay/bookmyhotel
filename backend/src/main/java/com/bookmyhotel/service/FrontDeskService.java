@@ -1300,9 +1300,18 @@ public class FrontDeskService {
                             !reservation.getCheckInDate().isAfter(today) &&
                             !reservation.getCheckOutDate().isBefore(today));
 
+            boolean hasCheckedInGuest = room.getReservations().stream()
+                    .anyMatch(reservation -> reservation.getStatus() == ReservationStatus.CHECKED_IN &&
+                            !reservation.getCheckInDate().isAfter(today) &&
+                            reservation.getCheckOutDate().isAfter(today));
+
             if (hasActiveBookings && (newStatus == RoomStatus.OUT_OF_ORDER ||
                     newStatus == RoomStatus.MAINTENANCE)) {
                 throw new RuntimeException("Cannot set room to " + status + " - it has active bookings");
+            }
+
+            if (newStatus == RoomStatus.OCCUPIED && !hasCheckedInGuest) {
+                throw new RuntimeException("Cannot set room to " + status + " - no checked-in guest is assigned");
             }
 
             room.setStatus(newStatus);
