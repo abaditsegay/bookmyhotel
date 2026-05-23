@@ -6,8 +6,15 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
+
+import com.bookmyhotel.entity.User;
 
 /**
  * Interceptor to resolve and set tenant context for each request
@@ -21,12 +28,20 @@ public class TenantInterceptor implements HandlerInterceptor {
     private TenantResolver tenantResolver;
     
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+        public boolean preHandle(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
+            @NonNull Object handler) {
         try {
             String tenantId = tenantResolver.resolveTenant(request);
             if (tenantId != null) {
                 TenantContext.setTenantId(tenantId);
                 logger.debug("Set tenant context: {}", tenantId);
+
+                if (requiresHotelContext() && HotelContext.getHotelId() == null) {
+                    logger.warn("Missing hotel context for authenticated hotel-scoped request: {}", request.getRequestURI());
+                    response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Hotel context is required for this request");
+                    return false;
+                }
+
                 return true;
             }
 
@@ -77,7 +92,23 @@ public class TenantInterceptor implements HandlerInterceptor {
     }
     
     @Override
-    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
+    public void afterCompletion(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
+            @NonNull Object handler, @Nullable Exception ex) {
         TenantContext.clear();
+    }
+
+    private boolean requiresHotelContext() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()
+                || authentication instanceof AnonymousAuthenticationToken) {
+            return false;
+        }
+
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof User user) {
+            return !user.isSystemWideUser();
+        }
+
+        return false;
     }
 }

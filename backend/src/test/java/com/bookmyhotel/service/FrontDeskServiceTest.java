@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.never;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -347,6 +348,56 @@ class FrontDeskServiceTest {
                 () -> frontDeskService.updateRoomStatus(752L, RoomStatus.OCCUPIED.name(), null));
 
         assertEquals("Cannot set room to OCCUPIED - no checked-in guest is assigned", exception.getMessage());
+    }
+
+    @Test
+    void getBookingByIdShouldUseAuthenticatedUsersHotelScope() {
+        Hotel hotel = buildHotel(95L);
+        User user = buildUser("frontdesk@example.com", hotel);
+        Reservation reservation = buildReservation(619L, hotel, buildRoom(754L, hotel, "712", RoomType.STANDARD,
+                "1800.00", RoomStatus.AVAILABLE), ReservationStatus.BOOKED);
+
+        SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(
+                user.getEmail(),
+                "n/a",
+                List.of(new SimpleGrantedAuthority("ROLE_FRONT_DESK"))));
+
+        when(userRepository.findByEmailWithHotel(user.getEmail())).thenReturn(Optional.of(user));
+        when(reservationRepository.findByIdAndHotelId(619L, 95L)).thenReturn(Optional.of(reservation));
+        when(bookingService.convertToBookingResponse(reservation)).thenAnswer(invocation -> {
+            Reservation scopedReservation = invocation.getArgument(0);
+            BookingResponse response = new BookingResponse();
+            response.setReservationId(scopedReservation.getId());
+            return response;
+        });
+
+        BookingResponse response = frontDeskService.getBookingById(619L);
+
+        assertEquals(619L, response.getReservationId());
+        verify(reservationRepository).findByIdAndHotelId(619L, 95L);
+        verify(reservationRepository, never()).findById(619L);
+    }
+
+    @Test
+    void getRoomByIdShouldUseAuthenticatedUsersHotelScope() {
+        Hotel hotel = buildHotel(96L);
+        User user = buildUser("frontdesk@example.com", hotel);
+        Room room = buildRoom(755L, hotel, "713", RoomType.STANDARD, "1800.00", RoomStatus.AVAILABLE);
+
+        SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(
+                user.getEmail(),
+                "n/a",
+                List.of(new SimpleGrantedAuthority("ROLE_FRONT_DESK"))));
+
+        when(userRepository.findByEmailWithHotel(user.getEmail())).thenReturn(Optional.of(user));
+        when(roomRepository.findByIdAndHotelId(755L, 96L)).thenReturn(Optional.of(room));
+        when(roomRepository.isRoomCurrentlyBooked(755L, 96L)).thenReturn(false);
+
+        RoomResponse response = frontDeskService.getRoomById(755L);
+
+        assertEquals(755L, response.getId());
+        verify(roomRepository).findByIdAndHotelId(755L, 96L);
+        verify(roomRepository, never()).findById(755L);
     }
 
     private Hotel buildHotel(Long hotelId) {

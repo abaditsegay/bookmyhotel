@@ -27,6 +27,13 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
        @Lock(LockModeType.PESSIMISTIC_WRITE)
        @Query("SELECT r FROM Room r WHERE r.id = :roomId")
        Optional<Room> findByIdForUpdate(@Param("roomId") Long roomId);
+       
+              @Lock(LockModeType.PESSIMISTIC_WRITE)
+              @Query("SELECT r FROM Room r WHERE r.id = :roomId AND r.hotel.id = :hotelId")
+              Optional<Room> findByIdAndHotelIdForUpdate(@Param("roomId") Long roomId, @Param("hotelId") Long hotelId);
+       
+              @Query("SELECT r FROM Room r WHERE r.id = :roomId AND r.hotel.id = :hotelId")
+              Optional<Room> findByIdAndHotelId(@Param("roomId") Long roomId, @Param("hotelId") Long hotelId);
 
        /**
         * Find available rooms for a hotel within date range

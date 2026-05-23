@@ -18,8 +18,13 @@ import org.springframework.mock.web.MockHttpServletRequest;
 
 import com.bookmyhotel.dto.payment.PaymentCallbackRequest;
 import com.bookmyhotel.dto.payment.PaymentInitiationRequest;
+import com.bookmyhotel.dto.payment.PaymentInitiationResponse;
+import com.bookmyhotel.entity.Hotel;
+import com.bookmyhotel.entity.Reservation;
 import com.bookmyhotel.exception.ErrorResponse;
 import com.bookmyhotel.exception.PaymentException;
+import com.bookmyhotel.repository.ReservationRepository;
+import com.bookmyhotel.service.HotelActivityAuditService;
 import com.bookmyhotel.service.payment.EthiopianMobilePaymentService;
 
 @ExtendWith(MockitoExtension.class)
@@ -27,6 +32,12 @@ class EthiopianPaymentControllerTest {
 
     @Mock
     private EthiopianMobilePaymentService paymentService;
+
+    @Mock
+    private ReservationRepository reservationRepository;
+
+    @Mock
+    private HotelActivityAuditService hotelActivityAuditService;
 
     @InjectMocks
     private EthiopianPaymentController controller;
@@ -36,6 +47,7 @@ class EthiopianPaymentControllerTest {
         PaymentInitiationRequest request = new PaymentInitiationRequest();
         request.setAmount(java.math.BigDecimal.valueOf(100));
         request.setBookingReference("BOOK-123");
+        request.setHotelId(7L);
 
         when(paymentService.initiateMbirrPayment(request))
             .thenThrow(new PaymentException("M-birr payment gateway is not configured"));
@@ -90,6 +102,7 @@ class EthiopianPaymentControllerTest {
         PaymentInitiationRequest request = new PaymentInitiationRequest();
         request.setAmount(java.math.BigDecimal.valueOf(5));
         request.setBookingReference("BOOK-LOW");
+        request.setHotelId(7L);
 
         ResponseEntity<?> response = controller.initiateMbirrPayment(
                 request,
@@ -100,6 +113,37 @@ class EthiopianPaymentControllerTest {
         assertEquals("Invalid Payment Amount", errorResponse.getError());
         assertEquals("Minimum payment amount is 10 ETB", errorResponse.getDetails());
         assertNotNull(errorResponse.getUserFriendlyMessage());
+    }
+
+    @Test
+    void shouldUseHotelScopedReservationLookupDuringMbirrInitiation() {
+        PaymentInitiationRequest request = new PaymentInitiationRequest();
+        request.setAmount(java.math.BigDecimal.valueOf(100));
+        request.setBookingReference("BOOK-123");
+        request.setHotelId(7L);
+
+        PaymentInitiationResponse paymentResponse = new PaymentInitiationResponse();
+        paymentResponse.setSuccess(true);
+        paymentResponse.setTransactionId("txn-123");
+
+        Reservation reservation = new Reservation();
+        reservation.setId(11L);
+        Hotel hotel = new Hotel();
+        hotel.setId(7L);
+        reservation.setHotel(hotel);
+
+        when(paymentService.initiateMbirrPayment(request)).thenReturn(paymentResponse);
+        when(reservationRepository.findByConfirmationNumberAndHotelId("BOOK-123", 7L))
+                .thenReturn(java.util.Optional.of(reservation));
+
+        ResponseEntity<?> response = controller.initiateMbirrPayment(
+                request,
+                requestFor("/api/payments/ethiopian/mbirr/initiate"));
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        verify(reservationRepository).findByConfirmationNumberAndHotelId("BOOK-123", 7L);
+        verify(reservationRepository, never()).findByConfirmationNumberPublic("BOOK-123");
+        verify(reservationRepository, never()).findByPaymentReferencePublic("BOOK-123");
     }
 
     private MockHttpServletRequest requestFor(String path) {

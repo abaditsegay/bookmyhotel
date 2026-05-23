@@ -30,6 +30,7 @@ class PaymentInitiationRequestValidationTest {
         request.setAmount(new BigDecimal("10.999"));
         request.setPhoneNumber("+251911223344");
         request.setBookingReference("BOOK-123");
+        request.setHotelId(7L);
         request.setPaymentProvider("MBIRR");
 
         Set<ConstraintViolation<PaymentInitiationRequest>> violations = validator.validate(request);
@@ -46,10 +47,27 @@ class PaymentInitiationRequestValidationTest {
         request.setAmount(new BigDecimal("10.99"));
         request.setPhoneNumber("+251911223344");
         request.setBookingReference("BOOK-123");
+        request.setHotelId(7L);
         request.setPaymentProvider("TELEBIRR");
 
         Set<ConstraintViolation<PaymentInitiationRequest>> violations = validator.validate(request);
 
         assertTrue(violations.isEmpty());
+    }
+
+    @Test
+    void shouldRequireHotelId() {
+        PaymentInitiationRequest request = new PaymentInitiationRequest();
+        request.setAmount(new BigDecimal("10.99"));
+        request.setPhoneNumber("+251911223344");
+        request.setBookingReference("BOOK-123");
+        request.setPaymentProvider("TELEBIRR");
+
+        Set<ConstraintViolation<PaymentInitiationRequest>> violations = validator.validate(request);
+
+        assertEquals(1, violations.size());
+        ConstraintViolation<PaymentInitiationRequest> violation = violations.iterator().next();
+        assertEquals("hotelId", violation.getPropertyPath().toString());
+        assertEquals("Hotel ID is required", violation.getMessage());
     }
 }

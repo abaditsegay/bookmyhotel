@@ -24,6 +24,9 @@ public class PaymentInitiationRequest {
     
     @NotBlank(message = "Booking reference is required")
     private String bookingReference;
+
+    @NotNull(message = "Hotel ID is required")
+    private Long hotelId;
     
     @NotBlank(message = "Payment provider is required")
     @Pattern(regexp = "^(MBIRR|TELEBIRR)$", message = "Payment provider must be MBIRR or TELEBIRR")
@@ -65,6 +68,11 @@ public class PaymentInitiationRequest {
         
         public Builder bookingReference(String bookingReference) {
             request.bookingReference = bookingReference;
+            return this;
+        }
+
+        public Builder hotelId(Long hotelId) {
+            request.hotelId = hotelId;
             return this;
         }
         
@@ -121,6 +129,14 @@ public class PaymentInitiationRequest {
     
     public void setBookingReference(String bookingReference) {
         this.bookingReference = bookingReference;
+    }
+
+    public Long getHotelId() {
+        return hotelId;
+    }
+
+    public void setHotelId(Long hotelId) {
+        this.hotelId = hotelId;
     }
     
     public String getPaymentProvider() {

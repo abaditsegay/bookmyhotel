@@ -2,6 +2,7 @@ package com.bookmyhotel.controller;
 
 import com.bookmyhotel.entity.*;
 import com.bookmyhotel.enums.*;
+import com.bookmyhotel.security.HotelSecurity;
 import com.bookmyhotel.service.HousekeepingService;
 import com.bookmyhotel.service.HotelService;
 import com.bookmyhotel.repository.UserRepository;
@@ -41,6 +42,9 @@ public class SupervisorController {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private HotelSecurity hotelSecurity;
+
     /**
      * Get current authenticated user's hotel ID and tenant ID
      */
@@ -60,6 +64,11 @@ public class SupervisorController {
     }
 
     private Long getCurrentUserHotelId() {
+        Long hotelId = hotelSecurity.getCurrentUserHotelId();
+        if (hotelId != null) {
+            return hotelId;
+        }
+
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || auth.getName() == null) {
             return null;
@@ -178,8 +187,13 @@ public class SupervisorController {
                         .body(Map.of("error", "Operations supervisor must be associated with a tenant"));
             }
 
+                Long hotelId = getCurrentUserHotelId();
+                if (hotelId == null) {
+                return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Operations supervisor must be associated with a hotel"));
+                }
+
             // Get recent tasks (same as in dashboard but more detailed)
-            Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
             List<HousekeepingTask> completedTasks = housekeepingService.getTasksByStatus(hotelId,
                     HousekeepingTaskStatus.COMPLETED);
             List<HousekeepingTask> inProgressTasks = housekeepingService.getTasksByStatus(hotelId,
@@ -405,8 +419,13 @@ public class SupervisorController {
                         .body(Map.of("error", "Operations supervisor must be associated with a tenant"));
             }
 
+                Long hotelId = getCurrentUserHotelId();
+                if (hotelId == null) {
+                return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Operations supervisor must be associated with a hotel"));
+                }
+
             // Get all housekeeping tasks for the tenant
-            Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
             List<HousekeepingTask> pendingTasks = housekeepingService.getTasksByStatus(hotelId,
                     HousekeepingTaskStatus.PENDING);
             List<HousekeepingTask> inProgressTasks = housekeepingService.getTasksByStatus(hotelId,
@@ -650,11 +669,15 @@ public class SupervisorController {
             }
 
             HousekeepingTask task;
+            Long hotelId = getCurrentUserHotelId();
+            if (hotelId == null) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("error", "Operations supervisor must be associated with a hotel"));
+            }
 
             // Handle special case for "Other" areas (roomId = null)
             if (request.getRoomId() == null) {
                 // For "Other" areas, we'll create a task without a specific room
-                Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
                 task = housekeepingService.createTaskWithoutRoom(
                         hotelId,
                         taskType,
@@ -663,7 +686,6 @@ public class SupervisorController {
                         request.getSpecialInstructions());
             } else {
                 // Normal room-based task
-                Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
                 task = housekeepingService.createTask(
                         hotelId,
                         request.getRoomId(),
@@ -763,10 +785,15 @@ public class SupervisorController {
                         .body(Map.of("error", "Operations supervisor must be associated with a tenant"));
             }
 
+            Long hotelId = getCurrentUserHotelId();
+            if (hotelId == null) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("error", "Operations supervisor must be associated with a hotel"));
+            }
+
             List<HousekeepingTask> tasks;
 
             // Get tasks based on time filter
-            Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
             if ("TODAY".equals(timeFilter)) {
                 tasks = housekeepingService.getTodaysTasksForStaff(staffId, hotelId);
             } else {
@@ -830,11 +857,16 @@ public class SupervisorController {
                         .body(Map.of("error", "Operations supervisor must be associated with a tenant"));
             }
 
+            Long hotelId = getCurrentUserHotelId();
+            if (hotelId == null) {
+            return ResponseEntity.badRequest()
+                .body(Map.of("error", "Operations supervisor must be associated with a hotel"));
+            }
+
             // Get staff performance metrics
             Map<String, Object> performance = new HashMap<>();
 
             // Get all tasks for the staff member
-            Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
             List<HousekeepingTask> allTasks = housekeepingService
                     .getTasksForStaff(hotelId, staffId, Pageable.unpaged()).getContent();
             List<HousekeepingTask> todaysTasks = housekeepingService.getTodaysTasksForStaff(staffId, hotelId);
@@ -892,7 +924,11 @@ public class SupervisorController {
 
             // Use the simplified service that supports both housekeeping_staff and users
             // table assignments
-            Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
+            Long hotelId = getCurrentUserHotelId();
+            if (hotelId == null) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("error", "Operations supervisor must be associated with a hotel"));
+            }
             HousekeepingTask assignedTask = housekeepingService.assignTask(hotelId, taskId, staffId);
 
             // Convert to simplified format to avoid circular references
@@ -1007,7 +1043,11 @@ public class SupervisorController {
                         .body(Map.of("error", "Operations supervisor must be associated with a tenant"));
             }
 
-            Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
+            Long hotelId = getCurrentUserHotelId();
+            if (hotelId == null) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("error", "Operations supervisor must be associated with a hotel"));
+            }
             HousekeepingTask assignedTask = housekeepingService.assignTaskAutomatically(taskId, hotelId);
 
             // Convert to simplified format to avoid circular references

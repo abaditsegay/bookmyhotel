@@ -78,7 +78,7 @@ public class EthiopianPaymentController {
             }
 
             PaymentInitiationResponse response = paymentService.initiateMbirrPayment(request);
-            Reservation reservation = findReservation(request.getBookingReference());
+            Reservation reservation = findReservation(request.getBookingReference(), request.getHotelId());
 
             if (response.isSuccess()) {
                 logger.info("✅ M-birr payment initiated successfully for booking: {}", request.getBookingReference());
@@ -96,7 +96,7 @@ public class EthiopianPaymentController {
             throw ex;
         } catch (Exception e) {
             logger.error("❌ Error initiating M-birr payment", e);
-            logInitiationAudit(findReservation(request.getBookingReference()), "MBIRR", request,
+                logInitiationAudit(findReservation(request.getBookingReference(), request.getHotelId()), "MBIRR", request,
                     AuditTaxonomy.Action.PAYMENT_INITIATION_FAILED, null);
             return errorResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR,
@@ -139,7 +139,7 @@ public class EthiopianPaymentController {
             }
 
             PaymentInitiationResponse response = paymentService.initiateTelebirrPayment(request);
-            Reservation reservation = findReservation(request.getBookingReference());
+            Reservation reservation = findReservation(request.getBookingReference(), request.getHotelId());
 
             if (response.isSuccess()) {
                 logger.info("✅ Telebirr payment initiated successfully for booking: {}", request.getBookingReference());
@@ -157,7 +157,7 @@ public class EthiopianPaymentController {
             throw ex;
         } catch (Exception e) {
             logger.error("❌ Error initiating Telebirr payment", e);
-            logInitiationAudit(findReservation(request.getBookingReference()), "TELEBIRR", request,
+                logInitiationAudit(findReservation(request.getBookingReference(), request.getHotelId()), "TELEBIRR", request,
                     AuditTaxonomy.Action.PAYMENT_INITIATION_FAILED, null);
             return errorResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR,
@@ -338,13 +338,13 @@ public class EthiopianPaymentController {
         }
     }
 
-    private Reservation findReservation(String bookingReference) {
-        if (bookingReference == null || bookingReference.isBlank()) {
+    private Reservation findReservation(String bookingReference, Long hotelId) {
+        if (bookingReference == null || bookingReference.isBlank() || hotelId == null) {
             return null;
         }
 
-        return reservationRepository.findByConfirmationNumberPublic(bookingReference)
-                .or(() -> reservationRepository.findByPaymentReferencePublic(bookingReference))
+        return reservationRepository.findByConfirmationNumberAndHotelId(bookingReference, hotelId)
+                .or(() -> reservationRepository.findByPaymentReferenceAndHotelId(bookingReference, hotelId))
                 .orElse(null);
     }
 

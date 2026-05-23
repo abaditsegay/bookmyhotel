@@ -31,6 +31,7 @@ import { buildApiUrl } from '../config/apiConfig';
 interface EthiopianPaymentFormProps {
   amount: number;
   bookingReference: string;
+  hotelId: number;
   customerName?: string;
   customerEmail?: string;
   instructions?: string;
@@ -54,6 +55,7 @@ export const EthiopianPaymentForm: React.FC<EthiopianPaymentFormProps> = ({
   onPaymentInitiated,
   onError,
   bookingReference,
+  hotelId,
   customerName,
   customerEmail,
   instructions,
@@ -122,6 +124,7 @@ export const EthiopianPaymentForm: React.FC<EthiopianPaymentFormProps> = ({
         amount: amount,
         phoneNumber: phoneNumber.replace(/\s/g, ''), // Remove spaces
         bookingReference,
+        hotelId,
         paymentProvider: selectedProvider,
         customerName: customerName || '',
         customerEmail: customerEmail || '',

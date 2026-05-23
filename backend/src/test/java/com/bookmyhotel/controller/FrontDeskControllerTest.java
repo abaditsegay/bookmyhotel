@@ -20,6 +20,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import com.bookmyhotel.dto.BookingResponse;
+import com.bookmyhotel.dto.RoomResponse;
+import com.bookmyhotel.entity.Hotel;
+import com.bookmyhotel.entity.Room;
 import com.bookmyhotel.dto.WalkInBookingRequest;
 import com.bookmyhotel.exception.ResourceNotFoundException;
 import com.bookmyhotel.repository.ReservationRepository;
@@ -134,7 +137,7 @@ class FrontDeskControllerTest {
         bookingResponse.setPaymentReference("PAY-1001");
             bookingResponse.setHotelId(7L);
 
-        when(bookingService.findByPaymentReferencePublic("PAY-1001")).thenReturn(bookingResponse);
+        when(bookingService.findByPaymentReference("PAY-1001")).thenReturn(bookingResponse);
             when(hotelSecurity.canAccessHotel(7L)).thenReturn(true);
 
         ResponseEntity<BookingResponse> response = frontDeskController.searchByPaymentReference("PAY-1001");
@@ -143,7 +146,7 @@ class FrontDeskControllerTest {
         BookingResponse body = response.getBody();
         assertNotNull(body);
         assertEquals("PAY-1001", body.getPaymentReference());
-        verify(bookingService).findByPaymentReferencePublic("PAY-1001");
+        verify(bookingService).findByPaymentReference("PAY-1001");
         }
 
         @Test
@@ -153,25 +156,25 @@ class FrontDeskControllerTest {
         bookingResponse.setPaymentReference("PAY-2002");
         bookingResponse.setHotelId(8L);
 
-        when(bookingService.findByPaymentReferencePublic("PAY-2002")).thenReturn(bookingResponse);
+        when(bookingService.findByPaymentReference("PAY-2002")).thenReturn(bookingResponse);
         when(hotelSecurity.canAccessHotel(8L)).thenReturn(false);
 
         ResponseEntity<BookingResponse> response = frontDeskController.searchByPaymentReference("PAY-2002");
 
         assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
-        verify(bookingService).findByPaymentReferencePublic("PAY-2002");
+        verify(bookingService).findByPaymentReference("PAY-2002");
         }
 
         @Test
         void searchByPaymentReferenceShouldReturnNotFoundWhenBookingIsMissing() {
         doThrow(new ResourceNotFoundException("Payment reference not found"))
             .when(bookingService)
-            .findByPaymentReferencePublic("MISSING-REF");
+            .findByPaymentReference("MISSING-REF");
 
         ResponseEntity<BookingResponse> response = frontDeskController.searchByPaymentReference("MISSING-REF");
 
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        verify(bookingService).findByPaymentReferencePublic("MISSING-REF");
+        verify(bookingService).findByPaymentReference("MISSING-REF");
     }
 
     @Test
@@ -217,5 +220,48 @@ class FrontDeskControllerTest {
         ResponseEntity<?> response = frontDeskController.getAvailableRoomsForCheckin(7L, "2026-06-15", "2026-06-15", 1);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    }
+
+    @Test
+    void getRoomByIdShouldReturnForbiddenWhenRoomHotelIsNotAccessible() {
+        Room room = roomWithHotel(ROOM_ID, 8L);
+        when(roomRepository.findById(ROOM_ID)).thenReturn(java.util.Optional.of(room));
+        when(hotelSecurity.canAccessHotel(8L)).thenReturn(false);
+
+        ResponseEntity<RoomResponse> response = frontDeskController.getRoomById(ROOM_ID);
+
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+    }
+
+    @Test
+    void updateRoomStatusShouldReturnForbiddenWhenRoomHotelIsNotAccessible() {
+        Room room = roomWithHotel(ROOM_ID, 8L);
+        when(roomRepository.findById(ROOM_ID)).thenReturn(java.util.Optional.of(room));
+        when(hotelSecurity.canAccessHotel(8L)).thenReturn(false);
+
+        ResponseEntity<RoomResponse> response = frontDeskController.updateRoomStatus(ROOM_ID, "OCCUPIED", null);
+
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+    }
+
+    @Test
+    void toggleRoomAvailabilityShouldReturnForbiddenWhenRoomHotelIsNotAccessible() {
+        Room room = roomWithHotel(ROOM_ID, 8L);
+        when(roomRepository.findById(ROOM_ID)).thenReturn(java.util.Optional.of(room));
+        when(hotelSecurity.canAccessHotel(8L)).thenReturn(false);
+
+        ResponseEntity<RoomResponse> response = frontDeskController.toggleRoomAvailability(ROOM_ID, true, null);
+
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+    }
+
+    private Room roomWithHotel(Long roomId, Long hotelId) {
+        Hotel hotel = new Hotel();
+        hotel.setId(hotelId);
+
+        Room room = new Room();
+        room.setId(roomId);
+        room.setHotel(hotel);
+        return room;
     }
 }

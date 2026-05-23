@@ -250,13 +250,7 @@ public class HotelAdminService {
             throw new RuntimeException("Hotel admin is not associated with any hotel");
         }
 
-        User staff = userRepository.findById(staffId)
-                .orElseThrow(() -> new RuntimeException("Staff member not found"));
-
-        // Verify the staff member belongs to the same hotel
-        if (!staff.getHotel().getId().equals(hotel.getId())) {
-            throw new RuntimeException("Staff member not found in your hotel");
-        }
+        User staff = getStaffForHotel(staffId, hotel.getId());
 
         return convertToUserDTO(staff);
     }
@@ -323,13 +317,7 @@ public class HotelAdminService {
         User admin = getUserByEmail(adminEmail);
         Hotel hotel = admin.getHotel();
 
-        User staff = userRepository.findById(staffId)
-                .orElseThrow(() -> new RuntimeException("Staff member not found"));
-
-        // Verify the staff belongs to the same hotel
-        if (!staff.getHotel().getId().equals(hotel.getId())) {
-            throw new RuntimeException("Staff member does not belong to your hotel");
-        }
+        User staff = getStaffForHotel(staffId, hotel.getId());
 
         Map<String, Object> oldSnapshot = createUserSnapshot(staff);
 
@@ -376,13 +364,7 @@ public class HotelAdminService {
         User admin = getUserByEmail(adminEmail);
         Hotel hotel = admin.getHotel();
 
-        User staff = userRepository.findById(staffId)
-                .orElseThrow(() -> new RuntimeException("Staff member not found"));
-
-        // Verify the staff belongs to the same hotel
-        if (!staff.getHotel().getId().equals(hotel.getId())) {
-            throw new RuntimeException("Staff member does not belong to your hotel");
-        }
+        User staff = getStaffForHotel(staffId, hotel.getId());
 
         Map<String, Object> oldSnapshot = createUserSnapshot(staff);
         userRepository.delete(staff);
@@ -406,13 +388,7 @@ public class HotelAdminService {
         User admin = getUserByEmail(adminEmail);
         Hotel hotel = admin.getHotel();
 
-        User staff = userRepository.findById(staffId)
-                .orElseThrow(() -> new RuntimeException("Staff member not found"));
-
-        // Verify the staff belongs to the same hotel
-        if (!staff.getHotel().getId().equals(hotel.getId())) {
-            throw new RuntimeException("Staff member does not belong to your hotel");
-        }
+        User staff = getStaffForHotel(staffId, hotel.getId());
 
         Map<String, Object> oldSnapshot = createUserSnapshot(staff);
 
@@ -762,13 +738,7 @@ public class HotelAdminService {
         User admin = getUserByEmail(adminEmail);
         Hotel hotel = admin.getHotel();
 
-        Room room = roomRepository.findById(roomId)
-                .orElseThrow(() -> new RuntimeException("Room not found"));
-
-        // Verify the room belongs to the same hotel
-        if (!room.getHotel().getId().equals(hotel.getId())) {
-            throw new RuntimeException("Room does not belong to your hotel");
-        }
+        Room room = getRoomForHotel(roomId, hotel.getId());
 
         return convertToRoomDTO(room);
     }
@@ -786,13 +756,7 @@ public class HotelAdminService {
         User admin = getUserByEmail(adminEmail);
         Hotel hotel = admin.getHotel();
 
-        Room room = roomRepository.findById(roomId)
-                .orElseThrow(() -> new RuntimeException("Room not found"));
-
-        // Verify the room belongs to the same hotel
-        if (!room.getHotel().getId().equals(hotel.getId())) {
-            throw new RuntimeException("Room does not belong to your hotel");
-        }
+        Room room = getRoomForHotel(roomId, hotel.getId());
 
         Map<String, Object> oldSnapshot = createRoomSnapshot(room);
 
@@ -840,7 +804,7 @@ public class HotelAdminService {
         // "🔥 Hotel: " + (hotel != null ? hotel.getName() + " (Hotel ID: " +
         // hotel.getId() + ")" : "null"));
 
-        Room room = roomRepository.findById(roomId).orElse(null);
+        Room room = roomRepository.findByIdAndHotelId(roomId, hotel.getId()).orElse(null);
         // System.out.println("🔥 Room found: "
         // + (room != null ? "Yes - Room Number: " + room.getRoomNumber() + " (ID: " +
         // room.getId() + ")" : "No"));
@@ -925,13 +889,7 @@ public class HotelAdminService {
         User admin = getUserByEmail(adminEmail);
         Hotel hotel = admin.getHotel();
 
-        Room room = roomRepository.findById(roomId)
-                .orElseThrow(() -> new RuntimeException("Room not found"));
-
-        // Verify the room belongs to the same hotel
-        if (!room.getHotel().getId().equals(hotel.getId())) {
-            throw new RuntimeException("Room does not belong to your hotel");
-        }
+        Room room = getRoomForHotel(roomId, hotel.getId());
 
         Map<String, Object> oldSnapshot = createRoomSnapshot(room);
 
@@ -986,13 +944,7 @@ public class HotelAdminService {
         User admin = getUserByEmail(adminEmail);
         Hotel hotel = admin.getHotel();
 
-        Room room = roomRepository.findById(roomId)
-                .orElseThrow(() -> new RuntimeException("Room not found"));
-
-        // Verify the room belongs to the same hotel
-        if (!room.getHotel().getId().equals(hotel.getId())) {
-            throw new RuntimeException("Room does not belong to your hotel");
-        }
+        Room room = getRoomForHotel(roomId, hotel.getId());
 
         Map<String, Object> oldSnapshot = createRoomSnapshot(room);
 
@@ -1198,6 +1150,21 @@ public class HotelAdminService {
             // System.err.println("🔍 User not found, throwing exception");
             throw new RuntimeException("User not found");
         }
+    }
+
+    private User getStaffForHotel(Long staffId, Long hotelId) {
+        return userRepository.findByIdAndHotelId(staffId, hotelId)
+                .orElseThrow(() -> new RuntimeException("Staff member not found"));
+    }
+
+    private Room getRoomForHotel(Long roomId, Long hotelId) {
+        return roomRepository.findByIdAndHotelId(roomId, hotelId)
+                .orElseThrow(() -> new RuntimeException("Room not found"));
+    }
+
+    private Reservation getReservationForHotel(Long reservationId, Long hotelId) {
+        return reservationRepository.findByIdAndHotelId(reservationId, hotelId)
+                .orElseThrow(() -> new RuntimeException("Booking not found with id: " + reservationId));
     }
 
     /**
@@ -1471,22 +1438,7 @@ public class HotelAdminService {
     @Transactional(readOnly = true)
     public BookingResponse getBookingById(Long reservationId, Long hotelId) {
         // Find the reservation
-        Reservation reservation = reservationRepository.findById(reservationId)
-                .orElseThrow(() -> new RuntimeException("Booking not found with id: " + reservationId));
-
-        // Verify the reservation belongs to the specified hotel
-        // Handle both assigned and unassigned reservations
-        Long reservationHotelId;
-        if (reservation.getRoom() != null) {
-            reservationHotelId = reservation.getRoom().getHotel().getId();
-        } else {
-            // For reservations without assigned rooms, use the hotel_id field directly
-            reservationHotelId = reservation.getHotelId();
-        }
-
-        if (!reservationHotelId.equals(hotelId)) {
-            throw new RuntimeException("Booking does not belong to your hotel");
-        }
+        Reservation reservation = getReservationForHotel(reservationId, hotelId);
 
         return convertToBookingResponse(reservation);
     }
@@ -1554,13 +1506,10 @@ public class HotelAdminService {
      */
     @Transactional
     public BookingResponse updateBookingStatus(Long reservationId, ReservationStatus newStatus, Long hotelId) {
-        Reservation reservation = reservationRepository.findById(reservationId)
-            .orElseThrow(() -> new RuntimeException("Reservation not found with id: " + reservationId));
-        assertReservationBelongsToHotel(reservation, hotelId);
+        Reservation reservation = getReservationForHotel(reservationId, hotelId);
         Map<String, Object> oldSnapshot = createReservationSnapshot(reservation);
         BookingResponse response = bookingStatusUpdateService.updateBookingStatus(reservationId, newStatus, "hotel admin");
-        Reservation updatedReservation = reservationRepository.findById(reservationId)
-            .orElseThrow(() -> new RuntimeException("Reservation not found with id: " + reservationId));
+        Reservation updatedReservation = getReservationForHotel(reservationId, hotelId);
         hotelActivityAuditService.logActivity(
             updatedReservation.getHotel(),
             AuditTaxonomy.EntityType.RESERVATION,
@@ -1580,9 +1529,7 @@ public class HotelAdminService {
      */
     @Transactional
     public BookingResponse updateBookingPaymentStatus(Long reservationId, String paymentStatus, Long hotelId) {
-        Reservation reservation = reservationRepository.findById(reservationId)
-                .orElseThrow(() -> new RuntimeException("Reservation not found with id: " + reservationId));
-        assertReservationBelongsToHotel(reservation, hotelId);
+        Reservation reservation = getReservationForHotel(reservationId, hotelId);
 
         Map<String, Object> oldSnapshot = createReservationSnapshot(reservation);
 
@@ -1612,9 +1559,7 @@ public class HotelAdminService {
      */
     @Transactional
     public BookingResponse updateBookingPaymentType(Long reservationId, String paymentType, Long hotelId) {
-        Reservation reservation = reservationRepository.findById(reservationId)
-                .orElseThrow(() -> new RuntimeException("Reservation not found with id: " + reservationId));
-        assertReservationBelongsToHotel(reservation, hotelId);
+        Reservation reservation = getReservationForHotel(reservationId, hotelId);
 
         Map<String, Object> oldSnapshot = createReservationSnapshot(reservation);
 
@@ -1644,13 +1589,7 @@ public class HotelAdminService {
             Long hotelId) {
         try {
             // Find the reservation
-            Reservation reservation = reservationRepository.findById(reservationId)
-                    .orElseThrow(() -> new RuntimeException("Booking not found with id: " + reservationId));
-
-            // Verify the reservation belongs to the specified hotel
-            if (!reservation.getRoom().getHotel().getId().equals(hotelId)) {
-                return new BookingModificationResponse(false, "Booking does not belong to your hotel");
-            }
+            Reservation reservation = getReservationForHotel(reservationId, hotelId);
 
             // Set the confirmation number and guest email from the existing reservation
             request.setConfirmationNumber(reservation.getConfirmationNumber());
@@ -1673,13 +1612,7 @@ public class HotelAdminService {
      */
     public void deleteBooking(Long reservationId, Long hotelId) {
         // Find the reservation
-        Reservation reservation = reservationRepository.findById(reservationId)
-                .orElseThrow(() -> new RuntimeException("Booking not found with id: " + reservationId));
-
-        // Verify the reservation belongs to the specified hotel
-        if (!reservation.getRoom().getHotel().getId().equals(hotelId)) {
-            throw new RuntimeException("Booking does not belong to your hotel");
-        }
+        Reservation reservation = getReservationForHotel(reservationId, hotelId);
 
         // Check if booking can be deleted (e.g., not checked in or active)
         if (reservation.getStatus() == ReservationStatus.CHECKED_IN) {

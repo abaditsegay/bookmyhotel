@@ -1,6 +1,8 @@
 package com.bookmyhotel.tenant;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
@@ -10,8 +12,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.bookmyhotel.entity.Tenant;
+import com.bookmyhotel.entity.Hotel;
+import com.bookmyhotel.entity.User;
+import com.bookmyhotel.repository.UserRepository;
 import com.bookmyhotel.service.TenantService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,12 +32,16 @@ class TenantResolverTest {
     @Mock
     private HttpServletRequest request;
 
+    @Mock
+    private UserRepository userRepository;
+
     @InjectMocks
     private TenantResolver tenantResolver;
 
     @AfterEach
     void tearDown() {
         TenantContext.clear();
+        SecurityContextHolder.clearContext();
     }
 
     @Test
@@ -47,7 +58,7 @@ class TenantResolverTest {
         tenant.setTenantId("tenant-guid");
 
         when(request.getHeader("X-Tenant-Id")).thenReturn(" hotel-alpha ");
-        when(tenantService.getOrCreateTenant("hotel-alpha")).thenReturn(tenant);
+        when(tenantService.findActiveTenantByIdentifier("hotel-alpha")).thenReturn(java.util.Optional.of(tenant));
 
         assertEquals("tenant-guid", tenantResolver.resolveTenant(request));
     }
@@ -59,28 +70,75 @@ class TenantResolverTest {
 
         when(request.getHeader("X-Tenant-Id")).thenReturn(null);
         when(request.getServerName()).thenReturn("grandplaza.example.com");
-        when(tenantService.getOrCreateTenant("grandplaza")).thenReturn(tenant);
+        when(tenantService.findActiveTenantByIdentifier("grandplaza")).thenReturn(java.util.Optional.of(tenant));
 
         assertEquals("tenant-subdomain-guid", tenantResolver.resolveTenant(request));
     }
 
     @Test
-    void resolveTenantShouldFallbackToDevelopmentForLocalhost() {
+    void resolveTenantShouldUseAuthenticatedUserHotelTenantWhenRequestHasNoIdentifier() {
         Tenant tenant = new Tenant();
-        tenant.setTenantId("tenant-development-guid");
+        tenant.setTenantId("tenant-hotel-guid");
+        Hotel hotel = new Hotel();
+        hotel.setTenant(tenant);
+        User user = new User();
+        user.setEmail("admin@example.com");
+        user.setHotel(hotel);
 
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken("admin@example.com", "n/a", java.util.List.of()));
         when(request.getHeader("X-Tenant-Id")).thenReturn("   ");
         when(request.getServerName()).thenReturn("localhost");
-        when(tenantService.getOrCreateTenant("development")).thenReturn(tenant);
+        when(userRepository.findByEmailWithHotel("admin@example.com")).thenReturn(java.util.Optional.of(user));
+        when(tenantService.findActiveTenantByIdentifier("tenant-hotel-guid")).thenReturn(java.util.Optional.of(tenant));
 
-        assertEquals("tenant-development-guid", tenantResolver.resolveTenant(request));
+        assertEquals("tenant-hotel-guid", tenantResolver.resolveTenant(request));
     }
 
     @Test
-    void resolveTenantShouldFallbackToIdentifierWhenTenantLookupFails() {
-        when(request.getHeader("X-Tenant-Id")).thenReturn("hotel-bravo");
-        when(tenantService.getOrCreateTenant("hotel-bravo")).thenThrow(new RuntimeException("db down"));
+    void resolveTenantShouldRejectHeaderThatDoesNotMatchAuthenticatedUserTenant() {
+    Tenant authenticatedTenant = new Tenant();
+    authenticatedTenant.setTenantId("tenant-hotel-guid");
+    Tenant headerTenant = new Tenant();
+    headerTenant.setTenantId("tenant-other-guid");
 
-        assertEquals("hotel-bravo", tenantResolver.resolveTenant(request));
+    Hotel hotel = new Hotel();
+    hotel.setTenant(authenticatedTenant);
+    User user = new User();
+    user.setEmail("admin@example.com");
+    user.setHotel(hotel);
+
+    SecurityContextHolder.getContext().setAuthentication(
+        new UsernamePasswordAuthenticationToken("admin@example.com", "n/a", java.util.List.of()));
+    when(request.getHeader("X-Tenant-Id")).thenReturn("other-hotel");
+    when(userRepository.findByEmailWithHotel("admin@example.com")).thenReturn(java.util.Optional.of(user));
+    when(tenantService.findActiveTenantByIdentifier("tenant-hotel-guid"))
+        .thenReturn(java.util.Optional.of(authenticatedTenant));
+    when(tenantService.findActiveTenantByIdentifier("other-hotel"))
+        .thenReturn(java.util.Optional.of(headerTenant));
+
+    assertThrows(IllegalStateException.class, () -> tenantResolver.resolveTenant(request));
+    }
+
+    @Test
+    void resolveTenantShouldReturnNullWhenNoTenantCanBeResolved() {
+        when(request.getHeader("X-Tenant-Id")).thenReturn("hotel-bravo");
+        when(tenantService.findActiveTenantByIdentifier("hotel-bravo")).thenReturn(java.util.Optional.empty());
+
+        assertThrows(IllegalStateException.class, () -> tenantResolver.resolveTenant(request));
+    }
+
+    @Test
+    void resolveTenantShouldReturnNullWhenAuthenticatedUserHasNoHotelTenant() {
+        User user = new User();
+        user.setEmail("admin@example.com");
+
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken("admin@example.com", "n/a", java.util.List.of()));
+        when(request.getHeader("X-Tenant-Id")).thenReturn(null);
+        when(request.getServerName()).thenReturn("localhost");
+        when(userRepository.findByEmailWithHotel("admin@example.com")).thenReturn(java.util.Optional.of(user));
+
+        assertNull(tenantResolver.resolveTenant(request));
     }
 }

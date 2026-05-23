@@ -27,45 +27,32 @@ import com.bookmyhotel.dto.HousekeepingTaskDTO;
 import com.bookmyhotel.dto.MaintenanceTaskDTO;
 import com.bookmyhotel.dto.MaintenanceUpdateRequest;
 import com.bookmyhotel.dto.TaskUpdateRequest;
-import com.bookmyhotel.entity.HousekeepingStaff;
 import com.bookmyhotel.entity.HousekeepingTask;
 import com.bookmyhotel.entity.HousekeepingTaskStatus;
 import com.bookmyhotel.entity.MaintenanceTask;
 import com.bookmyhotel.entity.TaskStatus;
 import com.bookmyhotel.entity.User;
 import com.bookmyhotel.entity.UserRole;
-import com.bookmyhotel.repository.HousekeepingStaffRepository;
 import com.bookmyhotel.repository.HousekeepingTaskRepository;
 import com.bookmyhotel.repository.MaintenanceTaskRepository;
 import com.bookmyhotel.repository.UserRepository;
-import com.bookmyhotel.service.HousekeepingService;
-import com.bookmyhotel.service.HotelService;
-import com.bookmyhotel.service.UserManagementService;
+import com.bookmyhotel.security.HotelSecurity;
 
 @RestController
 @RequestMapping("/api/staff")
 public class StaffController {
 
     @Autowired
-    private UserManagementService userManagementService;
-
-    @Autowired
     private UserRepository userRepository;
-
-    @Autowired
-    private HousekeepingService housekeepingService;
-
-    @Autowired
-    private HotelService hotelService;
 
     @Autowired
     private HousekeepingTaskRepository housekeepingTaskRepository;
 
     @Autowired
-    private HousekeepingStaffRepository housekeepingStaffRepository;
+    private MaintenanceTaskRepository maintenanceTaskRepository;
 
     @Autowired
-    private MaintenanceTaskRepository maintenanceTaskRepository;
+    private HotelSecurity hotelSecurity;
 
     // Get current staff profile
     @GetMapping("/profile")
@@ -127,10 +114,10 @@ public class StaffController {
 
             User user = userOpt.get();
 
-            // Get tasks assigned directly to this user (no need for HousekeepingStaff
-            // record)
+                Long hotelId = resolveCurrentHotelId(user);
             Pageable pageable = PageRequest.of(page, size);
-            Page<HousekeepingTask> tasks = housekeepingTaskRepository.findByAssignedUserId(user.getId(), pageable);
+                Page<HousekeepingTask> tasks = housekeepingTaskRepository.findByHotelIdAndAssignedUserId(hotelId,
+                    user.getId(), pageable);
 
             // Convert to DTOs to avoid JSON serialization issues
             Page<HousekeepingTaskDTO> taskDTOs = tasks.map(this::convertToDTO);
@@ -155,7 +142,10 @@ public class StaffController {
             }
             User user = userOpt.get();
 
-            Optional<HousekeepingTask> taskOpt = housekeepingTaskRepository.findByIdWithUserAndHotel(taskId);
+                Long hotelId = resolveCurrentHotelId(user);
+
+                Optional<HousekeepingTask> taskOpt = housekeepingTaskRepository.findByIdAndHotelIdWithUserAndHotel(taskId,
+                    hotelId);
             if (!taskOpt.isPresent()) {
                 return ResponseEntity.badRequest().body("Task not found");
             }
@@ -212,7 +202,10 @@ public class StaffController {
             }
             User user = userOpt.get();
 
-            Optional<HousekeepingTask> taskOpt = housekeepingTaskRepository.findByIdWithUserAndHotel(taskId);
+                Long hotelId = resolveCurrentHotelId(user);
+
+                Optional<HousekeepingTask> taskOpt = housekeepingTaskRepository.findByIdAndHotelIdWithUserAndHotel(taskId,
+                    hotelId);
             if (!taskOpt.isPresent()) {
                 return ResponseEntity.badRequest().body("Task not found");
             }
@@ -248,7 +241,10 @@ public class StaffController {
             }
             User user = userOpt.get();
 
-            Optional<HousekeepingTask> taskOpt = housekeepingTaskRepository.findByIdWithUserAndHotel(taskId);
+                Long hotelId = resolveCurrentHotelId(user);
+
+                Optional<HousekeepingTask> taskOpt = housekeepingTaskRepository.findByIdAndHotelIdWithUserAndHotel(taskId,
+                    hotelId);
             if (!taskOpt.isPresent()) {
                 return ResponseEntity.badRequest().body("Task not found");
             }
@@ -293,8 +289,8 @@ public class StaffController {
                 return ResponseEntity.badRequest().body("User not found");
             }
 
-            Long hotelId = hotelService.getHotelIdByTenantId(user.getTenantId());
-                // Maintenance tasks are assigned by staff email in the current data model.
+            Long hotelId = resolveCurrentHotelId(user);
+            // Maintenance tasks are assigned by staff email in the current data model.
             List<MaintenanceTask> tasks = maintenanceTaskRepository
                     .findByHotelIdAndAssignedTo_EmailOrderByCreatedAtDesc(hotelId, user.getEmail());
 
@@ -336,9 +332,9 @@ public class StaffController {
                 return ResponseEntity.badRequest().body("User not found");
             }
             User user = userOpt.get();
-            Long hotelId = hotelService.getHotelIdByTenantId(user.getTenantId());
+            Long hotelId = resolveCurrentHotelId(user);
 
-            Optional<MaintenanceTask> taskOpt = maintenanceTaskRepository.findById(taskId);
+            Optional<MaintenanceTask> taskOpt = maintenanceTaskRepository.findByIdAndHotelId(taskId, hotelId);
             if (!taskOpt.isPresent()) {
                 return ResponseEntity.badRequest().body("Maintenance task not found");
             }
@@ -374,9 +370,9 @@ public class StaffController {
                 return ResponseEntity.badRequest().body("User not found");
             }
             User user = userOpt.get();
-            Long hotelId = hotelService.getHotelIdByTenantId(user.getTenantId());
+            Long hotelId = resolveCurrentHotelId(user);
 
-            Optional<MaintenanceTask> taskOpt = maintenanceTaskRepository.findById(taskId);
+            Optional<MaintenanceTask> taskOpt = maintenanceTaskRepository.findByIdAndHotelId(taskId, hotelId);
             if (!taskOpt.isPresent()) {
                 return ResponseEntity.badRequest().body("Maintenance task not found");
             }
@@ -428,9 +424,9 @@ public class StaffController {
                 return ResponseEntity.badRequest().body("User not found");
             }
             User user = userOpt.get();
-            Long hotelId = hotelService.getHotelIdByTenantId(user.getTenantId());
+            Long hotelId = resolveCurrentHotelId(user);
 
-            Optional<MaintenanceTask> taskOpt = maintenanceTaskRepository.findById(taskId);
+            Optional<MaintenanceTask> taskOpt = maintenanceTaskRepository.findByIdAndHotelId(taskId, hotelId);
             if (!taskOpt.isPresent()) {
                 return ResponseEntity.badRequest().body("Maintenance task not found");
             }
@@ -489,12 +485,17 @@ public class StaffController {
             Long userId = user.getId();
 
             Map<String, Object> stats = new HashMap<>();
-            stats.put("totalTasks", housekeepingTaskRepository.countByAssignedUserId(userId));
-            stats.put("pendingTasks", housekeepingTaskRepository.countByAssignedUserIdAndStatus(userId,
+                Long hotelId = resolveCurrentHotelId(user);
+
+                stats.put("totalTasks", housekeepingTaskRepository.countByAssignedUserIdAndHotelId(userId, hotelId));
+                stats.put("pendingTasks", housekeepingTaskRepository.countByAssignedUserIdAndHotelIdAndStatus(userId,
+                    hotelId,
                     HousekeepingTaskStatus.PENDING));
-            stats.put("inProgressTasks", housekeepingTaskRepository.countByAssignedUserIdAndStatus(userId,
+                stats.put("inProgressTasks", housekeepingTaskRepository.countByAssignedUserIdAndHotelIdAndStatus(userId,
+                    hotelId,
                     HousekeepingTaskStatus.IN_PROGRESS));
-            stats.put("completedTasks", housekeepingTaskRepository.countByAssignedUserIdAndStatus(userId,
+                stats.put("completedTasks", housekeepingTaskRepository.countByAssignedUserIdAndHotelIdAndStatus(userId,
+                    hotelId,
                     HousekeepingTaskStatus.COMPLETED));
 
             return ResponseEntity.ok(stats);
@@ -513,9 +514,9 @@ public class StaffController {
                 return ResponseEntity.badRequest().body("User not found");
             }
             User user = userOpt.get();
-            Long hotelId = hotelService.getHotelIdByTenantId(user.getTenantId());
+            Long hotelId = resolveCurrentHotelId(user);
 
-                // Maintenance tasks are resolved by assigned staff email.
+            // Maintenance tasks are resolved by assigned staff email.
             List<MaintenanceTask> allTasks = maintenanceTaskRepository
                     .findByHotelIdAndAssignedTo_EmailOrderByCreatedAtDesc(hotelId, user.getEmail());
 
@@ -540,6 +541,19 @@ public class StaffController {
         return task.getAssignedTo() != null
                 && task.getAssignedTo().getEmail() != null
                 && task.getAssignedTo().getEmail().equalsIgnoreCase(user.getEmail());
+    }
+
+    private Long resolveCurrentHotelId(User user) {
+        Long hotelId = hotelSecurity.getCurrentUserHotelId();
+        if (hotelId != null) {
+            return hotelId;
+        }
+
+        if (user.getHotel() != null && user.getHotel().getId() != null) {
+            return user.getHotel().getId();
+        }
+
+        throw new IllegalStateException("User is not bound to a hotel");
     }
 
     // Helper method to convert HousekeepingTask to DTO

@@ -7,6 +7,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.lang.NonNull;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -39,8 +40,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private SessionManagementService sessionManagementService;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
-            FilterChain filterChain) throws ServletException, IOException {
+        protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
+            @NonNull FilterChain filterChain) throws ServletException, IOException {
 
         final String authorizationHeader = request.getHeader("Authorization");
 
@@ -78,6 +79,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 // Check if user is system-wide (GUEST or ADMIN with null tenant_id)
                 User user = (User) userDetails;
                 boolean isSystemWideUser = user.isSystemWideUser();
+
+                if (!isHotelScopeConsistent(user, tenantId, hotelId)) {
+                    logger.warn("Rejecting JWT for user " + user.getEmail()
+                            + " due to inconsistent hotel/tenant scope. tokenTenantId=" + tenantId
+                            + ", tokenHotelId=" + hotelId);
+                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid hotel scope in token");
+                    return;
+                }
 
                 if (isSystemWideUser) {
                     // System-wide users don't need tenant or hotel context
@@ -124,5 +133,30 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             HotelContext.clear();
             TenantContext.clear();
         }
+    }
+
+    private boolean isHotelScopeConsistent(User user, String tenantId, Long hotelId) {
+        if (user == null) {
+            return false;
+        }
+
+        if (user.isSystemWideUser()) {
+            return true;
+        }
+
+        if (user.getHotel() == null || user.getHotel().getId() == null) {
+            return false;
+        }
+
+        if (hotelId == null || !user.getHotel().getId().equals(hotelId)) {
+            return false;
+        }
+
+        String expectedTenantId = user.getTenantId();
+        if (expectedTenantId == null || expectedTenantId.isBlank()) {
+            return tenantId == null || tenantId.isBlank();
+        }
+
+        return expectedTenantId.equals(tenantId);
     }
 }

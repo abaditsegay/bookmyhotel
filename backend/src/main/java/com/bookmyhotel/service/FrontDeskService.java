@@ -36,13 +36,13 @@ import com.bookmyhotel.entity.Reservation;
 import com.bookmyhotel.entity.ReservationStatus;
 import com.bookmyhotel.entity.Room;
 import com.bookmyhotel.entity.RoomStatus;
-import com.bookmyhotel.entity.RoomType;
 import com.bookmyhotel.entity.User;
 import com.bookmyhotel.exception.ResourceNotFoundException;
 import com.bookmyhotel.repository.HotelRepository;
 import com.bookmyhotel.repository.ReservationRepository;
 import com.bookmyhotel.repository.RoomRepository;
 import com.bookmyhotel.repository.UserRepository;
+import com.bookmyhotel.tenant.HotelContext;
 import com.bookmyhotel.tenant.TenantContext;
 
 /**
@@ -65,9 +65,6 @@ public class FrontDeskService {
 
     @Autowired
     private HotelRepository hotelRepository;
-
-    @Autowired
-    private HotelService hotelService;
 
     @Autowired
     private UserRepository userRepository;
@@ -194,8 +191,7 @@ public class FrontDeskService {
      */
     @Transactional(readOnly = true)
     public BookingResponse getBookingById(Long reservationId) {
-        Reservation reservation = reservationRepository.findById(reservationId)
-                .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
+        Reservation reservation = getReservationForCurrentScope(reservationId);
 
         return convertToBookingResponse(reservation);
     }
@@ -243,12 +239,10 @@ public class FrontDeskService {
         }
 
         logger.info("🎯 Final updatedBy value: {}", updatedBy);
-        Reservation reservation = reservationRepository.findById(reservationId)
-            .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
+        Reservation reservation = getReservationForCurrentScope(reservationId);
         Map<String, Object> oldSnapshot = createReservationSnapshot(reservation);
         BookingResponse response = bookingStatusUpdateService.updateBookingStatus(reservationId, status, updatedBy);
-        Reservation updatedReservation = reservationRepository.findById(reservationId)
-            .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
+        Reservation updatedReservation = getReservationForCurrentScope(reservationId);
         hotelActivityAuditService.logActivity(
             updatedReservation.getHotel(),
             AuditTaxonomy.EntityType.RESERVATION,
@@ -268,8 +262,7 @@ public class FrontDeskService {
      */
     @Transactional
     public BookingResponse updateBookingPaymentStatus(Long reservationId, String paymentStatus) {
-        Reservation reservation = reservationRepository.findById(reservationId)
-                .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
+        Reservation reservation = getReservationForCurrentScope(reservationId);
         Map<String, Object> oldSnapshot = createReservationSnapshot(reservation);
 
         reservation.setPaymentStatusFromString(paymentStatus);
@@ -295,8 +288,7 @@ public class FrontDeskService {
      */
     @Transactional
     public BookingResponse updateBookingPaymentType(Long reservationId, String paymentType) {
-        Reservation reservation = reservationRepository.findById(reservationId)
-                .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
+        Reservation reservation = getReservationForCurrentScope(reservationId);
         Map<String, Object> oldSnapshot = createReservationSnapshot(reservation);
 
         reservation.setPaymentMethod(paymentType);
@@ -322,8 +314,7 @@ public class FrontDeskService {
      */
     @CacheEvict(value = CacheConfig.AVAILABLE_ROOMS_CACHE, allEntries = true)
     public BookingResponse updateBooking(Long reservationId, BookingRequest request) {
-        Reservation reservation = reservationRepository.findById(reservationId)
-                .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
+        Reservation reservation = getReservationForCurrentScope(reservationId);
         Map<String, Object> oldSnapshot = createReservationSnapshot(reservation);
 
         // Validate that dates are valid
@@ -382,7 +373,7 @@ public class FrontDeskService {
 
         // Handle room assignment change
         if (request.getRoomId() != null) {
-            Room newRoom = roomRepository.findByIdForUpdate(request.getRoomId())
+                Room newRoom = getRoomForCurrentScopeForUpdate(request.getRoomId())
                     .orElseThrow(() -> new ResourceNotFoundException("Room not found with id: " + request.getRoomId()));
 
             Room currentAssignedRoom = reservation.getAssignedRoom();
@@ -453,11 +444,10 @@ public class FrontDeskService {
      * Check-in with room assignment
      */
     public BookingResponse checkInWithRoomAssignment(Long reservationId, Long roomId, String roomType) {
-        Reservation reservation = reservationRepository.findById(reservationId)
-                .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
+        Reservation reservation = getReservationForCurrentScope(reservationId);
         Map<String, Object> oldSnapshot = createReservationSnapshot(reservation);
 
-        Room room = roomRepository.findByIdForUpdate(roomId)
+        Room room = getRoomForCurrentScopeForUpdate(roomId)
                 .orElseThrow(() -> new ResourceNotFoundException("Room not found with id: " + roomId));
 
         // Validate that check-in is allowed (same validation as checkIn method)
@@ -533,8 +523,7 @@ public class FrontDeskService {
      * Delete booking
      */
     public void deleteBooking(Long reservationId) {
-        Reservation reservation = reservationRepository.findById(reservationId)
-                .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
+        Reservation reservation = getReservationForCurrentScope(reservationId);
         Map<String, Object> oldSnapshot = createReservationSnapshot(reservation);
 
         // Only allow deletion if not checked in
@@ -567,8 +556,7 @@ public class FrontDeskService {
      * Update booking room assignment (for booked bookings during check-in)
      */
     public BookingResponse updateBookingRoomAssignment(Long reservationId, Long newRoomId, String newRoomType) {
-        Reservation reservation = reservationRepository.findById(reservationId)
-                .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
+        Reservation reservation = getReservationForCurrentScope(reservationId);
         Map<String, Object> oldSnapshot = createReservationSnapshot(reservation);
 
         // Allow room assignment updates for booked bookings and checked-in guests
@@ -578,7 +566,7 @@ public class FrontDeskService {
         }
 
         // Get the new room
-        Room newRoom = roomRepository.findByIdForUpdate(newRoomId)
+        Room newRoom = getRoomForCurrentScopeForUpdate(newRoomId)
                 .orElseThrow(() -> new ResourceNotFoundException("Room not found with id: " + newRoomId));
 
         Room previousRoom = reservation.getRoom();
@@ -638,12 +626,7 @@ public class FrontDeskService {
      */
     @Transactional(readOnly = true)
     public List<BookingResponse> getTodaysArrivals() {
-        String tenantId = TenantContext.getTenantId();
-        if (tenantId == null || tenantId.trim().isEmpty()) {
-            throw new IllegalStateException("Tenant context is not set");
-        }
-
-        Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
+        Long hotelId = resolveCurrentHotelId();
         LocalDate today = LocalDate.now();
         List<Reservation> arrivals = reservationRepository.findUpcomingCheckInsByHotelId(today, hotelId);
 
@@ -658,10 +641,7 @@ public class FrontDeskService {
     @Cacheable(value = CacheConfig.ROOMS_BY_HOTEL_CACHE, key = "'hotel:' + #hotelId + ':available:frontdesk'")
     @Transactional(readOnly = true)
     public List<RoomResponse> getAvailableRoomsForHotel(Long hotelId) {
-        String tenantId = TenantContext.getTenantId();
-        if (tenantId == null || tenantId.trim().isEmpty()) {
-            throw new IllegalStateException("Tenant context is not set");
-        }
+        assertHotelInCurrentScope(hotelId);
 
         List<Room> availableRooms = roomCacheService.findByHotelIdAndIsAvailableTrueAndStatus(hotelId,
                 RoomStatus.AVAILABLE);
@@ -676,12 +656,7 @@ public class FrontDeskService {
      */
     @Transactional(readOnly = true)
     public List<BookingResponse> getTodaysDepartures() {
-        String tenantId = TenantContext.getTenantId();
-        if (tenantId == null || tenantId.trim().isEmpty()) {
-            throw new IllegalStateException("Tenant context is not set");
-        }
-
-        Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
+        Long hotelId = resolveCurrentHotelId();
         LocalDate today = LocalDate.now();
         List<Reservation> departures = reservationRepository.findUpcomingCheckOutsByHotelId(today, hotelId);
 
@@ -695,12 +670,7 @@ public class FrontDeskService {
      */
     @Transactional(readOnly = true)
     public List<BookingResponse> getCurrentGuests() {
-        String tenantId = TenantContext.getTenantId();
-        if (tenantId == null || tenantId.trim().isEmpty()) {
-            throw new IllegalStateException("Tenant context is not set");
-        }
-
-        Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
+        Long hotelId = resolveCurrentHotelId();
         List<Reservation> currentGuests = reservationRepository.findByStatusAndHotelId(ReservationStatus.CHECKED_IN,
                 hotelId);
 
@@ -720,8 +690,7 @@ public class FrontDeskService {
      * Check in a guest
      */
     public BookingResponse checkInGuest(Long reservationId) {
-        Reservation reservation = reservationRepository.findById(reservationId)
-                .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
+        Reservation reservation = getReservationForCurrentScope(reservationId);
         Map<String, Object> oldSnapshot = createReservationSnapshot(reservation);
 
         // Validate that check-in is allowed
@@ -800,8 +769,7 @@ public class FrontDeskService {
      * Check out a guest and generate final receipt
      */
     public CheckoutResponse checkOutGuestWithReceipt(Long reservationId) {
-        Reservation reservation = reservationRepository.findById(reservationId)
-                .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
+        Reservation reservation = getReservationForCurrentScope(reservationId);
         Map<String, Object> oldSnapshot = createReservationSnapshot(reservation);
 
         // Validate that check-out is allowed
@@ -951,8 +919,7 @@ public class FrontDeskService {
      * Mark guest as no-show
      */
     public BookingResponse markNoShow(Long reservationId) {
-        Reservation reservation = reservationRepository.findById(reservationId)
-                .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
+        Reservation reservation = getReservationForCurrentScope(reservationId);
         Map<String, Object> oldSnapshot = createReservationSnapshot(reservation);
 
         // Validate that no-show marking is allowed
@@ -1011,8 +978,7 @@ public class FrontDeskService {
      * Cancel booking
      */
     public BookingResponse cancelBooking(Long reservationId, String reason) {
-        Reservation reservation = reservationRepository.findById(reservationId)
-                .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
+        Reservation reservation = getReservationForCurrentScope(reservationId);
         Map<String, Object> oldSnapshot = createReservationSnapshot(reservation);
 
         // Validate that cancellation is allowed
@@ -1146,7 +1112,6 @@ public class FrontDeskService {
         }
 
         LocalDate today = LocalDate.now();
-        String tenantId = TenantContext.getTenantId();
 
         // Get bookings for this specific hotel by joining with rooms
         // Using existing repository methods with custom queries for hotel-specific data
@@ -1161,7 +1126,6 @@ public class FrontDeskService {
                 .count();
 
         // Get room counts for this specific hotel
-        long totalRooms = roomRepository.countByHotelId(hotel.getId());
         long availableRooms = roomCacheService.findByHotelId(hotel.getId()).stream()
                 .filter(room -> room.getStatus() == RoomStatus.AVAILABLE)
                 .count();
@@ -1282,8 +1246,7 @@ public class FrontDeskService {
             @CacheEvict(value = CacheConfig.ROOM_COUNTS_CACHE, allEntries = true)
     })
     public RoomResponse updateRoomStatus(Long roomId, String status, String notes) {
-        Room room = roomRepository.findById(roomId)
-                .orElseThrow(() -> new ResourceNotFoundException("Room not found with id: " + roomId));
+        Room room = getRoomForCurrentScope(roomId);
         Map<String, Object> oldSnapshot = createRoomSnapshot(room);
 
         try {
@@ -1351,8 +1314,7 @@ public class FrontDeskService {
             @CacheEvict(value = CacheConfig.ROOM_COUNTS_CACHE, allEntries = true)
     })
     public RoomResponse toggleRoomAvailability(Long roomId, boolean available, String reason) {
-        Room room = roomRepository.findById(roomId)
-                .orElseThrow(() -> new ResourceNotFoundException("Room not found with id: " + roomId));
+        Room room = getRoomForCurrentScope(roomId);
         Map<String, Object> oldSnapshot = createRoomSnapshot(room);
 
         // Business rule: Cannot make room unavailable if it has active bookings
@@ -1407,8 +1369,7 @@ public class FrontDeskService {
             @CacheEvict(value = CacheConfig.ROOM_COUNTS_CACHE, allEntries = true)
     })
     public RoomResponse toggleRoomAvailability(Long roomId) {
-        Room room = roomRepository.findById(roomId)
-                .orElseThrow(() -> new ResourceNotFoundException("Room not found with id: " + roomId));
+        Room room = getRoomForCurrentScope(roomId);
 
         // Toggle the availability
         boolean newAvailability = !room.getIsAvailable();
@@ -1421,10 +1382,79 @@ public class FrontDeskService {
      */
     @Cacheable(value = CacheConfig.ROOMS_BY_HOTEL_CACHE, key = "'frontdesk:room:' + #roomId")
     public RoomResponse getRoomById(Long roomId) {
-        Room room = roomRepository.findById(roomId)
-                .orElseThrow(() -> new ResourceNotFoundException("Room not found with id: " + roomId));
+        Room room = getRoomForCurrentScope(roomId);
 
         return convertToRoomResponse(room);
+    }
+
+    private Reservation getReservationForCurrentScope(Long reservationId) {
+        Long hotelId = resolveCurrentHotelIdIfScoped();
+        if (hotelId != null) {
+            return reservationRepository.findByIdAndHotelId(reservationId, hotelId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
+        }
+
+        return reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
+    }
+
+    private Room getRoomForCurrentScope(Long roomId) {
+        Long hotelId = resolveCurrentHotelIdIfScoped();
+        if (hotelId != null) {
+            return roomRepository.findByIdAndHotelId(roomId, hotelId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Room not found with id: " + roomId));
+        }
+
+        return roomRepository.findById(roomId)
+                .orElseThrow(() -> new ResourceNotFoundException("Room not found with id: " + roomId));
+    }
+
+    private java.util.Optional<Room> getRoomForCurrentScopeForUpdate(Long roomId) {
+        Long hotelId = resolveCurrentHotelIdIfScoped();
+        if (hotelId != null) {
+            return roomRepository.findByIdAndHotelIdForUpdate(roomId, hotelId);
+        }
+
+        return roomRepository.findByIdForUpdate(roomId);
+    }
+
+    private Long resolveCurrentHotelId() {
+        Long hotelId = resolveCurrentHotelIdIfScoped();
+        if (hotelId != null) {
+            return hotelId;
+        }
+
+        Long contextHotelId = HotelContext.getHotelId();
+        if (contextHotelId == null) {
+            throw new IllegalStateException("Hotel context is not available");
+        }
+
+        return contextHotelId;
+    }
+
+    private Long resolveCurrentHotelIdIfScoped() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getName())) {
+            return null;
+        }
+
+        boolean isSystemAdmin = authentication.getAuthorities().stream()
+                .anyMatch(auth -> "ROLE_SUPER_ADMIN".equals(auth.getAuthority()) || "ROLE_ADMIN".equals(auth.getAuthority()));
+        if (isSystemAdmin) {
+            return null;
+        }
+
+        return userRepository.findByEmailWithHotel(authentication.getName())
+                .map(User::getHotel)
+                .map(Hotel::getId)
+                .orElseThrow(() -> new ResourceNotFoundException("User is not associated with any hotel"));
+    }
+
+    private void assertHotelInCurrentScope(Long hotelId) {
+        Long currentHotelId = resolveCurrentHotelIdIfScoped();
+        if (currentHotelId != null && !currentHotelId.equals(hotelId)) {
+            throw new ResourceNotFoundException("Hotel not found with id: " + hotelId);
+        }
     }
 
     /**

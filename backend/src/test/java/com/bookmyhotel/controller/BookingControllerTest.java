@@ -114,4 +114,35 @@ class BookingControllerTest {
         assertEquals(91L, body.getReservationId());
         verify(bookingService).getBooking(91L);
     }
+
+    @Test
+    void findByPaymentReferenceShouldReturnForbiddenWhenReservationAccessIsDenied() {
+        BookingResponse booking = new BookingResponse();
+        booking.setReservationId(92L);
+
+        when(bookingService.findByPaymentReferencePublic("PAY-001")).thenReturn(booking);
+        when(bookingSecurity.canAccessReservation(92L)).thenReturn(false);
+
+        ResponseEntity<BookingResponse> response = bookingController.findByPaymentReference("PAY-001");
+
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+        verify(bookingService).findByPaymentReferencePublic("PAY-001");
+    }
+
+    @Test
+    void findByPaymentReferenceShouldReturnBookingWhenReservationAccessIsAllowed() {
+        BookingResponse booking = new BookingResponse();
+        booking.setReservationId(93L);
+        booking.setConfirmationNumber("BK000093");
+
+        when(bookingService.findByPaymentReferencePublic("PAY-002")).thenReturn(booking);
+        when(bookingSecurity.canAccessReservation(93L)).thenReturn(true);
+
+        ResponseEntity<BookingResponse> response = bookingController.findByPaymentReference("PAY-002");
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("BK000093", response.getBody().getConfirmationNumber());
+        verify(bookingSecurity).canAccessReservation(93L);
+    }
 }

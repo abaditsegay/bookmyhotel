@@ -117,6 +117,29 @@ class JwtAuthenticationFilterIntegrationTest {
         assertNull(HotelContext.getHotelId());
     }
 
+    @Test
+    void shouldRejectHotelScopedUserWhenJwtHotelScopeDoesNotMatchAuthenticatedUser() throws Exception {
+        User hotelUser = hotelScopedUser();
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/test/context");
+        request.addHeader("Authorization", "Bearer mismatched-token");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        when(jwtUtil.extractUsername("mismatched-token")).thenReturn("staff@grandplaza.test");
+        when(jwtUtil.extractTenantId("mismatched-token")).thenReturn("tenant-other-hotel");
+        when(jwtUtil.extractHotelId("mismatched-token")).thenReturn(999L);
+        when(jwtUtil.extractClaim(eq("mismatched-token"), anyClaimFunction())).thenReturn("Other Hotel");
+        when(userDetailsService.loadUserByUsername("staff@grandplaza.test")).thenReturn(hotelUser);
+        when(jwtUtil.validateToken("mismatched-token", hotelUser)).thenReturn(true);
+        when(sessionManagementService.isSessionValid("mismatched-token")).thenReturn(true);
+
+        filter.doFilter(request, response, new MockFilterChain());
+
+        assertEquals(HttpServletResponse.SC_UNAUTHORIZED, response.getStatus());
+        assertNull(SecurityContextHolder.getContext().getAuthentication());
+        assertNull(TenantContext.getTenantId());
+        assertNull(HotelContext.getHotelId());
+    }
+
     private FilterChain recordingChain() {
         return new MockFilterChain(new HttpServlet() {
             @Override

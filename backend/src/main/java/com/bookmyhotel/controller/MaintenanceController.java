@@ -1,6 +1,7 @@
 package com.bookmyhotel.controller;
 
 import com.bookmyhotel.entity.*;
+import com.bookmyhotel.security.HotelSecurity;
 import com.bookmyhotel.service.MaintenanceService;
 import com.bookmyhotel.service.HotelService;
 import com.bookmyhotel.tenant.TenantContext;
@@ -27,6 +28,9 @@ public class MaintenanceController {
     @Autowired
     private HotelService hotelService;
 
+    @Autowired
+    private HotelSecurity hotelSecurity;
+
     // ===== MAINTENANCE TASK ENDPOINTS =====
 
     /**
@@ -35,8 +39,7 @@ public class MaintenanceController {
     @PostMapping("/tasks")
     @PreAuthorize("hasRole('OPERATIONAL_ADMIN') or hasRole('HOTEL_ADMIN') or hasRole('SUPER_ADMIN')")
     public ResponseEntity<MaintenanceTask> createTask(@Valid @RequestBody CreateMaintenanceTaskRequest request) {
-        String tenantId = TenantContext.getTenantId();
-        Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
+        Long hotelId = resolveCurrentHotelId();
 
         MaintenanceTask task = maintenanceService.createTask(
                 hotelId,
@@ -58,8 +61,7 @@ public class MaintenanceController {
     @GetMapping("/tasks")
     @PreAuthorize("hasRole('MAINTENANCE') or hasRole('OPERATIONAL_ADMIN') or hasRole('HOTEL_ADMIN') or hasRole('SUPER_ADMIN')")
     public ResponseEntity<List<MaintenanceTask>> getAllTasks() {
-        String tenantId = TenantContext.getTenantId();
-        Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
+        Long hotelId = resolveCurrentHotelId();
         List<MaintenanceTask> tasks = maintenanceService.getAllTasks(hotelId);
         return ResponseEntity.ok(tasks);
     }
@@ -70,8 +72,7 @@ public class MaintenanceController {
     @GetMapping("/tasks/{taskId}")
     @PreAuthorize("hasRole('MAINTENANCE') or hasRole('OPERATIONAL_ADMIN') or hasRole('HOTEL_ADMIN') or hasRole('SUPER_ADMIN')")
     public ResponseEntity<MaintenanceTask> getTaskById(@PathVariable Long taskId) {
-        String tenantId = TenantContext.getTenantId();
-        Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
+        Long hotelId = resolveCurrentHotelId();
         List<MaintenanceTask> tasks = maintenanceService.getAllTasks(hotelId);
         MaintenanceTask task = tasks.stream()
                 .filter(t -> t.getId().equals(taskId))
@@ -86,8 +87,7 @@ public class MaintenanceController {
     @GetMapping("/my-tasks")
     @PreAuthorize("hasRole('MAINTENANCE') or hasRole('OPERATIONAL_ADMIN') or hasRole('HOTEL_ADMIN') or hasRole('SUPER_ADMIN')")
     public ResponseEntity<List<MaintenanceTask>> getMyTasks(Authentication authentication) {
-        String tenantId = TenantContext.getTenantId();
-        Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
+        Long hotelId = resolveCurrentHotelId();
         String userEmail = authentication.getName();
         List<MaintenanceTask> myTasks = maintenanceService.getTasksAssignedToUser(hotelId, userEmail);
         return ResponseEntity.ok(myTasks);
@@ -99,8 +99,7 @@ public class MaintenanceController {
     @PutMapping("/tasks/{taskId}/assign/{userId}")
     @PreAuthorize("hasRole('OPERATIONAL_ADMIN') or hasRole('HOTEL_ADMIN') or hasRole('SUPER_ADMIN')")
     public ResponseEntity<MaintenanceTask> assignTask(@PathVariable Long taskId, @PathVariable Long userId) {
-        String tenantId = TenantContext.getTenantId();
-        Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
+        Long hotelId = resolveCurrentHotelId();
         MaintenanceTask task = maintenanceService.assignTask(hotelId, taskId, userId);
         return ResponseEntity.ok(task);
     }
@@ -111,8 +110,7 @@ public class MaintenanceController {
     @PutMapping("/tasks/{taskId}/start")
     @PreAuthorize("hasRole('MAINTENANCE') or hasRole('OPERATIONAL_ADMIN') or hasRole('HOTEL_ADMIN') or hasRole('SUPER_ADMIN')")
     public ResponseEntity<MaintenanceTask> startTask(@PathVariable Long taskId) {
-        String tenantId = TenantContext.getTenantId();
-        Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
+        Long hotelId = resolveCurrentHotelId();
         MaintenanceTask task = maintenanceService.startTask(hotelId, taskId);
         return ResponseEntity.ok(task);
     }
@@ -124,8 +122,7 @@ public class MaintenanceController {
     @PreAuthorize("hasRole('MAINTENANCE') or hasRole('OPERATIONAL_ADMIN') or hasRole('HOTEL_ADMIN') or hasRole('SUPER_ADMIN')")
     public ResponseEntity<MaintenanceTask> completeTask(@PathVariable Long taskId,
             @RequestBody CompleteMaintenanceTaskRequest request) {
-        String tenantId = TenantContext.getTenantId();
-        Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
+        Long hotelId = resolveCurrentHotelId();
         MaintenanceTask task = maintenanceService.completeTask(
                 hotelId,
                 taskId,
@@ -142,8 +139,8 @@ public class MaintenanceController {
     @PreAuthorize("hasRole('OPERATIONAL_ADMIN') or hasRole('HOTEL_ADMIN') or hasRole('SUPER_ADMIN')")
     public ResponseEntity<MaintenanceTask> updateTask(@PathVariable Long taskId,
             @Valid @RequestBody MaintenanceTask updatedTask) {
-        String tenantId = TenantContext.getTenantId();
-        MaintenanceTask task = maintenanceService.updateTask(tenantId, taskId, updatedTask);
+        Long hotelId = resolveCurrentHotelId();
+        MaintenanceTask task = maintenanceService.updateTask(hotelId, taskId, updatedTask);
         return ResponseEntity.ok(task);
     }
 
@@ -154,10 +151,23 @@ public class MaintenanceController {
     @PreAuthorize("hasRole('OPERATIONAL_ADMIN') or hasRole('HOTEL_ADMIN') or hasRole('SUPER_ADMIN')")
     public ResponseEntity<MaintenanceTask> cancelTask(@PathVariable Long taskId,
             @RequestBody CancelMaintenanceTaskRequest request) {
-        String tenantId = TenantContext.getTenantId();
-        Long hotelId = hotelService.getHotelIdByTenantId(tenantId);
+        Long hotelId = resolveCurrentHotelId();
         MaintenanceTask task = maintenanceService.cancelTask(hotelId, taskId, request.getReason());
         return ResponseEntity.ok(task);
+    }
+
+    private Long resolveCurrentHotelId() {
+        Long hotelId = hotelSecurity.getCurrentUserHotelId();
+        if (hotelId != null) {
+            return hotelId;
+        }
+
+        String tenantId = TenantContext.getTenantId();
+        if (tenantId == null || tenantId.isBlank()) {
+            throw new IllegalStateException("No hotel scope available for current user");
+        }
+
+        return hotelService.getHotelIdByTenantId(tenantId);
     }
 
     // ===== REQUEST/RESPONSE DTOs =====

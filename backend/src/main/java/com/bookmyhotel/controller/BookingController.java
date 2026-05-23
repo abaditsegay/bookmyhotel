@@ -327,6 +327,11 @@ public class BookingController {
     public ResponseEntity<BookingResponse> findByPaymentReference(@PathVariable String paymentReference) {
         try {
             BookingResponse booking = bookingService.findByPaymentReferencePublic(paymentReference);
+
+            if (booking.getReservationId() == null || !bookingSecurity.canAccessReservation(booking.getReservationId())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+
             return ResponseEntity.ok(booking);
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.notFound().build();

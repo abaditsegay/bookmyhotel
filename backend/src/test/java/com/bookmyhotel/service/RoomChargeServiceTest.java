@@ -70,8 +70,8 @@ class RoomChargeServiceTest {
         RoomChargeCreateRequest request = createRequest();
         request.setShopOrderId(20L);
 
-        when(reservationRepository.findById(10L)).thenReturn(Optional.of(reservation));
-        when(shopOrderRepository.findById(20L)).thenReturn(Optional.of(shopOrder));
+        when(reservationRepository.findByIdAndHotelId(10L, 1L)).thenReturn(Optional.of(reservation));
+        when(shopOrderRepository.findByIdAndHotelId(20L, 1L)).thenReturn(Optional.of(shopOrder));
         when(userRepository.findByEmail("staff@example.com")).thenReturn(Optional.of(creator));
         when(roomChargeRepository.save(any(RoomCharge.class))).thenAnswer(invocation -> {
             RoomCharge saved = invocation.getArgument(0);
@@ -97,10 +97,7 @@ class RoomChargeServiceTest {
 
     @Test
     void createRoomChargeShouldWrapReservationHotelMismatch() {
-        Hotel reservationHotel = hotel(2L);
-        Reservation reservation = reservation(10L, reservationHotel);
-
-        when(reservationRepository.findById(10L)).thenReturn(Optional.of(reservation));
+        when(reservationRepository.findByIdAndHotelId(10L, 1L)).thenReturn(Optional.empty());
 
         RoomChargeException exception = assertThrows(RoomChargeException.class,
                 () -> roomChargeService.createRoomCharge(createRequest(), "staff@example.com", 1L));
@@ -113,7 +110,7 @@ class RoomChargeServiceTest {
     void markChargeAsPaidShouldPersistPaidState() {
         Hotel hotel = hotel(1L);
         RoomCharge charge = roomCharge(50L, hotel, reservation(10L, hotel));
-        when(roomChargeRepository.findById(50L)).thenReturn(Optional.of(charge));
+        when(roomChargeRepository.findByIdAndHotelId(50L, 1L)).thenReturn(Optional.of(charge));
         when(roomChargeRepository.save(charge)).thenReturn(charge);
 
         RoomChargeResponse response = roomChargeService.markChargeAsPaid(1L, 50L, "PAY-1");
@@ -123,6 +120,7 @@ class RoomChargeServiceTest {
         assertTrue(response.getIsPaid());
         assertNotNull(response.getPaidAt());
         verify(roomChargeRepository).save(charge);
+        verify(roomChargeRepository, never()).findById(50L);
     }
 
     @Test
@@ -131,7 +129,7 @@ class RoomChargeServiceTest {
         RoomCharge charge = roomCharge(51L, hotel, reservation(10L, hotel));
         charge.setIsPaid(true);
         charge.setPaidAt(LocalDateTime.now().minusHours(2));
-        when(roomChargeRepository.findById(51L)).thenReturn(Optional.of(charge));
+        when(roomChargeRepository.findByIdAndHotelId(51L, 1L)).thenReturn(Optional.of(charge));
         when(roomChargeRepository.save(charge)).thenReturn(charge);
 
         RoomChargeResponse response = roomChargeService.markChargeAsUnpaid(1L, 51L);
@@ -157,14 +155,26 @@ class RoomChargeServiceTest {
 
     @Test
     void getTotalUnpaidAmountShouldRejectReservationOutsideHotel() {
-        Hotel hotel = hotel(2L);
-        Reservation reservation = reservation(10L, hotel);
-        when(reservationRepository.findById(10L)).thenReturn(Optional.of(reservation));
+        when(reservationRepository.findByIdAndHotelId(10L, 1L)).thenReturn(Optional.empty());
 
         RoomChargeException exception = assertThrows(RoomChargeException.class,
                 () -> roomChargeService.getTotalUnpaidAmount(1L, 10L));
 
         assertEquals("Reservation not found for this hotel", exception.getMessage());
+    }
+
+    @Test
+    void markChargeAsPaidShouldUseHotelScopedLookup() {
+        Hotel hotel = hotel(1L);
+        RoomCharge charge = roomCharge(52L, hotel, reservation(10L, hotel));
+
+        when(roomChargeRepository.findByIdAndHotelId(52L, 1L)).thenReturn(Optional.of(charge));
+        when(roomChargeRepository.save(charge)).thenReturn(charge);
+
+        roomChargeService.markChargeAsPaid(1L, 52L, "PAY-2");
+
+        verify(roomChargeRepository).findByIdAndHotelId(52L, 1L);
+        verify(roomChargeRepository, never()).findById(52L);
     }
 
     private RoomChargeCreateRequest createRequest() {

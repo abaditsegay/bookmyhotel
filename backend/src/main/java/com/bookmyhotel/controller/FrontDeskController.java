@@ -375,6 +375,10 @@ public class FrontDeskController {
             @RequestParam String status,
             @RequestParam(required = false) String notes) {
 
+        if (!canAccessRoom(roomId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         RoomResponse room = frontDeskService.updateRoomStatus(roomId, status, notes);
         return ResponseEntity.ok(room);
     }
@@ -388,6 +392,10 @@ public class FrontDeskController {
             @RequestParam boolean available,
             @RequestParam(required = false) String reason) {
 
+        if (!canAccessRoom(roomId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         RoomResponse room = frontDeskService.toggleRoomAvailability(roomId, available, reason);
         return ResponseEntity.ok(room);
     }
@@ -397,8 +405,21 @@ public class FrontDeskController {
      */
     @GetMapping("/rooms/{roomId}")
     public ResponseEntity<RoomResponse> getRoomById(@PathVariable Long roomId) {
+        if (!canAccessRoom(roomId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         RoomResponse room = frontDeskService.getRoomById(roomId);
         return ResponseEntity.ok(room);
+    }
+
+    private boolean canAccessRoom(Long roomId) {
+        Room room = roomRepository.findById(roomId)
+                .orElseThrow(() -> new ResourceNotFoundException("Room not found with id: " + roomId));
+
+        return room.getHotel() != null
+                && room.getHotel().getId() != null
+                && hotelSecurity.canAccessHotel(room.getHotel().getId());
     }
 
     /**
