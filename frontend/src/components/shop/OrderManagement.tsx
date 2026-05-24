@@ -19,6 +19,7 @@ import {
   TableHead,
   TableRow,
   Paper,
+  TablePagination,
   IconButton,
   Chip,
   Alert,
@@ -56,6 +57,7 @@ import { getEffectiveSearchTerm } from '../../utils/search';
 import { getReadableAccentTextColor } from '../../theme/surfaces';
 
 const OrderManagement: React.FC = () => {
+  const ORDER_PAGE_SIZE = 100;
   const { user, token } = useAuth();
   const { t } = useTranslation();
   const theme = useTheme();
@@ -72,6 +74,8 @@ const OrderManagement: React.FC = () => {
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const effectiveSearchTerm = getEffectiveSearchTerm(debouncedSearchTerm);
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [viewOrderDialog, setViewOrderDialog] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<ShopOrder | null>(null);
 
@@ -107,6 +111,7 @@ const OrderManagement: React.FC = () => {
     'createdAt',
     'desc'
   );
+  const paginatedOrders = sortedOrders.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   const loadOrders = useCallback(async () => {
     if (!hotelId) {
@@ -124,9 +129,19 @@ const OrderManagement: React.FC = () => {
       if (user?.tenantId) {
         shopApiService.setTenantId(user.tenantId);
       }
-      
-      const data = await shopApiService.getOrders(hotelId);
-      setOrders(data.content);
+
+      let page = 0;
+      let totalElements = 0;
+      let allOrders: ShopOrder[] = [];
+
+      do {
+        const data = await shopApiService.getOrders(hotelId, page, ORDER_PAGE_SIZE);
+        allOrders = [...allOrders, ...(data.content || [])];
+        totalElements = data.totalElements || allOrders.length;
+        page += 1;
+      } while (allOrders.length < totalElements);
+
+      setOrders(allOrders);
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load orders');
@@ -140,6 +155,17 @@ const OrderManagement: React.FC = () => {
       loadOrders();
     }
   }, [hotelId, loadOrders]);
+
+  useEffect(() => {
+    setPage(0);
+  }, [effectiveSearchTerm, statusFilter]);
+
+  useEffect(() => {
+    const maxPage = Math.max(0, Math.ceil(sortedOrders.length / rowsPerPage) - 1);
+    if (page > maxPage) {
+      setPage(maxPage);
+    }
+  }, [page, rowsPerPage, sortedOrders.length]);
 
   // Early return if no hotel ID is available (after all hooks)
   if (!hotelId) {
@@ -217,6 +243,15 @@ const OrderManagement: React.FC = () => {
 
   const isOrderPaid = (status: ShopOrderStatus): boolean => {
     return status === ShopOrderStatus.PAID;
+  };
+
+  const handlePageChange = (_event: unknown, newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handleRowsPerPageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
   };
 
   return (
@@ -339,7 +374,7 @@ const OrderManagement: React.FC = () => {
                 </TableCell>
               </TableRow>
             ) : (
-              sortedOrders.map((order) => (
+              paginatedOrders.map((order) => (
               <TableRow key={order.id}>
                 <TableCell>
                   <Box>
@@ -416,6 +451,16 @@ const OrderManagement: React.FC = () => {
           </TableBody>
         </Table>
       </TableContainer>
+
+      <TablePagination
+        rowsPerPageOptions={[10, 25, 50]}
+        component="div"
+        count={sortedOrders.length}
+        rowsPerPage={rowsPerPage}
+        page={page}
+        onPageChange={handlePageChange}
+        onRowsPerPageChange={handleRowsPerPageChange}
+      />
 
       {/* View Order Dialog */}
       <Dialog 
