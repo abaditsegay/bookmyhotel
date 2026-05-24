@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -129,7 +130,7 @@ class HousekeepingServiceTest {
         Hotel hotel = hotel(1L);
         HousekeepingTask task = task(20L, hotel, HousekeepingTaskStatus.PENDING);
         User frontDeskUser = user(30L, hotel, Set.of(UserRole.FRONTDESK));
-        when(housekeepingTaskRepository.findById(20L)).thenReturn(Optional.of(task));
+        when(housekeepingTaskRepository.findByIdAndHotelIdWithUserAndHotel(20L, 1L)).thenReturn(Optional.of(task));
         when(userRepository.findById(30L)).thenReturn(Optional.of(frontDeskUser));
 
         RuntimeException exception = assertThrows(RuntimeException.class,
@@ -140,12 +141,7 @@ class HousekeepingServiceTest {
 
     @Test
     void assignTaskShouldRejectTaskFromDifferentHotel() {
-        Hotel hotel = hotel(1L);
-        Hotel otherHotel = hotel(2L);
-        HousekeepingTask task = task(21L, otherHotel, HousekeepingTaskStatus.PENDING);
-        User staff = housekeepingUser(31L, hotel);
-        when(housekeepingTaskRepository.findById(21L)).thenReturn(Optional.of(task));
-        when(userRepository.findById(31L)).thenReturn(Optional.of(staff));
+        when(housekeepingTaskRepository.findByIdAndHotelIdWithUserAndHotel(21L, 1L)).thenReturn(Optional.empty());
 
         RuntimeException exception = assertThrows(RuntimeException.class,
                 () -> housekeepingService.assignTask(1L, 21L, 31L));
@@ -157,7 +153,7 @@ class HousekeepingServiceTest {
     void startTaskShouldRequireAssignedUser() {
         Hotel hotel = hotel(1L);
         HousekeepingTask task = task(22L, hotel, HousekeepingTaskStatus.ASSIGNED);
-        when(housekeepingTaskRepository.findById(22L)).thenReturn(Optional.of(task));
+        when(housekeepingTaskRepository.findByIdAndHotelIdWithUserAndHotel(22L, 1L)).thenReturn(Optional.of(task));
 
         RuntimeException exception = assertThrows(RuntimeException.class,
                 () -> housekeepingService.startTask(1L, 22L));
@@ -171,7 +167,7 @@ class HousekeepingServiceTest {
         User staff = housekeepingUser(32L, hotel);
         HousekeepingTask task = task(23L, hotel, HousekeepingTaskStatus.ASSIGNED);
         task.setAssignedUser(staff);
-        when(housekeepingTaskRepository.findById(23L)).thenReturn(Optional.of(task));
+        when(housekeepingTaskRepository.findByIdAndHotelIdWithUserAndHotel(23L, 1L)).thenReturn(Optional.of(task));
         when(housekeepingTaskRepository.save(task)).thenReturn(task);
 
         HousekeepingTask saved = housekeepingService.startTask(1L, 23L);
@@ -189,6 +185,7 @@ class HousekeepingServiceTest {
                 any(String.class),
                 any(Boolean.class),
                 any());
+        verify(housekeepingTaskRepository, never()).findById(23L);
     }
 
     @Test
@@ -196,7 +193,7 @@ class HousekeepingServiceTest {
         Hotel hotel = hotel(1L);
         HousekeepingTask task = task(24L, hotel, HousekeepingTaskStatus.IN_PROGRESS);
         task.setStartedAt(LocalDateTime.now().minusMinutes(47));
-        when(housekeepingTaskRepository.findById(24L)).thenReturn(Optional.of(task));
+        when(housekeepingTaskRepository.findByIdAndHotelIdWithUserAndHotel(24L, 1L)).thenReturn(Optional.of(task));
         when(housekeepingTaskRepository.save(task)).thenReturn(task);
 
         HousekeepingTask saved = housekeepingService.completeTask(1L, 24L, "Looks good", 5);
@@ -213,12 +210,30 @@ class HousekeepingServiceTest {
     void completeTaskShouldRejectNonInProgressTask() {
         Hotel hotel = hotel(1L);
         HousekeepingTask task = task(25L, hotel, HousekeepingTaskStatus.ASSIGNED);
-        when(housekeepingTaskRepository.findById(25L)).thenReturn(Optional.of(task));
+        when(housekeepingTaskRepository.findByIdAndHotelIdWithUserAndHotel(25L, 1L)).thenReturn(Optional.of(task));
 
         RuntimeException exception = assertThrows(RuntimeException.class,
                 () -> housekeepingService.completeTask(1L, 25L, "done", 4));
 
         assertEquals("Task can only be completed from IN_PROGRESS status", exception.getMessage());
+    }
+
+    @Test
+    void updateTaskStatusShouldUseHotelScopedLookupAndMoveTaskToInProgress() {
+        Hotel hotel = hotel(1L);
+        User staff = housekeepingUser(33L, hotel);
+        HousekeepingTask task = task(26L, hotel, HousekeepingTaskStatus.ASSIGNED);
+        task.setAssignedUser(staff);
+        when(housekeepingTaskRepository.findByIdAndHotelIdWithUserAndHotel(26L, 1L)).thenReturn(Optional.of(task));
+        when(housekeepingTaskRepository.save(task)).thenReturn(task);
+
+        HousekeepingTask saved = housekeepingService.updateTaskStatus(1L, 26L, "IN_PROGRESS", "Starting now");
+
+        assertEquals(HousekeepingTaskStatus.IN_PROGRESS, saved.getStatus());
+        assertNotNull(saved.getStartedAt());
+        assertEquals("Starting now", saved.getInspectorNotes());
+        verify(housekeepingTaskRepository).findByIdAndHotelIdWithUserAndHotel(26L, 1L);
+        verify(housekeepingTaskRepository, never()).findById(26L);
     }
 
     private HousekeepingTask task(Long id, Hotel hotel, HousekeepingTaskStatus status) {

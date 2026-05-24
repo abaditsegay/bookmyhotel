@@ -46,13 +46,14 @@ import {
   AddTask as AddTaskIcon
 } from '@mui/icons-material';
 import { housekeepingSupervisorApi } from '../../services/housekeepingSupervisorApi';
+import { staffApi } from '../../services/staffApi';
 import { HousekeepingTask, HousekeepingStaff, HousekeepingTaskType, TaskPriority, CreateHousekeepingTaskRequest, HousekeepingTaskStatus } from '../../types/operations';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
 
 interface HousekeepingDashboardProps {
   userRole?: string;
-  userId?: string;
+  userId?: string | number;
 }
 
 const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole, userId }) => {
@@ -166,25 +167,26 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
     return currentRole === 'HOUSEKEEPING';
   }, [currentRole]);
 
+  const isStaffOnly = isHousekeepingStaff() && !isManagementRole();
+
   const loadTasks = useCallback(async () => {
     try {
       setLoading(true);
-      
-      const response = await housekeepingSupervisorApi.getTasks();
-      
-      if (response.content) {
-        let filteredTasks = response.content;
 
-        // Role-based filtering
-        if (userRole === 'HOUSEKEEPING' && userId) {
-          filteredTasks = response.content.filter((task: any) => 
-            task.assignedTo && task.assignedTo.toString() === userId.toString()
-          );
-        }
-
-        setTasks(filteredTasks);
+      if (isStaffOnly) {
+        const staffTasks = await staffApi.getMyHousekeepingTasks();
+        const myTaskList = Array.isArray(staffTasks) ? staffTasks : [];
+        setTasks(
+          currentUserId
+            ? myTaskList.filter(task => {
+                const assignedId = task.assignedUserId ?? task.assignedUser?.id;
+                return assignedId != null && assignedId.toString() === currentUserId.toString();
+              })
+            : myTaskList
+        );
       } else {
-        setTasks([]);
+        const response = await housekeepingSupervisorApi.getTasks();
+        setTasks(response.content ?? []);
       }
     } catch (error) {
       // console.error('🔄 loadTasks: Error loading tasks:', error);
@@ -193,7 +195,7 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
     } finally {
       setLoading(false);
     }
-  }, [t, userRole, userId]);
+  }, [currentUserId, isStaffOnly, t]);
 
   useEffect(() => {
     loadTasks();
@@ -226,7 +228,20 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
     if (!selectedTask) return;
 
     try {
-      await housekeepingSupervisorApi.updateTaskStatus(selectedTask.id, status, notes);
+      if (isStaffOnly) {
+        if (status === 'IN_PROGRESS') {
+          await staffApi.startHousekeepingTask(selectedTask.id);
+        } else if (status === 'COMPLETED') {
+          await staffApi.completeHousekeepingTask(selectedTask.id, notes.trim() || undefined);
+        } else {
+          await staffApi.updateHousekeepingTaskStatus(selectedTask.id, {
+            status,
+            notes: notes.trim() || undefined,
+          });
+        }
+      } else {
+        await housekeepingSupervisorApi.updateTaskStatus(selectedTask.id, status, notes);
+      }
       setStatusDialog(false);
       setSelectedTask(null);
       setNotes('');
@@ -1102,35 +1117,6 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                   </Typography>
                   <Divider sx={{ mb: 2 }} />
                   
-                  {/* Status Selection for Management */}
-                  {isManagementRole() && (
-                    <PremiumSelect
-                      fullWidth
-                      value=""
-                      label={t('dashboard.housekeepingDashboard.changeStatusTo')}
-                      onChange={(e) => {
-                        if (e.target.value) {
-                          handleUpdateStatus(e.target.value);
-                        }
-                      }}
-                    >
-                      {selectedTask.status.toLowerCase() !== 'pending' && (
-                        <MenuItem value="PENDING">{t('dashboard.housekeepingDashboard.markAsPending')}</MenuItem>
-                      )}
-                      {selectedTask.status.toLowerCase() !== 'assigned' && selectedTask.assignedUser && (
-                        <MenuItem value="ASSIGNED">{t('dashboard.housekeepingDashboard.markAsAssigned')}</MenuItem>
-                      )}
-                      {selectedTask.status.toLowerCase() !== 'in_progress' && (
-                        <MenuItem value="IN_PROGRESS">{t('dashboard.housekeepingDashboard.markAsInProgress')}</MenuItem>
-                      )}
-                      {selectedTask.status.toLowerCase() !== 'completed' && (
-                        <MenuItem value="COMPLETED">{t('dashboard.housekeepingDashboard.markAsCompleted')}</MenuItem>
-                      )}
-                      {selectedTask.status.toLowerCase() !== 'cancelled' && (
-                        <MenuItem value="CANCELLED">{t('dashboard.housekeepingDashboard.cancelTask')}</MenuItem>
-                      )}
-                    </PremiumSelect>
-                  )}
                 </Box>
               )}
               
@@ -1185,8 +1171,8 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
             {isViewOnlyMode ? t('dashboard.housekeepingDashboard.close') : isHousekeepingStaff() ? t('dashboard.housekeepingDashboard.cancel') : t('dashboard.housekeepingDashboard.close')}
           </Button>
           
-          {/* Quick Action buttons for Housekeeping Staff */}
-          {!isViewOnlyMode && selectedTask && isHousekeepingStaff() && !['completed', 'cancelled'].includes(selectedTask.status.toLowerCase()) && (
+          {/* Shared task status actions across housekeeping and management roles */}
+          {!isViewOnlyMode && selectedTask && (isHousekeepingStaff() || isManagementRole()) && !['completed', 'cancelled'].includes(selectedTask.status.toLowerCase()) && (
             <>
               {(['pending', 'assigned'].includes(selectedTask.status.toLowerCase())) && (
                 <Button 
@@ -1242,15 +1228,6 @@ const HousekeepingDashboard: React.FC<HousekeepingDashboardProps> = ({ userRole,
                   }}
                 >
                   {t('dashboard.housekeepingDashboard.updateStatus')}
-                </Button>
-              )}
-              {selectedTask.status.toLowerCase() === 'in_progress' && (
-                <Button 
-                  onClick={() => handleUpdateStatus('COMPLETED')} 
-                  variant="contained" 
-                  color="success"
-                >
-                  {t('dashboard.housekeepingDashboard.markComplete')}
                 </Button>
               )}
             </>

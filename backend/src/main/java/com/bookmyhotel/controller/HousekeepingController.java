@@ -9,12 +9,10 @@ import com.bookmyhotel.entity.HousekeepingTaskType;
 import com.bookmyhotel.entity.TaskPriority;
 import com.bookmyhotel.entity.User;
 import com.bookmyhotel.entity.UserRole;
-import com.bookmyhotel.enums.WorkShift;
 import com.bookmyhotel.repository.UserRepository;
 import com.bookmyhotel.security.HotelSecurity;
 import com.bookmyhotel.service.HousekeepingService;
-import com.bookmyhotel.service.HotelService;
-import com.bookmyhotel.tenant.TenantContext;
+import com.bookmyhotel.tenant.HotelContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,17 +38,18 @@ public class HousekeepingController {
     private HousekeepingService housekeepingService;
 
     @Autowired
-    private HotelService hotelService;
-
-    @Autowired
     private UserRepository userRepository;
 
     @Autowired
     private HotelSecurity hotelSecurity;
 
+    private ResponseEntity<HousekeepingTaskDTO> taskResponse(HousekeepingTask task) {
+        return ResponseEntity.ok(convertToDTO(task));
+    }
+
     // Task endpoints
     @PostMapping("/tasks")
-    public ResponseEntity<HousekeepingTask> createTask(@RequestBody HousekeepingTaskRequest request) {
+    public ResponseEntity<HousekeepingTaskDTO> createTask(@RequestBody HousekeepingTaskRequest request) {
         // System.out.println("🔍 Creating task with request: " + request);
         // System.out.println("🔍 Title: " + request.getTitle());
         // System.out.println("🔍 Description: " + request.getDescription());
@@ -78,7 +77,7 @@ public class HousekeepingController {
                     request.getEstimatedDuration(),
                     request.getAssignedStaffId());
             // System.out.println("✅ Task created successfully: " + task.getId());
-            return ResponseEntity.ok(task);
+            return taskResponse(task);
         } catch (Exception e) {
             logger.error("Error creating housekeeping task", e);
             throw e;
@@ -133,42 +132,42 @@ public class HousekeepingController {
     }
 
     @PostMapping("/tasks/{id}/assign")
-    public ResponseEntity<HousekeepingTask> assignTask(@PathVariable Long id, @RequestBody AssignTaskRequest request) {
+    public ResponseEntity<HousekeepingTaskDTO> assignTask(@PathVariable Long id, @RequestBody AssignTaskRequest request) {
         Long hotelId = resolveCurrentHotelId();
         HousekeepingTask task = housekeepingService.assignTask(hotelId, id, request.getStaffId());
-        return ResponseEntity.ok(task);
+        return taskResponse(task);
     }
 
     @PostMapping("/tasks/{id}/start")
-    public ResponseEntity<HousekeepingTask> startTask(@PathVariable Long id) {
+    public ResponseEntity<HousekeepingTaskDTO> startTask(@PathVariable Long id) {
         Long hotelId = resolveCurrentHotelId();
         HousekeepingTask task = housekeepingService.startTask(hotelId, id);
-        return ResponseEntity.ok(task);
+        return taskResponse(task);
     }
 
     @PostMapping("/tasks/{id}/complete")
-    public ResponseEntity<HousekeepingTask> completeTask(@PathVariable Long id,
+    public ResponseEntity<HousekeepingTaskDTO> completeTask(@PathVariable Long id,
             @RequestBody CompleteTaskRequest request) {
         Long hotelId = resolveCurrentHotelId();
         HousekeepingTask task = housekeepingService.completeTask(hotelId, id, request.getNotes(),
                 request.getQualityScore());
-        return ResponseEntity.ok(task);
+        return taskResponse(task);
     }
 
     @PostMapping("/tasks/{id}/complete-with-issues")
-    public ResponseEntity<HousekeepingTask> completeTaskWithIssues(@PathVariable Long id,
+    public ResponseEntity<HousekeepingTaskDTO> completeTaskWithIssues(@PathVariable Long id,
             @RequestBody CompleteTaskWithIssuesRequest request) {
         Long hotelId = resolveCurrentHotelId();
         HousekeepingTask task = housekeepingService.completeTaskWithIssues(hotelId, id, request.getNotes(),
                 request.getIssueDescription());
-        return ResponseEntity.ok(task);
+        return taskResponse(task);
     }
 
     @PutMapping("/tasks/{id}")
-    public ResponseEntity<HousekeepingTask> updateTask(@PathVariable Long id, @RequestBody HousekeepingTask task) {
+    public ResponseEntity<HousekeepingTaskDTO> updateTask(@PathVariable Long id, @RequestBody HousekeepingTask task) {
         Long hotelId = resolveCurrentHotelId();
         HousekeepingTask updatedTask = housekeepingService.updateTask(hotelId, id, task);
-        return ResponseEntity.ok(updatedTask);
+        return taskResponse(updatedTask);
     }
 
     @PutMapping("/tasks/{id}/status")
@@ -177,17 +176,17 @@ public class HousekeepingController {
             Long hotelId = resolveCurrentHotelId();
             HousekeepingTask updatedTask = housekeepingService.updateTaskStatus(hotelId, id, request.getStatus(),
                     request.getNotes());
-            return ResponseEntity.ok(updatedTask);
+            return taskResponse(updatedTask);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error updating task status: " + e.getMessage());
         }
     }
 
     @PostMapping("/tasks/{id}/cancel")
-    public ResponseEntity<HousekeepingTask> cancelTask(@PathVariable Long id, @RequestBody CancelTaskRequest request) {
+    public ResponseEntity<HousekeepingTaskDTO> cancelTask(@PathVariable Long id, @RequestBody CancelTaskRequest request) {
         Long hotelId = resolveCurrentHotelId();
         HousekeepingTask task = housekeepingService.cancelTask(hotelId, id, request.getReason());
-        return ResponseEntity.ok(task);
+        return taskResponse(task);
     }
 
     // Staff endpoints
@@ -281,12 +280,12 @@ public class HousekeepingController {
             return hotelId;
         }
 
-        String tenantId = TenantContext.getTenantId();
-        if (tenantId == null || tenantId.isBlank()) {
-            throw new IllegalStateException("No hotel scope available for current user");
+        Long contextHotelId = HotelContext.getHotelId();
+        if (contextHotelId != null) {
+            return contextHotelId;
         }
 
-        return hotelService.getHotelIdByTenantId(tenantId);
+        throw new IllegalStateException("No hotel scope available for current user");
     }
 
     // DTO Classes
@@ -640,19 +639,6 @@ public class HousekeepingController {
         }
     }
 
-    // Conversion method
-    private HousekeepingStaffDTO convertToStaffDTO(HousekeepingStaff staff) {
-        HousekeepingStaffDTO dto = new HousekeepingStaffDTO();
-        dto.setId(staff.getId());
-        dto.setEmployeeId(staff.getEmployeeId());
-        dto.setUser(new UserDTO(staff.getId(), staff.getFirstName(), staff.getLastName()));
-        dto.setShiftType(staff.getShift() != null ? staff.getShift().toString() : "DAY");
-        dto.setActive(staff.getIsActive() != null ? staff.getIsActive() : true);
-        dto.setAverageRating(staff.getAverageRating() != null ? staff.getAverageRating() : 0.0);
-        dto.setTotalTasksCompleted(staff.getTasksCompletedToday() != null ? staff.getTasksCompletedToday() : 0);
-        dto.setTenantId(staff.getTenantId());
-        return dto;
-    }
 
     // Conversion method for User to HousekeepingStaffDTO
     private HousekeepingStaffDTO convertUserToStaffDTO(User user) {
