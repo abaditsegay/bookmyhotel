@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
@@ -47,11 +48,18 @@ public class BookingNotificationService {
     @Value("${app.url:http://localhost:3000}")
     private String appUrl;
 
+    @Value("${app.email.info:info@bakaroo.com}")
+    private String infoEmail;
+
+    @Value("${app.email.support:support@bakaroo.com}")
+    private String supportEmail;
+
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("MMMM dd, yyyy");
 
     /**
      * Send booking modification confirmation email
      */
+    @Async("emailTaskExecutor")
     public void sendModificationConfirmationEmail(BookingResponse booking, BigDecimal additionalCharges,
             BigDecimal refundAmount) {
         try {
@@ -83,6 +91,7 @@ public class BookingNotificationService {
     /**
      * Send booking cancellation confirmation email
      */
+    @Async("emailTaskExecutor")
     public void sendCancellationConfirmationEmail(BookingResponse booking, BigDecimal refundAmount) {
         try {
             // Check if email service is configured
@@ -112,6 +121,7 @@ public class BookingNotificationService {
     /**
      * Send payment receipt email for additional charges
      */
+    @Async("emailTaskExecutor")
     public void sendPaymentReceiptEmail(BookingResponse booking, BigDecimal amount, String paymentMethod) {
         try {
             // Check if email service is configured
@@ -135,6 +145,7 @@ public class BookingNotificationService {
     /**
      * Send refund confirmation email
      */
+    @Async("emailTaskExecutor")
     public void sendRefundConfirmationEmail(BookingResponse booking, BigDecimal refundAmount, String refundMethod) {
         try {
             // Check if email service is configured
@@ -372,6 +383,8 @@ public class BookingNotificationService {
      */
     private Context createContext(Map<String, Object> templateData) {
         Context context = new Context();
+        templateData.putIfAbsent("infoEmail", infoEmail);
+        templateData.putIfAbsent("supportEmail", supportEmail);
         context.setVariables(templateData);
         return context;
     }

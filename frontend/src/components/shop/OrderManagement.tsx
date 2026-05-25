@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { alpha } from '@mui/material/styles';
 import {
   Box,
   Button,
@@ -18,6 +19,7 @@ import {
   TableHead,
   TableRow,
   Paper,
+  TablePagination,
   IconButton,
   Chip,
   Alert,
@@ -29,7 +31,8 @@ import {
   ListItem,
   ListItemText,
   Tooltip,
-  Divider
+  Divider,
+  useTheme
 } from '@mui/material';
 import {
   Visibility as ViewIcon,
@@ -50,30 +53,54 @@ import { useCsvExport } from '../../hooks/useCsvExport';
 import { useSnackbar } from 'notistack';
 import { useTranslation } from 'react-i18next';
 import { getPremiumTableHeadSx } from './premiumStyles';
+import { getEffectiveSearchTerm } from '../../utils/search';
+import { getReadableAccentTextColor } from '../../theme/surfaces';
 
 const OrderManagement: React.FC = () => {
+  const ORDER_PAGE_SIZE = 100;
   const { user, token } = useAuth();
   const { t } = useTranslation();
+  const theme = useTheme();
   const { enqueueSnackbar } = useSnackbar();
   const { exportToCsv } = useCsvExport({ filename: 'orders' });
+  const readableAccentColor = getReadableAccentTextColor(theme);
+  const readableAccentBorder = alpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.34 : 0.18);
+  const readableAccentHover = alpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.14 : 0.08);
   const [orders, setOrders] = useState<ShopOrder[]>([]);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
+  const effectiveSearchTerm = getEffectiveSearchTerm(debouncedSearchTerm);
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [viewOrderDialog, setViewOrderDialog] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<ShopOrder | null>(null);
+
+  const getOrderGrandTotal = (order: ShopOrder) => {
+    const subtotal = (order.items || []).reduce((sum, item) => {
+      const lineTotal = item.totalPrice ?? ((item.unitPrice || 0) * (item.quantity || 0));
+      return sum + lineTotal;
+    }, 0);
+
+    if (subtotal > 0) {
+      return subtotal + (order.taxAmount || 0);
+    }
+
+    return order.totalAmount || 0;
+  };
 
   // Get hotel ID from authenticated user
   const hotelId = user?.hotelId ? parseInt(user.hotelId) : null;
 
   // Filter orders based on search term and status
   const filteredOrders = orders.filter(order => {
-    const matchesSearch = order.orderNumber.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
-                         ShopOrderUtils.getDisplayCustomerName(order).toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
-                         (order.roomNumber && order.roomNumber.toLowerCase().includes(debouncedSearchTerm.toLowerCase()));
+    const appliedSearchTerm = effectiveSearchTerm ?? '';
+    const matchesSearch = order.orderNumber.toLowerCase().includes(appliedSearchTerm.toLowerCase()) ||
+                         ShopOrderUtils.getDisplayCustomerName(order).toLowerCase().includes(appliedSearchTerm.toLowerCase()) ||
+                         (order.roomNumber && order.roomNumber.toLowerCase().includes(appliedSearchTerm.toLowerCase()));
     const matchesStatus = statusFilter === 'ALL' || order.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -84,6 +111,7 @@ const OrderManagement: React.FC = () => {
     'createdAt',
     'desc'
   );
+  const paginatedOrders = sortedOrders.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   const loadOrders = useCallback(async () => {
     if (!hotelId) {
@@ -101,9 +129,19 @@ const OrderManagement: React.FC = () => {
       if (user?.tenantId) {
         shopApiService.setTenantId(user.tenantId);
       }
-      
-      const data = await shopApiService.getOrders(hotelId);
-      setOrders(data.content);
+
+      let page = 0;
+      let totalElements = 0;
+      let allOrders: ShopOrder[] = [];
+
+      do {
+        const data = await shopApiService.getOrders(hotelId, page, ORDER_PAGE_SIZE);
+        allOrders = [...allOrders, ...(data.content || [])];
+        totalElements = data.totalElements || allOrders.length;
+        page += 1;
+      } while (allOrders.length < totalElements);
+
+      setOrders(allOrders);
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load orders');
@@ -117,6 +155,17 @@ const OrderManagement: React.FC = () => {
       loadOrders();
     }
   }, [hotelId, loadOrders]);
+
+  useEffect(() => {
+    setPage(0);
+  }, [effectiveSearchTerm, statusFilter]);
+
+  useEffect(() => {
+    const maxPage = Math.max(0, Math.ceil(sortedOrders.length / rowsPerPage) - 1);
+    if (page > maxPage) {
+      setPage(maxPage);
+    }
+  }, [page, rowsPerPage, sortedOrders.length]);
 
   // Early return if no hotel ID is available (after all hooks)
   if (!hotelId) {
@@ -196,6 +245,15 @@ const OrderManagement: React.FC = () => {
     return status === ShopOrderStatus.PAID;
   };
 
+  const handlePageChange = (_event: unknown, newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handleRowsPerPageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
   return (
     <Box>
       {/* Filters */}
@@ -241,6 +299,14 @@ const OrderManagement: React.FC = () => {
                 onClick={handleExportToCsv}
                 disabled={sortedOrders.length === 0}
                 fullWidth
+                sx={{
+                  borderColor: readableAccentBorder,
+                  color: readableAccentColor,
+                  '&:hover': {
+                    borderColor: readableAccentColor,
+                    backgroundColor: readableAccentHover,
+                  },
+                }}
               >
                 {t('common.exportCsv')}
               </Button>
@@ -308,7 +374,7 @@ const OrderManagement: React.FC = () => {
                 </TableCell>
               </TableRow>
             ) : (
-              sortedOrders.map((order) => (
+              paginatedOrders.map((order) => (
               <TableRow key={order.id}>
                 <TableCell>
                   <Box>
@@ -340,7 +406,7 @@ const OrderManagement: React.FC = () => {
                 </TableCell>
                 <TableCell>
                   <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>
-                    {formatCurrencyWithDecimals(order.totalAmount || 0)}
+                    {formatCurrencyWithDecimals(getOrderGrandTotal(order))}
                   </Typography>
                 </TableCell>
                 <TableCell>
@@ -385,6 +451,16 @@ const OrderManagement: React.FC = () => {
           </TableBody>
         </Table>
       </TableContainer>
+
+      <TablePagination
+        rowsPerPageOptions={[10, 25, 50]}
+        component="div"
+        count={sortedOrders.length}
+        rowsPerPage={rowsPerPage}
+        page={page}
+        onPageChange={handlePageChange}
+        onRowsPerPageChange={handleRowsPerPageChange}
+      />
 
       {/* View Order Dialog */}
       <Dialog 
@@ -484,8 +560,8 @@ const OrderManagement: React.FC = () => {
                     <Divider sx={{ my: 2 }} />
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <Typography variant="h6">Total:</Typography>
-                      <Typography variant="h6" color="primary">
-                        {formatCurrencyWithDecimals(selectedOrder.totalAmount || 0)}
+                      <Typography variant="h6" sx={{ color: readableAccentColor }}>
+                        {formatCurrencyWithDecimals(getOrderGrandTotal(selectedOrder))}
                       </Typography>
                     </Box>
                   </CardContent>
@@ -519,7 +595,18 @@ const OrderManagement: React.FC = () => {
               Mark as {selectedOrder.status === ShopOrderStatus.PAID ? 'Pending' : 'Paid'}
             </Button>
           )}
-          <Button onClick={() => setViewOrderDialog(false)}>Close</Button>
+          <Button
+            onClick={() => setViewOrderDialog(false)}
+            sx={{
+              color: readableAccentColor,
+              '&:hover': {
+                backgroundColor: readableAccentHover,
+                color: readableAccentColor,
+              },
+            }}
+          >
+            Close
+          </Button>
         </DialogActions>
       </Dialog>
     </Box>

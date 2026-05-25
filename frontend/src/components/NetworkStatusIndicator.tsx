@@ -39,7 +39,7 @@ import {
 } from '@mui/icons-material';
 import { useNetworkStatus } from '../hooks/useNetworkStatus';
 import { useAuth } from '../contexts/AuthContext';
-import { COLORS, addAlpha } from '../theme/themeColors';
+import { useThemeColors } from '../theme/useThemeColors';
 
 interface NetworkStatusIndicatorProps {
   variant?: 'detailed' | 'minimal';
@@ -52,6 +52,7 @@ export const NetworkStatusIndicator: React.FC<NetworkStatusIndicatorProps> = ({
   className,
   position = 'top'
 }) => {
+  const { COLORS, addAlpha } = useThemeColors();
   const { token } = useAuth();
   const {
     networkStatus,
@@ -169,7 +170,7 @@ export const NetworkStatusIndicator: React.FC<NetworkStatusIndicatorProps> = ({
 
         {/* Menu Button */}
         <Tooltip title="Network options">
-          <IconButton size="small" onClick={handleMenuOpen}>
+          <IconButton size="small" onClick={handleMenuOpen} sx={{ color: COLORS.WHITE }}>
             <MoreVertIcon />
           </IconButton>
         </Tooltip>
@@ -290,7 +291,7 @@ export const NetworkStatusIndicator: React.FC<NetworkStatusIndicatorProps> = ({
           </Tooltip>
 
           {/* Menu */}
-          <IconButton color="inherit" onClick={handleMenuOpen} size="small">
+          <IconButton color="inherit" onClick={handleMenuOpen} size="small" sx={{ color: COLORS.WHITE }}>
             <MoreVertIcon />
           </IconButton>
         </Box>

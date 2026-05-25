@@ -34,7 +34,9 @@ import {
   Info as InfoIcon
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
-import { getGradient, getInteractiveColor, COLORS } from '../theme/themeColors';
+import { useSubmissionError } from '../contexts/SubmissionErrorContext';
+import { getReadableAccentTextColor } from '../theme/surfaces';
+import { composeSx, infoPanelSx, surfaceCardSx } from '../theme/sxHelpers';
 
 // Utility functions for converting between percentage (0-100) and decimal (0.0-1.0) values
 const toDecimal = (percentage: number): number => {
@@ -86,6 +88,9 @@ const convertConfigForBackend = (displayConfig: PricingConfiguration): any => {
   };
 };
 
+const getPrimaryGradient = (theme: ReturnType<typeof useTheme>) =>
+  `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`;
+
 // Interface for the pricing configuration
 // Note: All rate fields are stored as decimal values (0.0-1.0) in backend but displayed as percentages (0-100) in UI
 interface PricingConfiguration {
@@ -119,8 +124,10 @@ interface PricingConfiguration {
 
 const PricingConfigurationComponent: React.FC = () => {
   const { user, token } = useAuth();
+  const { showSubmissionError } = useSubmissionError();
   const { t } = useTranslation();
   const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
   const [config, setConfig] = useState<PricingConfiguration | null>(null);
   const [originalConfig, setOriginalConfig] = useState<PricingConfiguration | null>(null);
   const [loading, setLoading] = useState(true);
@@ -240,7 +247,9 @@ const PricingConfigurationComponent: React.FC = () => {
       }
     } catch (err) {
       // console.error('Error saving configuration:', err);
-      setError('Failed to save pricing configuration');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to save pricing configuration',
+      });
     } finally {
       setSaving(false);
     }
@@ -377,12 +386,12 @@ const PricingConfigurationComponent: React.FC = () => {
             onClick={fetchConfiguration} 
             disabled={loading}
             sx={{
-              color: getInteractiveColor(),
+              color: 'primary.main',
               bgcolor: 'background.paper',
               border: '1px solid',
               borderColor: 'divider',
               '&:hover': {
-                bgcolor: alpha(getInteractiveColor(), 0.1)
+                bgcolor: alpha(theme.palette.primary.main, 0.1)
               }
             }}
           >
@@ -395,24 +404,24 @@ const PricingConfigurationComponent: React.FC = () => {
           onClick={handleSaveClick}
           disabled={saving}
           sx={{ 
-            background: getGradient('primary'),
+            background: getPrimaryGradient(theme),
             color: 'white',
             px: 3,
             py: 1.5,
             borderRadius: 2,
             textTransform: 'none',
             fontWeight: 600,
-            boxShadow: `0 4px 12px ${alpha(getInteractiveColor(), 0.2)}`,
+            boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.2)}`,
             '&:hover': {
-              background: getGradient('primary'),
+              background: getPrimaryGradient(theme),
               transform: 'translateY(-1px)',
-              boxShadow: `0 6px 16px ${alpha(getInteractiveColor(), 0.3)}`
+              boxShadow: `0 6px 16px ${alpha(theme.palette.primary.main, 0.3)}`
             },
             '&:active': {
               transform: 'translateY(0px)'
             },
             '&:disabled': {
-              bgcolor: alpha(getInteractiveColor(), 0.3),
+              bgcolor: alpha(theme.palette.primary.main, 0.3),
               color: alpha('#ffffff', 0.7),
               transform: 'none',
               boxShadow: 'none'
@@ -476,14 +485,13 @@ const PricingConfigurationComponent: React.FC = () => {
         icon={<InfoIcon />}
         sx={{ 
           mb: 2,
-          borderRadius: 2,
-          bgcolor: alpha(getInteractiveColor(), 0.1),
-          border: `1px solid ${alpha(getInteractiveColor(), 0.2)}`,
+          bgcolor: alpha(theme.palette.primary.main, 0.1),
+          border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
           '& .MuiAlert-message': {
             color: theme.palette.text.primary
           },
           '& .MuiAlert-icon': {
-            color: getInteractiveColor()
+            color: 'primary.main'
           }
         }}
       >
@@ -495,30 +503,20 @@ const PricingConfigurationComponent: React.FC = () => {
       <Grid container spacing={1.5}>
         {/* General Settings */}
         <Grid item xs={12} md={4}>
-          <Card sx={{ 
-            bgcolor: 'background.paper',
-            border: '1px solid',
-            borderColor: 'divider',
-            borderRadius: 3,
-            elevation: 0,
-          }}>
+          <Card sx={surfaceCardSx('default')}>
             <CardContent sx={{ p: 2.5 }}>
               {/* General Settings Section */}
-              <Box sx={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: 2, 
+              <Box sx={composeSx(infoPanelSx, {
+                display: 'flex',
+                alignItems: 'center',
+                gap: 2,
                 mb: 1.5,
                 p: 1,
-                bgcolor: 'background.default',
-                border: '1px solid',
-                borderColor: 'divider',
-                borderLeft: '4px solid #E8B86D',
-                borderRadius: 2,
-              }}>
-                <SettingsIcon sx={{ color: COLORS.PRIMARY }} />
+                borderLeft: '3px solid #E8B86D',
+              })}>
+                <SettingsIcon sx={{ color: readableAccentColor }} />
                 <Box>
-                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5, color: COLORS.PRIMARY }}>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5, color: readableAccentColor }}>
                     {t('dashboard.hotelAdmin.pricingConfiguration.generalSettings.title')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -597,30 +595,20 @@ const PricingConfigurationComponent: React.FC = () => {
 
         {/* Tax Configuration */}
         <Grid item xs={12} md={4}>
-          <Card sx={{ 
-            bgcolor: 'background.paper',
-            border: '1px solid',
-            borderColor: 'divider',
-            borderRadius: 3,
-            elevation: 0,
-          }}>
+          <Card sx={surfaceCardSx('default')}>
             <CardContent sx={{ p: 2.5 }}>
               {/* Tax Configuration Section */}
-              <Box sx={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: 2, 
+              <Box sx={composeSx(infoPanelSx, {
+                display: 'flex',
+                alignItems: 'center',
+                gap: 2,
                 mb: 1.5,
                 p: 1,
-                bgcolor: 'background.default',
-                border: '1px solid',
-                borderColor: 'divider',
-                borderLeft: '4px solid #E8B86D',
-                borderRadius: 2,
-              }}>
-                <ReceiptIcon sx={{ color: COLORS.PRIMARY }} />
+                borderLeft: '3px solid #E8B86D',
+              })}>
+                <ReceiptIcon sx={{ color: readableAccentColor }} />
                 <Box>
-                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5, color: COLORS.PRIMARY }}>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5, color: readableAccentColor }}>
                     {t('dashboard.hotelAdmin.pricingConfiguration.taxConfiguration.title')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -633,7 +621,6 @@ const PricingConfigurationComponent: React.FC = () => {
                 severity="info" 
                 sx={{ 
                   mb: 1.5,
-                  borderRadius: 2,
                   bgcolor: alpha(theme.palette.info.main, 0.1),
                   border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
                 }}
@@ -678,30 +665,20 @@ const PricingConfigurationComponent: React.FC = () => {
 
         {/* Seasonal Pricing */}
         <Grid item xs={12} md={4}>
-          <Card sx={{ 
-            bgcolor: 'background.paper',
-            border: '1px solid',
-            borderColor: 'divider',
-            borderRadius: 3,
-            elevation: 0,
-          }}>
+          <Card sx={surfaceCardSx('default')}>
             <CardContent sx={{ p: 2.5 }}>
               {/* Seasonal Pricing Section */}
-              <Box sx={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: 2, 
+              <Box sx={composeSx(infoPanelSx, {
+                display: 'flex',
+                alignItems: 'center',
+                gap: 2,
                 mb: 1.5,
                 p: 1,
-                bgcolor: 'background.default',
-                border: '1px solid',
-                borderColor: 'divider',
-                borderLeft: '4px solid #E8B86D',
-                borderRadius: 2,
-              }}>
-                <DiscountIcon sx={{ color: COLORS.PRIMARY }} />
+                borderLeft: '3px solid #E8B86D',
+              })}>
+                <DiscountIcon sx={{ color: readableAccentColor }} />
                 <Box>
-                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5, color: COLORS.PRIMARY }}>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5, color: readableAccentColor }}>
                     {t('dashboard.hotelAdmin.pricingConfiguration.seasonalMultipliers.title')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -750,30 +727,20 @@ const PricingConfigurationComponent: React.FC = () => {
 
         {/* Booking Rules */}
         <Grid item xs={12} md={4}>
-          <Card sx={{ 
-            bgcolor: 'background.paper',
-            border: '1px solid',
-            borderColor: 'divider',
-            borderRadius: 3,
-            elevation: 0,
-          }}>
+          <Card sx={surfaceCardSx('default')}>
             <CardContent sx={{ p: 2.5 }}>
               {/* Booking Rules Section */}
-              <Box sx={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: 2, 
+              <Box sx={composeSx(infoPanelSx, {
+                display: 'flex',
+                alignItems: 'center',
+                gap: 2,
                 mb: 1.5,
                 p: 1,
-                bgcolor: 'background.default',
-                border: '1px solid',
-                borderColor: 'divider',
-                borderLeft: '4px solid #E8B86D',
-                borderRadius: 2,
-              }}>
-                <SettingsIcon sx={{ color: COLORS.PRIMARY }} />
+                borderLeft: '3px solid #E8B86D',
+              })}>
+                <SettingsIcon sx={{ color: readableAccentColor }} />
                 <Box>
-                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5, color: COLORS.PRIMARY }}>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5, color: readableAccentColor }}>
                     {t('dashboard.hotelAdmin.pricingConfiguration.bookingRules.title')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -814,29 +781,19 @@ const PricingConfigurationComponent: React.FC = () => {
 
         {/* Discounts & Fees */}
         <Grid item xs={12} md={4}>
-          <Card sx={{ 
-            bgcolor: 'background.paper',
-            border: '1px solid',
-            borderColor: 'divider',
-            borderRadius: 3,
-            elevation: 0,
-          }}>
+          <Card sx={surfaceCardSx('default')}>
             <CardContent sx={{ p: 2.5 }}>
               {/* Discounts & Fees Section */}
-              <Box sx={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: 2, 
+              <Box sx={composeSx(infoPanelSx, {
+                display: 'flex',
+                alignItems: 'center',
+                gap: 2,
                 mb: 1.5,
                 p: 1,
-                bgcolor: 'background.default',
-                border: '1px solid',
-                borderColor: 'divider',
-                borderRadius: 2,
-              }}>
-                <DiscountIcon sx={{ color: getInteractiveColor() }} />
+              })}>
+                <DiscountIcon sx={{ color: readableAccentColor }} />
                 <Box>
-                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5, color: getInteractiveColor() }}>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5, color: readableAccentColor }}>
                     {t('dashboard.hotelAdmin.pricingConfiguration.discountsFees.title')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -907,29 +864,19 @@ const PricingConfigurationComponent: React.FC = () => {
 
         {/* Cancellation Refund Policies */}
         <Grid item xs={12} md={4}>
-          <Card sx={{ 
-            bgcolor: 'background.paper',
-            border: '1px solid',
-            borderColor: 'divider',
-            borderRadius: 3,
-            elevation: 0,
-          }}>
+          <Card sx={surfaceCardSx('default')}>
             <CardContent sx={{ p: 2.5 }}>
               {/* Cancellation Refund Policies Section */}
-              <Box sx={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: 2, 
+              <Box sx={composeSx(infoPanelSx, {
+                display: 'flex',
+                alignItems: 'center',
+                gap: 2,
                 mb: 1.5,
                 p: 1,
-                bgcolor: 'background.default',
-                border: '1px solid',
-                borderColor: 'divider',
-                borderRadius: 2,
-              }}>
-                <ReceiptIcon sx={{ color: getInteractiveColor() }} />
+              })}>
+                <ReceiptIcon sx={{ color: readableAccentColor }} />
                 <Box>
-                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5, color: getInteractiveColor() }}>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5, color: readableAccentColor }}>
                     {t('dashboard.hotelAdmin.pricingConfiguration.cancellationRefundPolicies.title')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -942,7 +889,6 @@ const PricingConfigurationComponent: React.FC = () => {
                 severity="info" 
                 sx={{ 
                   mb: 1.5,
-                  borderRadius: 2,
                   bgcolor: alpha(theme.palette.info.main, 0.1),
                   border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
                 }}
@@ -995,7 +941,6 @@ const PricingConfigurationComponent: React.FC = () => {
                 severity="warning" 
                 sx={{ 
                   mt: 1.5,
-                  borderRadius: 2,
                   bgcolor: alpha(theme.palette.warning.main, 0.1),
                   border: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`
                 }}
@@ -1010,29 +955,19 @@ const PricingConfigurationComponent: React.FC = () => {
 
         {/* Notes */}
         <Grid item xs={12} md={4}>
-          <Card sx={{ 
-            bgcolor: 'background.paper',
-            border: '1px solid',
-            borderColor: 'divider',
-            borderRadius: 3,
-            elevation: 0,
-          }}>
+          <Card sx={surfaceCardSx('default')}>
             <CardContent sx={{ p: 2.5 }}>
               {/* Notes Section */}
-              <Box sx={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: 2, 
+              <Box sx={composeSx(infoPanelSx, {
+                display: 'flex',
+                alignItems: 'center',
+                gap: 2,
                 mb: 1.5,
                 p: 1,
-                bgcolor: 'background.default',
-                border: '1px solid',
-                borderColor: 'divider',
-                borderRadius: 2,
-              }}>
-                <InfoIcon sx={{ color: getInteractiveColor() }} />
+              })}>
+                <InfoIcon sx={{ color: readableAccentColor }} />
                 <Box>
-                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5, color: getInteractiveColor() }}>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5, color: readableAccentColor }}>
                     {t('dashboard.hotelAdmin.pricingConfiguration.additionalNotes.title')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">

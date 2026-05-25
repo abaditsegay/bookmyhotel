@@ -23,6 +23,7 @@ import {
   Switch,
   FormControlLabel,
   IconButton,
+  useTheme,
 } from '@mui/material';
 import {
   ArrowBack as ArrowBackIcon,
@@ -32,8 +33,8 @@ import {
   Person as PersonIcon,
   Badge as BadgeIcon,
 } from '@mui/icons-material';
-import { COLORS } from '../../theme/themeColors';
 import { useAuthenticatedApi } from '../../hooks/useAuthenticatedApi';
+import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
 import PremiumDisplayField from '../../components/common/PremiumDisplayField';
 
 interface UserData {
@@ -50,10 +51,12 @@ interface UserData {
 }
 
 const UserViewEdit: React.FC = () => {
+  const theme = useTheme();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { adminApiService } = useAuthenticatedApi();
+  const { showSubmissionError } = useSubmissionError();
   
   const [user, setUser] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -148,7 +151,9 @@ const UserViewEdit: React.FC = () => {
       navigate(`/admin/users/${id}`);
     } catch (error) {
       // console.error('Error updating user:', error);
-      setError('Failed to update user');
+      showSubmissionError(error, {
+        fallbackMessage: 'Failed to update user',
+      });
     } finally {
       setSaving(false);
     }
@@ -223,7 +228,7 @@ const UserViewEdit: React.FC = () => {
               fontWeight: 'bold', 
               display: 'flex', 
               alignItems: 'center',
-              color: COLORS.PRIMARY
+              color: theme.palette.primary.main
             }}>
               <PersonIcon sx={{ mr: 1 }} />
               {isEditing ? 'Edit User' : 'User Details'}

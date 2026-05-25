@@ -1,4 +1,16 @@
-import { STATUS_COLORS, StatusColorType } from '../theme/colorConstants';
+export const STATUS_COLORS = {
+  BOOKED: 'primary',
+  PENDING: 'warning',
+  CANCELLED: 'error',
+  CHECKED_IN: 'success',
+  CHECKED_OUT: 'info',
+  PAID: 'success',
+  PROCESSING: 'warning',
+  FAILED: 'error',
+  REFUNDED: 'info',
+} as const;
+
+export type StatusColorType = typeof STATUS_COLORS[keyof typeof STATUS_COLORS];
 
 /**
  * Get Material-UI color for booking status following the booked = blue pattern

@@ -15,6 +15,7 @@ import {
   Switch,
   Dialog,
   DialogContent,
+  useTheme,
 } from '@mui/material';
 import {
   Edit as EditIcon,
@@ -24,20 +25,26 @@ import {
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
 import { hotelAdminApi, RoomResponse } from '../../services/hotelAdminApi';
 import { ROOM_TYPES } from '../../constants/roomTypes';
 import PremiumDisplayField from '../../components/common/PremiumDisplayField';
 import PremiumTextField from '../../components/common/PremiumTextField';
 import PremiumSelect from '../../components/common/PremiumSelect';
 import StandardButton from '../../components/common/StandardButton';
-import { COLORS, addAlpha } from '../../theme/themeColors';
+import { useThemeColors } from '../../theme/useThemeColors';
+import { getReadableAccentTextColor } from '../../theme/surfaces';
 
 const RoomViewEdit: React.FC = () => {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { COLORS, addAlpha } = useThemeColors();
+  const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
   const { token } = useAuth();
+  const { showSubmissionError } = useSubmissionError();
   
   const [room, setRoom] = useState<RoomResponse | null>(null);
   const [editedRoom, setEditedRoom] = useState<RoomResponse | null>(null);
@@ -118,11 +125,15 @@ const RoomViewEdit: React.FC = () => {
         setSuccess(t('rooms.details.success.roomUpdated'));
         return true;
       } else {
-        setError(result.message || t('rooms.details.errors.failedToUpdate'));
+        showSubmissionError(result.message || t('rooms.details.errors.failedToUpdate'), {
+          fallbackMessage: t('rooms.details.errors.failedToUpdate'),
+        });
         return false;
       }
     } catch (err) {
-      setError(t('rooms.details.errors.failedToUpdate'));
+      showSubmissionError(err, {
+        fallbackMessage: t('rooms.details.errors.failedToUpdate'),
+      });
       // console.error('Error updating room:', err);
       return false;
     }
@@ -150,9 +161,11 @@ const RoomViewEdit: React.FC = () => {
     try {
       // Note: Room availability toggle would need a separate API endpoint
       // For now, just show a message that this feature is not implemented
-      setError(t('rooms.details.errors.apiNotSupported'));
+      showSubmissionError(t('rooms.details.errors.apiNotSupported'));
     } catch (err) {
-      setError(t('rooms.details.errors.failedToUpdateStatus'));
+      showSubmissionError(err, {
+        fallbackMessage: t('rooms.details.errors.failedToUpdateStatus'),
+      });
       // console.error('Error updating room status:', err);
     }
   };
@@ -238,7 +251,7 @@ const RoomViewEdit: React.FC = () => {
               onClick={handleCancelAndClose}
               sx={{
                 borderColor: addAlpha(COLORS.SECONDARY, 0.6),
-                color: COLORS.PRIMARY,
+                color: readableAccentColor,
                 '&:hover': {
                   borderColor: COLORS.SECONDARY,
                   bgcolor: addAlpha(COLORS.SECONDARY, 0.08),
@@ -254,7 +267,7 @@ const RoomViewEdit: React.FC = () => {
                 onClick={handleEdit}
                 sx={{
                   borderColor: addAlpha(COLORS.SECONDARY, 0.6),
-                  color: COLORS.PRIMARY,
+                  color: readableAccentColor,
                   '&:hover': {
                     borderColor: COLORS.SECONDARY,
                     bgcolor: addAlpha(COLORS.SECONDARY, 0.08),
@@ -266,15 +279,9 @@ const RoomViewEdit: React.FC = () => {
             ) : (
               <StandardButton
                 variant="contained"
+                color="secondary"
                 startIcon={<SaveIcon />}
                 onClick={handleSaveAndClose}
-                gradient
-                sx={{
-                  background: COLORS.GRADIENT_SECONDARY,
-                  '&:hover': {
-                    background: COLORS.GRADIENT_WARM,
-                  },
-                }}
               >
                 {t('rooms.details.save')}
               </StandardButton>

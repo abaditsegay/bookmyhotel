@@ -38,7 +38,10 @@ import {
 import { useAuth } from '../../contexts/AuthContext';
 import { useTenant } from '../../contexts/TenantContext';
 import { frontDeskApiService, FrontDeskBooking } from '../../services/frontDeskApi';
+import { useDebounce } from '../../hooks/useDebounce';
+import { getEffectiveSearchTerm } from '../../utils/search';
 import BookingNotificationEvents from '../../utils/bookingNotificationEvents';
+import { actionIconButtonSx, guestNameBadgeSx, refreshActionButtonSx, tableHeadRowSx } from '../../theme/sxHelpers';
 
 interface FrontDeskBookingManagementProps {
   onRefresh?: () => void;
@@ -57,6 +60,8 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
   const [selectedBooking, setSelectedBooking] = useState<FrontDeskBooking | null>(null);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
+  const debouncedSearch = useDebounce(search, search.trim() ? 300 : 0);
+  const effectiveSearch = getEffectiveSearchTerm(debouncedSearch);
 
   // Memoize search handler to prevent input focus loss
   const handleSearchInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -72,7 +77,7 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
     setError(null);
     
     try {
-      const result = await frontDeskApiService.getAllBookings(token, page, size, search, tenantId);
+      const result = await frontDeskApiService.getAllBookings(token, page, size, effectiveSearch ?? '', tenantId);
       
       if (result.success && result.data) {
         // console.log('🏨 FrontDeskBookingManagement - Raw API data:', result.data.content);
@@ -91,12 +96,16 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
     } finally {
       setLoading(false);
     }
-  }, [token, page, size, search, tenantId]);
+  }, [token, page, size, effectiveSearch, tenantId]);
 
   // Load bookings on component mount and when dependencies change
   useEffect(() => {
+    if (effectiveSearch === null) {
+      return;
+    }
+
     loadBookings();
-  }, [loadBookings]);
+  }, [loadBookings, effectiveSearch]);
 
   // Add window focus listener to refresh bookings when returning from other pages
   useEffect(() => {
@@ -127,6 +136,10 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
 
   // Handle search
   const handleSearchSubmit = () => {
+    if (effectiveSearch === null) {
+      return;
+    }
+
     if (page === 0) {
       // If already on page 0, trigger reload manually
       loadBookings();
@@ -141,6 +154,12 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
       handleSearchSubmit();
     }
   };
+
+  useEffect(() => {
+    if (effectiveSearch !== null) {
+      setPage(0);
+    }
+  }, [effectiveSearch]);
 
   // Handle page change
   const handlePageChange = (event: React.ChangeEvent<unknown> | null, newPage: number) => {
@@ -228,6 +247,7 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
           startIcon={<RefreshIcon />}
           onClick={loadBookings}
           disabled={loading}
+          sx={refreshActionButtonSx}
         >
           Refresh
         </Button>
@@ -284,30 +304,7 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
             <Table>
               <TableHead>
                 <TableRow 
-                  sx={{
-                    background: 'linear-gradient(135deg, #64748b 0%, #475569 50%, #334155 100%)',
-                    boxShadow: '0 4px 12px rgba(100, 116, 139, 0.15)',
-                    '& .MuiTableCell-head': {
-                      color: '#ffffff',
-                      fontWeight: 600,
-                      fontSize: '0.95rem',
-                      letterSpacing: '0.5px',
-                      textTransform: 'uppercase',
-                      border: 'none',
-                      padding: '20px 16px',
-                      position: 'relative',
-                      textShadow: '0 1px 2px rgba(0,0,0,0.1)',
-                      '&::after': {
-                        content: '""',
-                        position: 'absolute',
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                        height: '3px',
-                        background: 'linear-gradient(90deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0.6) 100%)'
-                      }
-                    }
-                  }}
+                  sx={tableHeadRowSx()}
                 >
                   <TableCell>Confirmation #</TableCell>
                   <TableCell>Guest</TableCell>
@@ -370,8 +367,10 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
                         <Box>
                           <Typography 
                             variant="body2" 
-                            fontWeight="600"
-                            sx={{ color: '#1f2937', mb: 0.5 }}
+                            sx={(theme) => ({
+                              ...guestNameBadgeSx(theme),
+                              mb: 0.5,
+                            })}
                           >
                             {booking.guestName}
                           </Typography>
@@ -451,15 +450,7 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
                             <IconButton 
                               size="small"
                               onClick={() => handleViewBookingDetails(booking)}
-                              sx={{
-                                backgroundColor: '#f0f4ff',
-                                color: '#667eea',
-                                '&:hover': {
-                                  backgroundColor: '#e0e7ff',
-                                  transform: 'scale(1.1)'
-                                },
-                                transition: 'all 0.2s ease'
-                              }}
+                              sx={actionIconButtonSx('accent')}
                             >
                               <VisibilityIcon fontSize="small" />
                             </IconButton>
@@ -471,15 +462,7 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
                                 <IconButton 
                                   size="small"
                                   onClick={() => handleStatusUpdate(booking, 'CHECKED_IN')}
-                                  sx={{
-                                    backgroundColor: '#ecfdf5',
-                                    color: '#10b981',
-                                    '&:hover': {
-                                      backgroundColor: '#d1fae5',
-                                      transform: 'scale(1.1)'
-                                    },
-                                    transition: 'all 0.2s ease'
-                                  }}
+                                  sx={actionIconButtonSx('success')}
                                 >
                                   <CheckInIcon fontSize="small" />
                                 </IconButton>
@@ -492,15 +475,7 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
                               <IconButton 
                                 size="small"
                                 onClick={() => handleStatusUpdate(booking, 'CHECKED_OUT')}
-                                sx={{
-                                  backgroundColor: '#fef3c7',
-                                  color: '#f59e0b',
-                                  '&:hover': {
-                                    backgroundColor: '#fde68a',
-                                    transform: 'scale(1.1)'
-                                  },
-                                  transition: 'all 0.2s ease'
-                                }}
+                                sx={actionIconButtonSx('warning')}
                               >
                                 <CheckOutIcon fontSize="small" />
                               </IconButton>
@@ -512,7 +487,7 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
                               <Tooltip title="Mark No Show">
                                 <IconButton 
                                   size="small"
-                                  color="error"
+                                  sx={actionIconButtonSx('error')}
                                   onClick={() => handleStatusUpdate(booking, 'NO_SHOW')}
                                 >
                                   <NoShowIcon />
@@ -521,7 +496,7 @@ const FrontDeskBookingManagement: React.FC<FrontDeskBookingManagementProps> = ({
                               <Tooltip title="Cancel Booking">
                                 <IconButton 
                                   size="small"
-                                  color="error"
+                                  sx={actionIconButtonSx('error')}
                                   onClick={() => handleStatusUpdate(booking, 'CANCELLED')}
                                 >
                                   <CancelIcon />

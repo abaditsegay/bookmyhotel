@@ -71,6 +71,35 @@ public class TenantService {
     }
 
     /**
+     * Resolve an active tenant by any supported external identifier.
+     *
+     * Accepts the canonical tenant ID, tenant name, or configured subdomain.
+     * Never creates tenants implicitly.
+     */
+    @Transactional(readOnly = true)
+    public Optional<Tenant> findActiveTenantByIdentifier(String identifier) {
+        if (identifier == null || identifier.isBlank()) {
+            return Optional.empty();
+        }
+
+        String normalizedIdentifier = identifier.trim();
+
+        Optional<Tenant> byId = tenantRepository.findByIdAndIsActiveTrue(normalizedIdentifier);
+        if (byId.isPresent()) {
+            return byId;
+        }
+
+        Optional<Tenant> byName = tenantRepository.findByName(normalizedIdentifier)
+                .filter(tenant -> Boolean.TRUE.equals(tenant.getIsActive()));
+        if (byName.isPresent()) {
+            return byName;
+        }
+
+        return tenantRepository.findBySubdomain(normalizedIdentifier)
+                .filter(tenant -> Boolean.TRUE.equals(tenant.getIsActive()));
+    }
+
+    /**
      * Update tenant status
      */
     public Tenant updateTenantStatus(String tenantId, boolean isActive) {

@@ -3,9 +3,11 @@ import {
   Box,
   Typography,
   Alert,
-  Snackbar
+  Snackbar,
+  useTheme
 } from '@mui/material';
 import OperationsSupervisorDashboard from '../../components/operations/OperationsSupervisorDashboard';
+import { getPageShellBackground } from '../../theme/surfaces';
 
 interface User {
   id: number;
@@ -15,6 +17,7 @@ interface User {
 }
 
 const OperationsPage: React.FC = () => {
+  const theme = useTheme();
   const [user, setUser] = useState<User | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -65,7 +68,7 @@ const OperationsPage: React.FC = () => {
   }
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50' }}>
+    <Box sx={{ minHeight: '100vh', background: getPageShellBackground(theme) }}>
       <Box sx={{ width: '100%', p: 3 }}>
         <OperationsSupervisorDashboard />
 

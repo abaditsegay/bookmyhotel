@@ -1,41 +1,30 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { API_CONFIG } from '../../config/apiConfig';
-import { COLORS, addAlpha } from '../../theme/themeColors';
 import {
+  alpha,
+  useTheme,
   Typography,
   Box,
   Button,
-  Paper,
   Grid,
   Table,
   TableBody,
   TableCell,
-  TableContainer,
   TableHead,
   TableRow,
   TablePagination,
   Chip,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogContentText,
-  DialogActions,
   Alert,
   CircularProgress,
   MenuItem,
   IconButton,
   Tabs,
   Tab,
-  Card,
-  CardContent,
   Stepper,
   Step,
   StepLabel,
   Divider
 } from '@mui/material';
 import { 
-  ArrowBack as ArrowBackIcon, 
   Visibility as ViewIcon,
   Edit as EditIcon, 
   ToggleOn as ToggleOnIcon, 
@@ -51,11 +40,21 @@ import {
   PublicOff as UnpublishIcon
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
+import { useDebounce } from '../../hooks/useDebounce';
+import { API_CONFIG } from '../../config/apiConfig';
 import { adminApiService, HotelDTO, UpdateHotelRequest, TenantDTO, ApproveRegistrationRequest, HotelRegistrationResponse } from '../../services/adminApi';
+import { PageContainer } from '../../components/common/PageShell';
+import StandardButton from '../../components/common/StandardButton';
 import PremiumTextField from '../../components/common/PremiumTextField';
 import PremiumDisplayField from '../../components/common/PremiumDisplayField';
 import PremiumSelect from '../../components/common/PremiumSelect';
+import StandardDialog from '../../components/ui/StandardDialog';
+import { DataTableCard, PageHeader, SurfaceCard } from '../../components/ui';
+import { dialogSecondaryActionSx, refreshActionButtonSx, tableHeadRowSx } from '../../theme/sxHelpers';
+import { getReadableAccentTextColor } from '../../theme/surfaces';
 import { formatEthiopianPhone, normalizeEthiopianPhone } from '../../utils/phoneUtils';
+import { getEffectiveSearchTerm } from '../../utils/search';
 import HotelEditDialog from '../../components/hotel/HotelEditDialog';
 
 interface Hotel extends HotelDTO {}
@@ -69,8 +68,9 @@ interface RegistrationStatistics {
 }
 
 const HotelManagementAdmin: React.FC = () => {
-  const navigate = useNavigate();
+  const theme = useTheme();
   const { token } = useAuth();
+  const { showSubmissionError } = useSubmissionError();
 
   // Tab state
   const [activeTab, setActiveTab] = useState(0);
@@ -113,11 +113,9 @@ const HotelManagementAdmin: React.FC = () => {
   // Approval/Rejection form state
   const [approvalComments, setApprovalComments] = useState('');
   const [rejectionReason, setRejectionReason] = useState('');
-  const [tenantId, setTenantId] = useState('');
 
   // Tenant management state
   const [tenants, setTenants] = useState<TenantDTO[]>([]);
-  const [tenantsLoading, setTenantsLoading] = useState(false);
 
   // Registration form state
   const [registrationForm, setRegistrationForm] = useState({
@@ -165,16 +163,8 @@ const HotelManagementAdmin: React.FC = () => {
     checkOutTime: '11:00'
   });
 
-  // Debounced search
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm);
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, [searchTerm]);
+  const debouncedSearchTerm = useDebounce(searchTerm, searchTerm.trim() ? 300 : 0);
+  const effectiveSearchTerm = getEffectiveSearchTerm(debouncedSearchTerm);
 
   // Set token in API service when component mounts
   useEffect(() => {
@@ -228,13 +218,10 @@ const HotelManagementAdmin: React.FC = () => {
   // Load active tenants for dropdown
   const loadTenants = useCallback(async () => {
     try {
-      setTenantsLoading(true);
       const response = await adminApiService.getActiveTenants();
       setTenants(response);
     } catch (err) {
       // console.error('Error loading tenants:', err);
-    } finally {
-      setTenantsLoading(false);
     }
   }, []);
 
@@ -251,9 +238,10 @@ const HotelManagementAdmin: React.FC = () => {
   // Filter hotels based on search term and status
   const filteredHotels = useMemo(() => {
     return hotels.filter(hotel => {
-      const matchesSearch = hotel.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
-                           hotel.city.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
-                           (hotel.email && hotel.email.toLowerCase().includes(debouncedSearchTerm.toLowerCase()));
+      const appliedSearchTerm = effectiveSearchTerm ?? '';
+      const matchesSearch = hotel.name.toLowerCase().includes(appliedSearchTerm.toLowerCase()) ||
+                           hotel.city.toLowerCase().includes(appliedSearchTerm.toLowerCase()) ||
+                           (hotel.email && hotel.email.toLowerCase().includes(appliedSearchTerm.toLowerCase()));
       
       const matchesStatus = statusFilter === 'all' || 
                            (statusFilter === 'active' && hotel.isActive) ||
@@ -261,7 +249,7 @@ const HotelManagementAdmin: React.FC = () => {
 
       return matchesSearch && matchesStatus;
     });
-  }, [hotels, debouncedSearchTerm, statusFilter]);
+  }, [hotels, effectiveSearchTerm, statusFilter]);
 
   // Pagination handlers
   const handleChangePage = (event: unknown, newPage: number) => {
@@ -383,7 +371,9 @@ const HotelManagementAdmin: React.FC = () => {
       }
     } catch (err) {
       // console.error('Error submitting registration:', err);
-      setError('Failed to submit hotel registration. Please try again.');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to submit hotel registration. Please try again.',
+      });
     }
   };
 
@@ -401,7 +391,6 @@ const HotelManagementAdmin: React.FC = () => {
     // Reset approval/rejection fields
     setApprovalComments('');
     setRejectionReason('');
-    setTenantId('');
     // Initialize edit form with registration data
     setEditRegistrationForm({
       hotelName: registration.hotelName || '',
@@ -479,8 +468,9 @@ const HotelManagementAdmin: React.FC = () => {
       }
     } catch (err) {
       // console.error('Error updating registration:', err);
-      setError('Failed to update hotel registration. Please try again.');
-      setTimeout(() => setError(null), 3000);
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to update hotel registration. Please try again.',
+      });
     }
   };
 
@@ -515,7 +505,6 @@ const HotelManagementAdmin: React.FC = () => {
   const openApprovalDialog = (registration: HotelRegistrationResponse) => {
     setSelectedRegistration(registration);
     setApprovalComments('');
-    setTenantId('');
     setApproveDialogOpen(true);
   };
 
@@ -551,15 +540,15 @@ const HotelManagementAdmin: React.FC = () => {
       loadHotels(); // Refresh hotels list to show the newly created hotel
     } catch (err) {
       // console.error('Error approving registration:', err);
-      setError('Failed to approve registration. Please try again.');
-      setTimeout(() => setError(null), 3000);
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to approve registration. Please try again.',
+      });
     }
   };
 
   const handleRejectRegistration = async () => {
     if (!selectedRegistration || !rejectionReason.trim()) {
-      setError('Rejection reason is required');
-      setTimeout(() => setError(null), 3000);
+      showSubmissionError('Rejection reason is required');
       return;
     }
 
@@ -580,8 +569,9 @@ const HotelManagementAdmin: React.FC = () => {
       // Refresh data
       loadRegistrations();
     } catch (err) {
-      setError('Failed to reject hotel registration. Please try again.');
-      setTimeout(() => setError(null), 3000);
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to reject hotel registration. Please try again.',
+      });
     }
   };
 
@@ -601,6 +591,57 @@ const HotelManagementAdmin: React.FC = () => {
     APPROVED: 'success',
     REJECTED: 'error',
     CANCELLED: 'default',
+  } as const;
+
+  const adminSectionTitleSx = {
+    mb: 1,
+    color: getReadableAccentTextColor(theme),
+    fontWeight: 600,
+  } as const;
+
+  const adminTableHeaderSx = tableHeadRowSx();
+
+  const adminSectionTitleWithTopSpacingSx = {
+    ...adminSectionTitleSx,
+    mt: 1,
+  } as const;
+
+  const adminInfoPanelSx = {
+    border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`,
+    borderRadius: 2,
+    p: 2,
+    backgroundColor: alpha(theme.palette.info.main, 0.08),
+    mt: 1,
+  } as const;
+
+  const adminOutlinedActionSx = {
+    borderColor: alpha(getReadableAccentTextColor(theme), theme.palette.mode === 'dark' ? 0.52 : 0.28),
+    color: getReadableAccentTextColor(theme),
+    backgroundColor: theme.palette.mode === 'dark'
+      ? alpha(getReadableAccentTextColor(theme), 0.1)
+      : 'transparent',
+    '&:hover': {
+      borderColor: getReadableAccentTextColor(theme),
+      backgroundColor: alpha(getReadableAccentTextColor(theme), theme.palette.mode === 'dark' ? 0.18 : 0.08),
+    },
+  } as const;
+
+  const adminDangerOutlinedActionSx = {
+    borderColor: 'error.main',
+    '&:hover': {
+      backgroundColor: alpha(theme.palette.error.main, 0.08),
+      borderColor: 'error.main',
+    },
+  } as const;
+
+  const adminPrimaryContainedActionSx = {
+    backgroundColor: 'primary.main',
+    '&:hover': {
+      backgroundColor: 'primary.dark',
+    },
+    '&:disabled': {
+      backgroundColor: theme.palette.action.disabledBackground,
+    },
   } as const;
 
   // Helper function to get tenant name by tenant ID
@@ -650,7 +691,9 @@ const HotelManagementAdmin: React.FC = () => {
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
       // console.error('Error updating hotel:', err);
-      setError('Failed to update hotel. Please try again.');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to update hotel. Please try again.',
+      });
     }
   };
 
@@ -670,7 +713,9 @@ const HotelManagementAdmin: React.FC = () => {
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
       // console.error('Error toggling hotel status:', err);
-      setError('Failed to update hotel status. Please try again.');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to update hotel status. Please try again.',
+      });
     } finally {
       setLoading(false);
     }
@@ -698,113 +743,105 @@ const HotelManagementAdmin: React.FC = () => {
   };
 
   return (
-    <Box sx={{ width: '100%', p: 3 }}>
-      <Box sx={{ py: 4 }}>
-        {/* Header */}
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-          <Typography variant="h5" component="h1" sx={{ 
-            flexGrow: 1,
-            color: COLORS.PRIMARY,
-            fontWeight: 600,
-            letterSpacing: '0.5px'
-          }}>
-            Hotel Management
-          </Typography>
-          <Button
-            variant="outlined"
-            startIcon={<RefreshIcon />}
-            onClick={() => {
-              if (activeTab === 0) {
-                loadHotels();
-              } else {
-                loadRegistrations();
-              }
-            }}
-            sx={{ mr: 2 }}
-          >
-            Refresh
-          </Button>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={handleRegisterHotel}
-            sx={{ mr: 2 }}
-          >
-            Register Hotel
-          </Button>
-        </Box>
+    <PageContainer maxWidth={false} data-testid="hotel-management-page">
+      <PageHeader
+        eyebrow="Platform Operations"
+        title="Hotel Management"
+        description="Manage existing hotels, review inbound registrations, and control platform visibility from one administrative workspace."
+        actions={
+          <>
+            <StandardButton
+              variant="outlined"
+              startIcon={<RefreshIcon />}
+              onClick={() => {
+                if (activeTab === 0) {
+                  loadHotels();
+                } else {
+                  loadRegistrations();
+                }
+              }}
+              data-testid="hotel-management-refresh-button"
+              sx={refreshActionButtonSx}
+            >
+              Refresh
+            </StandardButton>
+            <StandardButton
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={handleRegisterHotel}
+              data-testid="hotel-management-register-button"
+            >
+              Register Hotel
+            </StandardButton>
+          </>
+        }
+      />
 
-        {/* Error and Success Messages */}
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
-            {error}
-          </Alert>
-        )}
+      {error && (
+        <Alert data-testid="hotel-management-error-alert" severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+          {error}
+        </Alert>
+      )}
 
-        {success && (
-          <Alert severity="success" sx={{ mb: 2 }} onClose={() => setSuccess(null)}>
-            {success}
-          </Alert>
-        )}
+      {success && (
+        <Alert data-testid="hotel-management-success-alert" severity="success" sx={{ mb: 2 }} onClose={() => setSuccess(null)}>
+          {success}
+        </Alert>
+      )}
 
-        {/* Tabs */}
-        <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
+      <SurfaceCard variantStyle="elevated" contentSx={{ p: 0 }}>
+        <Box data-testid="hotel-management-tabs">
           <Tabs value={activeTab} onChange={handleTabChange}>
-            <Tab label="Existing Hotels" />
-            <Tab label="Hotel Registrations" />
+            <Tab label="Existing Hotels" data-testid="hotel-management-existing-hotels-tab" />
+            <Tab label="Hotel Registrations" data-testid="hotel-management-registrations-tab" />
           </Tabs>
         </Box>
+      </SurfaceCard>
 
-        {/* Tab Content */}
-        {activeTab === 0 && (
-          <>
-            {/* Search and Filters */}
-            <Paper sx={{ p: 2, mb: 2 }}>
-              <Grid container spacing={2}>
-                <Grid item xs={12} md={6}>
-                  <PremiumTextField
-                    fullWidth
-                    label="Search hotels..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    placeholder="Search by name, city, or email"
-                  />
-                </Grid>
-                <Grid item xs={12} md={3}>
-                  <PremiumSelect
-                    fullWidth
-                    label="Status"
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                  >
-                    <MenuItem value="all">All Hotels</MenuItem>
-                    <MenuItem value="active">Active Only</MenuItem>
-                    <MenuItem value="inactive">Inactive Only</MenuItem>
-                  </PremiumSelect>
-                </Grid>
+      {activeTab === 0 && (
+        <DataTableCard
+          title="Existing Hotels"
+          description="Review hotel status, tenant assignments, and public listing state for all configured properties."
+          filters={
+            <Grid container spacing={2}>
+              <Grid item xs={12} md={6}>
+                <PremiumTextField
+                  fullWidth
+                  label="Search hotels..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Search by name, city, or email"
+                />
               </Grid>
-            </Paper>
-
-            {/* Hotels Table */}
-            <TableContainer component={Paper}>
-              <Table>
-                <TableHead>
-                  <TableRow
-                    sx={{
-                      background: `linear-gradient(135deg, ${addAlpha(COLORS.PRIMARY, 0.08)} 0%, ${addAlpha(COLORS.PRIMARY, 0.16)} 100%)`,
-                      borderBottom: `2px solid ${COLORS.PRIMARY}`,
-                      '& .MuiTableCell-head': {
-                        color: COLORS.PRIMARY,
-                        fontWeight: 600,
-                        fontSize: '0.95rem',
-                        letterSpacing: '0.5px',
-                        textTransform: 'uppercase',
-                        border: 'none',
-                        padding: '20px 16px',
-                        position: 'relative'
-                      }
-                    }}
-                  >
+              <Grid item xs={12} md={3}>
+                <PremiumSelect
+                  fullWidth
+                  label="Status"
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                >
+                  <MenuItem value="all">All Hotels</MenuItem>
+                  <MenuItem value="active">Active Only</MenuItem>
+                  <MenuItem value="inactive">Inactive Only</MenuItem>
+                </PremiumSelect>
+              </Grid>
+            </Grid>
+          }
+          pagination={
+            <TablePagination
+              component="div"
+              count={filteredHotels.length}
+              page={page}
+              onPageChange={handleChangePage}
+              rowsPerPage={rowsPerPage}
+              onRowsPerPageChange={handleChangeRowsPerPage}
+              rowsPerPageOptions={[5, 10, 25]}
+            />
+          }
+        >
+          <Table>
+            <TableHead>
+              <TableRow sx={adminTableHeaderSx}>
                     <TableCell>Hotel Name</TableCell>
                     <TableCell>Location</TableCell>
                     <TableCell>Tenant</TableCell>
@@ -819,13 +856,13 @@ const HotelManagementAdmin: React.FC = () => {
                 <TableBody>
                   {loading ? (
                     <TableRow>
-                      <TableCell colSpan={9} align="center">
+                      <TableCell colSpan={9} align="center" sx={{ py: 6 }}>
                         <CircularProgress />
                       </TableCell>
                     </TableRow>
                   ) : filteredHotels.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={9} align="center">
+                      <TableCell colSpan={9} align="center" sx={{ py: 6 }}>
                         <Typography variant="body2" color="text.secondary">
                           No hotels found
                         </Typography>
@@ -835,7 +872,7 @@ const HotelManagementAdmin: React.FC = () => {
                     filteredHotels
                       .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                       .map((hotel) => (
-                        <TableRow key={hotel.id}>
+                        <TableRow key={hotel.id} hover>
                           <TableCell>
                             <Typography variant="subtitle2">{hotel.name}</Typography>
                           </TableCell>
@@ -924,96 +961,61 @@ const HotelManagementAdmin: React.FC = () => {
                   )}
                 </TableBody>
               </Table>
-              <TablePagination
-                component="div"
-                count={filteredHotels.length}
-                page={page}
-                onPageChange={handleChangePage}
-                rowsPerPage={rowsPerPage}
-                onRowsPerPageChange={handleChangeRowsPerPage}
-                rowsPerPageOptions={[5, 10, 25]}
-              />
-            </TableContainer>
-          </>
-        )}
+        </DataTableCard>
+      )}
 
-        {/* Hotel Registrations Tab */}
-        {activeTab === 1 && (
-          <>
-            {/* Registration Statistics */}
-            {registrationStats && (
-              <Grid container spacing={3} sx={{ mb: 4 }}>
-                <Grid item xs={12} sm={6} md={3}>
-                  <Card>
-                    <CardContent>
-                      <Typography color="textSecondary" gutterBottom>
-                        Total
-                      </Typography>
-                      <Typography variant="h4">
-                        {registrationStats.total}
-                      </Typography>
-                    </CardContent>
-                  </Card>
-                </Grid>
-                <Grid item xs={12} sm={6} md={3}>
-                  <Card>
-                    <CardContent>
-                      <Typography color="textSecondary" gutterBottom>
-                        Pending
-                      </Typography>
-                      <Typography variant="h4" color="warning.main">
-                        {registrationStats.pending}
-                      </Typography>
-                    </CardContent>
-                  </Card>
-                </Grid>
-                <Grid item xs={12} sm={6} md={3}>
-                  <Card>
-                    <CardContent>
-                      <Typography color="textSecondary" gutterBottom>
-                        Approved
-                      </Typography>
-                      <Typography variant="h4" sx={{ color: COLORS.PRIMARY }}>
-                        {registrationStats.approved}
-                      </Typography>
-                    </CardContent>
-                  </Card>
-                </Grid>
-                <Grid item xs={12} sm={6} md={3}>
-                  <Card>
-                    <CardContent>
-                      <Typography color="textSecondary" gutterBottom>
-                        Rejected
-                      </Typography>
-                      <Typography variant="h4" color="error.main">
-                        {registrationStats.rejected}
-                      </Typography>
-                    </CardContent>
-                  </Card>
-                </Grid>
+      {activeTab === 1 && (
+        <>
+          {registrationStats && (
+            <Grid container spacing={3} sx={{ mb: 1 }}>
+              <Grid item xs={12} sm={6} md={3}>
+                <SurfaceCard variantStyle="subtle">
+                  <Typography color="text.secondary" gutterBottom>
+                    Total
+                  </Typography>
+                  <Typography variant="h4">{registrationStats.total}</Typography>
+                </SurfaceCard>
               </Grid>
-            )}
+              <Grid item xs={12} sm={6} md={3}>
+                <SurfaceCard variantStyle="subtle">
+                  <Typography color="text.secondary" gutterBottom>
+                    Pending
+                  </Typography>
+                  <Typography variant="h4" color="warning.main">
+                    {registrationStats.pending}
+                  </Typography>
+                </SurfaceCard>
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <SurfaceCard variantStyle="subtle">
+                  <Typography color="text.secondary" gutterBottom>
+                    Approved
+                  </Typography>
+                  <Typography variant="h4" sx={{ color: getReadableAccentTextColor(theme) }}>
+                    {registrationStats.approved}
+                  </Typography>
+                </SurfaceCard>
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <SurfaceCard variantStyle="subtle">
+                  <Typography color="text.secondary" gutterBottom>
+                    Rejected
+                  </Typography>
+                  <Typography variant="h4" color="error.main">
+                    {registrationStats.rejected}
+                  </Typography>
+                </SurfaceCard>
+              </Grid>
+            </Grid>
+          )}
 
-            {/* Registration Table */}
-            <TableContainer component={Paper}>
-              <Table>
-                <TableHead>
-                  <TableRow
-                    sx={{
-                      background: `linear-gradient(135deg, ${addAlpha(COLORS.PRIMARY, 0.08)} 0%, ${addAlpha(COLORS.PRIMARY, 0.16)} 100%)`,
-                      borderBottom: `2px solid ${COLORS.PRIMARY}`,
-                      '& .MuiTableCell-head': {
-                        color: COLORS.PRIMARY,
-                        fontWeight: 600,
-                        fontSize: '0.95rem',
-                        letterSpacing: '0.5px',
-                        textTransform: 'uppercase',
-                        border: 'none',
-                        padding: '20px 16px',
-                        position: 'relative'
-                      }
-                    }}
-                  >
+          <DataTableCard
+            title="Hotel Registrations"
+            description="Review pending hotel onboarding submissions, inspect application details, and approve or reject registrations."
+          >
+            <Table>
+              <TableHead>
+                <TableRow sx={adminTableHeaderSx}>
                     <TableCell>Hotel Name</TableCell>
                     <TableCell>Contact Person</TableCell>
                     <TableCell>Email</TableCell>
@@ -1024,13 +1026,21 @@ const HotelManagementAdmin: React.FC = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {registrations.map((registration) => (
-                    <TableRow key={registration.id}>
+                  {registrations.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={7} align="center" sx={{ py: 6 }}>
+                        <Typography variant="body2" color="text.secondary">
+                          No hotel registrations found.
+                        </Typography>
+                      </TableCell>
+                    </TableRow>
+                  ) : registrations.map((registration) => (
+                    <TableRow key={registration.id} hover>
                       <TableCell>
                         <Typography variant="subtitle2">
                           {registration.hotelName}
                         </Typography>
-                        <Typography variant="body2" color="textSecondary">
+                        <Typography variant="body2" color="text.secondary">
                           {registration.address}
                         </Typography>
                       </TableCell>
@@ -1046,36 +1056,47 @@ const HotelManagementAdmin: React.FC = () => {
                       </TableCell>
                       <TableCell>{formatDate(registration.submittedAt)}</TableCell>
                       <TableCell>
-                        <Button
-                          size="small"
+                        <StandardButton
+                          buttonSize="small"
                           variant="outlined"
                           startIcon={<ReviewIcon />}
                           onClick={() => viewRegistration(registration)}
-                          sx={{
-                            borderColor: COLORS.PRIMARY,
-                            color: COLORS.PRIMARY,
-                            '&:hover': {
-                              borderColor: COLORS.PRIMARY_PRESSED,
-                              backgroundColor: COLORS.SLATE_50
-                            }
-                          }}
+                          sx={adminOutlinedActionSx}
                         >
                           Review
-                        </Button>
+                        </StandardButton>
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
-            </TableContainer>
-          </>
-        )}
+          </DataTableCard>
+        </>
+      )}
 
         {/* Hotel Registration Dialog */}
-        <Dialog open={registerDialogOpen} onClose={() => setRegisterDialogOpen(false)} maxWidth="md" fullWidth>
-          <DialogTitle>Register New Hotel</DialogTitle>
-          <DialogContent>
-            <Grid container spacing={2} sx={{ mt: 1 }}>
+        <StandardDialog
+          open={registerDialogOpen}
+          onClose={() => setRegisterDialogOpen(false)}
+          maxWidth="md"
+          fullWidth
+          title="Register New Hotel"
+          actions={
+            <>
+              <Button variant="outlined" sx={dialogSecondaryActionSx} onClick={() => setRegisterDialogOpen(false)} data-testid="hotel-registration-cancel-button">Cancel</Button>
+              <Button 
+                variant="contained" 
+                onClick={handleRegistrationSubmit}
+                disabled={!registrationForm.hotelName || !registrationForm.contactPerson || !registrationForm.contactEmail}
+                data-testid="hotel-registration-submit-button"
+              >
+                Submit Registration
+              </Button>
+            </>
+          }
+          PaperProps={{ 'data-testid': 'hotel-registration-dialog' }}
+        >
+          <Grid container spacing={2} sx={{ mt: 0.5 }}>
               <Grid item xs={12} sm={6}>
                 <PremiumTextField
                   label="Hotel Name"
@@ -1083,6 +1104,7 @@ const HotelManagementAdmin: React.FC = () => {
                   required
                   value={registrationForm.hotelName}
                   onChange={(e) => handleRegistrationFormChange('hotelName', e.target.value)}
+                  inputProps={{ 'data-testid': 'hotel-registration-hotel-name-input' }}
                 />
               </Grid>
               
@@ -1093,6 +1115,7 @@ const HotelManagementAdmin: React.FC = () => {
                   required
                   value={registrationForm.contactPerson}
                   onChange={(e) => handleRegistrationFormChange('contactPerson', e.target.value)}
+                  inputProps={{ 'data-testid': 'hotel-registration-contact-person-input' }}
                 />
               </Grid>
               
@@ -1104,6 +1127,7 @@ const HotelManagementAdmin: React.FC = () => {
                   fullWidth
                   value={registrationForm.description}
                   onChange={(e) => handleRegistrationFormChange('description', e.target.value)}
+                  inputProps={{ 'data-testid': 'hotel-registration-description-input' }}
                 />
               </Grid>
               
@@ -1114,6 +1138,7 @@ const HotelManagementAdmin: React.FC = () => {
                   required
                   value={registrationForm.address}
                   onChange={(e) => handleRegistrationFormChange('address', e.target.value)}
+                  inputProps={{ 'data-testid': 'hotel-registration-address-input' }}
                 />
               </Grid>
               
@@ -1124,6 +1149,7 @@ const HotelManagementAdmin: React.FC = () => {
                   required
                   value={registrationForm.city}
                   onChange={(e) => handleRegistrationFormChange('city', e.target.value)}
+                  inputProps={{ 'data-testid': 'hotel-registration-city-input' }}
                 />
               </Grid>
               
@@ -1134,6 +1160,7 @@ const HotelManagementAdmin: React.FC = () => {
                   required
                   value={registrationForm.country}
                   onChange={(e) => handleRegistrationFormChange('country', e.target.value)}
+                  inputProps={{ 'data-testid': 'hotel-registration-country-input' }}
                 />
               </Grid>
               
@@ -1146,19 +1173,14 @@ const HotelManagementAdmin: React.FC = () => {
                   required
                   value={registrationForm.contactEmail}
                   onChange={(e) => handleRegistrationFormChange('contactEmail', e.target.value)}
+                  inputProps={{ 'data-testid': 'hotel-registration-contact-email-input' }}
                 />
               </Grid>
 
               {/* Phone Numbers Section with grouped styling */}
               <Grid item xs={12}>
-                <Box sx={{ 
-                  border: `1px solid ${COLORS.BG_INFO_LIGHT}`, 
-                  borderRadius: 2, 
-                  p: 2, 
-                  backgroundColor: COLORS.BG_INFO_LIGHT,
-                  mt: 1
-                }}>
-                  <Typography variant="subtitle1" sx={{ mb: 2, color: COLORS.PRIMARY, fontWeight: 600 }}>
+                <Box sx={adminInfoPanelSx}>
+                  <Typography variant="subtitle1" sx={{ ...adminSectionTitleSx, mb: 2 }}>
                     Phone Numbers
                   </Typography>
                   <Grid container spacing={2}>
@@ -1170,6 +1192,7 @@ const HotelManagementAdmin: React.FC = () => {
                         value={registrationForm.phone}
                         onChange={(e) => handleRegistrationFormChange('phone', e.target.value)}
                         helperText="Primary phone for general communication"
+                        inputProps={{ 'data-testid': 'hotel-registration-phone-input' }}
                       />
                     </Grid>
                     <Grid item xs={12} sm={6}>
@@ -1182,6 +1205,7 @@ const HotelManagementAdmin: React.FC = () => {
                         value={registrationForm.mobilePaymentPhone}
                         onChange={(e) => handleRegistrationFormChange('mobilePaymentPhone', e.target.value)}
                         helperText="Primary mobile money account for payments"
+                        inputProps={{ 'data-testid': 'hotel-registration-mobile-payment-phone-input' }}
                       />
                     </Grid>
                     <Grid item xs={12} sm={6}>
@@ -1191,6 +1215,7 @@ const HotelManagementAdmin: React.FC = () => {
                         value={registrationForm.mobilePaymentPhone2}
                         onChange={(e) => handleRegistrationFormChange('mobilePaymentPhone2', e.target.value)}
                         helperText="Optional secondary mobile money account"
+                        inputProps={{ 'data-testid': 'hotel-registration-mobile-payment-phone-2-input' }}
                       />
                     </Grid>
                   </Grid>
@@ -1203,6 +1228,7 @@ const HotelManagementAdmin: React.FC = () => {
                   fullWidth
                   value={registrationForm.licenseNumber}
                   onChange={(e) => handleRegistrationFormChange('licenseNumber', e.target.value)}
+                  inputProps={{ 'data-testid': 'hotel-registration-license-number-input' }}
                 />
               </Grid>
 
@@ -1212,6 +1238,7 @@ const HotelManagementAdmin: React.FC = () => {
                   fullWidth
                   value={registrationForm.taxId}
                   onChange={(e) => handleRegistrationFormChange('taxId', e.target.value)}
+                  inputProps={{ 'data-testid': 'hotel-registration-tax-id-input' }}
                 />
               </Grid>
 
@@ -1221,6 +1248,7 @@ const HotelManagementAdmin: React.FC = () => {
                   fullWidth
                   value={registrationForm.websiteUrl}
                   onChange={(e) => handleRegistrationFormChange('websiteUrl', e.target.value)}
+                  inputProps={{ 'data-testid': 'hotel-registration-website-url-input' }}
                 />
               </Grid>
 
@@ -1233,6 +1261,7 @@ const HotelManagementAdmin: React.FC = () => {
                   value={registrationForm.facilityAmenities}
                   onChange={(e) => handleRegistrationFormChange('facilityAmenities', e.target.value)}
                   placeholder="WiFi, Pool, Spa, Restaurant, etc."
+                  inputProps={{ 'data-testid': 'hotel-registration-facility-amenities-input' }}
                 />
               </Grid>
 
@@ -1243,6 +1272,7 @@ const HotelManagementAdmin: React.FC = () => {
                   value={registrationForm.numberOfRooms}
                   onChange={(e) => handleRegistrationFormChange('numberOfRooms', e.target.value)}
                   placeholder="Enter number of rooms"
+                  inputProps={{ 'data-testid': 'hotel-registration-number-of-rooms-input' }}
                 />
               </Grid>
 
@@ -1253,6 +1283,7 @@ const HotelManagementAdmin: React.FC = () => {
                   fullWidth
                   value={registrationForm.checkInTime}
                   onChange={(e) => handleRegistrationFormChange('checkInTime', e.target.value)}
+                  inputProps={{ 'data-testid': 'hotel-registration-check-in-time-input' }}
                 />
               </Grid>
 
@@ -1263,33 +1294,20 @@ const HotelManagementAdmin: React.FC = () => {
                   fullWidth
                   value={registrationForm.checkOutTime}
                   onChange={(e) => handleRegistrationFormChange('checkOutTime', e.target.value)}
+                  inputProps={{ 'data-testid': 'hotel-registration-check-out-time-input' }}
                 />
               </Grid>
             </Grid>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setRegisterDialogOpen(false)}>Cancel</Button>
-            <Button 
-              variant="contained" 
-              onClick={handleRegistrationSubmit}
-              disabled={!registrationForm.hotelName || !registrationForm.contactPerson || !registrationForm.contactEmail}
-            >
-              Submit Registration
-            </Button>
-          </DialogActions>
-        </Dialog>
+        </StandardDialog>
 
         {/* Registration View Dialog - 2-Step Wizard */}
-        <Dialog open={registrationViewDialogOpen} onClose={() => setRegistrationViewDialogOpen(false)} maxWidth="md" fullWidth>
-          <DialogTitle
-            sx={{
-              borderBottom: `2px solid ${COLORS.SECONDARY}`,
-              pb: 2,
-              fontWeight: 600,
-              color: COLORS.PRIMARY
-            }}
-          >
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <StandardDialog
+          open={registrationViewDialogOpen}
+          onClose={() => setRegistrationViewDialogOpen(false)}
+          maxWidth="md"
+          fullWidth
+          title={
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
               <span>Review Hotel Registration</span>
               {selectedRegistration?.status === 'PENDING' && !registrationEditMode && (
                 <Button
@@ -1302,8 +1320,103 @@ const HotelManagementAdmin: React.FC = () => {
                 </Button>
               )}
             </Box>
-          </DialogTitle>
-          <Box sx={{ px: 3, pt: 2 }}>
+          }
+          actions={registrationEditMode ? (
+            <>
+              <Button variant="outlined" sx={dialogSecondaryActionSx} onClick={handleCancelRegistrationEdit}>Cancel</Button>
+              <Box sx={{ flex: 1 }} />
+              {registrationWizardStep === 0 ? (
+                <Button
+                  variant="contained"
+                  endIcon={<NavigateNext />}
+                  onClick={() => setRegistrationWizardStep(1)}
+                >
+                  Next
+                </Button>
+              ) : (
+                <>
+                  <Button
+                    startIcon={<NavigateBefore />}
+                    onClick={() => setRegistrationWizardStep(0)}
+                  >
+                    Back
+                  </Button>
+                  <Button 
+                    variant="contained" 
+                    onClick={handleSaveRegistrationEdit}
+                    disabled={!editRegistrationForm.hotelName || !editRegistrationForm.contactPerson || !editRegistrationForm.contactEmail}
+                  >
+                    Save Changes
+                  </Button>
+                </>
+              )}
+            </>
+          ) : (
+            registrationWizardStep === 0 ? (
+              <>
+                <Button 
+                  onClick={() => setRegistrationViewDialogOpen(false)}
+                  sx={{ color: 'text.secondary' }}
+                >
+                  Cancel
+                </Button>
+                <Box sx={{ flex: 1 }} />
+                <Button
+                  variant="contained"
+                  endIcon={<NavigateNext />}
+                  onClick={() => setRegistrationWizardStep(1)}
+                >
+                  Next
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  startIcon={<NavigateBefore />}
+                  onClick={() => setRegistrationWizardStep(0)}
+                >
+                  Back
+                </Button>
+                <Box sx={{ flex: 1 }} />
+                <Button 
+                  onClick={() => setRegistrationViewDialogOpen(false)}
+                  sx={{ color: 'text.secondary' }}
+                >
+                  Cancel
+                </Button>
+                {selectedRegistration?.status === 'PENDING' && (
+                  <>
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      startIcon={<RejectIcon />}
+                      onClick={() => openRejectionDialog(selectedRegistration)}
+                      sx={adminDangerOutlinedActionSx}
+                    >
+                      Reject
+                    </Button>
+                    <Button
+                      variant="contained"
+                      color="success"
+                      startIcon={<ApproveIcon />}
+                      onClick={() => openApprovalDialog(selectedRegistration)}
+                      sx={{
+                        backgroundColor: (theme) => theme.palette.success.main,
+                        '&:hover': {
+                          backgroundColor: (theme) => theme.palette.success.dark
+                        }
+                      }}
+                    >
+                      Approve
+                    </Button>
+                  </>
+                )}
+              </>
+            )
+          )}
+          contentSx={{ pt: 2.5 }}
+        >
+          <Box sx={{ mb: 3 }}>
             <Stepper activeStep={registrationWizardStep} alternativeLabel>
               {wizardSteps.map((label) => (
                 <Step key={label}>
@@ -1312,14 +1425,13 @@ const HotelManagementAdmin: React.FC = () => {
               ))}
             </Stepper>
           </Box>
-          <DialogContent>
-            {selectedRegistration && (
+          {selectedRegistration && (
               <Box sx={{ mt: 1 }}>
                 {/* Step 1: Hotel & Admin Info */}
                 {registrationWizardStep === 0 && (
                   <Grid container spacing={2}>
                     <Grid item xs={12}>
-                      <Typography variant="subtitle1" fontWeight={600} color="primary" sx={{ mb: 1 }}>
+                      <Typography variant="subtitle1" sx={adminSectionTitleSx}>
                         Hotel Information
                       </Typography>
                       <Divider sx={{ mb: 2 }} />
@@ -1401,7 +1513,7 @@ const HotelManagementAdmin: React.FC = () => {
                     )}
 
                     <Grid item xs={12}>
-                      <Typography variant="subtitle1" fontWeight={600} color="primary" sx={{ mt: 1, mb: 1 }}>
+                      <Typography variant="subtitle1" sx={adminSectionTitleWithTopSpacingSx}>
                         Registered Hotel Admin
                       </Typography>
                       <Divider sx={{ mb: 2 }} />
@@ -1440,7 +1552,7 @@ const HotelManagementAdmin: React.FC = () => {
                 {registrationWizardStep === 1 && (
                   <Grid container spacing={2}>
                     <Grid item xs={12}>
-                      <Typography variant="subtitle1" fontWeight={600} color="primary" sx={{ mb: 1 }}>
+                      <Typography variant="subtitle1" sx={adminSectionTitleSx}>
                         Business Details
                       </Typography>
                       <Divider sx={{ mb: 2 }} />
@@ -1483,7 +1595,7 @@ const HotelManagementAdmin: React.FC = () => {
                     </Grid>
 
                     <Grid item xs={12}>
-                      <Typography variant="subtitle1" fontWeight={600} color="primary" sx={{ mt: 1, mb: 1 }}>
+                      <Typography variant="subtitle1" sx={adminSectionTitleWithTopSpacingSx}>
                         Payment Information
                       </Typography>
                       <Divider sx={{ mb: 2 }} />
@@ -1506,7 +1618,7 @@ const HotelManagementAdmin: React.FC = () => {
                     </Grid>
 
                     <Grid item xs={12}>
-                      <Typography variant="subtitle1" fontWeight={600} color="primary" sx={{ mt: 1, mb: 1 }}>
+                      <Typography variant="subtitle1" sx={adminSectionTitleWithTopSpacingSx}>
                         Tax & License
                       </Typography>
                       <Divider sx={{ mb: 2 }} />
@@ -1529,7 +1641,7 @@ const HotelManagementAdmin: React.FC = () => {
                     </Grid>
 
                     <Grid item xs={12}>
-                      <Typography variant="subtitle1" fontWeight={600} color="primary" sx={{ mt: 1, mb: 1 }}>
+                      <Typography variant="subtitle1" sx={adminSectionTitleWithTopSpacingSx}>
                         Facility Information
                       </Typography>
                       <Divider sx={{ mb: 2 }} />
@@ -1593,112 +1705,10 @@ const HotelManagementAdmin: React.FC = () => {
                 )}
               </Box>
             )}
-          </DialogContent>
-          <DialogActions sx={{ px: 3, py: 2, borderTop: `1px solid ${COLORS.BORDER_LIGHT}` }}>
-            {registrationEditMode ? (
-              <>
-                <Button onClick={handleCancelRegistrationEdit}>Cancel</Button>
-                <Box sx={{ flex: 1 }} />
-                {registrationWizardStep === 0 ? (
-                  <Button
-                    variant="contained"
-                    endIcon={<NavigateNext />}
-                    onClick={() => setRegistrationWizardStep(1)}
-                  >
-                    Next
-                  </Button>
-                ) : (
-                  <>
-                    <Button
-                      startIcon={<NavigateBefore />}
-                      onClick={() => setRegistrationWizardStep(0)}
-                    >
-                      Back
-                    </Button>
-                    <Button 
-                      variant="contained" 
-                      onClick={handleSaveRegistrationEdit}
-                      disabled={!editRegistrationForm.hotelName || !editRegistrationForm.contactPerson || !editRegistrationForm.contactEmail}
-                    >
-                      Save Changes
-                    </Button>
-                  </>
-                )}
-              </>
-            ) : (
-              registrationWizardStep === 0 ? (
-                <>
-                  <Button 
-                    onClick={() => setRegistrationViewDialogOpen(false)}
-                    sx={{ color: COLORS.TEXT_SECONDARY }}
-                  >
-                    Cancel
-                  </Button>
-                  <Box sx={{ flex: 1 }} />
-                  <Button
-                    variant="contained"
-                    endIcon={<NavigateNext />}
-                    onClick={() => setRegistrationWizardStep(1)}
-                  >
-                    Next
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Button
-                    startIcon={<NavigateBefore />}
-                    onClick={() => setRegistrationWizardStep(0)}
-                  >
-                    Back
-                  </Button>
-                  <Box sx={{ flex: 1 }} />
-                  <Button 
-                    onClick={() => setRegistrationViewDialogOpen(false)}
-                    sx={{ color: COLORS.TEXT_SECONDARY }}
-                  >
-                    Cancel
-                  </Button>
-                  {selectedRegistration?.status === 'PENDING' && (
-                    <>
-                      <Button
-                        variant="outlined"
-                        color="error"
-                        startIcon={<RejectIcon />}
-                        onClick={() => openRejectionDialog(selectedRegistration)}
-                        sx={{
-                          borderColor: COLORS.ERROR,
-                          '&:hover': {
-                            backgroundColor: COLORS.BG_ERROR_LIGHT,
-                            borderColor: COLORS.ERROR
-                          }
-                        }}
-                      >
-                        Reject
-                      </Button>
-                      <Button
-                        variant="contained"
-                        color="success"
-                        startIcon={<ApproveIcon />}
-                        onClick={() => openApprovalDialog(selectedRegistration)}
-                        sx={{
-                          backgroundColor: (theme) => theme.palette.success.main,
-                          '&:hover': {
-                            backgroundColor: (theme) => theme.palette.success.dark
-                          }
-                        }}
-                      >
-                        Approve
-                      </Button>
-                    </>
-                  )}
-                </>
-              )
-            )}
-          </DialogActions>
-        </Dialog>
+        </StandardDialog>
 
         {/* Toggle Status Confirmation Dialog */}
-        <Dialog
+        <StandardDialog
           open={toggleStatusDialogOpen}
           onClose={() => {
             setToggleStatusDialogOpen(false);
@@ -1706,91 +1716,108 @@ const HotelManagementAdmin: React.FC = () => {
           }}
           maxWidth="sm"
           fullWidth
+          title={selectedHotel?.isActive ? 'Deactivate Hotel' : 'Activate Hotel'}
+          actions={
+            <>
+              <Button onClick={() => {
+                setToggleStatusDialogOpen(false);
+                setToggleStatusReason('');
+              }}>
+                Cancel
+              </Button>
+              <Button
+                onClick={() => selectedHotel && handleToggleHotelStatus(selectedHotel)}
+                variant="contained"
+                color={selectedHotel?.isActive ? 'error' : 'success'}
+                disabled={!toggleStatusReason.trim() || loading}
+              >
+                {loading ? <CircularProgress size={20} /> : (selectedHotel?.isActive ? 'Deactivate' : 'Activate')}
+              </Button>
+            </>
+          }
         >
-          <DialogTitle>
-            {selectedHotel?.isActive ? 'Deactivate Hotel' : 'Activate Hotel'}
-          </DialogTitle>
-          <DialogContent>
-            <Typography sx={{ mb: 2 }}>
+          <Typography sx={{ mb: 2 }}>
               Are you sure you want to {selectedHotel?.isActive ? 'deactivate' : 'activate'} hotel "{selectedHotel?.name}"?
-            </Typography>
-            <PremiumTextField
-              label="Reason"
-              fullWidth
-              required
-              multiline
-              rows={3}
-              value={toggleStatusReason}
-              onChange={(e) => setToggleStatusReason(e.target.value)}
-              placeholder={`Enter reason for ${selectedHotel?.isActive ? 'deactivation' : 'activation'}...`}
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => {
-              setToggleStatusDialogOpen(false);
-              setToggleStatusReason('');
-            }}>
-              Cancel
-            </Button>
-            <Button
-              onClick={() => selectedHotel && handleToggleHotelStatus(selectedHotel)}
-              variant="contained"
-              color={selectedHotel?.isActive ? 'error' : 'success'}
-              disabled={!toggleStatusReason.trim() || loading}
-            >
-              {loading ? <CircularProgress size={20} /> : (selectedHotel?.isActive ? 'Deactivate' : 'Activate')}
-            </Button>
-          </DialogActions>
-        </Dialog>
+          </Typography>
+          <PremiumTextField
+            label="Reason"
+            fullWidth
+            required
+            multiline
+            rows={3}
+            value={toggleStatusReason}
+            onChange={(e) => setToggleStatusReason(e.target.value)}
+            placeholder={`Enter reason for ${selectedHotel?.isActive ? 'deactivation' : 'activation'}...`}
+          />
+        </StandardDialog>
 
         {/* Toggle Public Listing Confirmation Dialog */}
-        <Dialog
+        <StandardDialog
           open={togglePublicDialogOpen}
           onClose={() => { setTogglePublicDialogOpen(false); setTogglePublicReason(''); }}
           maxWidth="sm"
           fullWidth
+          title={selectedHotel?.isPubliclyListed ? 'Unpublish Hotel' : 'Publish Hotel to Public Search'}
+          actions={
+            <>
+              <Button onClick={() => { setTogglePublicDialogOpen(false); setTogglePublicReason(''); }}>
+                Cancel
+              </Button>
+              <Button
+                onClick={() => selectedHotel && handleTogglePublicListing(selectedHotel)}
+                variant="contained"
+                color={selectedHotel?.isPubliclyListed ? 'warning' : 'info'}
+                disabled={!togglePublicReason.trim() || loading}
+              >
+                {loading ? <CircularProgress size={20} /> : (selectedHotel?.isPubliclyListed ? 'Unpublish' : 'Publish')}
+              </Button>
+            </>
+          }
         >
-          <DialogTitle>
-            {selectedHotel?.isPubliclyListed ? 'Unpublish Hotel' : 'Publish Hotel to Public Search'}
-          </DialogTitle>
-          <DialogContent>
-            <Typography sx={{ mb: 2 }}>
+          <Typography sx={{ mb: 2 }}>
               {selectedHotel?.isPubliclyListed
                 ? `Unpublishing "${selectedHotel?.name}" will hide it from public guest search. Hotel admin will retain management access.`
                 : `Publishing "${selectedHotel?.name}" will make it visible to guests in the public hotel search. Ensure all hotel details, rooms, and pricing are configured before publishing.`}
-            </Typography>
-            <PremiumTextField
-              label="Reason"
-              fullWidth
-              required
-              multiline
-              rows={3}
-              value={togglePublicReason}
-              onChange={(e) => setTogglePublicReason(e.target.value)}
-              placeholder={selectedHotel?.isPubliclyListed ? 'Reason for unpublishing...' : 'Reason for publishing...'}
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => { setTogglePublicDialogOpen(false); setTogglePublicReason(''); }}>
-              Cancel
-            </Button>
-            <Button
-              onClick={() => selectedHotel && handleTogglePublicListing(selectedHotel)}
-              variant="contained"
-              color={selectedHotel?.isPubliclyListed ? 'warning' : 'info'}
-              disabled={!togglePublicReason.trim() || loading}
-            >
-              {loading ? <CircularProgress size={20} /> : (selectedHotel?.isPubliclyListed ? 'Unpublish' : 'Publish')}
-            </Button>
-          </DialogActions>
-        </Dialog>
+          </Typography>
+          <PremiumTextField
+            label="Reason"
+            fullWidth
+            required
+            multiline
+            rows={3}
+            value={togglePublicReason}
+            onChange={(e) => setTogglePublicReason(e.target.value)}
+            placeholder={selectedHotel?.isPubliclyListed ? 'Reason for unpublishing...' : 'Reason for publishing...'}
+          />
+        </StandardDialog>
 
         {/* View Hotel Dialog */}
-        <Dialog open={viewDialogOpen} onClose={handleCloseViewDialog} maxWidth="md" fullWidth>
-          <DialogTitle>Hotel Details</DialogTitle>
-          <DialogContent>
+        <StandardDialog
+          open={viewDialogOpen}
+          onClose={handleCloseViewDialog}
+          maxWidth="md"
+          fullWidth
+          title="Hotel Details"
+          actions={
+            <>
+              <Button variant="outlined" sx={dialogSecondaryActionSx} onClick={handleCloseViewDialog}>Close</Button>
+              <Button 
+                variant="contained" 
+                startIcon={<EditIcon />}
+                onClick={() => {
+                  if (selectedHotel) {
+                    handleEditHotel(selectedHotel);
+                    setViewDialogOpen(false);
+                  }
+                }}
+              >
+                Edit
+              </Button>
+            </>
+          }
+        >
             {selectedHotel && (
-              <Grid container spacing={2} sx={{ mt: 1 }}>
+              <Grid container spacing={2} sx={{ mt: 0.5 }}>
                 <Grid item xs={12} sm={6}>
                   <PremiumTextField
                     label="Hotel Name"
@@ -1903,23 +1930,7 @@ const HotelManagementAdmin: React.FC = () => {
                 </Grid>
               </Grid>
             )}
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCloseViewDialog}>Close</Button>
-            <Button 
-              variant="contained" 
-              startIcon={<EditIcon />}
-              onClick={() => {
-                if (selectedHotel) {
-                  handleEditHotel(selectedHotel);
-                  setViewDialogOpen(false);
-                }
-              }}
-            >
-              Edit
-            </Button>
-          </DialogActions>
-        </Dialog>
+        </StandardDialog>
 
         {/* Hotel Edit Dialog */}
         <HotelEditDialog
@@ -1931,27 +1942,28 @@ const HotelManagementAdmin: React.FC = () => {
         />
 
         {/* Approve Registration Dialog */}
-        <Dialog
+        <StandardDialog
           open={approveDialogOpen}
           onClose={() => setApproveDialogOpen(false)}
           maxWidth="sm"
           fullWidth
+          title="Approve Hotel Registration"
+          description={`You are about to approve the registration for "${selectedRegistration?.hotelName}". This will create a new hotel in the system and automatically assign it to the default tenant.`}
+          actions={
+            <>
+              <Button onClick={() => setApproveDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={handleApproveRegistration}
+                variant="contained"
+                sx={adminPrimaryContainedActionSx}
+              >
+                Approve Registration
+              </Button>
+            </>
+          }
         >
-          <DialogTitle
-            sx={{
-              borderBottom: `2px solid ${COLORS.SECONDARY}`,
-              pb: 2,
-              fontWeight: 600,
-              color: COLORS.PRIMARY
-            }}
-          >
-            Approve Hotel Registration
-          </DialogTitle>
-          <DialogContent>
-            <DialogContentText sx={{ mb: 2 }}>
-              You are about to approve the registration for "{selectedRegistration?.hotelName}". 
-              This will create a new hotel in the system and automatically assign it to the default tenant.
-            </DialogContentText>
             <Grid container spacing={2}>
               <Grid item xs={12}>
                 <PremiumTextField
@@ -1965,82 +1977,47 @@ const HotelManagementAdmin: React.FC = () => {
                 />
               </Grid>
             </Grid>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setApproveDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              onClick={handleApproveRegistration}
-              variant="contained"
-              sx={{
-                  backgroundColor: COLORS.PRIMARY,
-                '&:hover': {
-                  backgroundColor: COLORS.PRIMARY,
-                  filter: 'brightness(0.9)'
-                },
-                '&:disabled': {
-                    backgroundColor: addAlpha(COLORS.BLACK, 0.12)
-                }
-              }}
-            >
-              Approve Registration
-            </Button>
-          </DialogActions>
-        </Dialog>
+        </StandardDialog>
 
         {/* Reject Registration Dialog */}
-        <Dialog
+        <StandardDialog
           open={rejectDialogOpen}
           onClose={() => setRejectDialogOpen(false)}
           maxWidth="sm"
           fullWidth
+          title="Reject Hotel Registration"
+          description={`You are about to reject the registration for "${selectedRegistration?.hotelName}". Please provide a reason for the rejection.`}
+          actions={
+            <>
+              <Button onClick={() => setRejectDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={handleRejectRegistration}
+                color="error"
+                variant="contained"
+                disabled={!rejectionReason.trim()}
+              >
+                Reject Registration
+              </Button>
+            </>
+          }
         >
-          <DialogTitle
-            sx={{
-              borderBottom: `2px solid ${COLORS.SECONDARY}`,
-              pb: 2,
-              fontWeight: 600,
-              color: COLORS.PRIMARY
-            }}
-          >
-            Reject Hotel Registration
-          </DialogTitle>
-          <DialogContent>
-            <DialogContentText sx={{ mb: 2 }}>
-              You are about to reject the registration for "{selectedRegistration?.hotelName}". 
-              Please provide a reason for the rejection.
-            </DialogContentText>
-            <PremiumTextField
-              label="Rejection Reason"
-              multiline
-              rows={4}
-              fullWidth
-              required
-              value={rejectionReason}
-              onChange={(e) => setRejectionReason(e.target.value)}
-              placeholder="Please provide a detailed reason for rejecting this registration..."
-            />
-            <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-              This reason will be visible to the hotel applicant
-            </Typography>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setRejectDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              onClick={handleRejectRegistration}
-              color="error"
-              variant="contained"
-              disabled={!rejectionReason.trim()}
-            >
-              Reject Registration
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </Box>
-    </Box>
+          <PremiumTextField
+            label="Rejection Reason"
+            multiline
+            rows={4}
+            fullWidth
+            required
+            value={rejectionReason}
+            onChange={(e) => setRejectionReason(e.target.value)}
+            placeholder="Please provide a detailed reason for rejecting this registration..."
+          />
+          <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+            This reason will be visible to the hotel applicant
+          </Typography>
+        </StandardDialog>
+    </PageContainer>
   );
 };
 

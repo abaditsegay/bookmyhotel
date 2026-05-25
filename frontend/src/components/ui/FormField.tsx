@@ -3,15 +3,13 @@
 
 import React from 'react';
 import { 
-  TextField, 
   TextFieldProps,
-  FormControl,
   FormLabel,
   FormHelperText,
   Box,
   Typography
 } from '@mui/material';
-import { designSystem } from '../../theme/designSystem';
+import PremiumTextField from '../common/PremiumTextField';
 
 interface FormFieldProps extends Omit<TextFieldProps, 'variant'> {
   /** Field label */
@@ -52,9 +50,9 @@ const FormField: React.FC<FormFieldProps> = ({
           sx={{ 
             mb: 1,
             display: 'block',
-            color: isError ? 'error.main' : 'text.primary',
-            fontWeight: 500,
-            fontSize: '0.875rem',
+            color: isError ? 'error.main' : 'text.secondary',
+            fontWeight: 600,
+            fontSize: '0.82rem',
           }}
         >
           {label}
@@ -71,27 +69,13 @@ const FormField: React.FC<FormFieldProps> = ({
         </Typography>
       )}
 
-      <TextField
+      <PremiumTextField
         {...props}
         error={isError}
         disabled={isDisabled}
         fullWidth
         variant="outlined"
         sx={{
-          '& .MuiOutlinedInput-root': {
-            borderRadius: designSystem.borderRadius.md,
-            backgroundColor: isDisabled ? 'action.disabledBackground' : 'background.paper',
-            '&:hover .MuiOutlinedInput-notchedOutline': {
-              borderColor: isError ? 'error.main' : 'primary.main',
-            },
-            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-              borderColor: isError ? 'error.main' : 'primary.main',
-              borderWidth: '2px',
-            },
-            '&.Mui-error .MuiOutlinedInput-notchedOutline': {
-              borderColor: 'error.main',
-            },
-          },
           '& .MuiInputLabel-root': {
             '&.Mui-focused': {
               color: isError ? 'error.main' : 'primary.main',

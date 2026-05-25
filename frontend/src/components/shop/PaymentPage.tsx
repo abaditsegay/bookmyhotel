@@ -40,7 +40,8 @@ import {
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { PaymentMethod } from '../../types/shop';
-import { COLORS } from '../../theme/themeColors';
+import { useThemeColors } from '../../theme/useThemeColors';
+import { getReadableAccentTextColor } from '../../theme/surfaces';
 import { StandardButton } from '../common';
 import { useMockPayment, MockPaymentRequest } from '../../services/mockPaymentGateway';
 import { useAuth } from '../../contexts/AuthContext';
@@ -80,6 +81,8 @@ interface PaymentMethodOption {
 
 const PaymentPage: React.FC = () => {
   const theme = useTheme();
+  const { COLORS } = useThemeColors();
+  const readableAccentColor = getReadableAccentTextColor(theme);
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const navigate = useNavigate();
   const location = useLocation();
@@ -647,7 +650,7 @@ const PaymentPage: React.FC = () => {
     <Box>
       <Typography variant="h6" sx={{ 
         fontWeight: 700,
-        color: COLORS.PRIMARY,
+        color: readableAccentColor,
         mb: 3,
         textAlign: 'center'
       }}>
@@ -684,7 +687,7 @@ const PaymentPage: React.FC = () => {
                 alignItems: 'center',
               }}>
                 <Box sx={{ 
-                  color: COLORS.PRIMARY,
+                  color: readableAccentColor,
                   mb: 2,
                   '& svg': { fontSize: 48 }
                 }}>
@@ -692,7 +695,7 @@ const PaymentPage: React.FC = () => {
                 </Box>
                 <Typography variant="h6" sx={{
                   fontWeight: 600,
-                  color: COLORS.PRIMARY,
+                  color: readableAccentColor,
                   mb: 1
                 }}>
                   {method.label}
@@ -718,7 +721,7 @@ const PaymentPage: React.FC = () => {
           <Box>
             <Typography variant="h6" sx={{ 
               fontWeight: 700,
-              color: COLORS.PRIMARY,
+              color: readableAccentColor,
               mb: 3,
               textAlign: 'center'
             }}>
@@ -734,11 +737,11 @@ const PaymentPage: React.FC = () => {
                 <Box sx={{ textAlign: 'center', mb: 3 }}>
                   <CreditCardIcon sx={{ 
                     fontSize: 48, 
-                    color: COLORS.PRIMARY,
+                    color: readableAccentColor,
                     mb: 1 
                   }} />
                   <Typography variant="h6" sx={{ 
-                    color: COLORS.PRIMARY,
+                    color: readableAccentColor,
                     fontWeight: 700,
                     mb: 1
                   }}>
@@ -751,7 +754,7 @@ const PaymentPage: React.FC = () => {
                     Secure card payment processing
                   </Typography>
                   <Typography variant="h6" sx={{ 
-                    color: COLORS.PRIMARY,
+                    color: readableAccentColor,
                     fontWeight: 700
                   }}>
                     Amount: {formatCurrency(totalAmount)}
@@ -771,15 +774,15 @@ const PaymentPage: React.FC = () => {
                         '& .MuiOutlinedInput-root': {
                           backgroundColor: theme.palette.background.paper,
                           '&:hover .MuiOutlinedInput-notchedOutline': {
-                            borderColor: COLORS.PRIMARY,
+                            borderColor: readableAccentColor,
                           },
                           '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                            borderColor: COLORS.PRIMARY,
+                            borderColor: readableAccentColor,
                           },
                         },
                         '& .MuiInputLabel-root': {
                           '&.Mui-focused': {
-                            color: COLORS.PRIMARY,
+                            color: readableAccentColor,
                           },
                         },
                       }}
@@ -802,15 +805,15 @@ const PaymentPage: React.FC = () => {
                         '& .MuiOutlinedInput-root': {
                           backgroundColor: theme.palette.background.paper,
                           '&:hover .MuiOutlinedInput-notchedOutline': {
-                            borderColor: COLORS.PRIMARY,
+                            borderColor: readableAccentColor,
                           },
                           '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                            borderColor: COLORS.PRIMARY,
+                            borderColor: readableAccentColor,
                           },
                         },
                         '& .MuiInputLabel-root': {
                           '&.Mui-focused': {
-                            color: COLORS.PRIMARY,
+                            color: readableAccentColor,
                           },
                         },
                       }}
@@ -833,15 +836,15 @@ const PaymentPage: React.FC = () => {
                         '& .MuiOutlinedInput-root': {
                           backgroundColor: theme.palette.background.paper,
                           '&:hover .MuiOutlinedInput-notchedOutline': {
-                            borderColor: COLORS.PRIMARY,
+                            borderColor: readableAccentColor,
                           },
                           '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                            borderColor: COLORS.PRIMARY,
+                            borderColor: readableAccentColor,
                           },
                         },
                         '& .MuiInputLabel-root': {
                           '&.Mui-focused': {
-                            color: COLORS.PRIMARY,
+                            color: readableAccentColor,
                           },
                         },
                       }}
@@ -860,15 +863,15 @@ const PaymentPage: React.FC = () => {
                         '& .MuiOutlinedInput-root': {
                           backgroundColor: theme.palette.background.paper,
                           '&:hover .MuiOutlinedInput-notchedOutline': {
-                            borderColor: COLORS.PRIMARY,
+                            borderColor: readableAccentColor,
                           },
                           '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                            borderColor: COLORS.PRIMARY,
+                            borderColor: readableAccentColor,
                           },
                         },
                         '& .MuiInputLabel-root': {
                           '&.Mui-focused': {
-                            color: COLORS.PRIMARY,
+                            color: readableAccentColor,
                           },
                         },
                       }}
@@ -885,7 +888,7 @@ const PaymentPage: React.FC = () => {
           <Box>
             <Typography variant="h6" sx={{ 
               fontWeight: 700,
-              color: COLORS.PRIMARY,
+              color: readableAccentColor,
               mb: 3,
               textAlign: 'center'
             }}>
@@ -901,11 +904,11 @@ const PaymentPage: React.FC = () => {
                 <Box sx={{ textAlign: 'center', mb: 3 }}>
                   <MobileIcon sx={{ 
                     fontSize: 48, 
-                    color: COLORS.PRIMARY,
+                    color: readableAccentColor,
                     mb: 1 
                   }} />
                   <Typography variant="h6" sx={{ 
-                    color: COLORS.PRIMARY,
+                    color: readableAccentColor,
                     fontWeight: 700,
                     mb: 1
                   }}>
@@ -918,7 +921,7 @@ const PaymentPage: React.FC = () => {
                     Pay securely with your mobile money account
                   </Typography>
                   <Typography variant="h6" sx={{ 
-                    color: COLORS.PRIMARY,
+                    color: readableAccentColor,
                     fontWeight: 700
                   }}>
                     Amount: {formatCurrency(totalAmount)}
@@ -930,7 +933,7 @@ const PaymentPage: React.FC = () => {
                     <FormControl fullWidth variant="outlined">
                       <InputLabel sx={{
                         '&.Mui-focused': {
-                          color: COLORS.PRIMARY,
+                          color: readableAccentColor,
                         },
                       }}>Mobile Money Provider</InputLabel>
                       <Select
@@ -940,10 +943,10 @@ const PaymentPage: React.FC = () => {
                         sx={{
                           backgroundColor: theme.palette.background.paper,
                           '&:hover .MuiOutlinedInput-notchedOutline': {
-                            borderColor: COLORS.PRIMARY,
+                            borderColor: readableAccentColor,
                           },
                           '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                            borderColor: COLORS.PRIMARY,
+                            borderColor: readableAccentColor,
                           },
                         }}
                       >
@@ -967,15 +970,15 @@ const PaymentPage: React.FC = () => {
                         '& .MuiOutlinedInput-root': {
                           backgroundColor: theme.palette.background.paper,
                           '&:hover .MuiOutlinedInput-notchedOutline': {
-                            borderColor: COLORS.PRIMARY,
+                            borderColor: readableAccentColor,
                           },
                           '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                            borderColor: COLORS.PRIMARY,
+                            borderColor: readableAccentColor,
                           },
                         },
                         '& .MuiInputLabel-root': {
                           '&.Mui-focused': {
-                            color: COLORS.PRIMARY,
+                            color: readableAccentColor,
                           },
                         },
                       }}
@@ -992,7 +995,7 @@ const PaymentPage: React.FC = () => {
           <Box>
             <Typography variant="h6" sx={{ 
               fontWeight: 700,
-              color: COLORS.PRIMARY,
+              color: readableAccentColor,
               mb: 3,
               textAlign: 'center'
             }}>
@@ -1011,11 +1014,11 @@ const PaymentPage: React.FC = () => {
               }}>
                 <CashIcon sx={{ 
                   fontSize: 64, 
-                  color: COLORS.PRIMARY,
+                  color: readableAccentColor,
                   mb: 3 
                 }} />
                 <Typography variant="h5" sx={{ 
-                  color: COLORS.PRIMARY,
+                  color: readableAccentColor,
                   fontWeight: 700,
                   mb: 2
                 }}>
@@ -1036,7 +1039,7 @@ const PaymentPage: React.FC = () => {
                   border: `1px solid ${COLORS.PRIMARY}`,
                 }}>
                   <Typography variant="h4" sx={{ 
-                    color: COLORS.PRIMARY,
+                    color: readableAccentColor,
                     fontWeight: 700
                   }}>
                     {formatCurrency(totalAmount)}
@@ -1062,7 +1065,7 @@ const PaymentPage: React.FC = () => {
     <Box>
       <Typography variant="h6" sx={{ 
         fontWeight: 700,
-        color: COLORS.PRIMARY,
+        color: readableAccentColor,
         mb: 3,
         textAlign: 'center'
       }}>
@@ -1079,11 +1082,11 @@ const PaymentPage: React.FC = () => {
           <Box sx={{ textAlign: 'center', mb: 3 }}>
             <PaymentIcon sx={{ 
               fontSize: 48, 
-              color: COLORS.PRIMARY,
+              color: readableAccentColor,
               mb: 2 
             }} />
             <Typography variant="h5" sx={{ 
-              color: COLORS.PRIMARY,
+              color: readableAccentColor,
               fontWeight: 700,
               mb: 1
             }}>
@@ -1101,7 +1104,7 @@ const PaymentPage: React.FC = () => {
                 Total Amount:
               </Typography>
               <Typography variant="h5" sx={{ 
-                color: COLORS.PRIMARY,
+                color: readableAccentColor,
                 fontWeight: 700
               }}>
                 {formatCurrency(totalAmount)}
@@ -1197,7 +1200,7 @@ const PaymentPage: React.FC = () => {
             </StandardButton>
             <Typography variant="h4" sx={{ 
               fontWeight: 700,
-              color: COLORS.PRIMARY,
+              color: readableAccentColor,
               flexGrow: 1,
               textAlign: 'center'
             }}>

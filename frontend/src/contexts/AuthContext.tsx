@@ -63,6 +63,48 @@ interface AuthProviderProps {
   onLogout?: () => void;
 }
 
+const LOGIN_ERROR_FALLBACK = 'Unable to sign in. Please check your credentials and try again.';
+
+const sanitizeAuthErrorMessage = (message: string, status?: number): string => {
+  const trimmedMessage = message.trim();
+
+  if (status === 401) {
+    return 'Invalid email or password. Please try again.';
+  }
+
+  if (status !== undefined && status >= 500) {
+    return 'Unable to sign in right now. Please try again in a moment.';
+  }
+
+  if (!trimmedMessage || trimmedMessage.startsWith('{') || trimmedMessage.startsWith('[') || trimmedMessage.length > 220) {
+    return LOGIN_ERROR_FALLBACK;
+  }
+
+  return trimmedMessage;
+};
+
+const extractAuthErrorMessage = async (response: Response): Promise<string> => {
+  const errorText = await response.text().catch(() => '');
+
+  if (!errorText) {
+    return sanitizeAuthErrorMessage('', response.status);
+  }
+
+  try {
+    const errorData = JSON.parse(errorText);
+    const detailedMessage = [
+      errorData?.userFriendlyMessage,
+      errorData?.message,
+      errorData?.details,
+      errorData?.error,
+    ].find((value): value is string => typeof value === 'string' && value.trim().length > 0);
+
+    return sanitizeAuthErrorMessage(detailedMessage || errorText, response.status);
+  } catch {
+    return sanitizeAuthErrorMessage(errorText, response.status);
+  }
+};
+
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenChange, onLogout }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
@@ -232,8 +274,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
 
 
       if (!response.ok) {
-        const errorText = await response.text();
-        // console.error('Mobile AuthContext: Online login failed with status:', response.status, errorText);
+        const errorMessage = await extractAuthErrorMessage(response);
+        // console.error('Mobile AuthContext: Online login failed with status:', response.status, errorMessage);
         
         // Attempt offline authentication for hotel staff when server responds with error
         const offlineSuccess = await attemptOfflineLogin(email, password);
@@ -243,7 +285,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
         }
         
         // console.error('❌ Mobile AuthContext: Both server and offline login failed');
-        setError(errorText || 'Login failed');
+        setError(errorMessage);
         return false;
       }
 
@@ -357,7 +399,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
       }
       
       // console.error('❌ Mobile AuthContext: Both online and offline login failed');
-      setError((error as Error).message || 'Login failed - no network connection and no cached credentials');
+      setError((error as Error).message || 'Unable to sign in. Check your connection and try again.');
       return false;
     } finally {
       setLoading(false);

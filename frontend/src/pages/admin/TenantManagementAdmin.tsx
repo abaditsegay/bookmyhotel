@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { COLORS } from '../../theme/themeColors';
 import {
   Paper,
   Table,
@@ -24,6 +23,7 @@ import {
   MenuItem,
   Grid,
   Avatar,
+  useTheme,
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -34,10 +34,13 @@ import {
   Business as BusinessIcon,
   ToggleOn as ToggleOnIcon,
   ToggleOff as ToggleOffIcon,
-  ArrowBack as ArrowBackIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
 import { useNavigate } from 'react-router-dom';
+import { dialogSecondaryActionSx } from '../../theme/sxHelpers';
+            <Button variant="outlined" sx={dialogSecondaryActionSx} onClick={() => setCreateDialogOpen(false)}>Cancel</Button>
+            <Button variant="outlined" sx={dialogSecondaryActionSx} onClick={() => setEditDialogOpen(false)}>Cancel</Button>
 import { formatDateTimeForDisplay } from '../../utils/dateUtils';
 import { 
   adminApiService, 
@@ -47,6 +50,7 @@ import {
 } from '../../services/adminApi';
 import PremiumTextField from '../../components/common/PremiumTextField';
 import PremiumSelect from '../../components/common/PremiumSelect';
+import { tableHeadRowSx } from '../../theme/sxHelpers';
 
 interface TenantFilters {
   search: string;
@@ -55,7 +59,7 @@ interface TenantFilters {
 
 const TenantManagementAdmin: React.FC = () => {
   const { token } = useAuth();
-  const navigate = useNavigate();
+  const { showSubmissionError } = useSubmissionError();
   const [tenants, setTenants] = useState<TenantDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -186,7 +190,7 @@ const TenantManagementAdmin: React.FC = () => {
     if (!token) return;
     
     if (!tenantForm.name) {
-      setError('Please enter a tenant name.');
+      showSubmissionError('Please enter a tenant name.');
       return;
     }
     
@@ -203,7 +207,9 @@ const TenantManagementAdmin: React.FC = () => {
       setError(null);
     } catch (err) {
       // console.error('Error creating tenant:', err);
-      setError('Failed to create tenant. Please check if the name and subdomain are unique.');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to create tenant. Please check if the name and subdomain are unique.',
+      });
     } finally {
       setLoading(false);
     }
@@ -221,7 +227,9 @@ const TenantManagementAdmin: React.FC = () => {
       setError(null);
     } catch (err) {
       // console.error('Error updating tenant:', err);
-      setError('Failed to update tenant.');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to update tenant.',
+      });
     } finally {
       setLoading(false);
     }
@@ -237,7 +245,9 @@ const TenantManagementAdmin: React.FC = () => {
       setError(null);
     } catch (err) {
       // console.error('Error toggling tenant status:', err);
-      setError('Failed to update tenant status.');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to update tenant status.',
+      });
     } finally {
       setLoading(false);
     }
@@ -265,6 +275,8 @@ const TenantManagementAdmin: React.FC = () => {
     setPage(0);
   };
 
+  const adminTableHeaderSx = tableHeadRowSx({ compact: true });
+
   if (!token) {
     return (
       <Box sx={{ width: '100%', p: 3 }}>
@@ -281,7 +293,7 @@ const TenantManagementAdmin: React.FC = () => {
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
           <Typography variant="h5" component="h1" sx={{ 
             flexGrow: 1,
-            color: COLORS.PRIMARY,
+            color: 'primary.main',
             fontWeight: 600,
             letterSpacing: '0.5px'
           }}>
@@ -357,22 +369,7 @@ const TenantManagementAdmin: React.FC = () => {
           <TableContainer>
             <Table>
               <TableHead>
-                <TableRow
-                  sx={{
-                    background: `linear-gradient(135deg, ${COLORS.BG_DEFAULT} 0%, ${COLORS.BG_LIGHT} 100%)`,
-                    borderBottom: `2px solid ${COLORS.SECONDARY}`,
-                    '& .MuiTableCell-head': {
-                      color: COLORS.PRIMARY,
-                      fontWeight: 700,
-                      fontSize: '0.875rem',
-                      letterSpacing: '0.5px',
-                      textTransform: 'uppercase',
-                      border: 'none',
-                      padding: '20px 16px',
-                      position: 'relative'
-                    }
-                  }}
-                >
+                <TableRow sx={adminTableHeaderSx}>
                   <TableCell>Tenant</TableCell>
                   <TableCell>Subdomain</TableCell>
                   <TableCell>Description</TableCell>
@@ -654,6 +651,7 @@ const TenantManagementAdmin: React.FC = () => {
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setDetailsDialogOpen(false)}>Close</Button>
+            <Button variant="outlined" sx={dialogSecondaryActionSx} onClick={() => setDetailsDialogOpen(false)}>Close</Button>
             <Button 
               variant="contained" 
               startIcon={<EditIcon />}

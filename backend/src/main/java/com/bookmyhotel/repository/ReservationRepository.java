@@ -61,6 +61,13 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
        List<Reservation> findByHotelId(@Param("hotelId") Long hotelId);
 
        /**
+        * Find reservation by ID within a specific hotel.
+        */
+       @Query("SELECT r FROM Reservation r JOIN FETCH r.hotel WHERE r.id = :reservationId AND r.hotel.id = :hotelId")
+       Optional<Reservation> findByIdAndHotelId(@Param("reservationId") Long reservationId,
+                     @Param("hotelId") Long hotelId);
+
+       /**
         * Find upcoming check-ins by hotel
         */
        @Query("SELECT r FROM Reservation r " +
@@ -105,6 +112,13 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
        Optional<Reservation> findByPaymentReferencePublic(String paymentReference);
 
        /**
+        * Find reservation by payment reference for a specific hotel.
+        */
+       @Query("SELECT r FROM Reservation r JOIN FETCH r.hotel WHERE r.paymentReference = :paymentReference AND r.hotel.id = :hotelId")
+       Optional<Reservation> findByPaymentReferenceAndHotelId(@Param("paymentReference") String paymentReference,
+                     @Param("hotelId") Long hotelId);
+
+       /**
         * Find upcoming check-ins
         */
        @Query("SELECT r FROM Reservation r " +
@@ -136,6 +150,13 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
         */
        @Query("SELECT r FROM Reservation r JOIN FETCH r.hotel WHERE r.confirmationNumber = ?1")
        Optional<Reservation> findByConfirmationNumberPublic(String confirmationNumber);
+
+       /**
+        * Find reservation by confirmation number for a specific hotel.
+        */
+       @Query("SELECT r FROM Reservation r JOIN FETCH r.hotel WHERE r.confirmationNumber = :confirmationNumber AND r.hotel.id = :hotelId")
+       Optional<Reservation> findByConfirmationNumberAndHotelId(@Param("confirmationNumber") String confirmationNumber,
+                     @Param("hotelId") Long hotelId);
 
        /**
         * Find reservations by guest user ID (public search across all tenants)

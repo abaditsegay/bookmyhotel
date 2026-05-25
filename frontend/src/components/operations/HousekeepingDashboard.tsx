@@ -29,7 +29,7 @@ import {
   Tooltip,
   TablePagination,
   CircularProgress,
-  Alert
+  Alert,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -40,7 +40,8 @@ import {
   PlayArrow as StartIcon,
   CheckCircle as CompleteIcon
 } from '@mui/icons-material';
-import { COLORS, addAlpha } from '../../theme/themeColors';
+import { actionIconButtonSx, refreshActionButtonSx, tableHeadRowSx } from '../../theme/sxHelpers';
+import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
 
 
 const API_BASE_URL = API_CONFIG.BASE_URL;
@@ -85,6 +86,7 @@ interface CreateTaskForm {
 }
 
 const HousekeepingDashboard: React.FC = () => {
+  const { showSubmissionError } = useSubmissionError();
   const [activeTab, setActiveTab] = useState(0);
   const [tasks, setTasks] = useState<HousekeepingTask[]>([]);
   const [staff, setStaff] = useState<HousekeepingStaff[]>([]);
@@ -242,7 +244,9 @@ const HousekeepingDashboard: React.FC = () => {
       });
       await loadTasks();
     } catch (err) {
-      setError('Failed to create task');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to create task',
+      });
     }
   };
 
@@ -275,7 +279,7 @@ const HousekeepingDashboard: React.FC = () => {
       await loadTasks();
     } catch (err) {
       // console.error('Task assignment error:', err);
-      setError(`Failed to assign task: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      showSubmissionError(`Failed to assign task: ${err instanceof Error ? err.message : 'Unknown error'}`);
     }
   };
 
@@ -293,7 +297,7 @@ const HousekeepingDashboard: React.FC = () => {
       await loadTasks();
     } catch (err) {
       // console.error('Task start error:', err);
-      setError(`Failed to start task: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      showSubmissionError(`Failed to start task: ${err instanceof Error ? err.message : 'Unknown error'}`);
     }
   };
 
@@ -321,7 +325,7 @@ const HousekeepingDashboard: React.FC = () => {
       await loadTasks();
     } catch (err) {
       // console.error('Task completion error:', err);
-      setError(`Failed to complete task: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      showSubmissionError(`Failed to complete task: ${err instanceof Error ? err.message : 'Unknown error'}`);
     }
   };
 
@@ -454,6 +458,7 @@ const HousekeepingDashboard: React.FC = () => {
           <Button
             variant="outlined"
             startIcon={<RefreshIcon />}
+            sx={refreshActionButtonSx}
             onClick={() => { loadTasks(); loadStaff(); }}
           >
             Refresh
@@ -507,29 +512,7 @@ const HousekeepingDashboard: React.FC = () => {
         <Table>
           <TableHead>
             <TableRow
-              sx={{
-                background: COLORS.GRADIENT_SLATE,
-                '& .MuiTableCell-head': {
-                  color: COLORS.WHITE,
-                  fontWeight: 600,
-                  fontSize: '0.95rem',
-                  letterSpacing: '0.5px',
-                  textTransform: 'uppercase',
-                  border: 'none',
-                  padding: '20px 16px',
-                  position: 'relative',
-                  textShadow: `0 1px 2px ${addAlpha(COLORS.BLACK, 0.1)}`,
-                  '&::after': {
-                    content: '""',
-                    position: 'absolute',
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    height: '3px',
-                    background: `linear-gradient(90deg, ${addAlpha(COLORS.WHITE, 0.6)} 0%, ${addAlpha(COLORS.WHITE, 0.8)} 50%, ${addAlpha(COLORS.WHITE, 0.6)} 100%)`
-                  }
-                }
-              }}
+              sx={tableHeadRowSx()}
             >
               <TableCell>Room</TableCell>
               <TableCell>Task Type</TableCell>
@@ -607,6 +590,7 @@ const HousekeepingDashboard: React.FC = () => {
                           setSelectedTask(task);
                           setTaskDetailOpen(true);
                         }}
+                        sx={actionIconButtonSx('accent')}
                       >
                         <VisibilityIcon fontSize="small" />
                       </IconButton>
@@ -616,7 +600,7 @@ const HousekeepingDashboard: React.FC = () => {
                       <Tooltip title="Assign Task">
                         <IconButton 
                           size="small"
-                          color="primary"
+                          sx={actionIconButtonSx('accent')}
                           onClick={() => openAssignDialog(task.id)}
                         >
                           <AssignIcon fontSize="small" />
@@ -628,7 +612,7 @@ const HousekeepingDashboard: React.FC = () => {
                       <Tooltip title="Start Task">
                         <IconButton 
                           size="small"
-                          color="success"
+                          sx={actionIconButtonSx('success')}
                           onClick={() => handleStartTask(task.id)}
                         >
                           <StartIcon fontSize="small" />
@@ -640,7 +624,7 @@ const HousekeepingDashboard: React.FC = () => {
                       <Tooltip title="Complete Task">
                         <IconButton 
                           size="small"
-                          color="success"
+                          sx={actionIconButtonSx('success')}
                           onClick={() => openCompleteDialog(task.id)}
                         >
                           <CompleteIcon fontSize="small" />
@@ -655,7 +639,7 @@ const HousekeepingDashboard: React.FC = () => {
                       <Tooltip title="Reassign Task">
                         <IconButton 
                           size="small"
-                          color="secondary"
+                          sx={actionIconButtonSx('warning')}
                           onClick={() => openAssignDialog(task.id)}
                         >
                           <AssignIcon fontSize="small" />
@@ -671,6 +655,7 @@ const HousekeepingDashboard: React.FC = () => {
                             setSelectedTask(task);
                             // setEditTaskOpen(true); // TODO: Implement edit functionality
                           }}
+                          sx={actionIconButtonSx('accent')}
                         >
                           <EditIcon fontSize="small" />
                         </IconButton>

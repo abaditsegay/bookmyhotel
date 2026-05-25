@@ -35,6 +35,7 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTenant } from '../../contexts/TenantContext';
+import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
 import { hotelAdminApi, RoomResponse } from '../../services/hotelAdminApi';
 import { frontDeskApiService } from '../../services/frontDeskApi';
 import { ROOM_TYPE_VALUES } from '../../constants/roomTypes';
@@ -43,7 +44,7 @@ import { formatCurrency } from '../../utils/currencyUtils';
 import PremiumDatePicker from '../common/PremiumDatePicker';
 import PremiumTextField from '../common/PremiumTextField';
 import PremiumSelect from '../common/PremiumSelect';
-import { COLORS, addAlpha } from '../../theme/themeColors';
+import { useThemeColors } from '../../theme/useThemeColors';
 
 // Unified BookingData interface
 export interface BookingData {
@@ -75,6 +76,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
   mode = 'front-desk',
   title
 }) => {
+  const { COLORS, addAlpha } = useThemeColors();
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -82,6 +84,7 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
 
   const { token, user } = useAuth();
   const { tenant } = useTenant();
+  const { showSubmissionError } = useSubmissionError();
   
   // Get the appropriate title based on mode if not provided
   const pageTitle = title || (mode === 'hotel-admin' 
@@ -756,12 +759,14 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
         setEditedBooking({ ...updatedBooking });
         setSuccess(t('booking.details.success.paymentStatusUpdated'));
       } else {
-        setError(result.message || t('booking.details.errors.failedToUpdatePaymentStatus'));
-        setErrorDialogOpen(true);
+        showSubmissionError(result.message || t('booking.details.errors.failedToUpdatePaymentStatus'), {
+          fallbackMessage: t('booking.details.errors.failedToUpdatePaymentStatus'),
+        });
       }
     } catch (err) {
-      setError(t('booking.details.errors.failedToUpdatePaymentStatus'));
-      setErrorDialogOpen(true);
+      showSubmissionError(err, {
+        fallbackMessage: t('booking.details.errors.failedToUpdatePaymentStatus'),
+      });
     } finally {
       setPaymentActionLoading(false);
     }
@@ -786,12 +791,14 @@ const UnifiedBookingDetails: React.FC<UnifiedBookingDetailsProps> = ({
         setEditedBooking({ ...updatedBooking });
         setSuccess(t('booking.details.success.paymentTypeUpdated'));
       } else {
-        setError(result.message || t('booking.details.errors.failedToUpdatePaymentType'));
-        setErrorDialogOpen(true);
+        showSubmissionError(result.message || t('booking.details.errors.failedToUpdatePaymentType'), {
+          fallbackMessage: t('booking.details.errors.failedToUpdatePaymentType'),
+        });
       }
     } catch (err) {
-      setError(t('booking.details.errors.failedToUpdatePaymentType'));
-      setErrorDialogOpen(true);
+      showSubmissionError(err, {
+        fallbackMessage: t('booking.details.errors.failedToUpdatePaymentType'),
+      });
     } finally {
       setPaymentActionLoading(false);
     }

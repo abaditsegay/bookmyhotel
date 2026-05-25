@@ -135,7 +135,9 @@ export const useNetworkStatus = () => {
       const allBookings = await offlineStorage.getOfflineBookings();
       
       const syncedCount = allBookings.filter(b => b.status === 'SYNCED').length;
-      const failedCount = allBookings.filter(b => b.status === 'SYNC_FAILED').length;
+      const failedCount = allBookings.filter(
+        b => b.status === 'SYNC_FAILED' || b.status === 'MANUAL_REVIEW_REQUIRED'
+      ).length;
 
       // Estimate storage size (rough calculation)
       const estimatedSize = allBookings.length * 1024; // ~1KB per booking

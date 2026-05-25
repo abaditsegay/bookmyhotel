@@ -23,7 +23,9 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import { designSystem } from '../../theme/designSystem';
-import { COLORS, addAlpha } from '../../theme/themeColors';
+import { composeSx, surfaceCardSx, tableHeadRowSx } from '../../theme/sxHelpers';
+
+const sharedSurfaceRadius = Math.max(4, designSystem.borderRadius.sm / 2);
 
 export type SortDirection = 'asc' | 'desc';
 
@@ -190,7 +192,7 @@ const AdvancedTable: React.FC<AdvancedTableProps> = ({
       <TableContainer component={Paper} sx={{ maxHeight }}>
         <Table stickyHeader={stickyHeader} size={dense ? 'small' : 'medium'}>
           <TableHead>
-            <TableRow>
+            <TableRow sx={tableHeadRowSx({ compact: dense })}>
               {selectable && <TableCell padding="checkbox" />}
               {expandable && <TableCell />}
               {columns.map((column) => (
@@ -224,15 +226,14 @@ const AdvancedTable: React.FC<AdvancedTableProps> = ({
     <Box>
       <TableContainer 
         component={Paper} 
-        sx={{ 
+        sx={composeSx(surfaceCardSx('default'), {
           maxHeight,
-          borderRadius: designSystem.borderRadius.md,
-          boxShadow: designSystem.shadows.sm,
-        }}
+          boxShadow: 'none',
+        })}
       >
         <Table stickyHeader={stickyHeader} size={dense ? 'small' : 'medium'}>
           <TableHead>
-            <TableRow>
+            <TableRow sx={tableHeadRowSx({ compact: dense })}>
               {selectable && (
                 <TableCell padding="checkbox">
                   <Checkbox
@@ -252,13 +253,6 @@ const AdvancedTable: React.FC<AdvancedTableProps> = ({
                     width: column.width, 
                     minWidth: column.minWidth,
                   }}
-                  sx={{
-                    fontWeight: 700,
-                    color: COLORS.PRIMARY,
-                    letterSpacing: '0.4px',
-                    background: `linear-gradient(135deg, ${addAlpha(COLORS.PRIMARY, 0.06)} 0%, ${addAlpha(COLORS.PRIMARY, 0.12)} 100%)`,
-                    borderBottom: `2px solid ${COLORS.PRIMARY}`,
-                  }}
                 >
                   {column.sortable ? (
                     <TableSortLabel
@@ -266,8 +260,12 @@ const AdvancedTable: React.FC<AdvancedTableProps> = ({
                       direction={sortColumn === column.id ? sortDirection : 'asc'}
                       onClick={() => handleSort(column.id)}
                       sx={{
+                        color: 'inherit',
                         '&.Mui-active': {
-                          color: COLORS.PRIMARY,
+                          color: 'inherit',
+                        },
+                        '& .MuiTableSortLabel-icon': {
+                          color: 'inherit !important',
                         },
                       }}
                     >
@@ -279,15 +277,7 @@ const AdvancedTable: React.FC<AdvancedTableProps> = ({
                 </TableCell>
               ))}
               {actions.length > 0 && (
-                <TableCell 
-                  align="center" 
-                  sx={{ 
-                    fontWeight: 700,
-                    color: COLORS.PRIMARY,
-                    background: `linear-gradient(135deg, ${addAlpha(COLORS.PRIMARY, 0.06)} 0%, ${addAlpha(COLORS.PRIMARY, 0.12)} 100%)`,
-                    borderBottom: `2px solid ${COLORS.PRIMARY}`,
-                  }}
-                >
+                <TableCell align="center">
                   Actions
                 </TableCell>
               )}
@@ -433,8 +423,9 @@ const AdvancedTable: React.FC<AdvancedTableProps> = ({
         onClose={handleActionMenuClose}
         PaperProps={{
           sx: {
-            borderRadius: designSystem.borderRadius.md,
-            boxShadow: designSystem.shadows.lg,
+            borderRadius: sharedSurfaceRadius,
+            boxShadow: theme.shadows[8],
+            border: `1px solid ${theme.palette.divider}`,
           },
         }}
       >

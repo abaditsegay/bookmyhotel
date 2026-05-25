@@ -226,8 +226,8 @@ public class ShopOrderService {
         order.setServiceTaxAmount(taxes.getServiceTaxAmount());
         order.setTaxAmount(taxes.getTotalTax());
 
-        // Store tax-exclusive total
-        order.setTotalAmount(subtotal);
+        // Persist the final charged amount so order records and reports match checkout.
+        order.setTotalAmount(subtotal.add(taxes.getTotalTax()));
         order.setOrderItems(orderItems);
 
         // Save the order

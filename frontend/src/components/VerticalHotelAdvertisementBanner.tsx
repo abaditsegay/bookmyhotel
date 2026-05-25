@@ -18,52 +18,14 @@ import { useNavigate } from 'react-router-dom';
 import { hotelApiService } from '../services/hotelApi';
 import { HotelSearchResult } from '../types/hotel';
 import { useAuth } from '../contexts/AuthContext';
-import { COLORS, addAlpha } from '../theme/themeColors';
+import { useThemeColors } from '../theme/useThemeColors';
 
 interface VerticalHotelAdvertisementBannerProps {
   maxHotels?: number;
 }
 
-const getFallbackHotels = (t: (key: string) => string): HotelSearchResult[] => [
-  {
-    id: 1,
-    name: t('hotelBanner.fallback.resort.name'),
-    description: t('hotelBanner.fallback.resort.description'),
-    address: '123 Ocean Drive',
-    city: 'Malibu',
-    country: 'USA',
-    minPrice: 299,
-    maxPrice: 399,
-    availableRooms: [],
-    roomTypeAvailability: []
-  },
-  {
-    id: 2,
-    name: t('hotelBanner.fallback.business.name'),
-    description: t('hotelBanner.fallback.business.description'),
-    address: '456 Business Blvd',
-    city: 'New York',
-    country: 'USA',
-    minPrice: 199,
-    maxPrice: 299,
-    availableRooms: [],
-    roomTypeAvailability: []
-  },
-  {
-    id: 3,
-    name: t('hotelBanner.fallback.mountain.name'),
-    description: t('hotelBanner.fallback.mountain.description'),
-    address: '789 Mountain Trail',
-    city: 'Aspen',
-    country: 'USA',
-    minPrice: 259,
-    maxPrice: 359,
-    availableRooms: [],
-    roomTypeAvailability: []
-  }
-];
-
 export default function VerticalHotelAdvertisementBanner({ maxHotels = 3 }: VerticalHotelAdvertisementBannerProps) {
+  const { COLORS, addAlpha } = useThemeColors();
   const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -81,13 +43,11 @@ export default function VerticalHotelAdvertisementBanner({ maxHotels = 3 }: Vert
       if (randomHotels && randomHotels.length > 0) {
         setHotels(randomHotels.slice(0, maxHotels));
       } else {
-        // Use fallback hotels if no API hotels available
-        setHotels(getFallbackHotels(t).slice(0, maxHotels));
+        setHotels([]);
       }
     } catch (err) {
-      // console.warn('Failed to fetch random hotels from API, using fallback:', err);
       setError(t('hotelBanner.usingSampleHotels'));
-      setHotels(getFallbackHotels(t).slice(0, maxHotels));
+      setHotels([]);
     } finally {
       setLoading(false);
     }
@@ -223,9 +183,9 @@ export default function VerticalHotelAdvertisementBanner({ maxHotels = 3 }: Vert
             <CardMedia
               component="img"
               height="100" // Increased image height
-              image={`https://images.unsplash.com/photo-1566073771259-6a8506099945?w=300&h=100&fit=crop&crop=center&auto=format`}
+              image={hotel.heroImageUrl || 'data:image/gif;base64,R0lGODlhAQABAAAAACw='}
               alt={hotel.name}
-              sx={{ objectFit: 'cover' }}
+              sx={{ objectFit: 'cover', backgroundColor: addAlpha(COLORS.BLACK, 0.06) }}
             />
             <CardContent sx={{ p: 2, flex: 1, display: 'flex', flexDirection: 'column' }}>
               <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1, fontSize: '0.9rem', lineHeight: 1.2 }}>

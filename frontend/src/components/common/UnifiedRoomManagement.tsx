@@ -32,6 +32,7 @@ import {
   FormControlLabel,
   Tabs,
   Tab,
+  useTheme,
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -41,15 +42,20 @@ import {
   Edit as EditIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
+import { useDebounce } from '../../hooks/useDebounce';
 import { formatCurrency } from '../../utils/currencyUtils';
 import { buildApiUrl } from '../../config/apiConfig';
-import { hotelAdminApi, RoomCreateRequest, RoomLimitInfo } from '../../services/hotelAdminApi';
+import { hotelAdminApi, RoomLimitInfo } from '../../services/hotelAdminApi';
 import * as frontDeskApi from '../../services/frontDeskApi';
 import { ROOM_TYPES, getRoomTypeLabel } from '../../constants/roomTypes';
 import PremiumTextField from './PremiumTextField';
 import PremiumSelect from './PremiumSelect';
 import StandardButton from './StandardButton';
-import { COLORS, addAlpha } from '../../theme/themeColors';
+import { guestNameBadgeSx, refreshActionButtonSx } from '../../theme/sxHelpers';
+import { useThemeColors } from '../../theme/useThemeColors';
+import { getReadableAccentTextColor } from '../../theme/surfaces';
+import { getEffectiveSearchTerm } from '../../utils/search';
 
 // Import hotel admin specific components conditionally
 let RoomTypePricing: any = null;
@@ -88,7 +94,11 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
   onRoomUpdate 
 }) => {
   const { t } = useTranslation();
+  const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
   const { token } = useAuth();
+  const { showSubmissionError } = useSubmissionError();
+  const { COLORS, addAlpha } = useThemeColors();
   
   // Determine translation key prefix based on mode
   const translationPrefix = mode === 'hotel-admin' 
@@ -99,6 +109,8 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, searchTerm.trim() ? 300 : 0);
+  const effectiveSearchTerm = getEffectiveSearchTerm(debouncedSearchTerm);
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [roomTypeFilter, setRoomTypeFilter] = useState<string>('ALL');
   const [page, setPage] = useState(0);
@@ -135,6 +147,10 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
     if (!token) return;
 
     try {
+      if (effectiveSearchTerm === null) {
+        return;
+      }
+
       setLoading(true);
       setError(null);
 
@@ -144,7 +160,7 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
             token,
             page,
             rowsPerPage,
-            searchTerm || undefined,
+            effectiveSearchTerm || undefined,
             roomTypeFilter && roomTypeFilter !== 'ALL' ? roomTypeFilter : undefined,
             statusFilter && statusFilter !== 'ALL' ? statusFilter : undefined
           )
@@ -152,7 +168,7 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
             token,
             page,
             rowsPerPage,
-            searchTerm || undefined,
+            effectiveSearchTerm || undefined,
             undefined, // roomNumber filter
             roomTypeFilter && roomTypeFilter !== 'ALL' ? roomTypeFilter : undefined,
             statusFilter && statusFilter !== 'ALL' ? statusFilter : undefined
@@ -199,7 +215,7 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
     } finally {
       setLoading(false);
     }
-  }, [token, page, rowsPerPage, searchTerm, statusFilter, roomTypeFilter, mode]);
+  }, [token, page, rowsPerPage, effectiveSearchTerm, statusFilter, roomTypeFilter, mode]);
 
   const loadRoomLimit = useCallback(async () => {
     if (!token || mode !== 'hotel-admin') return;
@@ -224,8 +240,13 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
-    setPage(0);
   };
+
+  useEffect(() => {
+    if (effectiveSearchTerm !== null) {
+      setPage(0);
+    }
+  }, [effectiveSearchTerm]);
 
   const handleStatusFilterChange = (event: SelectChangeEvent) => {
     setStatusFilter(event.target.value);
@@ -276,7 +297,9 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
       }
     } catch (error) {
       // console.error('Failed to update room status:', error);
-      setError('Failed to update room status');
+      showSubmissionError(error, {
+        fallbackMessage: 'Failed to update room status',
+      });
     }
   };
 
@@ -305,7 +328,9 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
       }
     } catch (error) {
       // console.error('Failed to update room availability:', error);
-      setError('Failed to update room availability');
+      showSubmissionError(error, {
+        fallbackMessage: 'Failed to update room availability',
+      });
     }
   };
 
@@ -340,7 +365,9 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
           await loadRoomLimit();
           setError(null);
         } else {
-          setError(response.message || 'Failed to create room. Please check the room number is unique.');
+          showSubmissionError(response.message || 'Failed to create room. Please check the room number is unique.', {
+            fallbackMessage: 'Failed to create room. Please check the room number is unique.',
+          });
         }
       } else {
         // Multiple rooms — use batch endpoint
@@ -360,16 +387,20 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
             setError(null);
           } else {
             const failedList = data.failedRooms.map(f => `${f.roomNumber}: ${f.error}`).join(', ');
-            setError(`${data.created} room(s) created. ${data.failed} failed: ${failedList}`);
+            showSubmissionError(`${data.created} room(s) created. ${data.failed} failed: ${failedList}`);
           }
           await loadRooms();
           await loadRoomLimit();
         } else {
-          setError(response.message || 'Failed to create rooms.');
+          showSubmissionError(response.message || 'Failed to create rooms.', {
+            fallbackMessage: 'Failed to create rooms.',
+          });
         }
       }
     } catch (err) {
-      setError('Failed to create room(s). Please try again.');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to create room(s). Please try again.',
+      });
     } finally {
       setLoading(false);
     }
@@ -384,7 +415,26 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
 
     return (
       <>
-        <Tabs value={activeTab} onChange={handleTabChange} sx={{ mb: 2 }}>
+        <Tabs
+          value={activeTab}
+          onChange={handleTabChange}
+          sx={{
+            mb: 2,
+            '& .MuiTab-root': {
+              color: 'text.secondary',
+              '&:hover': {
+                color: 'text.primary',
+              },
+              '&.Mui-selected': {
+                color: readableAccentColor,
+                fontWeight: 600,
+              },
+            },
+            '& .MuiTabs-indicator': {
+              backgroundColor: readableAccentColor,
+            },
+          }}
+        >
           <Tab label={t(`${translationPrefix}.tabs.roomList`)} />
           {RoomTypePricing && <Tab label={t(`${translationPrefix}.tabs.pricing`)} />}
           {RoomBulkUpload && <Tab label={t(`${translationPrefix}.tabs.bulkUpload`)} />}
@@ -478,7 +528,7 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
                 },
               },
               '& .MuiInputLabel-root.Mui-focused': {
-                color: COLORS.PRIMARY,
+                color: readableAccentColor,
                 fontWeight: 600,
               },
             }}>
@@ -518,7 +568,7 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
                 },
               },
               '& .MuiInputLabel-root.Mui-focused': {
-                color: COLORS.PRIMARY,
+                color: readableAccentColor,
                 fontWeight: 600,
               },
             }}>
@@ -541,6 +591,7 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
               startIcon={<RefreshIcon />}
               onClick={loadRooms}
               variant="outlined"
+              sx={refreshActionButtonSx}
             >
               {t(`${translationPrefix}.actions.refresh`)}
             </Button>
@@ -585,19 +636,20 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
             <Table>
               <TableHead>
                 <TableRow
-                  sx={{
-                    background: `linear-gradient(135deg, ${COLORS.BG_DEFAULT} 0%, ${COLORS.BG_LIGHT} 50%, ${COLORS.BG_DEFAULT} 100%)`,
-                    borderBottom: `2px solid ${COLORS.SECONDARY}`,
+                  sx={(theme) => ({
+                    backgroundColor: theme.palette.background.paper,
+                    borderBottom: `1px solid ${theme.palette.divider}`,
                     '& .MuiTableCell-head': {
-                      color: COLORS.PRIMARY,
+                      color: theme.palette.text.secondary,
                       fontWeight: 700,
                       fontSize: '0.95rem',
                       letterSpacing: '0.5px',
                       textTransform: 'uppercase',
                       border: 'none',
                       padding: '20px 16px',
+                      backgroundColor: theme.palette.background.paper,
                     }
-                  }}
+                  })}
                 >
                   <TableCell>{t(`${translationPrefix}.tableHeaders.roomNumber`)}</TableCell>
                   <TableCell>{t(`${translationPrefix}.tableHeaders.type`)}</TableCell>
@@ -638,9 +690,13 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
                       </FormControl>
                     </TableCell>
                     <TableCell>
-                      <Typography variant="body2" color="text.secondary">
-                        {room.status === 'OCCUPIED' ? (room.currentGuest || t(`${translationPrefix}.guestPresent`)) : '-'}
-                      </Typography>
+                      {room.status === 'OCCUPIED' ? (
+                        <Typography variant="body2" sx={guestNameBadgeSx}>
+                          {room.currentGuest || t(`${translationPrefix}.guestPresent`)}
+                        </Typography>
+                      ) : (
+                        <Typography variant="body2" color="text.secondary">-</Typography>
+                      )}
                     </TableCell>
                     <TableCell>{room.capacity}</TableCell>
                     <TableCell>{formatCurrency(room.pricePerNight)}</TableCell>
@@ -755,7 +811,7 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
 
       {/* Edit Room Dialog */}
       <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontWeight: 700, color: COLORS.PRIMARY }}>
+        <DialogTitle sx={{ fontWeight: 700, color: readableAccentColor }}>
           {t(`${translationPrefix}.editRoom.title`)}
         </DialogTitle>
         <DialogContent>
@@ -805,7 +861,7 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
             onClick={() => setEditDialogOpen(false)}
             sx={{
               borderColor: addAlpha(COLORS.SECONDARY, 0.6),
-              color: COLORS.PRIMARY,
+              color: readableAccentColor,
               '&:hover': {
                 borderColor: COLORS.SECONDARY,
                 bgcolor: addAlpha(COLORS.SECONDARY, 0.08),

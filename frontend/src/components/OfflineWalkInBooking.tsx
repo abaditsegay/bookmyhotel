@@ -33,13 +33,15 @@ import { formatDateCalendarAware } from '../utils/dateUtils';
 import { useAuth } from '../contexts/AuthContext';
 import { useTenant } from '../contexts/TenantContext';
 import { useTranslation } from 'react-i18next';
-import { API_CONFIG } from '../config/apiConfig';
+import { API_CONFIG, buildApiUrl } from '../config/apiConfig';
 import { offlineStorage, OfflineBooking, GuestInfo, CachedRoom } from '../services/OfflineStorageService';
 import { syncManager } from '../services/SyncManager';
 import { roomCacheService } from '../services/RoomCacheService';
 import NumberStepper from './common/NumberStepper';
-import { COLORS, addAlpha } from '../theme/themeColors';
+import { useThemeColors } from '../theme/useThemeColors';
 import { formatCurrency } from '../utils/currencyUtils';
+import { getReadableAccentTextColor } from '../theme/surfaces';
+import { composeSx, infoPanelSx, surfaceCardSx } from '../theme/sxHelpers';
 
 // Define interfaces for offline walk-in booking (matching online version EXACTLY)
 interface WalkInGuestInfo {
@@ -64,6 +66,9 @@ interface OfflineWalkInBookingProps {
   onBookingComplete?: (booking: OfflineBooking) => void;
 }
 
+const DEFAULT_VAT_RATE = 0.15;
+const DEFAULT_SERVICE_TAX_RATE = 0.05;
+
 // Room types and payment methods for dropdowns (can be added back if needed for future features)
 
 const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
@@ -73,7 +78,10 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
   const { token, user } = useAuth(); // Match exact order from main component
   const { tenantId } = useTenant(); // Match exact usage from main component
   const { t } = useTranslation();
+  const { COLORS } = useThemeColors();
   const theme = useTheme(); // Add theme hook
+  const readableAccentColor = getReadableAccentTextColor(theme);
+  const sharedSurfaceRadius = 4;
   
   const steps = [
     t('dashboard.hotelAdmin.offlineBooking.steps.guestInformation'),
@@ -120,6 +128,10 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
   const [pendingSyncCount, setPendingSyncCount] = useState(0);
   const [cachedRooms, setCachedRooms] = useState<CachedRoom[]>([]);
   const [roomsLoaded, setRoomsLoaded] = useState(false);
+  const [hotelVatRate, setHotelVatRate] = useState<number>(DEFAULT_VAT_RATE);
+  const [hotelServiceTaxRate, setHotelServiceTaxRate] = useState<number>(DEFAULT_SERVICE_TAX_RATE);
+
+  const resolvedHotelId = hotelId || (user?.hotelId ? parseInt(user.hotelId) : null);
 
   // Load room data from cache
   const loadRoomsFromCache = useCallback(async () => {
@@ -140,7 +152,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
       // console.log(`✅ Loaded ${rooms.length} cached rooms`);
       
       // If no cached rooms, try to fetch fresh data
-      if (rooms.length === 0 && navigator.onLine && token) {
+      if (rooms.length === 0 && isOnline && token) {
         // console.log('🔄 No cached rooms found, fetching fresh data...');
         try {
           const freshRooms = await roomCacheService.fetchAndCacheRooms(resolvedHotelId);
@@ -155,12 +167,73 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
       setError('Failed to load room data. Please check your connection and try again.');
       setRoomsLoaded(true); // Still mark as loaded to prevent infinite loading
     }
-  }, [hotelId, token, user?.hotelId]);
+  }, [hotelId, isOnline, token, user?.hotelId]);
+
+  useEffect(() => {
+    if (!resolvedHotelId) {
+      setHotelVatRate(DEFAULT_VAT_RATE);
+      setHotelServiceTaxRate(DEFAULT_SERVICE_TAX_RATE);
+      return;
+    }
+
+    const cacheKey = `offline_hotel_tax_rates_${resolvedHotelId}`;
+
+    try {
+      const cachedTaxRates = localStorage.getItem(cacheKey);
+      if (cachedTaxRates) {
+        const parsedRates = JSON.parse(cachedTaxRates) as { vatRate?: number; serviceTaxRate?: number };
+        setHotelVatRate(parsedRates.vatRate ?? DEFAULT_VAT_RATE);
+        setHotelServiceTaxRate(parsedRates.serviceTaxRate ?? DEFAULT_SERVICE_TAX_RATE);
+      } else {
+        setHotelVatRate(DEFAULT_VAT_RATE);
+        setHotelServiceTaxRate(DEFAULT_SERVICE_TAX_RATE);
+      }
+    } catch {
+      setHotelVatRate(DEFAULT_VAT_RATE);
+      setHotelServiceTaxRate(DEFAULT_SERVICE_TAX_RATE);
+    }
+
+    if (!isOnline || !token) {
+      return;
+    }
+
+    const fetchTaxRates = async () => {
+      try {
+        const headers: Record<string, string> = {
+          'Authorization': `Bearer ${token}`,
+        };
+
+        if (tenantId) {
+          headers['X-Tenant-ID'] = tenantId;
+        }
+
+        const response = await fetch(buildApiUrl(`/hotels/${resolvedHotelId}/tax-rate`), {
+          headers,
+        });
+
+        if (!response.ok) {
+          return;
+        }
+
+        const taxData = await response.json();
+        const vatRate = taxData.vatRate ?? DEFAULT_VAT_RATE;
+        const serviceTaxRate = taxData.serviceTaxRate ?? DEFAULT_SERVICE_TAX_RATE;
+
+        setHotelVatRate(vatRate);
+        setHotelServiceTaxRate(serviceTaxRate);
+        localStorage.setItem(cacheKey, JSON.stringify({ vatRate, serviceTaxRate }));
+      } catch {
+        // Keep cached tax rates if available.
+      }
+    };
+
+    fetchTaxRates();
+  }, [resolvedHotelId, isOnline, tenantId, token]);
 
   // Initialize room caching when component loads
   useEffect(() => {
     const initializeRooms = async () => {
-      if (hotelId && token && !roomsLoaded) {
+      if (resolvedHotelId && token && !roomsLoaded) {
         try {
           // Initialize offline storage first
           await offlineStorage.init();
@@ -169,7 +242,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
           await loadRoomsFromCache();
           
           // Start periodic refresh for this hotel
-          roomCacheService.startPeriodicRefresh(hotelId);
+          roomCacheService.startPeriodicRefresh(resolvedHotelId);
         } catch (error) {
           // console.error('Failed to initialize rooms:', error);
           setRoomsLoaded(true); // Prevent infinite retry
@@ -183,7 +256,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
     return () => {
       roomCacheService.stopPeriodicRefresh();
     };
-  }, [hotelId, token, roomsLoaded, loadRoomsFromCache]);
+  }, [resolvedHotelId, token, roomsLoaded, loadRoomsFromCache]);
 
   // Memoized change handlers (matching online version)
   // Memoized change handlers to prevent input focus loss (matching online component exactly)
@@ -228,12 +301,35 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
     setActiveStep((prevStep) => prevStep - 1);
   };
 
+  const calculatePricingBreakdown = () => {
+    if (!selectedRoom) {
+      return {
+        nights: 0,
+        subtotal: 0,
+        vatAmount: 0,
+        serviceTaxAmount: 0,
+        total: 0,
+      };
+    }
+
+    const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24));
+    const subtotal = selectedRoom.pricePerNight * nights;
+    const vatAmount = subtotal * hotelVatRate;
+    const serviceTaxAmount = subtotal * hotelServiceTaxRate;
+    const total = subtotal + vatAmount + serviceTaxAmount;
+
+    return {
+      nights,
+      subtotal,
+      vatAmount,
+      serviceTaxAmount,
+      total,
+    };
+  };
+
   // Calculate total amount (matching online component)
   const calculateTotalAmount = () => {
-    if (!selectedRoom) return 0;
-    
-    const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24));
-    return selectedRoom.pricePerNight * nights;
+    return calculatePricingBreakdown().total;
   };
 
   // Render step content (EXACTLY matching online component)
@@ -241,28 +337,17 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
     switch (activeStep) {
       case 0:
         return (
-          <Card sx={{ 
-            bgcolor: 'background.paper',
-            border: '1px solid',
-            borderColor: 'divider',
-            borderRadius: 3,
-            elevation: 0,
-          }}>
+          <Card sx={surfaceCardSx('default')}>
             <CardContent sx={{ p: 4 }}>
               {/* Guest Information Section */}
-              <Box sx={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: 2, 
+              <Box sx={composeSx(infoPanelSx, {
+                display: 'flex',
+                alignItems: 'center',
+                gap: 2,
                 mb: 4,
-                p: 2,
-                bgcolor: 'background.default',
-                border: '1px solid',
-                borderColor: 'divider',
-                borderRadius: 2,
-              }}>
+              })}>
                 <Box>
-                  <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5, color: COLORS.PRIMARY }}>
+                  <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 0.5, color: 'text.primary' }}>
                     {t('dashboard.hotelAdmin.offlineBooking.guestInformation.title')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -312,20 +397,15 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
               </Grid>
 
               {/* Stay Details Section */}
-              <Box sx={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: 2, 
+              <Box sx={composeSx(infoPanelSx, {
+                display: 'flex',
+                alignItems: 'center',
+                gap: 2,
                 mb: 3,
                 mt: 4,
-                p: 2,
-                bgcolor: 'background.default',
-                border: '1px solid',
-                borderColor: 'divider',
-                borderRadius: 2,
-              }}>
+              })}>
                 <Box>
-                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5, color: COLORS.PRIMARY }}>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5, color: 'text.primary' }}>
                     {t('dashboard.hotelAdmin.offlineBooking.bookingDetails.stayDetailsTitle')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -398,11 +478,11 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                 },
                 '&::-webkit-scrollbar-track': {
                   background: theme.palette.action.hover,
-                  borderRadius: '10px',
+                  borderRadius: `${sharedSurfaceRadius}px`,
                 },
                 '&::-webkit-scrollbar-thumb': {
                   background: theme.palette.action.disabled,
-                  borderRadius: '10px',
+                  borderRadius: `${sharedSurfaceRadius}px`,
                   '&:hover': {
                     background: theme.palette.action.focus,
                   },
@@ -434,17 +514,17 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                           sx={{ 
                             cursor: 'pointer',
                             border: selectedRoom?.id === room.id ? '3px solid' : '1px solid',
-                            borderColor: selectedRoom?.id === room.id ? COLORS.SECONDARY : 'divider',
-                            borderLeft: selectedRoom?.id === room.id ? `6px solid ${COLORS.SECONDARY}` : `3px solid ${COLORS.SECONDARY}`,
-                            backgroundColor: selectedRoom?.id === room.id ? 'action.selected' : 'background.paper',
+                            borderColor: selectedRoom?.id === room.id ? readableAccentColor : 'divider',
+                            borderLeft: selectedRoom?.id === room.id ? `4px solid ${readableAccentColor}` : `2px solid ${alpha(readableAccentColor, 0.28)}`,
+                            backgroundColor: selectedRoom?.id === room.id ? alpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.16 : 0.08) : 'background.paper',
                             elevation: 0,
-                            borderRadius: 2,
+                            borderRadius: sharedSurfaceRadius,
                             transition: 'all 0.2s ease-in-out',
                             '&:hover': {
-                              borderColor: COLORS.SECONDARY,
+                              borderColor: readableAccentColor,
                               backgroundColor: 'action.hover',
-                              transform: 'translateY(-2px)',
-                              boxShadow: 3,
+                              transform: 'translateY(-1px)',
+                              boxShadow: 'none',
                             }
                           }}
                           onClick={() => setSelectedRoom(room)}
@@ -463,8 +543,8 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                                 size="small" 
                                 variant="outlined"
                                 sx={{
-                                  borderColor: COLORS.SECONDARY,
-                                  color: COLORS.SECONDARY,
+                                  borderColor: readableAccentColor,
+                                  color: readableAccentColor,
                                   fontWeight: 'medium',
                                   fontSize: '0.75rem'
                                 }}
@@ -491,7 +571,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                               </Typography>
                             )}
                             <Typography variant="h6" sx={{
-                              color: COLORS.SECONDARY,
+                              color: readableAccentColor,
                               fontWeight: 'bold',
                               fontSize: '1.2rem'
                             }}>
@@ -537,7 +617,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                 {selectedRoom && (
                   <Typography variant="body2" sx={{ 
                     fontWeight: 'medium',
-                    color: COLORS.SECONDARY
+                    color: 'text.primary'
                   }}>
                     ✓ Room {selectedRoom.roomNumber} selected
                   </Typography>
@@ -585,11 +665,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
               textAlign: 'center',
               mb: 4,
               p: 3,
-              backgroundColor: 'background.paper',
-              borderRadius: 2,
-              border: '1px solid',
-              borderColor: 'divider',
-                boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.08)}`,
+              ...surfaceCardSx('subtle'),
             }}>
               <Typography variant="h5" sx={{ 
                 fontWeight: 700,
@@ -605,13 +681,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
             <Grid container spacing={3}>
               {/* Guest Information */}
               <Grid item xs={12} sm={6}>
-                <Card elevation={2} sx={{ 
-                  backgroundColor: 'background.paper',
-                  border: '1px solid',
-                  borderColor: 'divider',
-                  borderRadius: 2,
-                  boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.08)}`,
-                }}>
+                <Card elevation={0} sx={surfaceCardSx('default')}>
                   <CardContent sx={{ p: 3 }}>
                     <Box sx={{ 
                       display: 'flex', 
@@ -654,13 +724,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
               
               {/* Stay Details */}
               <Grid item xs={12} sm={6}>
-                <Card elevation={2} sx={{ 
-                  backgroundColor: 'background.paper',
-                  border: '1px solid',
-                  borderColor: 'divider',
-                  borderRadius: 2,
-                  boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.08)}`,
-                }}>
+                <Card elevation={0} sx={surfaceCardSx('default')}>
                   <CardContent sx={{ p: 3 }}>
                     <Box sx={{ 
                       display: 'flex',
@@ -714,13 +778,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
               
               {/* Pricing Summary */}
               <Grid item xs={12}>
-                <Card elevation={3} sx={{ 
-                  backgroundColor: 'background.paper',
-                  border: '1px solid',
-                  borderColor: 'divider',
-                  borderRadius: 2,
-                  boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.08)}`,
-                }}>
+                <Card elevation={0} sx={surfaceCardSx('default')}>
                   <CardContent sx={{ p: 3 }}>
                     <Box sx={{ 
                       display: 'flex',
@@ -742,15 +800,34 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                     }}>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                         <Typography variant="body1">
-                          {(() => {
-                            const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24));
-                            return `${formatCurrency(selectedRoom?.pricePerNight || 0)}/night × ${nights} ${nights !== 1 ? 'nights' : 'night'}`;
-                          })()}
+                          {`${formatCurrency(selectedRoom?.pricePerNight || 0)}/night × ${calculatePricingBreakdown().nights} ${calculatePricingBreakdown().nights !== 1 ? 'nights' : 'night'}`}
                         </Typography>
                         <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                          {formatCurrency(calculateTotalAmount() || 0)}
+                          {formatCurrency(calculatePricingBreakdown().subtotal || 0)}
                         </Typography>
                       </Box>
+
+                      {hotelVatRate > 0 && (
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                            VAT ({(hotelVatRate * 100).toFixed(0)}%)
+                          </Typography>
+                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                            {formatCurrency(calculatePricingBreakdown().vatAmount || 0)}
+                          </Typography>
+                        </Box>
+                      )}
+
+                      {hotelServiceTaxRate > 0 && (
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                            Service Tax ({(hotelServiceTaxRate * 100).toFixed(0)}%)
+                          </Typography>
+                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                            {formatCurrency(calculatePricingBreakdown().serviceTaxAmount || 0)}
+                          </Typography>
+                        </Box>
+                      )}
                     </Box>
                     
                     <Divider sx={{ my: 2 }} />
@@ -760,23 +837,25 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                       justifyContent: 'space-between', 
                       alignItems: 'center',
                       p: 2,
-                      bgcolor: COLORS.SECONDARY,
-                      borderRadius: 2,
+                      bgcolor: alpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.16 : 0.08),
+                      borderRadius: sharedSurfaceRadius,
                       mb: 2,
+                      border: '1px solid',
+                      borderColor: alpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.3 : 0.14),
                     }}>
-                      <Typography variant="h5" sx={{ color: COLORS.WHITE, fontWeight: 700 }}>
+                      <Typography variant="h5" sx={{ color: 'text.primary', fontWeight: 700 }}>
                         {t('dashboard.hotelAdmin.offlineBooking.confirmation.totalAmountTitle')}
                       </Typography>
-                      <Typography variant="h4" sx={{ color: COLORS.WHITE, fontWeight: 700 }}>
+                      <Typography variant="h4" sx={{ color: 'text.primary', fontWeight: 700 }}>
                         {formatCurrency(calculateTotalAmount() || 0)}
                       </Typography>
                     </Box>
                     
                     <Box sx={{
                       p: 2,
-                      bgcolor: addAlpha(COLORS.SECONDARY, 0.1),
-                      color: COLORS.SECONDARY,
-                      borderRadius: 2,
+                      bgcolor: alpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.12 : 0.06),
+                      color: 'text.primary',
+                      borderRadius: sharedSurfaceRadius,
                       textAlign: 'center',
                       border: '1px solid',
                       borderColor: 'divider',
@@ -860,6 +939,9 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
           // console.log('Cannot load rooms - missing hotelId or token:', { hotelId: resolvedHotelId, hasToken: !!token });
           // Fall back to cached room data
           // console.log('💾 Using cached room data due to missing hotelId or token');
+          rooms = cachedRooms.filter(room => room.capacity >= guests);
+          dataSource = 'cached';
+        } else if (!isOnline) {
           rooms = cachedRooms.filter(room => room.capacity >= guests);
           dataSource = 'cached';
         } else {
@@ -1015,7 +1097,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
         }
         
         // If we still have no rooms and we're online, try to refresh the cache
-        if (rooms.length === 0 && resolvedHotelId && navigator.onLine) {
+        if (rooms.length === 0 && resolvedHotelId && isOnline) {
           // console.log('🔄 No rooms found anywhere, attempting to fetch and cache fresh data...');
           try {
             const freshRooms = await roomCacheService.fetchAndCacheRooms(resolvedHotelId);
@@ -1087,7 +1169,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
     if (activeStep === 1 && checkInDate && checkOutDate) {
       loadAvailableRooms();
     }
-  }, [activeStep, checkInDate, checkOutDate, guests, cachedRooms, hotelId, token, tenantId, user?.role, user?.roles, user?.hotelId, API_BASE_URL, t]);
+  }, [activeStep, checkInDate, checkOutDate, guests, cachedRooms, hotelId, isOnline, token, tenantId, user?.role, user?.roles, user?.hotelId, API_BASE_URL, t]);
 
   // Monitor online/offline status
   useEffect(() => {
@@ -1132,13 +1214,9 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
     setError(null);
 
     try {
-      // Calculate total amount
-      const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24));
-      const totalAmount = nights * selectedRoom.pricePerNight;
+      const totalAmount = calculatePricingBreakdown().total;
 
       // Save offline booking (matching online component structure)
-      const resolvedHotelId = hotelId || (user?.hotelId ? parseInt(user.hotelId) : null);
-      
       if (!resolvedHotelId) {
         setError('Hotel ID is required for booking creation');
         return;
@@ -1174,6 +1252,19 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
           bookingData.checkInDate,
           bookingData.checkOutDate
         );
+        setCachedRooms(previousRooms => previousRooms.map(room =>
+          room.id === selectedRoom.id
+            ? {
+                ...room,
+                isAvailable: false,
+                offlineStatus: 'occupied',
+                occupiedBy: bookingId,
+                occupiedFrom: bookingData.checkInDate,
+                occupiedTo: bookingData.checkOutDate,
+              }
+            : room
+        ));
+        setAvailableRooms(previousRooms => previousRooms.filter(room => room.id !== selectedRoom.id));
         // console.log('✅ Room marked as occupied for offline booking:', selectedRoom.roomNumber);
       } catch (roomMarkError) {
         // console.warn('⚠️ Failed to mark room as occupied:', roomMarkError);
@@ -1311,7 +1402,7 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
                     variant="h5" 
                     sx={{ 
                       fontWeight: 'bold',
-                      color: COLORS.PRIMARY, // Orange color to match theme
+                      color: COLORS.PRIMARY_TEXT,
                       mb: 0.5,
                     }}
                   >
@@ -1347,20 +1438,20 @@ const OfflineWalkInBooking: React.FC<OfflineWalkInBookingProps> = ({
             alternativeLabel
             sx={{
               '& .MuiStepLabel-root .Mui-completed': {
-                color: COLORS.PRIMARY, // Orange for completed steps
+                color: COLORS.PRIMARY_TEXT,
               },
               '& .MuiStepLabel-root .Mui-active': {
-                color: COLORS.PRIMARY, // Orange for active step
+                color: COLORS.PRIMARY_TEXT,
               },
               '& .MuiStepConnector-line': {
                 borderColor: 'divider',
               },
               '& .MuiStepIcon-root': {
                 '&.Mui-completed': {
-                  color: COLORS.PRIMARY, // Orange for completed step icons
+                  color: COLORS.PRIMARY_TEXT,
                 },
                 '&.Mui-active': {
-                  color: COLORS.PRIMARY, // Orange for active step icon
+                  color: COLORS.PRIMARY_TEXT,
                 },
               },
             }}

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { alpha } from '@mui/material/styles';
 import {
   Box,
   Card,
@@ -27,7 +28,8 @@ import {
   Pagination,
   Grid,
   InputAdornment,
-  Tooltip
+  Tooltip,
+  useTheme
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -38,18 +40,26 @@ import {
 } from '@mui/icons-material';
 import { format } from 'date-fns';
 import { roomChargeApiService } from '../../services/roomChargeApi';
+import { actionIconButtonSx } from '../../theme/sxHelpers';
 import { RoomCharge, RoomChargeCreateRequest, RoomChargeType } from '../../types/shop';
 import { getPremiumTableHeadSx } from './premiumStyles';
+import { guestNameBadgeSx } from '../../theme/sxHelpers';
+import { getReadableAccentTextColor } from '../../theme/surfaces';
 
 interface RoomChargesProps {
   hotelId: number;
 }
 
 const RoomChargesManagement: React.FC<RoomChargesProps> = ({ hotelId }) => {
+  const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
+  const paginationAccent = alpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.3 : 0.16);
   const [roomCharges, setRoomCharges] = useState<RoomCharge[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, searchTerm.trim() ? 300 : 0);
+  const effectiveSearchTerm = getEffectiveSearchTerm(debouncedSearchTerm);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
@@ -72,8 +82,12 @@ const RoomChargesManagement: React.FC<RoomChargesProps> = ({ hotelId }) => {
   const pageSize = 20;
 
   useEffect(() => {
+    if (effectiveSearchTerm === null) {
+      return;
+    }
+
     loadRoomCharges();
-  }, [hotelId, page, searchTerm]); // loadRoomCharges is not included to avoid infinite loop
+  }, [hotelId, page, effectiveSearchTerm]); // loadRoomCharges is not included to avoid infinite loop
 
   const loadRoomCharges = async () => {
     try {
@@ -81,8 +95,8 @@ const RoomChargesManagement: React.FC<RoomChargesProps> = ({ hotelId }) => {
       setError(null);
       
       let response;
-      if (searchTerm.trim()) {
-        response = await roomChargeApiService.searchRoomCharges(hotelId, searchTerm, page, pageSize);
+      if (effectiveSearchTerm) {
+        response = await roomChargeApiService.searchRoomCharges(hotelId, effectiveSearchTerm, page, pageSize);
       } else {
         response = await roomChargeApiService.getRoomChargesForHotel(hotelId, page, pageSize);
       }
@@ -97,6 +111,12 @@ const RoomChargesManagement: React.FC<RoomChargesProps> = ({ hotelId }) => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (effectiveSearchTerm !== null) {
+      setPage(0);
+    }
+  }, [effectiveSearchTerm]);
 
   const handleCreateCharge = async () => {
     try {
@@ -251,7 +271,7 @@ const RoomChargesManagement: React.FC<RoomChargesProps> = ({ hotelId }) => {
         <CardContent>
           <Grid container spacing={3}>
             <Grid item xs={12} sm={6} md={3}>
-              <Typography variant="h6" color="primary">
+              <Typography variant="h6" sx={{ color: readableAccentColor }}>
                 {totalElements}
               </Typography>
               <Typography variant="body2" color="text.secondary">
@@ -310,7 +330,11 @@ const RoomChargesManagement: React.FC<RoomChargesProps> = ({ hotelId }) => {
                       {formatDate(charge.chargeDate)}
                     </TableCell>
                     <TableCell>
-                      {charge.guestName || 'N/A'}
+                      {charge.guestName ? (
+                        <Typography variant="body2" sx={guestNameBadgeSx}>
+                          {charge.guestName}
+                        </Typography>
+                      ) : 'N/A'}
                     </TableCell>
                     <TableCell>
                       {charge.roomNumber || 'N/A'}
@@ -355,7 +379,7 @@ const RoomChargesManagement: React.FC<RoomChargesProps> = ({ hotelId }) => {
                           <Tooltip title="Mark as Paid">
                             <IconButton
                               size="small"
-                              color="success"
+                              sx={actionIconButtonSx('success')}
                               onClick={() => {
                                 setSelectedCharge(charge);
                                 setPaymentDialogOpen(true);
@@ -368,7 +392,7 @@ const RoomChargesManagement: React.FC<RoomChargesProps> = ({ hotelId }) => {
                           <Tooltip title="Mark as Unpaid">
                             <IconButton
                               size="small"
-                              color="warning"
+                              sx={actionIconButtonSx('warning')}
                               onClick={() => handleMarkAsUnpaid(charge.id)}
                             >
                               <ReceiptIcon />
@@ -390,7 +414,15 @@ const RoomChargesManagement: React.FC<RoomChargesProps> = ({ hotelId }) => {
                 count={totalPages}
                 page={page + 1}
                 onChange={(_, newPage) => setPage(newPage - 1)}
-                color="primary"
+                sx={{
+                  '& .MuiPaginationItem-root': {
+                    color: 'text.primary',
+                  },
+                  '& .Mui-selected': {
+                    backgroundColor: paginationAccent,
+                    color: readableAccentColor,
+                  },
+                }}
               />
             </Box>
           )}

@@ -1,10 +1,5 @@
 import React from 'react';
 import {
-  TextField,
-  FormControl,
-  FormHelperText,
-  InputLabel,
-  Select,
   MenuItem,
   Chip,
   Box,
@@ -23,59 +18,23 @@ import {
   Warning,
   Info,
 } from '@mui/icons-material';
-import { styled } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
+import PremiumTextField from './PremiumTextField';
+import PremiumSelect from './PremiumSelect';
 
-// Styled components for validation states
-const ValidatedTextField = styled(TextField, {
-  shouldForwardProp: (prop) => prop !== 'validationState',
-})<{ validationState?: 'success' | 'error' | 'warning' | 'info' }>(({ theme, validationState }) => ({
-  '& .MuiOutlinedInput-root': {
-    ...(validationState === 'success' && {
-      '& fieldset': {
-        borderColor: theme.palette.success.main,
+const ValidationIcon = (props: React.ComponentProps<typeof Box>) => (
+  <Box
+    {...props}
+    sx={{
+      display: 'flex',
+      alignItems: 'center',
+      '& .MuiSvgIcon-root': {
+        fontSize: '1.2rem',
       },
-      '&:hover fieldset': {
-        borderColor: theme.palette.success.main,
-      },
-      '&.Mui-focused fieldset': {
-        borderColor: theme.palette.success.main,
-      },
-    }),
-    ...(validationState === 'warning' && {
-      '& fieldset': {
-        borderColor: theme.palette.warning.main,
-      },
-      '&:hover fieldset': {
-        borderColor: theme.palette.warning.main,
-      },
-      '&.Mui-focused fieldset': {
-        borderColor: theme.palette.warning.main,
-      },
-    }),
-  },
-  '& .MuiInputLabel-root': {
-    ...(validationState === 'success' && {
-      color: theme.palette.success.main,
-      '&.Mui-focused': {
-        color: theme.palette.success.main,
-      },
-    }),
-    ...(validationState === 'warning' && {
-      color: theme.palette.warning.main,
-      '&.Mui-focused': {
-        color: theme.palette.warning.main,
-      },
-    }),
-  },
-}));
-
-const ValidationIcon = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  '& .MuiSvgIcon-root': {
-    fontSize: '1.2rem',
-  },
-}));
+      ...props.sx,
+    }}
+  />
+);
 
 // Props interfaces
 interface ValidatedTextFieldProps {
@@ -144,6 +103,8 @@ export const ValidatedInput: React.FC<ValidatedTextFieldProps> = ({
   inputRef,
   ...props
 }) => {
+  const theme = useTheme();
+
   const getValidationIcon = () => {
     if (!showValidationIcon) return null;
 
@@ -162,12 +123,18 @@ export const ValidatedInput: React.FC<ValidatedTextFieldProps> = ({
   };
 
   const icon = getValidationIcon();
+  const validationTone = validationState === 'success'
+    ? theme.palette.success
+    : validationState === 'warning'
+      ? theme.palette.warning
+      : validationState === 'info'
+        ? theme.palette.info
+        : null;
 
   return (
-    <ValidatedTextField
+    <PremiumTextField
       {...props}
       inputRef={inputRef}
-      validationState={validationState}
       error={error || validationState === 'error'}
       helperText={helperText}
       InputProps={{
@@ -177,6 +144,30 @@ export const ValidatedInput: React.FC<ValidatedTextFieldProps> = ({
             <ValidationIcon>{icon}</ValidationIcon>
           </InputAdornment>
         ),
+      }}
+      sx={{
+        ...(validationTone && {
+          '& .MuiOutlinedInput-root': {
+            '& fieldset': {
+              borderColor: alpha(validationTone.main, 0.75),
+            },
+            '&:hover fieldset': {
+              borderColor: validationTone.main,
+            },
+            '&.Mui-focused': {
+              boxShadow: `0 0 0 4px ${alpha(validationTone.main, 0.12)}`,
+              '& fieldset': {
+                borderColor: validationTone.main,
+              },
+            },
+          },
+          '& .MuiInputLabel-root': {
+            color: validationTone.main,
+            '&.Mui-focused': {
+              color: `${validationTone.main} !important`,
+            },
+          },
+        }),
       }}
     />
   );
@@ -201,6 +192,8 @@ export const ValidatedSelect: React.FC<ValidatedSelectProps> = ({
   onChange,
   onBlur,
 }) => {
+  const theme = useTheme();
+
   const getValidationIcon = () => {
     if (!showValidationIcon) return null;
 
@@ -218,44 +211,71 @@ export const ValidatedSelect: React.FC<ValidatedSelectProps> = ({
     }
   };
 
+  const validationTone = validationState === 'success'
+    ? theme.palette.success
+    : validationState === 'warning'
+      ? theme.palette.warning
+      : validationState === 'info'
+        ? theme.palette.info
+        : null;
+
   return (
-    <FormControl
+    <PremiumSelect
+      label={label}
+      value={value}
+      onChange={onChange}
+      onBlur={onBlur as React.FocusEventHandler<HTMLElement>}
+      required={required}
+      disabled={disabled}
       fullWidth={fullWidth}
-      error={error || validationState === 'error'}
       variant={variant}
       size={size}
-      disabled={disabled}
+      error={error || validationState === 'error'}
+      helperText={helperText}
+      sx={{
+        ...(validationTone && {
+          '& .MuiOutlinedInput-root': {
+            '& fieldset': {
+              borderColor: alpha(validationTone.main, 0.75),
+            },
+            '&:hover fieldset': {
+              borderColor: validationTone.main,
+            },
+            '&.Mui-focused': {
+              boxShadow: `0 0 0 4px ${alpha(validationTone.main, 0.12)}`,
+              '& fieldset': {
+                borderColor: validationTone.main,
+              },
+            },
+          },
+          '& .MuiInputLabel-root': {
+            color: validationTone.main,
+            '&.Mui-focused': {
+              color: `${validationTone.main} !important`,
+            },
+          },
+        }),
+      }}
     >
-      <InputLabel required={required}>
-        {label}
-      </InputLabel>
-      <Select
-        value={value}
-        label={label}
-        onChange={onChange}
-        onBlur={onBlur}
-        endAdornment={
+      {options.map((option) => (
+        <MenuItem
+          key={option.value}
+          value={option.value}
+          disabled={option.disabled}
+        >
+          {option.label}
+        </MenuItem>
+      ))}
+      {showValidationIcon && (
+        <Box sx={{ display: 'none' }}>
           showValidationIcon && (
             <InputAdornment position="end">
               <ValidationIcon>{getValidationIcon()}</ValidationIcon>
             </InputAdornment>
           )
-        }
-      >
-        {options.map((option) => (
-          <MenuItem
-            key={option.value}
-            value={option.value}
-            disabled={option.disabled}
-          >
-            {option.label}
-          </MenuItem>
-        ))}
-      </Select>
-      {helperText && (
-        <FormHelperText>{helperText}</FormHelperText>
+        </Box>
       )}
-    </FormControl>
+    </PremiumSelect>
   );
 };
 

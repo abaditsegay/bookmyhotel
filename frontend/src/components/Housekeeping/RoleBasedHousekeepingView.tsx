@@ -1,7 +1,6 @@
 import React from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import HousekeepingDashboard from './HousekeepingDashboard';
-import HousekeepingStaffDashboard from '../Staff/HousekeepingStaffDashboard';
 import { Box, Typography, Alert } from '@mui/material';
 
 /**
@@ -37,16 +36,7 @@ const RoleBasedHousekeepingView: React.FC = () => {
   const canAccess = hasManagementRole() || isHousekeepingStaff();
 
   if (canAccess) {
-    // Show different dashboards based on user role
-    const isStaffOnly = isHousekeepingStaff() && !hasManagementRole();
-    
-    if (isStaffOnly) {
-      // Pure housekeeping staff - show staff dashboard
-      return <HousekeepingStaffDashboard />;
-    } else {
-      // Management roles - show management dashboard
-      return <HousekeepingDashboard userRole={user.role} userId={user.id} />;
-    }
+    return <HousekeepingDashboard userRole={user.role} userId={user.id} />;
   } else {
     // User doesn't have appropriate role
     return (

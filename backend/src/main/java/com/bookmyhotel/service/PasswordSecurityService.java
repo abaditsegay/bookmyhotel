@@ -36,11 +36,7 @@ public class PasswordSecurityService {
     private static final Pattern LOWERCASE_PATTERN = Pattern.compile("[a-z]");
     private static final Pattern DIGIT_PATTERN = Pattern.compile("[0-9]");
     private static final Pattern SPECIAL_CHAR_PATTERN = Pattern.compile("[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?]");
-
-    // Common weak passwords to check against
-    private static final List<String> COMMON_WEAK_PASSWORDS = List.of(
-            "password", "123456", "password123", "admin", "qwerty", "letmein",
-            "welcome", "monkey", "1234567890", "password1", "123456789", "12345678");
+    private static final Pattern ALPHANUMERIC_PATTERN = Pattern.compile("^[A-Za-z0-9]+$");
 
     /**
      * Validate password against security policy
@@ -70,6 +66,11 @@ public class PasswordSecurityService {
             isValid = false;
         }
 
+        if (!ALPHANUMERIC_PATTERN.matcher(password).matches()) {
+            errors.add("Password must contain only letters and numbers");
+            isValid = false;
+        }
+
         // Check uppercase requirement
         if (requireUppercase && !UPPERCASE_PATTERN.matcher(password).find()) {
             errors.add("Password must contain at least one uppercase letter");
@@ -93,16 +94,6 @@ public class PasswordSecurityService {
             errors.add("Password must contain at least one special character (!@#$%^&*()_+-=[]{}|;':\"\\,.<>/?)");
             isValid = false;
         }
-
-        // Check against common weak passwords - DISABLED for less restrictive policy
-        // String lowerPassword = password.toLowerCase();
-        // for (String weakPassword : COMMON_WEAK_PASSWORDS) {
-        // if (lowerPassword.contains(weakPassword)) {
-        // errors.add("Password contains common weak patterns and is not secure");
-        // isValid = false;
-        // break;
-        // }
-        // }
 
         // Check for repeating characters - DISABLED for less restrictive policy
         // if (hasRepeatingCharacters(password, 4)) {

@@ -28,7 +28,8 @@ import {
   MenuItem,
   TablePagination,
   LinearProgress,
-  Alert
+  Alert,
+  useTheme
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -45,9 +46,12 @@ import {
   Build,
   SupervisorAccount
 } from '@mui/icons-material';
+import { useDebounce } from '../../hooks/useDebounce';
+import { refreshActionButtonSx, tableHeadRowSx } from '../../theme/sxHelpers';
+import { getReadableAccentTextColor } from '../../theme/surfaces';
+import { getEffectiveSearchTerm } from '../../utils/search';
 import TokenManager from '../../utils/tokenManager';
 import { API_CONFIG } from '../../config/apiConfig';
-import { COLORS, addAlpha } from '../../theme/themeColors';
 
 const API_BASE_URL = API_CONFIG.SERVER_URL;
 
@@ -71,11 +75,15 @@ interface StaffDashboardProps {
 }
 
 const StaffDashboard: React.FC<StaffDashboardProps> = ({ currentUserRole = 'OPERATIONAL_ADMIN' }) => {
+  const theme = useTheme();
+  const primaryText = getReadableAccentTextColor(theme);
   const [staffMembers, setStaffMembers] = useState<StaffMember[]>([]);
   const [filteredStaff, setFilteredStaff] = useState<StaffMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, searchTerm.trim() ? 300 : 0);
+  const effectiveSearchTerm = getEffectiveSearchTerm(debouncedSearchTerm);
   const [roleFilter, setRoleFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [page, setPage] = useState(0);
@@ -93,10 +101,10 @@ const StaffDashboard: React.FC<StaffDashboardProps> = ({ currentUserRole = 'OPER
     const filterStaff = () => {
       let filtered = staffMembers;
       
-      if (searchTerm) {
+      if (effectiveSearchTerm) {
         filtered = filtered.filter(staff => 
-          staff.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          staff.email?.toLowerCase().includes(searchTerm.toLowerCase())
+          staff.name.toLowerCase().includes(effectiveSearchTerm.toLowerCase()) ||
+          staff.email?.toLowerCase().includes(effectiveSearchTerm.toLowerCase())
         );
       }
       
@@ -112,7 +120,7 @@ const StaffDashboard: React.FC<StaffDashboardProps> = ({ currentUserRole = 'OPER
     };
     
     filterStaff();
-  }, [staffMembers, searchTerm, roleFilter, statusFilter]);
+  }, [staffMembers, effectiveSearchTerm, roleFilter, statusFilter]);
 
   const loadStaffData = async () => {
     try {
@@ -217,6 +225,7 @@ const StaffDashboard: React.FC<StaffDashboardProps> = ({ currentUserRole = 'OPER
           variant="outlined"
           startIcon={<RefreshIcon />}
           onClick={loadStaffData}
+          sx={refreshActionButtonSx}
         >
           Refresh
         </Button>
@@ -351,29 +360,7 @@ const StaffDashboard: React.FC<StaffDashboardProps> = ({ currentUserRole = 'OPER
             <Table>
               <TableHead>
                 <TableRow
-                  sx={{
-                    background: COLORS.GRADIENT_SLATE,
-                    '& .MuiTableCell-head': {
-                      color: COLORS.WHITE,
-                      fontWeight: 600,
-                      fontSize: '0.95rem',
-                      letterSpacing: '0.5px',
-                      textTransform: 'uppercase',
-                      border: 'none',
-                      padding: '20px 16px',
-                      position: 'relative',
-                      textShadow: `0 1px 2px ${addAlpha(COLORS.BLACK, 0.1)}`,
-                      '&::after': {
-                        content: '""',
-                        position: 'absolute',
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                        height: '3px',
-                        background: `linear-gradient(90deg, ${addAlpha(COLORS.WHITE, 0.6)} 0%, ${addAlpha(COLORS.WHITE, 0.8)} 50%, ${addAlpha(COLORS.WHITE, 0.6)} 100%)`
-                      }
-                    }
-                  }}
+                  sx={tableHeadRowSx()}
                 >
                   <TableCell>Staff Member</TableCell>
                   <TableCell>Role</TableCell>
@@ -583,8 +570,8 @@ const StaffDashboard: React.FC<StaffDashboardProps> = ({ currentUserRole = 'OPER
                     <Typography variant="h6" gutterBottom>Performance Metrics</Typography>
                     <Grid container spacing={2}>
                       <Grid item xs={4}>
-                        <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
-                          <Typography variant="h5" color="primary.main">
+                        <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'action.hover', borderRadius: 1 }}>
+                          <Typography variant="h5" sx={{ color: primaryText }}>
                             {selectedStaff.tasksCompleted}
                           </Typography>
                           <Typography variant="body2" color="text.secondary">
@@ -593,8 +580,8 @@ const StaffDashboard: React.FC<StaffDashboardProps> = ({ currentUserRole = 'OPER
                         </Box>
                       </Grid>
                       <Grid item xs={4}>
-                        <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
-                          <Typography variant="h5" color="primary.main">
+                        <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'action.hover', borderRadius: 1 }}>
+                          <Typography variant="h5" sx={{ color: primaryText }}>
                             {selectedStaff.averageRating.toFixed(1)}
                           </Typography>
                           <Typography variant="body2" color="text.secondary">
@@ -603,8 +590,8 @@ const StaffDashboard: React.FC<StaffDashboardProps> = ({ currentUserRole = 'OPER
                         </Box>
                       </Grid>
                       <Grid item xs={4}>
-                        <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
-                          <Typography variant="h5" color="primary.main">
+                        <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'action.hover', borderRadius: 1 }}>
+                          <Typography variant="h5" sx={{ color: primaryText }}>
                             {selectedStaff.efficiency}%
                           </Typography>
                           <Typography variant="body2" color="text.secondary">

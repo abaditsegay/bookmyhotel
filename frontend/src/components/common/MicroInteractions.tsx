@@ -7,7 +7,7 @@ import {
   Typography,
 } from '@mui/material';
 import { designSystem } from '../../theme/designSystem';
-import { COLORS, addAlpha } from '../../theme/themeColors';
+import { useThemeColors } from '../../theme/useThemeColors';
 
 // Enhanced micro-interaction animations
 const rippleAnimation = keyframes`
@@ -27,18 +27,6 @@ const floatAnimation = keyframes`
   }
   50% {
     transform: translateY(-5px);
-  }
-`;
-
-const pulseGlow = keyframes`
-  0% {
-    box-shadow: 0 0 0 0 ${addAlpha(COLORS.BOOKED, 0.4)};
-  }
-  70% {
-    box-shadow: 0 0 0 10px ${addAlpha(COLORS.BOOKED, 0)};
-  }
-  100% {
-    box-shadow: 0 0 0 0 ${addAlpha(COLORS.BOOKED, 0)};
   }
 `;
 
@@ -69,6 +57,18 @@ const InteractiveCard: React.FC<InteractiveCardProps> = ({
   sx = {},
 }) => {
   const theme = useTheme();
+  const { COLORS, addAlpha } = useThemeColors();
+  const pulseGlow = keyframes`
+    0% {
+      box-shadow: 0 0 0 0 ${addAlpha(COLORS.BOOKED, 0.4)};
+    }
+    70% {
+      box-shadow: 0 0 0 10px ${addAlpha(COLORS.BOOKED, 0)};
+    }
+    100% {
+      box-shadow: 0 0 0 0 ${addAlpha(COLORS.BOOKED, 0)};
+    }
+  `;
 
   const getVariantStyles = () => {
     const baseStyles = {

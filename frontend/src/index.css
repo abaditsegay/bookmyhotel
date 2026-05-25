@@ -1,12 +1,12 @@
 /* Global CSS - Only true global styles, resets, and utility classes */
 
 :root {
-  --color-primary: #1976d2;
-  --color-warning: #ffc107;
-  --color-focus: #1976d2;
+  --color-primary: #1f4b99;
+  --color-warning: #c69214;
+  --color-focus: #1f4b99;
   --color-focus-alt: #d84315;
   --color-white: #ffffff;
-  --color-bg-default: #f8fafc;
+  --color-bg-default: #f4f7fb;
   --color-bg-dark: #0f172a;
   --color-scrollbar-track: #f1f1f1;
   --color-scrollbar-thumb: #888;
@@ -71,13 +71,7 @@
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
   padding: 0;
-  background-color: var(--color-bg-default);
 }
 
 code {
@@ -127,25 +121,6 @@ code {
   background: var(--color-scrollbar-thumb-hover);
 }
 
-/* Dark mode support (future-proofing) */
-@media (prefers-color-scheme: dark) {
-  body {
-    background-color: var(--color-bg-dark);
-  }
-  
-  ::-webkit-scrollbar-track {
-    background: var(--color-scrollbar-track-dark);
-  }
-  
-  ::-webkit-scrollbar-thumb {
-    background: var(--color-scrollbar-thumb-dark);
-  }
-  
-  ::-webkit-scrollbar-thumb:hover {
-    background: var(--color-scrollbar-thumb-hover-dark);
-  }
-}
-
 /* Responsive design improvements */
 @media (max-width: 768px) {
   body {
@@ -166,20 +141,3 @@ code {
   }
 }
 
-/* Accessibility improvements */
-:focus-visible {
-  outline: 2px solid var(--color-focus-alt);
-  outline-offset: 2px;
-}
-
-/* Reduce motion for users who prefer it */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-}

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-  Container,
   Typography,
   Box,
   useTheme,
@@ -11,15 +10,16 @@ import { useTranslation } from 'react-i18next';
 import HotelSearchForm from '../components/hotel/HotelSearchForm';
 import StandardCard from '../components/common/StandardCard';
 import StandardButton from '../components/common/StandardButton';
-import { StandardLoading, StandardError, ErrorBoundary } from '../components/common';
+import { PageContainer, StandardLoading, StandardError, ErrorBoundary } from '../components/common';
 import { hotelApiService } from '../services/hotelApi';
 import { HotelSearchRequest } from '../types/hotel';
-import { COLORS, addAlpha } from '../theme/themeColors';
+import { getReadableAccentTextColor } from '../theme/surfaces';
 
 const HomePage = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -45,7 +45,7 @@ const HomePage = () => {
         pb: 4,
       }}
     >
-      <Container
+      <PageContainer
         maxWidth="lg"
         sx={{
           py: isMobile ? 2 : 4,
@@ -57,7 +57,7 @@ const HomePage = () => {
           <Typography
             variant={isMobile ? 'h5' : 'h4'}
             component="h1"
-            sx={{ fontWeight: 700, color: COLORS.PRIMARY, mb: 0.5 }}
+            sx={{ fontWeight: 700, color: readableAccentColor, mb: 0.5 }}
           >
             {t('hotelSearch.title')}
           </Typography>
@@ -149,7 +149,7 @@ const HomePage = () => {
             </Box>
           </Box>
         </StandardCard>
-      </Container>
+      </PageContainer>
     </Box>
   );
 };

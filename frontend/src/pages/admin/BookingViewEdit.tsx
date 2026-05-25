@@ -22,13 +22,14 @@ import {
   SelectChangeEvent,
   MenuItem,
   Card,
-  CardContent
+  CardContent,
+  useTheme,
 } from '@mui/material';
 import { useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
 import { hotelAdminApi, RoomResponse } from '../../services/hotelAdminApi';
 import { ROOM_TYPE_VALUES } from '../../constants/roomTypes';
-import { COLORS } from '../../theme/themeColors';
 import EditIcon from '@mui/icons-material/Edit';
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
@@ -59,11 +60,13 @@ interface BookingData {
 }
 
 const BookingViewEdit: React.FC = () => {
+  const theme = useTheme();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const location = useLocation();
   const { token } = useAuth();
+  const { showSubmissionError } = useSubmissionError();
   
   const [booking, setBooking] = useState<BookingData | null>(null);
   const [editedBooking, setEditedBooking] = useState<BookingData | null>(null);
@@ -167,7 +170,7 @@ const BookingViewEdit: React.FC = () => {
 
     // Check if booking can be modified based on its status
     if (!canModifyBooking(booking.status)) {
-      setError(`Cannot modify booking with status: ${booking.status}. Only confirmed, pending, or checked-in bookings can be modified.`);
+      showSubmissionError(`Cannot modify booking with status: ${booking.status}. Only confirmed, pending, or checked-in bookings can be modified.`);
       return false;
     }
 
@@ -298,7 +301,9 @@ const BookingViewEdit: React.FC = () => {
       setIsEditing(false);
       return true;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update booking');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to update booking',
+      });
       // console.error('Error updating booking:', err);
       return false;
     } finally {
@@ -579,7 +584,7 @@ const BookingViewEdit: React.FC = () => {
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Typography variant="h4" component="h1" sx={{
-              color: COLORS.PRIMARY,
+              color: theme.palette.primary.main,
               fontWeight: 600
             }}>
               Booking Details

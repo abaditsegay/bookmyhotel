@@ -7,6 +7,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import com.bookmyhotel.entity.User;
+import com.bookmyhotel.tenant.HotelContext;
 
 /**
  * Security component for hotel access control
@@ -53,7 +54,7 @@ public class HotelSecurity {
             Object principal = authentication.getPrincipal();
             if (principal instanceof User) {
                 User user = (User) principal;
-                Long userHotelId = user.getHotel() != null ? user.getHotel().getId() : null;
+                Long userHotelId = resolveHotelId(user);
 
                 logger.debug("🏨 HotelSecurity: User hotel ID: {}, Requested hotel ID: {}", userHotelId, hotelId);
                 logger.debug("🏨 HotelSecurity: User email: {}", user.getEmail());
@@ -65,6 +66,12 @@ public class HotelSecurity {
             } else {
                 logger.debug("❌ HotelSecurity: Principal is not a User instance: {}",
                         principal != null ? principal.getClass().getSimpleName() : "null");
+
+                Long contextHotelId = HotelContext.getHotelId();
+                boolean canAccess = hotelId != null && hotelId.equals(contextHotelId);
+                logger.debug("🏨 HotelSecurity: Falling back to HotelContext hotel ID: {}. Access result: {}",
+                        contextHotelId, canAccess);
+                return canAccess;
             }
         }
 
@@ -80,11 +87,17 @@ public class HotelSecurity {
             Object principal = authentication.getPrincipal();
             if (principal instanceof User) {
                 User user = (User) principal;
-                Long userHotelId = user.getHotel() != null ? user.getHotel().getId() : null;
+                Long userHotelId = resolveHotelId(user);
                 boolean canAccess = hotelId != null && hotelId.equals(userHotelId);
                 logger.debug("🔍 HotelSecurity: Hotel-bound role access result for hotel {}: {}", hotelId, canAccess);
                 return canAccess;
             }
+
+            Long contextHotelId = HotelContext.getHotelId();
+            boolean canAccess = hotelId != null && hotelId.equals(contextHotelId);
+            logger.debug("🏨 HotelSecurity: Hotel-bound role fallback via HotelContext hotel ID {} -> {}",
+                    contextHotelId, canAccess);
+            return canAccess;
         }
 
         logger.debug("❌ HotelSecurity: No matching role or hotel assignment - denying access");
@@ -118,10 +131,13 @@ public class HotelSecurity {
             Object principal = authentication.getPrincipal();
             if (principal instanceof User) {
                 User user = (User) principal;
-                Long userHotelId = user.getHotel() != null ? user.getHotel().getId() : null;
+                Long userHotelId = resolveHotelId(user);
 
                 return hotelId != null && hotelId.equals(userHotelId);
             }
+
+            Long contextHotelId = HotelContext.getHotelId();
+            return hotelId != null && hotelId.equals(contextHotelId);
         }
 
         return false;
@@ -142,9 +158,20 @@ public class HotelSecurity {
         Object principal = authentication.getPrincipal();
         if (principal instanceof User) {
             User user = (User) principal;
-            return user.getHotel() != null ? user.getHotel().getId() : null;
+            return resolveHotelId(user);
         }
 
-        return null;
+        return HotelContext.getHotelId();
+    }
+
+    private Long resolveHotelId(User user) {
+        if (user.getHotel() != null && user.getHotel().getId() != null) {
+            return user.getHotel().getId();
+        }
+
+        Long contextHotelId = HotelContext.getHotelId();
+        logger.debug("🏨 HotelSecurity: Falling back to HotelContext for user {} with hotel ID {}",
+                user.getEmail(), contextHotelId);
+        return contextHotelId;
     }
 }

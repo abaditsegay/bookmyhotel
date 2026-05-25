@@ -33,7 +33,9 @@ export const amTranslations = {
       passwordTooShort: "የይለፍ ቃል ቢያንስ 6 ቁምፊዎች ሊኖረው ይገባል",
       invalidEmail: "እባክዎ ትክክለኛ ኢሜይል አድራሻ ስጥ",
       passwordsNoMatch: "የይለፍ ቃሎች አይመሳሰሉም",
-      registrationSuccess: "መመዝገብ በተሳካ ሁኔታ ተጠናቋል! በማዞር ላይ...",
+      registrationSuccess: "መመዝገብ ተሳክቷል። ከመግባትዎ በፊት መለያዎን ለማረጋገጥ ኢሜይልዎን ይመልከቱ።",
+      emailVerificationSuccess: "ኢሜይልዎ ተረጋግጧል። አሁን መግባት ይችላሉ።",
+      emailVerificationFailed: "ይህ የማረጋገጫ ሊንክ ልክ ያልሆነ ወይም ጊዜው ያለፈበት ነው። እንደገና ይመዝገቡ ወይም እርዳታ ከፈለጉ ድጋፍን ያነጋግሩ።",
       loginFailed: "መይግቡት አልተሳካም",
       registrationFailed: "መመዝገብ አልተሳካም",
       loading: "በመጫን ላይ...",
@@ -213,62 +215,8 @@ export const amTranslations = {
         staffSchedules: "የሰራተኞች መርሐ ግብር",
         housekeeping: "የቤት ጽዳት",
         reports: "ሪፖርቶች",
-        audit: "የኦዲት ማዕከል",
         pricingTax: "ዋጋ እና ግብር",
         offlineBookings: "ከመስመር ውጭ ማስያዞች"
-      },
-
-      audit: {
-        title: 'የሆቴል ኦዲት ማዕከል',
-        subtitle: 'የቅርብ እንቅስቃሴን ይመልከቱ፣ የአካል ታሪክን ይፈትሹ፣ እና በኮምፕላየንስ መደብ የተተኮሩ መዝገቦችን ያግኙ።',
-        refresh: 'እንቅስቃሴን አድስ',
-        manualEntryTitle: 'የእጅ ኦዲት ግቤት',
-        manualEntryDescription: 'በጀርባ የተፈቀዱ የምድብ እሴቶችን እና የአሁኑን የገባውን ማንነት በመጠቀም የሆቴል-ደረጃ ኦዲት መዝገብ ይፍጠሩ።',
-        recentActivity: 'የቅርብ የሆቴል እንቅስቃሴ',
-        recentActivityDescription: 'ለዚህ ሆቴል የተቀመጡ የቅርብ የሆቴል-ደረጃ ኦዲት መዝገቦች።',
-        taxonomyTitle: 'የሚደገፉ ምድቦች',
-        taxonomyDescription: 'እነዚህ እሴቶች በቀጥታ ከጀርባ የማረጋገጫ ደንቦች ይመጣሉ እና በደህና በማጣሪያዎች ወይም በእጅ ኦዲት ሂደቶች ላይ ሊጠቀሙባቸው ይችላሉ።',
-        supportedEntityTypes: 'የአካል አይነቶች',
-        supportedActions: 'እርምጃዎች',
-        supportedComplianceCategories: 'የኮምፕላየንስ ምድቦች',
-        auditTrailTitle: 'የአካል ኦዲት ታሪክ',
-        auditTrailDescription: 'በአይነት እና ቁጥር መለያ አንድ የተኦዲተ አካል ታሪክ ይመልከቱ።',
-        complianceTitle: 'የኮምፕላየንስ ሪፖርት',
-        complianceDescription: 'በተዘጋጀ ዋጋ ሳይተማመኑ ለአንድ የኮምፕላየንስ ምድብ የቅርብ መዝገቦችን ይጫኑ።',
-        entityType: 'የአካል አይነት',
-        action: 'እርምጃ',
-        entityId: 'የአካል መለያ',
-        entityIdPlaceholder: 'የቁጥር መለያ ያስገቡ',
-        complianceCategory: 'የኮምፕላየንስ ምድብ',
-        complianceCategoryOptional: 'የኮምፕላየንስ ምድብ (አማራጭ)',
-        reason: 'ምክንያት',
-        changedFields: 'የተቀየሩ መስኮች',
-        changedFieldsPlaceholder: 'ለምሳሌ: status,paymentStatus,assignedRoom',
-        oldValues: 'የቀድሞ እሴቶች',
-        newValues: 'አዲስ እሴቶች',
-        sensitiveEntry: 'ይህን ግቤት ስሱ አድርገው ምልክት ያድርጉ',
-        createEntry: 'የኦዲት ግቤት ፍጠር',
-        submitting: 'ግቤት እየተፈጠረ ነው...',
-        none: 'ምንም',
-        loggedInAs: 'እንደ {{name}} ({{role}}) በመላክ ላይ',
-        userContextUnavailable: 'የአሁኑ ተጠቃሚ ኮንቴክስትዎ ያልተሟላ ስለሆነ የእጅ ኦዲት ማስገባት አይቻልም።',
-        loadTrail: 'የኦዲት ታሪክ ጫን',
-        loadCompliance: 'የኮምፕላየንስ ሪፖርት ጫን',
-        emptyRecent: 'የቅርብ የሆቴል ኦዲት መዝገብ አልተገኘም።',
-        emptyTrail: 'ለዚያ አካል እስካሁን ድረስ ምንም ኦዲት መዝገብ አልተገኘም።',
-        emptyCompliance: 'ለዚያ ምድብ ምንም የኮምፕላየንስ መዝገብ አልተገኘም።',
-        noDetails: 'ምንም ዝርዝር አልተመዘገበም',
-        hotelUnavailable: 'ለኦዲት ጥያቄዎች የሆቴል ኮንቴክስት አይገኝም።',
-        messages: {
-          createSuccess: 'የእጅ ኦዲት ግቤት በተሳካ ሁኔታ ተፈጥሯል።'
-        },
-        errors: {
-          loadInitial: 'የሆቴል ኦዲት ምድቦችን እና የቅርብ እንቅስቃሴን መጫን አልተሳካም።',
-          loadRecent: 'የቅርብ የሆቴል ኦዲት እንቅስቃሴን ማደስ አልተሳካም።',
-          loadTrail: 'የተጠየቀውን የኦዲት ታሪክ መጫን አልተሳካም።',
-          loadCompliance: 'የኮምፕላየንስ ሪፖርቱን መጫን አልተሳካም።',
-          createManual: 'የእጅ ኦዲት ግቤቱን መፍጠር አልተሳካም።'
-        }
       },
       
       // Hotel Details Sub-tabs
@@ -1881,7 +1829,7 @@ export const amTranslations = {
       description: "ምዝገባዎን ማግኘት ካልቻሉ ወይም ስለ ሂደቱ ጥያቄዎች ካሉዎት:",
       tip1: "ከምዝገባዎ ጋር ትክክለኛውን ኢሜይል እየተጠቀሙ መሆኑን ያረጋግጡ",
       tip2: "ለማሳወቂያ ኢሜይሎች የስፓም/ጃንክ ፎልደርዎን ያረጋግጡ",
-      tip3: "የድጋፍ ቡድናችንን በ support@shegersolutions.com ያግኙ"
+      tip3: "የድጋፍ ቡድናችንን በ support@bakaroo.com ያግኙ"
     },
     errors: {
       enterEmail: "እባክዎ የኢሜይል አድራሻዎን ያስገቡ",
@@ -2889,7 +2837,7 @@ export const amTranslations = {
       title: "ያግኙን",
       description: "ጥያቄዎች አሉዎት ወይም እርዳታ ይፈልጋሉ? ቡድናችን ለቦታ ማስያዝ፣ ለሽርክና ወይም ለማንኛውም ጥያቄ ለመርዳት ዝግጁ ነው።",
       emailLabel: "ኢሜይል",
-      email: "support@shegersolutions.com",
+      email: "info@bakaroo.com",
       phoneLabel: "ስልክ",
       phone: "+251-911-000-000"
     },

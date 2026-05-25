@@ -35,6 +35,9 @@ public interface MaintenanceTaskRepository extends JpaRepository<MaintenanceTask
         List<MaintenanceTask> findByHotelIdAndStatus(@Param("hotelId") Long hotelId,
                         @Param("status") TaskStatus status);
 
+        @Query("SELECT m FROM MaintenanceTask m WHERE m.id = :taskId AND m.hotel.id = :hotelId")
+        Optional<MaintenanceTask> findByIdAndHotelId(@Param("taskId") Long taskId, @Param("hotelId") Long hotelId);
+
         @Query("SELECT m FROM MaintenanceTask m WHERE m.hotel.id = :hotelId AND m.status = :status ORDER BY m.createdAt DESC")
         List<MaintenanceTask> findByHotelIdAndStatusOrderByCreatedAtDesc(@Param("hotelId") Long hotelId,
                         @Param("status") TaskStatus status);

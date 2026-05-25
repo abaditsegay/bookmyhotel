@@ -1,8 +1,6 @@
 import React from 'react';
 import {
   Box,
-  Card,
-  CardContent,
   Typography,
   Divider,
   Alert,
@@ -12,8 +10,9 @@ import {
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { formatCurrencyWithDecimals } from '../../utils/currencyUtils';
-import { COLORS } from '../../theme/themeColors';
 import { formatDateCalendarAware } from '../../utils/dateUtils';
+import { SurfaceCard } from '../common';
+import { tintedPanelSx } from '../../theme/sxHelpers';
 
 interface BookingSummaryProps {
   hotelName: string;
@@ -60,34 +59,26 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
 
   return (
     <Box sx={{ position: { xs: 'relative', md: 'sticky' }, top: 24 }}>
-      <Card
+      <SurfaceCard
         elevation={0}
         sx={{
-          borderRadius: 2,
-          border: `2px solid ${COLORS.SECONDARY}`,
           overflow: 'hidden',
-          boxShadow: `0 4px 12px ${alpha(COLORS.SECONDARY, 0.15)}`,
         }}
+        contentSx={{ p: { xs: 2, md: 3 } }}
       >
-        <Box
-          sx={{
-            bgcolor: COLORS.PRIMARY,
-            color: COLORS.WHITE,
-            p: { xs: 1.5, md: 2 },
-          }}
-        >
+        <Box sx={{ ...tintedPanelSx('secondary'), mb: { xs: 2, md: 3 } }}>
           <Typography 
             variant="h6" 
             sx={{ 
               fontWeight: 600,
+              color: 'text.primary',
               fontSize: { xs: '1.1rem', md: '1.25rem' },
             }}
           >
             {t('booking.summary.title')}
           </Typography>
         </Box>
-        
-        <CardContent sx={{ p: { xs: 2, md: 3 } }}>
+
           <Box sx={{ mb: { xs: 2, md: 3 } }}>
             <Typography 
               variant="subtitle2" 
@@ -103,7 +94,7 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
               variant={isMobile ? 'body1' : 'h6'} 
               sx={{ 
                 fontWeight: 600, 
-                color: COLORS.PRIMARY,
+                color: 'text.primary',
                 fontSize: { xs: '1rem', md: '1.25rem' },
               }}
             >
@@ -354,13 +345,7 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
           <Divider sx={{ my: { xs: 1.5, md: 2 } }} />
 
           {/* Total Section with Distinct Background */}
-          <Box sx={{ 
-            backgroundColor: alpha(COLORS.SECONDARY, 0.1),
-            borderRadius: 2,
-            p: { xs: 1.5, md: 2 },
-            mb: { xs: 1.5, md: 2 },
-            border: `2px solid ${COLORS.SECONDARY}`,
-          }}>
+          <Box sx={{ ...tintedPanelSx('secondary'), mb: { xs: 1.5, md: 2 } }}>
             <Box sx={{ 
               display: 'flex', 
               justifyContent: 'space-between', 
@@ -372,7 +357,7 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
                 variant={isMobile ? 'body1' : 'h6'} 
                 sx={{ 
                   fontWeight: 700, 
-                  color: COLORS.PRIMARY,
+                  color: 'text.primary',
                   fontSize: { xs: '1.1rem', md: '1.25rem' },
                 }}
               >
@@ -382,7 +367,7 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
                 variant={isMobile ? 'body1' : 'h6'} 
                 sx={{ 
                   fontWeight: 700, 
-                  color: COLORS.PRIMARY,
+                  color: 'text.primary',
                   fontSize: { xs: '1.2rem', md: '1.25rem' },
                 }}
               >
@@ -398,10 +383,10 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
             severity="info" 
             sx={{ 
               borderRadius: 2,
-              bgcolor: alpha(COLORS.SECONDARY, 0.08),
+              bgcolor: alpha(theme.palette.secondary.main, 0.08),
               color: 'text.secondary',
-              border: `1px solid ${COLORS.SECONDARY}`,
-              '& .MuiAlert-icon': { color: COLORS.PRIMARY },
+              border: `1px solid ${theme.palette.secondary.main}`,
+              '& .MuiAlert-icon': { color: theme.palette.text.primary },
               mb: 2,
             }}
           >
@@ -414,18 +399,17 @@ const BookingSummary: React.FC<BookingSummaryProps> = ({
             severity="info" 
             sx={{ 
               borderRadius: 2,
-              bgcolor: alpha(COLORS.SECONDARY, 0.05),
-              color: COLORS.PRIMARY,
-              border: `1px solid ${COLORS.SECONDARY}`,
-              '& .MuiAlert-icon': { color: COLORS.PRIMARY },
+              bgcolor: alpha(theme.palette.secondary.main, 0.05),
+              color: 'text.primary',
+              border: `1px solid ${theme.palette.secondary.main}`,
+              '& .MuiAlert-icon': { color: theme.palette.text.primary },
             }}
           >
             <Typography variant="caption">
               {t('booking.summary.cancellationPolicy')}
             </Typography>
           </Alert>
-        </CardContent>
-      </Card>
+      </SurfaceCard>
     </Box>
   );
 };

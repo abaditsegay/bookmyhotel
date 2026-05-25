@@ -8,8 +8,8 @@ import {
   useMediaQuery,
   Divider,
 } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import {
-  Hotel as HotelIcon,
   Search as SearchIcon,
   Security as SecurityIcon,
   Speed as SpeedIcon,
@@ -27,12 +27,13 @@ import StandardButton from '../components/common/StandardButton';
 import { StandardLoading, StandardError, ErrorBoundary } from '../components/common';
 import { hotelApiService } from '../services/hotelApi';
 import { HotelSearchRequest } from '../types/hotel';
-import { COLORS, addAlpha, getGradient } from '../theme/themeColors';
+import { getInsetSurfaceBackground, getPageShellBackground, getReadableAccentTextColor, getSectionTint } from '../theme/surfaces';
 
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isSmall = useMediaQuery(theme.breakpoints.down('sm'));
   const [loading, setLoading] = useState(false);
@@ -78,36 +79,48 @@ const LandingPage: React.FC = () => {
     <Box
       sx={{
         minHeight: '100vh',
-        background: theme.palette.mode === 'dark'
-          ? getGradient('dark')
-          : getGradient('white'),
+        background: getPageShellBackground(theme),
       }}
     >
       {/* Hero Section */}
       <Box
         sx={{
-          background: getGradient('primary'),
-          color: '#fff',
+          background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.82)} 0%, ${alpha(theme.palette.primary.dark, 0.76)} 55%, ${alpha(theme.palette.secondary.main, 0.68)} 100%)`,
+          color: 'text.primary',
           py: isMobile ? 5 : 8,
           position: 'relative',
           overflow: 'hidden',
+          borderBottom: `1px solid ${alpha(theme.palette.common.black, 0.12)}`,
         }}
       >
         <Container maxWidth="lg">
           <Box sx={{ textAlign: 'center', mb: isMobile ? 3 : 5 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2 }}>
-              <HotelIcon sx={{ fontSize: isMobile ? 36 : 48, mr: 1.5 }} />
-              <Typography
-                variant={isMobile ? 'h4' : 'h3'}
-                component="h1"
-                sx={{ fontWeight: 800, letterSpacing: '-0.02em' }}
-              >
-                {t('landing.hero.title')}
-              </Typography>
+            <Box
+              sx={{
+                width: isMobile ? 'min(280px, 72vw)' : 'min(420px, 48vw)',
+                mx: 'auto',
+                mb: 2,
+                overflow: 'hidden',
+              }}
+            >
+              <Box
+                component="img"
+                src="/logos/logo.png"
+                alt={t('landing.hero.title')}
+                sx={{
+                  display: 'block',
+                  width: '104%',
+                  maxWidth: 'none',
+                  height: 'auto',
+                  ml: '-1%',
+                  mt: '-4%',
+                  mb: '-6%',
+                }}
+              />
             </Box>
             <Typography
               variant={isMobile ? 'body1' : 'h6'}
-              sx={{ opacity: 0.9, maxWidth: 600, mx: 'auto', fontWeight: 400 }}
+              sx={{ color: alpha(theme.palette.common.white, 0.88), maxWidth: 600, mx: 'auto', fontWeight: 400 }}
             >
               {t('landing.hero.subtitle')}
             </Typography>
@@ -126,7 +139,7 @@ const LandingPage: React.FC = () => {
         >
           <Box sx={{ p: isMobile ? 2 : 3 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <SearchIcon sx={{ mr: 1, color: 'primary.main' }} />
+              <SearchIcon sx={{ mr: 1, color: readableAccentColor }} />
               <Typography variant="h6" sx={{ fontWeight: 600, color: 'text.primary' }}>
                 {t('landing.search.title')}
               </Typography>
@@ -167,7 +180,7 @@ const LandingPage: React.FC = () => {
                   }}
                 >
                   <Box sx={{ p: 3 }}>
-                    <Box sx={{ color: 'primary.main', mb: 2 }}>{item.icon}</Box>
+                    <Box sx={{ color: readableAccentColor, mb: 2 }}>{item.icon}</Box>
                     <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
                       {t(item.titleKey)}
                     </Typography>
@@ -195,11 +208,11 @@ const LandingPage: React.FC = () => {
                 overflow: 'hidden',
                 border: 'none',
                 borderRadius: 4,
-                background: `linear-gradient(145deg, ${COLORS.PRIMARY} 0%, ${COLORS.PRIMARY_HOVER} 50%, #1a3a5c 100%)`,
+                background: `linear-gradient(145deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 50%, ${alpha(theme.palette.primary.dark, 0.94)} 100%)`,
                 transition: 'transform 0.3s ease, box-shadow 0.3s ease',
                 '&:hover': {
                   transform: 'translateY(-4px)',
-                  boxShadow: `0 12px 40px ${addAlpha(COLORS.PRIMARY, 0.4)}`,
+                  boxShadow: `0 12px 40px ${alpha(theme.palette.primary.main, 0.4)}`,
                 },
               }}
             >
@@ -222,14 +235,14 @@ const LandingPage: React.FC = () => {
                     mb: 2.5,
                   }}
                 >
-                  <HandshakeIcon sx={{ fontSize: 40, color: COLORS.WHITE }} />
+                  <HandshakeIcon sx={{ fontSize: 40, color: 'common.white' }} />
                 </Box>
 
-                <Typography variant="h5" sx={{ fontWeight: 800, color: COLORS.WHITE, mb: 2 }}>
+                <Typography variant="h5" sx={{ fontWeight: 800, color: 'common.white', mb: 2 }}>
                   {t('landing.partner.title')}
                 </Typography>
 
-                <Typography variant="body1" sx={{ mb: 4, lineHeight: 1.7, color: addAlpha(COLORS.WHITE, 0.85), maxWidth: 400 }}>
+                <Typography variant="body1" sx={{ mb: 4, lineHeight: 1.7, color: alpha(theme.palette.common.white, 0.85), maxWidth: 400 }}>
                   {t('landing.partner.description')}
                 </Typography>
 
@@ -243,15 +256,15 @@ const LandingPage: React.FC = () => {
                     px: 5,
                     fontWeight: 700,
                     fontSize: '0.95rem',
-                    backgroundColor: `${COLORS.WHITE} !important`,
-                    color: `${COLORS.PRIMARY} !important`,
+                    backgroundColor: `${theme.palette.common.white} !important`,
+                    color: `${theme.palette.primary.main} !important`,
                     backgroundImage: 'none !important',
                     borderRadius: 3,
-                    boxShadow: `0 4px 16px ${addAlpha(COLORS.BLACK, 0.15)}`,
+                    boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.15)}`,
                     '&:hover': {
-                      backgroundColor: `${addAlpha(COLORS.WHITE, 0.9)} !important`,
+                      backgroundColor: `${alpha(theme.palette.common.white, 0.9)} !important`,
                       backgroundImage: 'none !important',
-                      boxShadow: `0 6px 24px ${addAlpha(COLORS.BLACK, 0.2)}`,
+                      boxShadow: `0 6px 24px ${alpha(theme.palette.common.black, 0.2)}`,
                     },
                   }}
                 >
@@ -267,9 +280,7 @@ const LandingPage: React.FC = () => {
               elevation={0}
               sx={{
                 height: '100%',
-                background: theme.palette.mode === 'dark'
-                  ? addAlpha(COLORS.SECONDARY, 0.08)
-                  : addAlpha(COLORS.SECONDARY, 0.03),
+                background: getInsetSurfaceBackground(theme, 'secondary'),
               }}
             >
               <Box sx={{ p: isMobile ? 3 : 4 }}>
@@ -288,11 +299,11 @@ const LandingPage: React.FC = () => {
                     p: 2,
                     mb: 2,
                     borderRadius: 2,
-                    backgroundColor: theme.palette.background.paper,
+                    backgroundColor: getSectionTint(theme, 'secondary'),
                     boxShadow: theme.shadows[1],
                   }}
                 >
-                  <EmailIcon sx={{ fontSize: 28, color: 'primary.main', mr: 2 }} />
+                  <EmailIcon sx={{ fontSize: 28, color: readableAccentColor, mr: 2 }} />
                   <Box>
                     <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
                       {t('landing.contact.emailLabel')}
@@ -303,7 +314,7 @@ const LandingPage: React.FC = () => {
                       href={`mailto:${t('landing.contact.email')}`}
                       sx={{
                         fontWeight: 600,
-                        color: 'primary.main',
+                        color: readableAccentColor,
                         textDecoration: 'none',
                         '&:hover': { textDecoration: 'underline' },
                       }}
@@ -320,11 +331,11 @@ const LandingPage: React.FC = () => {
                     alignItems: 'center',
                     p: 2,
                     borderRadius: 2,
-                    backgroundColor: theme.palette.background.paper,
+                    backgroundColor: getSectionTint(theme, 'secondary'),
                     boxShadow: theme.shadows[1],
                   }}
                 >
-                  <PhoneIcon sx={{ fontSize: 28, color: 'primary.main', mr: 2 }} />
+                  <PhoneIcon sx={{ fontSize: 28, color: readableAccentColor, mr: 2 }} />
                   <Box>
                     <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
                       {t('landing.contact.phoneLabel')}
@@ -335,7 +346,7 @@ const LandingPage: React.FC = () => {
                       href={`tel:${t('landing.contact.phone')}`}
                       sx={{
                         fontWeight: 600,
-                        color: 'primary.main',
+                        color: readableAccentColor,
                         textDecoration: 'none',
                         '&:hover': { textDecoration: 'underline' },
                       }}

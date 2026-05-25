@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Typography,
   Paper,
-  useTheme,
   alpha,
   IconButton,
 } from '@mui/material';
@@ -15,7 +14,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { useCalendarStore, getCalendarType } from '../../contexts/store';
 import { gregorianToEthiopian, ethiopianToGregorian } from '../../utils/ethiopianCalendar';
-import { COLORS, addAlpha } from '../../theme/themeColors';
+import { useThemeColors } from '../../theme/useThemeColors';
 
 /* ─── Ethiopian month names ─── */
 const ETH_MONTHS_AM = [
@@ -48,19 +47,10 @@ function firstDayOfWeekEth(eYear: number, eMonth: number): number {
   return new Date(gY, gM - 1, gD).getDay();
 }
 
-interface CalendarEvent {
-  id: string;
-  title: string;
-  date: Date;
-  type: 'booking' | 'maintenance' | 'meeting' | 'reminder' | 'checkout' | 'checkin';
-  color?: string;
-  description?: string;
-}
-
 const CalendarWidget: React.FC = () => {
-  const theme = useTheme();
   const { user } = useAuth();
   const { t, i18n } = useTranslation();
+  const { COLORS, addAlpha } = useThemeColors();
   const { calendarType } = useCalendarStore();
   const isEthiopian = getCalendarType(i18n.language, calendarType) === 'ethiopian';
   const lang = i18n.language === 'am' ? 'am' : 'en';
@@ -75,31 +65,10 @@ const CalendarWidget: React.FC = () => {
   const [ethViewMonth, setEthViewMonth] = useState(todayEM);
 
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [events, setEvents] = useState<CalendarEvent[]>([]);
 
   const hasAccess = user?.roles &&
     !user.roles.includes('CUSTOMER') &&
     !user.roles.includes('GUEST');
-
-  useEffect(() => {
-    if (!hasAccess) return;
-    const mockEvents: CalendarEvent[] = [];
-    const today = new Date();
-    if (user?.roles?.includes('HOTEL_ADMIN')) {
-      mockEvents.push(
-        { id: '1', title: 'Room 101 Check-in', date: new Date(today.getFullYear(), today.getMonth(), today.getDate()), type: 'checkin', description: 'Guest: John Smith' },
-        { id: '2', title: 'Room 205 Check-out', date: new Date(today.getFullYear(), today.getMonth(), today.getDate()), type: 'checkout', description: 'Guest: Jane Doe' },
-        { id: '3', title: 'AC Maintenance', date: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1), type: 'maintenance', description: 'Room 301' },
-        { id: '4', title: 'Staff Meeting', date: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 2), type: 'meeting', description: 'Monthly sync' },
-      );
-    } else if (user?.roles?.includes('FRONTDESK')) {
-      mockEvents.push(
-        { id: '5', title: 'Check-ins Today: 8', date: new Date(today.getFullYear(), today.getMonth(), today.getDate()), type: 'checkin' },
-        { id: '6', title: 'Check-outs Today: 5', date: new Date(today.getFullYear(), today.getMonth(), today.getDate()), type: 'checkout' },
-      );
-    }
-    setEvents(mockEvents);
-  }, [user, hasAccess]);
 
   if (!hasAccess) return null;
 
@@ -220,7 +189,7 @@ const CalendarWidget: React.FC = () => {
         overflow: 'hidden',
         position: 'relative',
         zIndex: 'auto',
-        background: `linear-gradient(140deg, ${COLORS.WHITE} 0%, ${addAlpha(COLORS.PRIMARY, 0.06)} 55%, ${addAlpha(COLORS.PRIMARY, 0.12)} 100%)`,
+        background: `linear-gradient(140deg, ${COLORS.BG_PAPER} 0%, ${COLORS.BG_PRIMARY_SOFT} 55%, ${COLORS.BG_PRIMARY_SOFT} 100%)`,
         border: `1px solid ${alpha(COLORS.PRIMARY, 0.08)}`,
         boxShadow: `0 10px 22px ${addAlpha(COLORS.PRIMARY, 0.08)}`,
       }}
@@ -233,8 +202,8 @@ const CalendarWidget: React.FC = () => {
           justifyContent: 'center',
           py: 2,
           px: 2,
-          background: `linear-gradient(135deg, ${alpha(COLORS.PRIMARY, 0.12)} 0%, ${alpha(COLORS.PRIMARY, 0.18)} 60%, ${alpha(COLORS.PRIMARY, 0.16)} 100%)`,
-          color: COLORS.PRIMARY,
+          background: `linear-gradient(135deg, ${COLORS.BG_PRIMARY_SOFT} 0%, ${COLORS.BG_PRIMARY_SOFT} 100%)`,
+          color: COLORS.PRIMARY_TEXT,
           position: 'relative',
           borderBottom: `1px solid ${alpha(COLORS.PRIMARY, 0.14)}`,
         }}
@@ -242,7 +211,7 @@ const CalendarWidget: React.FC = () => {
         <IconButton
           size="small"
           onClick={() => onNavigate('prev')}
-          sx={{ position: 'absolute', left: 8, color: COLORS.PRIMARY, '&:hover': { backgroundColor: alpha(COLORS.PRIMARY, 0.08) } }}
+          sx={{ position: 'absolute', left: 8, color: COLORS.PRIMARY_TEXT, '&:hover': { backgroundColor: alpha(COLORS.PRIMARY, 0.08) } }}
         >
           <ChevronLeft />
         </IconButton>
@@ -251,7 +220,7 @@ const CalendarWidget: React.FC = () => {
           variant="h6"
           sx={{
             fontWeight: 700,
-            color: COLORS.PRIMARY,
+            color: COLORS.PRIMARY_TEXT,
             textAlign: 'center',
             fontSize: '1.1rem',
             textTransform: 'uppercase',
@@ -264,14 +233,14 @@ const CalendarWidget: React.FC = () => {
         <IconButton
           size="small"
           onClick={() => onNavigate('next')}
-          sx={{ position: 'absolute', right: 8, color: COLORS.PRIMARY, '&:hover': { backgroundColor: alpha(COLORS.PRIMARY, 0.08) } }}
+          sx={{ position: 'absolute', right: 8, color: COLORS.PRIMARY_TEXT, '&:hover': { backgroundColor: alpha(COLORS.PRIMARY, 0.08) } }}
         >
           <ChevronRight />
         </IconButton>
       </Box>
 
       {/* Weekday Headers */}
-      <Box sx={{ display: 'flex', backgroundColor: COLORS.SLATE_50, borderBottom: `1px solid ${alpha(COLORS.PRIMARY, 0.08)}` }}>
+      <Box sx={{ display: 'flex', backgroundColor: COLORS.BG_PAPER, borderBottom: `1px solid ${alpha(COLORS.PRIMARY, 0.08)}` }}>
         {weekdayLabels.map((day, index) => (
           <Box
             key={index}
@@ -279,7 +248,7 @@ const CalendarWidget: React.FC = () => {
           >
             <Typography
               variant="caption"
-              sx={{ fontSize: '0.75rem', fontWeight: 600, color: alpha(COLORS.PRIMARY, 0.9), textTransform: 'uppercase' }}
+              sx={{ fontSize: '0.75rem', fontWeight: 600, color: COLORS.PRIMARY_TEXT, textTransform: 'uppercase' }}
             >
               {day}
             </Typography>
@@ -337,10 +306,10 @@ const CalendarWidget: React.FC = () => {
                       sx={{
                         fontWeight: today || selected ? 700 : 600,
                         color: selected
-                          ? COLORS.PRIMARY
+                          ? COLORS.PRIMARY_TEXT
                           : today
-                            ? alpha(COLORS.PRIMARY, 0.9)
-                            : alpha(COLORS.PRIMARY, 0.78),
+                            ? COLORS.PRIMARY_TEXT
+                            : 'text.primary',
                         fontSize: '1.05rem',
                         mb: 0.25,
                       }}

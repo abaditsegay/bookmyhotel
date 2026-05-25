@@ -56,7 +56,7 @@ export interface PaginatedResponse<T> {
   empty: boolean;
 }
 
-export const useNotifications = () => {
+export const useNotifications = (enabled: boolean = true) => {
   const { token, isInitializing, hasRole } = useAuth();
   const [notifications, setNotifications] = useState<BookingNotification[]>([]);
   const [stats, setStats] = useState<NotificationStats>({ 
@@ -66,6 +66,7 @@ export const useNotifications = () => {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [accessDenied, setAccessDenied] = useState(false);
 
   const calculateStats = (notificationList: BookingNotification[]) => {
     const unread = notificationList.filter(n => n.status === 'UNREAD');
@@ -80,6 +81,20 @@ export const useNotifications = () => {
   };
 
   const loadNotifications = useCallback(async () => {
+    if (!enabled) {
+      setNotifications([]);
+      setStats({ totalUnread: 0, unreadCancellations: 0, unreadModifications: 0 });
+      setLoading(false);
+      setError(null);
+      setAccessDenied(false);
+      return;
+    }
+
+    if (accessDenied) {
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
@@ -89,6 +104,7 @@ export const useNotifications = () => {
         // console.log('🔑 System admin detected - skipping notifications API call');
         setNotifications([]);
         setStats({ totalUnread: 0, unreadCancellations: 0, unreadModifications: 0 });
+        setAccessDenied(false);
         setLoading(false);
         return;
       }
@@ -98,6 +114,7 @@ export const useNotifications = () => {
         // console.log('🚫 User does not have required role for notifications');
         setNotifications([]);
         setStats({ totalUnread: 0, unreadCancellations: 0, unreadModifications: 0 });
+        setAccessDenied(false);
         setLoading(false);
         return;
       }
@@ -109,16 +126,36 @@ export const useNotifications = () => {
         const notificationList = response.data.content || [];
         setNotifications(notificationList);
         setStats(calculateStats(notificationList));
+        setAccessDenied(false);
       } else {
         throw new Error(response.error || 'Failed to load notifications');
       }
     } catch (err: any) {
+      if (err?.status === 403 || err?.response?.status === 403) {
+        setNotifications([]);
+        setStats({ totalUnread: 0, unreadCancellations: 0, unreadModifications: 0 });
+        setAccessDenied(true);
+        setError('Notifications are unavailable for this account.');
+        return;
+      }
+
       const errorMessage = err.response?.data?.message || err.message || 'Failed to load notifications';
       setError(errorMessage);
     } finally {
       setLoading(false);
     }
-  }, [hasRole]);
+  }, [accessDenied, enabled, hasRole]);
+
+  useEffect(() => {
+    if (!enabled || !token) {
+      setAccessDenied(false);
+      return;
+    }
+
+    if (hasRole('HOTEL_ADMIN') || hasRole('FRONTDESK')) {
+      setAccessDenied(false);
+    }
+  }, [enabled, hasRole, token]);
 
   const markAsRead = async (notificationId: number) => {
     // Skip for super admin or users without proper roles
@@ -232,6 +269,12 @@ export const useNotifications = () => {
 
   // Load notifications on hook initialization and when user changes
   useEffect(() => {
+    if (!enabled) {
+      setLoading(false);
+      setError(null);
+      return;
+    }
+
     // Wait for auth initialization to complete and ensure we have a token
     if (!isInitializing && token) {
       loadNotifications();
@@ -240,10 +283,14 @@ export const useNotifications = () => {
       setLoading(false);
       setError('Authentication required');
     }
-  }, [loadNotifications, isInitializing, token]);
+  }, [enabled, loadNotifications, isInitializing, token]);
 
   // Event-based refresh: Refresh when user returns to the page/tab
   useEffect(() => {
+    if (!enabled || accessDenied) {
+      return;
+    }
+
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible' && !loading && token) {
         // Refresh notifications when user returns to the tab
@@ -265,7 +312,7 @@ export const useNotifications = () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('focus', handleFocus);
     };
-  }, [loadNotifications, loading, token]);
+  }, [accessDenied, enabled, loadNotifications, loading, token]);
 
   return {
     notifications,

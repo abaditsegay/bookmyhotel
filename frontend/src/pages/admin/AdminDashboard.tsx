@@ -1,17 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { COLORS, addAlpha, getGradient } from '../../theme/themeColors';
 import {
   Typography,
-  Button,
   Box,
   Chip,
   Tabs,
   Tab,
-  Paper,
   Table,
   TableBody,
   TableCell,
-  TableContainer,
   TableHead,
   TableRow,
   IconButton,
@@ -32,28 +28,32 @@ import {
   Search as SearchIcon,
 } from '@mui/icons-material';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
-import { adminApiService, UserManagementResponse, HotelDTO, PagedResponse } from '../../services/adminApi';
-import AuditLogTab from './AuditLogTab';
-import PremiumTextField from '../../components/common/PremiumTextField';
+
+import { PageContainer } from '../../components/common/PageShell';
 import PremiumSelect from '../../components/common/PremiumSelect';
+import PremiumTextField from '../../components/common/PremiumTextField';
+import StandardButton from '../../components/common/StandardButton';
+import { DataTableCard, PageHeader, SurfaceCard } from '../../components/ui';
+import { useAuth } from '../../contexts/AuthContext';
+import { useDebounce } from '../../hooks/useDebounce';
+import { adminApiService, HotelDTO, PagedResponse, UserManagementResponse } from '../../services/adminApi';
 import { formatDateForDisplay } from '../../utils/dateUtils';
+import { getEffectiveSearchTerm } from '../../utils/search';
+import AuditLogTab from './AuditLogTab';
 
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
-  
-  // Get initial tab from URL parameter, default to 0 if not present
+
   const getInitialTab = () => {
     const tabParam = searchParams.get('tab');
     const tab = tabParam ? parseInt(tabParam, 10) : 0;
-    return isNaN(tab) || tab < 0 || tab > 2 ? 0 : tab; // 3 tabs (0-2)
+    return Number.isNaN(tab) || tab < 0 || tab > 2 ? 0 : tab;
   };
-  
+
   const [currentTab, setCurrentTab] = useState(() => getInitialTab());
 
-  // Hotel management state
   const [hotels, setHotels] = useState<HotelDTO[]>([]);
   const [hotelPage, setHotelPage] = useState(0);
   const [hotelRowsPerPage, setHotelRowsPerPage] = useState(10);
@@ -62,7 +62,6 @@ const AdminDashboard: React.FC = () => {
   const [hotelLoading, setHotelLoading] = useState(false);
   const [hotelError, setHotelError] = useState<string | null>(null);
 
-  // User management state
   const [users, setUsers] = useState<UserManagementResponse[]>([]);
   const [userPage, setUserPage] = useState(0);
   const [userRowsPerPage, setUserRowsPerPage] = useState(10);
@@ -72,14 +71,17 @@ const AdminDashboard: React.FC = () => {
   const [userLoading, setUserLoading] = useState(false);
   const [userError, setUserError] = useState<string | null>(null);
 
-  // Set token on component mount
+  const debouncedHotelSearchTerm = useDebounce(hotelSearchTerm, hotelSearchTerm.trim() ? 300 : 0);
+  const debouncedUserSearchTerm = useDebounce(userSearchTerm, userSearchTerm.trim() ? 300 : 0);
+  const effectiveHotelSearchTerm = getEffectiveSearchTerm(debouncedHotelSearchTerm);
+  const effectiveUserSearchTerm = getEffectiveSearchTerm(debouncedUserSearchTerm);
+
   useEffect(() => {
     if (token) {
       adminApiService.setToken(token);
     }
   }, [token]);
 
-  // Hotel management functions
   const loadHotels = useCallback(async () => {
     if (!token) {
       setHotelError('Authentication required');
@@ -91,22 +93,25 @@ const AdminDashboard: React.FC = () => {
 
     try {
       let result: PagedResponse<HotelDTO>;
-      
-      if (hotelSearchTerm.trim()) {
-        result = await adminApiService.searchHotels(hotelSearchTerm, 0, 1000); // Load many results for client-side filtering
+
+      if (effectiveHotelSearchTerm === null) {
+        return;
+      }
+
+      if (effectiveHotelSearchTerm) {
+        result = await adminApiService.searchHotels(effectiveHotelSearchTerm, 0, 1000);
       } else {
-        result = await adminApiService.getHotels(0, 1000); // Load many results for client-side pagination
+        result = await adminApiService.getHotels(0, 1000);
       }
 
       setHotels(result.content || []);
-    } catch (error) {
+    } catch {
       setHotelError('Failed to load hotels');
       setHotels([]);
-      // console.error('Error loading hotels:', error);
     } finally {
       setHotelLoading(false);
     }
-  }, [token, hotelSearchTerm]);
+  }, [token, effectiveHotelSearchTerm]);
 
   const loadUsers = useCallback(async () => {
     if (!token) {
@@ -119,27 +124,28 @@ const AdminDashboard: React.FC = () => {
 
     try {
       let result: PagedResponse<UserManagementResponse>;
-      
-      if (userSearchTerm.trim()) {
-        result = await adminApiService.searchUsers(userSearchTerm, 0, 1000); // Load many results for client-side filtering
+
+      if (effectiveUserSearchTerm === null) {
+        return;
+      }
+
+      if (effectiveUserSearchTerm) {
+        result = await adminApiService.searchUsers(effectiveUserSearchTerm, 0, 1000);
       } else {
-        result = await adminApiService.getUsers(0, 1000); // Load many results for client-side pagination
+        result = await adminApiService.getUsers(0, 1000);
       }
 
       setUsers(result.content || []);
-    } catch (error) {
+    } catch {
       setUserError('Failed to load users');
       setUsers([]);
-      // console.error('Error loading users:', error);
     } finally {
       setUserLoading(false);
     }
-  }, [token, userSearchTerm]);
+  }, [token, effectiveUserSearchTerm]);
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setCurrentTab(newValue);
-    
-    // Update URL parameter to persist tab state
     setSearchParams(prev => {
       const newParams = new URLSearchParams(prev);
       newParams.set('tab', newValue.toString());
@@ -147,18 +153,14 @@ const AdminDashboard: React.FC = () => {
     });
   };
 
-  // Sync tab state with URL parameter changes (for browser back/forward navigation)
   useEffect(() => {
     const currentTabFromUrl = getInitialTab();
-    // console.log('AdminDashboard useEffect - currentTab:', currentTab, 'currentTabFromUrl:', currentTabFromUrl);
     if (currentTabFromUrl !== currentTab) {
-      // console.log('AdminDashboard useEffect - updating tab from', currentTab, 'to', currentTabFromUrl);
       setCurrentTab(currentTabFromUrl);
     }
   }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Hotel pagination handlers
-  const handleHotelChangePage = (event: unknown, newPage: number) => {
+  const handleHotelChangePage = (_event: unknown, newPage: number) => {
     setHotelPage(newPage);
   };
 
@@ -167,8 +169,7 @@ const AdminDashboard: React.FC = () => {
     setHotelPage(0);
   };
 
-  // User pagination handlers  
-  const handleUserChangePage = (event: unknown, newPage: number) => {
+  const handleUserChangePage = (_event: unknown, newPage: number) => {
     setUserPage(newPage);
   };
 
@@ -177,7 +178,6 @@ const AdminDashboard: React.FC = () => {
     setUserPage(0);
   };
 
-  // Load data when tab changes
   useEffect(() => {
     if (currentTab === 0) {
       loadHotels();
@@ -186,54 +186,69 @@ const AdminDashboard: React.FC = () => {
     }
   }, [currentTab, loadHotels, loadUsers]);
 
-  // Search handlers
-  // Filter and paginate hotels
   const filteredHotels = hotels.filter(hotel => {
-    const matchesSearch = (hotel.name?.toLowerCase().includes(hotelSearchTerm.toLowerCase()) || false) ||
-                         (hotel.address?.toLowerCase().includes(hotelSearchTerm.toLowerCase()) || false) ||
-                         (hotel.city?.toLowerCase().includes(hotelSearchTerm.toLowerCase()) || false);
-    // Note: HotelDTO doesn't have status field, so we'll show all hotels for now
-    return matchesSearch;
+    const appliedHotelSearchTerm = effectiveHotelSearchTerm ?? '';
+    const matchesSearch =
+      (hotel.name?.toLowerCase().includes(appliedHotelSearchTerm.toLowerCase()) || false) ||
+      (hotel.address?.toLowerCase().includes(appliedHotelSearchTerm.toLowerCase()) || false) ||
+      (hotel.city?.toLowerCase().includes(appliedHotelSearchTerm.toLowerCase()) || false);
+    const matchesStatus = hotelStatusFilter === '' || hotelStatusFilter === 'Active';
+    return matchesSearch && matchesStatus;
   });
 
   const paginatedHotels = filteredHotels.slice(
     hotelPage * hotelRowsPerPage,
-    hotelPage * hotelRowsPerPage + hotelRowsPerPage
+    hotelPage * hotelRowsPerPage + hotelRowsPerPage,
   );
 
-  // Filter and paginate users
-  const filteredUsers = users.filter(user => {
-    const matchesSearch = user.firstName.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
-                         user.lastName.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
-                         user.email.toLowerCase().includes(userSearchTerm.toLowerCase());
-    const matchesRole = userRoleFilter === '' || user.roles.includes(userRoleFilter);
-    // Note: UserManagementResponse uses isActive boolean instead of status string
-    const matchesStatus = userStatusFilter === '' || 
-                         (userStatusFilter === 'Active' && user.isActive) ||
-                         (userStatusFilter === 'Inactive' && !user.isActive);
+  const filteredUsers = users.filter(appUser => {
+    const appliedUserSearchTerm = effectiveUserSearchTerm ?? '';
+    const matchesSearch =
+      appUser.firstName.toLowerCase().includes(appliedUserSearchTerm.toLowerCase()) ||
+      appUser.lastName.toLowerCase().includes(appliedUserSearchTerm.toLowerCase()) ||
+      appUser.email.toLowerCase().includes(appliedUserSearchTerm.toLowerCase());
+    const matchesRole = userRoleFilter === '' || appUser.roles.includes(userRoleFilter);
+    const matchesStatus =
+      userStatusFilter === '' ||
+      (userStatusFilter === 'Active' && appUser.isActive) ||
+      (userStatusFilter === 'Inactive' && !appUser.isActive);
     return matchesSearch && matchesRole && matchesStatus;
   });
 
-    const paginatedUsers = filteredUsers.slice(
+  const paginatedUsers = filteredUsers.slice(
     userPage * userRowsPerPage,
-    userPage * userRowsPerPage + userRowsPerPage
+    userPage * userRowsPerPage + userRowsPerPage,
+  );
+
+  useEffect(() => {
+    if (effectiveHotelSearchTerm !== null) {
+      setHotelPage(0);
+    }
+  }, [effectiveHotelSearchTerm]);
+
+  useEffect(() => {
+    if (effectiveUserSearchTerm !== null) {
+      setUserPage(0);
+    }
+  }, [effectiveUserSearchTerm]);
+
+  const canViewUserHotelColumn = Boolean(
+    user?.roles?.includes('SUPER_ADMIN') ||
+      user?.roles?.includes('ADMIN') ||
+      user?.role === 'SUPER_ADMIN' ||
+      user?.role === 'ADMIN',
   );
 
   return (
-    <Box sx={{ width: '100%', p: 3 }}>
-      {/* Page Header */}
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h4" component="h1" sx={{ 
-          color: COLORS.PRIMARY,
-          fontWeight: 600,
-          letterSpacing: '0.5px'
-        }}>
-          System Administration
-        </Typography>
-      </Box>
-      
-      {/* Main Management Tabs */}
-      <Box sx={{ width: '100%', mb: 4, borderBottom: 1, borderColor: 'divider' }}>
+    <PageContainer maxWidth={false}>
+      <PageHeader
+        eyebrow="Platform Operations"
+        title="System Administration"
+        description="Manage platform hotels, user accounts, and audit activity from a consistent administrative workspace."
+        actions={<Chip color="primary" label="Platform Console" />}
+      />
+
+      <SurfaceCard variantStyle="elevated" contentSx={{ p: 0 }}>
         <Tabs
           value={currentTab}
           onChange={handleTabChange}
@@ -241,56 +256,40 @@ const AdminDashboard: React.FC = () => {
           variant="scrollable"
           scrollButtons="auto"
           allowScrollButtonsMobile
-          sx={{ 
-            borderBottom: 1, 
+          sx={{
+            borderBottom: 1,
             borderColor: 'divider',
             '& .MuiTabs-scrollButtons': {
               '&.Mui-disabled': { opacity: 0.3 },
             },
           }}
         >
-          <Tab
-            icon={<Hotel />}
-            label="Hotel Management"
-            id="tab-0"
-            aria-controls="tabpanel-0"
-          />
-          <Tab
-            icon={<People />}
-            label="User Management"
-            id="tab-1"
-            aria-controls="tabpanel-1"
-          />
-          <Tab
-            icon={<History />}
-            label="Audit Log"
-            id="tab-2"
-            aria-controls="tabpanel-2"
-          />
+          <Tab icon={<Hotel />} label="Hotel Management" id="tab-0" aria-controls="tabpanel-0" />
+          <Tab icon={<People />} label="User Management" id="tab-1" aria-controls="tabpanel-1" />
+          <Tab icon={<History />} label="Audit Log" id="tab-2" aria-controls="tabpanel-2" />
         </Tabs>
+      </SurfaceCard>
 
-        {/* Hotel Management Tab */}
-        {currentTab === 0 && (
-          <Box sx={{ p: 3 }}>
-            {/* Header with Register Hotel Button */}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-              <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={() => navigate(`/admin/register-hotel?returnTab=${currentTab}`)}
-                sx={{ height: 'fit-content', ml: 'auto' }}
-              >
-                Register Hotel
-              </Button>
-            </Box>
-
-            {/* Search and Filter Controls */}
-            <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
+      {currentTab === 0 && (
+        <DataTableCard
+          title="Hotel Management"
+          description="Review hotels registered on the platform and jump into detailed administration for individual properties."
+          actions={
+            <StandardButton
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => navigate(`/admin/register-hotel?returnTab=${currentTab}`)}
+            >
+              Register Hotel
+            </StandardButton>
+          }
+          filters={
+            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
               <PremiumTextField
                 size="small"
                 placeholder="Search hotels..."
                 value={hotelSearchTerm}
-                onChange={(e) => setHotelSearchTerm(e.target.value)}
+                onChange={(event) => setHotelSearchTerm(event.target.value)}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -303,7 +302,7 @@ const AdminDashboard: React.FC = () => {
               <PremiumSelect
                 label="Status"
                 value={hotelStatusFilter}
-                onChange={(e) => setHotelStatusFilter(e.target.value)}
+                onChange={(event) => setHotelStatusFilter(event.target.value)}
                 fullWidth={false}
                 sx={{ minWidth: 150 }}
               >
@@ -313,164 +312,122 @@ const AdminDashboard: React.FC = () => {
                 <MenuItem value="Inactive">Inactive</MenuItem>
               </PremiumSelect>
             </Box>
-
-            {/* Hotels Table */}
-            <TableContainer sx={{ mt: 2 }}>
-              <Table aria-label="hotels table">
-                <TableHead>
-                  <TableRow 
-                    sx={{
-                      background: getGradient('slate'),
-                      '& .MuiTableCell-head': {
-                        color: COLORS.WHITE,
-                        fontWeight: 600,
-                        fontSize: '0.95rem',
-                        letterSpacing: '0.5px',
-                        border: 'none',
-                        padding: '20px 16px',
-                        position: 'relative',
-                        textShadow: `0 1px 2px ${addAlpha(COLORS.BLACK, 0.1)}`,
-                        '&::after': {
-                          content: '""',
-                          position: 'absolute',
-                          bottom: 0,
-                          left: 0,
-                          right: 0,
-                          height: '3px',
-                          background: getGradient('white')
-                        }
-                      }
-                    }}
-                  >
-                    <TableCell>Hotel Name</TableCell>
-                    <TableCell>Location</TableCell>
-                    <TableCell>Status</TableCell>
-                    <TableCell>Rooms</TableCell>
-                    <TableCell>Rating</TableCell>
-                    <TableCell>Registered</TableCell>
-                    <TableCell>Actions</TableCell>
+          }
+          pagination={
+            <TablePagination
+              rowsPerPageOptions={[5, 10, 25]}
+              component="div"
+              count={filteredHotels.length}
+              rowsPerPage={hotelRowsPerPage}
+              page={hotelPage}
+              onPageChange={handleHotelChangePage}
+              onRowsPerPageChange={handleHotelChangeRowsPerPage}
+              labelRowsPerPage="Hotels per page:"
+            />
+          }
+        >
+          <Table aria-label="hotels table">
+            <TableHead>
+              <TableRow>
+                <TableCell>Hotel Name</TableCell>
+                <TableCell>Location</TableCell>
+                <TableCell>Status</TableCell>
+                <TableCell>Rooms</TableCell>
+                <TableCell>Rating</TableCell>
+                <TableCell>Registered</TableCell>
+                <TableCell>Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {hotelLoading ? (
+                <TableRow>
+                  <TableCell colSpan={7} align="center" sx={{ py: 6 }}>
+                    <CircularProgress size={36} />
+                    <Typography variant="body2" sx={{ mt: 2 }}>Loading hotels...</Typography>
+                  </TableCell>
+                </TableRow>
+              ) : hotelError ? (
+                <TableRow>
+                  <TableCell colSpan={7} align="center" sx={{ py: 6 }}>
+                    <Typography variant="body2" color="error">{hotelError}</Typography>
+                  </TableCell>
+                </TableRow>
+              ) : paginatedHotels.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} align="center" sx={{ py: 6 }}>
+                    <Typography variant="body2" color="text.secondary">No hotels found</Typography>
+                  </TableCell>
+                </TableRow>
+              ) : (
+                paginatedHotels.map((hotel) => (
+                  <TableRow key={hotel.id} hover>
+                    <TableCell>
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Hotel sx={{ mr: 1, color: 'primary.main' }} />
+                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                          {hotel.name}
+                        </Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <LocationIcon sx={{ mr: 1, color: 'text.secondary', fontSize: 16 }} />
+                        <Typography variant="body2">
+                          {hotel.city}, {hotel.country}
+                        </Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      <Chip label="Active" size="small" color="success" variant="outlined" />
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2">{hotel.totalRooms || 'N/A'}</Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2">N/A</Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2" color="text.secondary">
+                        {hotel.createdAt ? formatDateForDisplay(hotel.createdAt) : 'N/A'}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Box sx={{ display: 'flex', gap: 1 }}>
+                        <Tooltip title="View Details">
+                          <IconButton size="small" onClick={() => navigate(`/admin/hotels/${hotel.id}?returnTab=${currentTab}`)}>
+                            <ViewIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      </Box>
+                    </TableCell>
                   </TableRow>
-                </TableHead>
-                <TableBody>
-                  {hotelLoading ? (
-                    <TableRow>
-                      <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
-                        <CircularProgress size={40} />
-                        <Typography variant="body2" sx={{ mt: 2 }}>Loading hotels...</Typography>
-                      </TableCell>
-                    </TableRow>
-                  ) : hotelError ? (
-                    <TableRow>
-                      <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
-                        <Typography variant="body2" color="error">{hotelError}</Typography>
-                      </TableCell>
-                    </TableRow>
-                  ) : paginatedHotels.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
-                        <Typography variant="body2" color="text.secondary">No hotels found</Typography>
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    paginatedHotels.map((hotel) => (
-                    <TableRow key={hotel.id} sx={{ '&:hover': { backgroundColor: 'grey.50' } }}>
-                      <TableCell>
-                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                          <Hotel sx={{ mr: 1, color: 'primary.main' }} />
-                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                            {hotel.name}
-                          </Typography>
-                        </Box>
-                      </TableCell>
-                      <TableCell>
-                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                          <LocationIcon sx={{ mr: 1, color: 'text.secondary', fontSize: 16 }} />
-                          <Typography variant="body2">
-                            {hotel.city}, {hotel.country}
-                          </Typography>
-                        </Box>
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label="Active"
-                          size="small"
-                          sx={{ 
-                            backgroundColor: COLORS.PRIMARY,
-                            color: COLORS.WHITE
-                          }}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2">
-                          {hotel.totalRooms || 'N/A'}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2">
-                          N/A
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2" color="text.secondary">
-                          {hotel.createdAt ? formatDateForDisplay(hotel.createdAt) : 'N/A'}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Box sx={{ display: 'flex', gap: 1 }}>
-                          <Tooltip title="View Details">
-                            <IconButton
-                              size="small"
-                              onClick={() => navigate(`/admin/hotels/${hotel.id}?returnTab=${currentTab}`)}
-                            >
-                              <ViewIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </DataTableCard>
+      )}
 
-                        </Box>
-                      </TableCell>
-                    </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-              
-              {/* Table Pagination */}
-              <TablePagination
-                rowsPerPageOptions={[5, 10, 25]}
-                component="div"
-                count={filteredHotels.length}
-                rowsPerPage={hotelRowsPerPage}
-                page={hotelPage}
-                onPageChange={handleHotelChangePage}
-                onRowsPerPageChange={handleHotelChangeRowsPerPage}
-                labelRowsPerPage="Hotels per page:"
-              />
-            </TableContainer>
-          </Box>
-        )}
-
-        {/* User Management Tab */}
-        {currentTab === 1 && (
-          <Box sx={{ p: 3 }}>
-            {/* Header with Add User Button */}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-              <Button
-                variant="contained"
-                startIcon={<PersonAddIcon />}
-                onClick={() => navigate(`/admin/add-user?returnTab=${currentTab}`)}
-                sx={{ height: 'fit-content', ml: 'auto' }}
-              >
-                Add User
-              </Button>
-            </Box>
-
-            {/* Search and Filter Controls */}
-            <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
+      {currentTab === 1 && (
+        <DataTableCard
+          title="User Management"
+          description="Search platform users, review their assigned hotel context, and open the detailed user administration flow."
+          actions={
+            <StandardButton
+              variant="contained"
+              startIcon={<PersonAddIcon />}
+              onClick={() => navigate(`/admin/add-user?returnTab=${currentTab}`)}
+            >
+              Add User
+            </StandardButton>
+          }
+          filters={
+            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
               <PremiumTextField
                 size="small"
                 placeholder="Search users..."
                 value={userSearchTerm}
-                onChange={(e) => setUserSearchTerm(e.target.value)}
+                onChange={(event) => setUserSearchTerm(event.target.value)}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -483,7 +440,7 @@ const AdminDashboard: React.FC = () => {
               <PremiumSelect
                 label="Role"
                 value={userRoleFilter}
-                onChange={(e) => setUserRoleFilter(e.target.value)}
+                onChange={(event) => setUserRoleFilter(event.target.value)}
                 fullWidth={false}
                 sx={{ minWidth: 150 }}
               >
@@ -496,7 +453,7 @@ const AdminDashboard: React.FC = () => {
               <PremiumSelect
                 label="Status"
                 value={userStatusFilter}
-                onChange={(e) => setUserStatusFilter(e.target.value)}
+                onChange={(event) => setUserStatusFilter(event.target.value)}
                 fullWidth={false}
                 sx={{ minWidth: 150 }}
               >
@@ -506,156 +463,127 @@ const AdminDashboard: React.FC = () => {
                 <MenuItem value="Inactive">Inactive</MenuItem>
               </PremiumSelect>
             </Box>
-
-            {/* Users Table */}
-            <TableContainer sx={{ mt: 2 }}>
-              <Table aria-label="users table">
-                <TableHead>
-                  <TableRow 
-                    sx={{
-                      background: getGradient('slate'),
-                      '& .MuiTableCell-head': {
-                        color: COLORS.WHITE,
-                        fontWeight: 600,
-                        fontSize: '0.95rem',
-                        letterSpacing: '0.5px',
-                        textTransform: 'uppercase',
-                        border: 'none',
-                        padding: '20px 16px',
-                        position: 'relative',
-                        textShadow: `0 1px 2px ${addAlpha(COLORS.BLACK, 0.1)}`,
-                        '&::after': {
-                          content: '""',
-                          position: 'absolute',
-                          bottom: 0,
-                          left: 0,
-                          right: 0,
-                          height: '3px',
-                          background: getGradient('white')
+          }
+          pagination={
+            <TablePagination
+              rowsPerPageOptions={[5, 10, 25]}
+              component="div"
+              count={filteredUsers.length}
+              rowsPerPage={userRowsPerPage}
+              page={userPage}
+              onPageChange={handleUserChangePage}
+              onRowsPerPageChange={handleUserChangeRowsPerPage}
+              labelRowsPerPage="Users per page:"
+            />
+          }
+        >
+          <Table aria-label="users table">
+            <TableHead>
+              <TableRow>
+                <TableCell>User Name</TableCell>
+                <TableCell>Email</TableCell>
+                {canViewUserHotelColumn && <TableCell>Hotel</TableCell>}
+                <TableCell>Role</TableCell>
+                <TableCell>Status</TableCell>
+                <TableCell>Last Login</TableCell>
+                <TableCell>Created</TableCell>
+                <TableCell>Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {userLoading ? (
+                <TableRow>
+                  <TableCell colSpan={canViewUserHotelColumn ? 8 : 7} align="center" sx={{ py: 6 }}>
+                    <CircularProgress size={36} />
+                    <Typography variant="body2" sx={{ mt: 2 }}>Loading users...</Typography>
+                  </TableCell>
+                </TableRow>
+              ) : userError ? (
+                <TableRow>
+                  <TableCell colSpan={canViewUserHotelColumn ? 8 : 7} align="center" sx={{ py: 6 }}>
+                    <Typography variant="body2" color="error">{userError}</Typography>
+                  </TableCell>
+                </TableRow>
+              ) : paginatedUsers.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={canViewUserHotelColumn ? 8 : 7} align="center" sx={{ py: 6 }}>
+                    <Typography variant="body2" color="text.secondary">No users found</Typography>
+                  </TableCell>
+                </TableRow>
+              ) : (
+                paginatedUsers.map((appUser) => (
+                  <TableRow key={appUser.id} hover>
+                    <TableCell>
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <People sx={{ mr: 1, color: 'primary.main' }} />
+                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                          {appUser.firstName} {appUser.lastName}
+                        </Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2">{appUser.email}</Typography>
+                    </TableCell>
+                    {canViewUserHotelColumn && (
+                      <TableCell>
+                        <Typography variant="body2" color="text.secondary">
+                          {appUser.hotelName || 'System-wide'}
+                        </Typography>
+                      </TableCell>
+                    )}
+                    <TableCell>
+                      <Chip
+                        label={appUser.roles.length > 0 ? appUser.roles[0] : 'NO_ROLE'}
+                        size="small"
+                        color={
+                          appUser.roles.includes('ADMIN')
+                            ? 'error'
+                            : appUser.roles.includes('HOTEL_ADMIN')
+                              ? 'info'
+                              : 'default'
                         }
-                      }
-                    }}
-                  >
-                    <TableCell>User Name</TableCell>
-                    <TableCell>Email</TableCell>
-                    <TableCell>Role</TableCell>
-                    <TableCell>Status</TableCell>
-                    <TableCell>Last Login</TableCell>
-                    <TableCell>Created</TableCell>
-                    <TableCell>Actions</TableCell>
+                        variant="outlined"
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        label={appUser.isActive ? 'Active' : 'Inactive'}
+                        size="small"
+                        color={appUser.isActive ? 'success' : 'default'}
+                        variant={appUser.isActive ? 'filled' : 'outlined'}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2" color="text.secondary">N/A</Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2" color="text.secondary">
+                        {appUser.createdAt ? formatDateForDisplay(appUser.createdAt) : 'N/A'}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Box sx={{ display: 'flex', gap: 1 }}>
+                        <Tooltip title="View Details">
+                          <IconButton size="small" onClick={() => navigate(`/admin/users/${appUser.id}?returnTab=${currentTab}`)}>
+                            <ViewIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      </Box>
+                    </TableCell>
                   </TableRow>
-                </TableHead>
-                <TableBody>
-                  {userLoading ? (
-                    <TableRow>
-                      <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
-                        <CircularProgress size={40} />
-                        <Typography variant="body2" sx={{ mt: 2 }}>Loading users...</Typography>
-                      </TableCell>
-                    </TableRow>
-                  ) : userError ? (
-                    <TableRow>
-                      <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
-                        <Typography variant="body2" color="error">{userError}</Typography>
-                      </TableCell>
-                    </TableRow>
-                  ) : paginatedUsers.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
-                        <Typography variant="body2" color="text.secondary">No users found</Typography>
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    paginatedUsers.map((user) => (
-                    <TableRow key={user.id} sx={{ '&:hover': { backgroundColor: 'grey.50' } }}>
-                      <TableCell>
-                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                          <People sx={{ mr: 1, color: 'primary.main' }} />
-                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                            {user.firstName} {user.lastName}
-                          </Typography>
-                        </Box>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2">
-                          {user.email}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={user.roles.length > 0 ? user.roles[0] : 'NO_ROLE'}
-                          size="small"
-                          color={
-                            user.roles.includes('ADMIN') 
-                              ? 'error' 
-                              : user.roles.includes('HOTEL_ADMIN')
-                                ? 'info'
-                                : 'default'
-                          }
-                          variant="outlined"
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={user.isActive ? 'Active' : 'Inactive'}
-                          size="small"
-                          color={user.isActive ? 'success' : 'default'}
-                          variant={user.isActive ? 'filled' : 'outlined'}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2" color="text.secondary">
-                          N/A
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2" color="text.secondary">
-                          {user.createdAt ? formatDateForDisplay(user.createdAt) : 'N/A'}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Box sx={{ display: 'flex', gap: 1 }}>
-                          <Tooltip title="View Details">
-                            <IconButton
-                              size="small"
-                              onClick={() => navigate(`/admin/users/${user.id}?returnTab=${currentTab}`)}
-                            >
-                              <ViewIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </DataTableCard>
+      )}
 
-                        </Box>
-                      </TableCell>
-                    </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-              
-              {/* Table Pagination */}
-              <TablePagination
-                rowsPerPageOptions={[5, 10, 25]}
-                component="div"
-                count={filteredUsers.length}
-                rowsPerPage={userRowsPerPage}
-                page={userPage}
-                onPageChange={handleUserChangePage}
-                onRowsPerPageChange={handleUserChangeRowsPerPage}
-                labelRowsPerPage="Users per page:"
-              />
-            </TableContainer>
-          </Box>
-        )}
+      {currentTab === 2 && (
+        <SurfaceCard variantStyle="elevated">
+          <AuditLogTab />
+        </SurfaceCard>
+      )}
 
-        {/* Audit Log Tab */}
-        {currentTab === 2 && (
-          <Box sx={{ p: 3 }}>
-            <AuditLogTab />
-          </Box>
-        )}
-      </Box>
-
-      {/* Footer */}
       <Box sx={{ mt: 6, pt: 4, borderTop: 1, borderColor: 'divider', textAlign: 'center' }}>
         <Typography variant="body2" color="text.secondary">
           BookMyHotel Admin Dashboard - Platform Version 1.0.0
@@ -664,7 +592,7 @@ const AdminDashboard: React.FC = () => {
           Secure administration interface for platform management
         </Typography>
       </Box>
-    </Box>
+    </PageContainer>
   );
 };
 

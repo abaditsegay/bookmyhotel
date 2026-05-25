@@ -365,6 +365,8 @@ export interface UserManagementResponse {
   isActive: boolean;
   roles: string[];
   tenantId?: string;
+  hotelId?: number;
+  hotelName?: string;
   createdAt: string;
   updatedAt: string;
 }

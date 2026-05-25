@@ -42,6 +42,12 @@ public class EmailService {
     @Value("${app.url:http://localhost:3000}")
     private String appUrl;
 
+    @Value("${app.email.info:info@bakaroo.com}")
+    private String infoEmail;
+
+    @Value("${app.email.support:support@bakaroo.com}")
+    private String supportEmail;
+
     // OAuth2 configuration values - with defaults to avoid startup errors
     @Value("${microsoft.graph.client-id:}")
     private String oauthClientId;
@@ -158,6 +164,35 @@ public class EmailService {
     }
 
     /**
+     * Send startup bootstrap credentials to the platform super admin.
+     */
+    public void sendSuperAdminBootstrapEmail(String email, String firstName, String tempPassword) {
+        if (!microsoftGraphEmailService.isConfigured()) {
+            logger.warn("Microsoft Graph OAuth2 is not configured. Cannot send startup super admin email to: {}",
+                    email);
+            throw new IllegalStateException(
+                    "Email service is not configured. Microsoft Graph OAuth2 credentials are required.");
+        }
+
+        try {
+            Map<String, Object> templateData = new HashMap<>();
+            templateData.put("email", email);
+            templateData.put("firstName", firstName);
+            templateData.put("tempPassword", tempPassword);
+            templateData.put("appName", appName);
+            templateData.put("loginUrl", appUrl + "/login");
+
+            String htmlContent = templateEngine.process("super-admin-bootstrap", createContext(templateData));
+            String subject = String.format("%s Super Admin Access", appName);
+
+            microsoftGraphEmailService.sendEmail(email, subject, htmlContent);
+        } catch (Exception e) {
+            logger.error("Failed to send startup super admin email via Microsoft Graph", e);
+            throw new RuntimeException("Failed to send startup super admin email", e);
+        }
+    }
+
+    /**
      * Send hotel registration approval email with login credentials
      */
     public void sendHotelRegistrationApprovalEmail(String email, String firstName, String hotelName,
@@ -230,6 +265,33 @@ public class EmailService {
             // Don't throw exception to prevent registration failure due to email issues
             // Registration should succeed even if email fails
             logger.warn("User registration will continue despite email failure");
+        }
+    }
+
+    public void sendEmailVerificationEmail(String email, String firstName, String verificationUrl) {
+        if (!microsoftGraphEmailService.isConfigured()) {
+            logger.warn("Microsoft Graph OAuth2 is not configured. Cannot send verification email to: {}", email);
+            throw new IllegalStateException(
+                    "Email service is not configured. Microsoft Graph OAuth2 credentials are required.");
+        }
+
+        try {
+            logger.info("Sending email verification message to: {} via Microsoft Graph OAuth2", email);
+
+            Map<String, Object> templateData = new HashMap<>();
+            templateData.put("firstName", firstName);
+            templateData.put("verificationUrl", verificationUrl);
+            templateData.put("appName", appName);
+            templateData.put("appUrl", appUrl);
+
+            String htmlContent = templateEngine.process("email-verification", createContext(templateData));
+            String subject = String.format("Verify your %s account", appName);
+
+            microsoftGraphEmailService.sendEmail(email, subject, htmlContent);
+            logger.info("Successfully sent verification email to: {}", email);
+        } catch (Exception e) {
+            logger.error("Failed to send verification email via Microsoft Graph to: {}", email, e);
+            throw new RuntimeException("Failed to send verification email", e);
         }
     }
 
@@ -321,6 +383,9 @@ public class EmailService {
      */
     private Context createContext(Map<String, Object> templateData) {
         Context context = new Context();
+        templateData.putIfAbsent("fromEmail", fromEmail);
+        templateData.putIfAbsent("infoEmail", infoEmail);
+        templateData.putIfAbsent("supportEmail", supportEmail);
         context.setVariables(templateData);
         return context;
     }

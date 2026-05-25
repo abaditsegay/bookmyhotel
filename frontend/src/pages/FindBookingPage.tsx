@@ -1,26 +1,24 @@
 import React, { useState } from 'react';
-import { COLORS, addAlpha, getGradient } from '../theme/themeColors';
 import {
-  Container,
   Typography,
   Box,
   Alert,
-  CircularProgress,
   Divider,
   useTheme,
-  useMediaQuery,
   Stack,
 } from '@mui/material';
 import PremiumTextField from '../components/common/PremiumTextField';
 import { useTranslation } from 'react-i18next';
-import StandardCard from '../components/common/StandardCard';
 import StandardButton from '../components/common/StandardButton';
+import { PageContainer, SurfaceCard } from '../components/common';
 // Icons removed for neutral design
 import { useNavigate } from 'react-router-dom';
 import { hotelApiService } from '../services/hotelApi';
+import { getPageShellBackground } from '../theme/surfaces';
 import { BookingResponse } from '../types/hotel';
 import { formatDateForDisplay } from '../utils/dateUtils';
 import { getRoomTypeLabel } from '../constants/roomTypes';
+import { infoPanelSx, tintedPanelSx } from '../theme/sxHelpers';
 
 // Helper function to get payment status color
 const getPaymentStatusColor = (theme: any, status?: string): string => {
@@ -47,7 +45,6 @@ const FindBookingPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [confirmationNumber, setConfirmationNumber] = useState('');
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
@@ -129,39 +126,27 @@ const FindBookingPage: React.FC = () => {
   };
 
   return (
-    <Box
+    <PageContainer
+      maxWidth="lg"
       sx={{
         minHeight: '100vh',
-        background: theme.palette.mode === 'dark' 
-          ? getGradient('dark')
-          : getGradient('white'),
+        backgroundColor: getPageShellBackground(theme),
         py: 4,
       }}
     >
-      <Container maxWidth="lg">
       {/* Professional Search Form */}
-      <StandardCard 
-        cardVariant="elevated"
-        sx={{ 
-          mb: 4,
-        }}
+      <SurfaceCard
+        elevation={0}
+        sx={{ mb: 4 }}
+        contentSx={{ p: { xs: 3, md: 5 } }}
       >
-        <Box sx={{ p: isMobile ? 3 : 5 }}>
-          <Box 
-            sx={{ 
-              mb: 4,
-              textAlign: 'center',
-              p: 2,
-              background: theme.palette.background.default,
-              borderRadius: 0,
-              border: `1px solid ${addAlpha(COLORS.BORDER_LIGHT, 0.3)}`,
-            }}
-          >
+        <Box>
+          <Box sx={{ mb: 4, textAlign: 'center' }}>
             <Typography 
               variant="h5" 
               sx={{
-                fontWeight: 'bold',
-                color: 'primary.main',
+                fontWeight: 700,
+                color: 'text.primary',
                 mb: 1,
                 textAlign: 'center',
               }}
@@ -195,16 +180,7 @@ const FindBookingPage: React.FC = () => {
             </Stack>
 
             {error && (
-              <Alert 
-                severity="error" 
-                sx={{ 
-                  mt: 3,
-                  borderRadius: 0,
-                  backgroundColor: theme.palette.mode === 'dark' 
-                    ? addAlpha(COLORS.ERROR, 0.1)
-                    : addAlpha(COLORS.ERROR, 0.04),
-                }}
-              >
+              <Alert severity="error" sx={{ mt: 3 }}>
                 {error}
               </Alert>
             )}
@@ -214,49 +190,34 @@ const FindBookingPage: React.FC = () => {
                 type="submit"
                 variant="contained"
                 buttonSize="large"
-                gradient
-                disabled={loading}
-                startIcon={loading ? <CircularProgress size={20} /> : undefined}
+                loading={loading}
+                loadingText={t('booking.find.buttons.searching')}
                 sx={{
                   px: 6,
-                  py: 1.5,
-                  fontSize: '1.05rem',
-                  fontWeight: 500,
                 }}
               >
-                {loading ? t('booking.find.buttons.searching') : t('booking.find.buttons.findBooking')}
+                {t('booking.find.buttons.findBooking')}
               </StandardButton>
             </Box>
           </form>
         </Box>
-      </StandardCard>
+      </SurfaceCard>
 
       {/* Professional Booking Results */}
       {booking && (
-        <StandardCard 
-          cardVariant="gradient"
-          sx={{
-            mb: 4,
-          }}
+        <SurfaceCard
+          elevation={0}
+          sx={{ mb: 4 }}
+          contentSx={{ p: { xs: 3, md: 5 } }}
         >
-          <Box sx={{ p: isMobile ? 3 : 5 }}>
-            <Box 
-              sx={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                mb: 4,
-                p: 2,
-                background: theme.palette.background.default,
-                borderRadius: 0,
-                border: `1px solid ${addAlpha(COLORS.BORDER_LIGHT, 0.3)}`,
-              }}
-            >
+          <Box>
+            <Box sx={{ ...infoPanelSx, display: 'flex', alignItems: 'center', mb: 4 }}>
               <Box>
                 <Typography 
                   variant="h4" 
                   sx={{ 
-                    fontWeight: 'bold',
-                    color: COLORS.PRIMARY,
+                    fontWeight: 700,
+                    color: 'text.primary',
                     mb: 1,
                   }}
                 >
@@ -279,8 +240,8 @@ const FindBookingPage: React.FC = () => {
               <Typography 
                 variant="h5" 
                 sx={{
-                  fontWeight: 'bold',
-                  color: 'primary.main',
+                  fontWeight: 700,
+                  color: 'text.primary',
                   mb: 1,
                 }}
               >
@@ -291,16 +252,8 @@ const FindBookingPage: React.FC = () => {
               </Typography>
               
               <Box sx={{ mt: 3, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 3 }}>
-                <Box 
-                  sx={{
-                    p: 2,
-                    borderRadius: 0,
-                    background: theme.palette.background.paper,
-                    border: `1px solid ${addAlpha(COLORS.BORDER_LIGHT, 0.3)}`,
-                    boxShadow: 'none',
-                  }}
-                >
-                  <Typography variant="subtitle1" color="primary.main" sx={{ fontWeight: 'bold', mb: 1 }}>
+                <Box sx={infoPanelSx}>
+                  <Typography variant="subtitle1" sx={{ color: 'text.primary', fontWeight: 700, mb: 1 }}>
                     {t('booking.find.found.labels.guestName')}
                   </Typography>
                   <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
@@ -308,16 +261,8 @@ const FindBookingPage: React.FC = () => {
                   </Typography>
                 </Box>
                 
-                <Box 
-                  sx={{
-                    p: 2,
-                    borderRadius: 0,
-                    background: theme.palette.background.paper,
-                    border: `1px solid ${addAlpha(COLORS.BORDER_LIGHT, 0.3)}`,
-                    boxShadow: 'none',
-                  }}
-                >
-                  <Typography variant="subtitle1" color="primary.main" sx={{ fontWeight: 'bold', mb: 1 }}>
+                <Box sx={infoPanelSx}>
+                  <Typography variant="subtitle1" color="primary.main" sx={{ fontWeight: 700, mb: 1 }}>
                     {t('booking.find.found.labels.roomType')}
                   </Typography>
                   <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
@@ -325,22 +270,14 @@ const FindBookingPage: React.FC = () => {
                   </Typography>
                 </Box>
                 
-                <Box 
-                  sx={{
-                    p: 2,
-                    borderRadius: 0,
-                    background: theme.palette.background.paper,
-                    border: `1px solid ${addAlpha(COLORS.BORDER_LIGHT, 0.3)}`,
-                    boxShadow: 'none',
-                  }}
-                >
-                  <Typography variant="body2" color="primary.main" sx={{ fontWeight: 'bold', mb: 0.5 }}>
+                <Box sx={infoPanelSx}>
+                  <Typography variant="body2" color="primary.main" sx={{ fontWeight: 700, mb: 0.5 }}>
                     {t('booking.find.found.labels.checkIn')}
                   </Typography>
                   <Typography variant="body1" sx={{ fontWeight: 'bold', mb: 1.5 }}>
                     {formatDateForDisplay(booking.checkInDate)}
                   </Typography>
-                  <Typography variant="body2" color="primary.main" sx={{ fontWeight: 'bold', mb: 0.5 }}>
+                  <Typography variant="body2" color="primary.main" sx={{ fontWeight: 700, mb: 0.5 }}>
                     {t('booking.find.found.labels.checkOut')}
                   </Typography>
                   <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
@@ -348,16 +285,8 @@ const FindBookingPage: React.FC = () => {
                   </Typography>
                 </Box>
                 
-                <Box 
-                  sx={{
-                    p: 2,
-                    borderRadius: 0,
-                    background: theme.palette.background.paper,
-                    border: `1px solid ${addAlpha(COLORS.BORDER_LIGHT, 0.3)}`,
-                    boxShadow: 'none',
-                  }}
-                >
-                  <Typography variant="subtitle1" color="primary.main" sx={{ fontWeight: 'bold', mb: 1 }}>
+                <Box sx={infoPanelSx}>
+                  <Typography variant="subtitle1" color="primary.main" sx={{ fontWeight: 700, mb: 1 }}>
                     {t('booking.find.found.labels.status')}
                   </Typography>
                   <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
@@ -365,16 +294,8 @@ const FindBookingPage: React.FC = () => {
                   </Typography>
                 </Box>
 
-                <Box 
-                  sx={{
-                    p: 2,
-                    borderRadius: 0,
-                    background: theme.palette.background.paper,
-                    border: `1px solid ${addAlpha(COLORS.BORDER_LIGHT, 0.3)}`,
-                    boxShadow: 'none',
-                  }}
-                >
-                  <Typography variant="subtitle1" color="primary.main" sx={{ fontWeight: 'bold', mb: 1 }}>
+                <Box sx={tintedPanelSx('secondary')}>
+                  <Typography variant="subtitle1" color="secondary.main" sx={{ fontWeight: 700, mb: 1 }}>
                     {t('booking.find.found.labels.paymentStatus')}
                   </Typography>
                   <Typography 
@@ -389,16 +310,8 @@ const FindBookingPage: React.FC = () => {
                 </Box>
 
                 {booking.paymentReference && (
-                  <Box 
-                    sx={{
-                      p: 2,
-                      borderRadius: 0,
-                      background: theme.palette.background.paper,
-                      border: `1px solid ${addAlpha(COLORS.BORDER_LIGHT, 0.3)}`,
-                      boxShadow: 'none',
-                    }}
-                  >
-                    <Typography variant="subtitle1" color="primary.main" sx={{ fontWeight: 'bold', mb: 1 }}>
+                  <Box sx={infoPanelSx}>
+                    <Typography variant="subtitle1" color="primary.main" sx={{ fontWeight: 700, mb: 1 }}>
                       {t('booking.find.found.labels.paymentReference')}
                     </Typography>
                     <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
@@ -413,46 +326,30 @@ const FindBookingPage: React.FC = () => {
               <StandardButton
                 variant="contained"
                 buttonSize="large"
-                elevated
                 onClick={handleViewBooking}
                 sx={{
                   px: 6,
-                  py: 1.5,
-                  fontSize: '1.1rem',
-                  fontWeight: 500,
                 }}
               >
                 {t('booking.find.found.manageBooking')}
               </StandardButton>
             </Box>
           </Box>
-        </StandardCard>
+        </SurfaceCard>
       )}
 
       {/* Professional Help Section */}
-      <StandardCard 
-        cardVariant="outlined"
-        sx={{ 
-          background: theme.palette.background.paper,
-        }}
+      <SurfaceCard
+        elevation={0}
+        contentSx={{ p: { xs: 3, md: 4 } }}
       >
-        <Box sx={{ p: 4 }}>
-          <Box 
-            sx={{ 
-              display: 'flex',
-              alignItems: 'center',
-              mb: 3,
-              p: 2,
-              background: theme.palette.background.default,
-              borderRadius: 0,
-              border: `1px solid ${addAlpha(COLORS.BORDER_LIGHT, 0.3)}`,
-            }}
-          >
+        <Box>
+          <Box sx={{ ...infoPanelSx, display: 'flex', alignItems: 'center', mb: 3 }}>
             <Typography 
               variant="h5" 
               sx={{
-                fontWeight: 'bold',
-                color: 'info.main',
+                fontWeight: 700,
+                color: 'text.primary',
               }}
             >
               {t('booking.find.help.title')}
@@ -462,9 +359,8 @@ const FindBookingPage: React.FC = () => {
             {t('booking.find.help.description')}
           </Typography>
         </Box>
-      </StandardCard>
-      </Container>
-    </Box>
+      </SurfaceCard>
+    </PageContainer>
   );
 };
 

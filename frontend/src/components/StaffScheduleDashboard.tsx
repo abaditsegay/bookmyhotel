@@ -334,7 +334,7 @@ const StaffScheduleDashboard: React.FC = () => {
                         </Box>
                       }
                       sx={{ 
-                        bgcolor: isToday ? 'primary.main' : 'grey.50',
+                        bgcolor: isToday ? 'primary.main' : 'action.hover',
                         color: isToday ? 'primary.contrastText' : 'text.primary'
                       }}
                     />
@@ -352,7 +352,7 @@ const StaffScheduleDashboard: React.FC = () => {
                             <Paper 
                               key={schedule.id} 
                               elevation={0}
-                              sx={{ mb: 2, p: 2, bgcolor: 'grey.50' }}
+                              sx={{ mb: 2, p: 2, bgcolor: 'action.hover' }}
                             >
                               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
                                 <Chip 

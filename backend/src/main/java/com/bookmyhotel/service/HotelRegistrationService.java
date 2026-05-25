@@ -42,8 +42,6 @@ public class HotelRegistrationService {
     private static final Logger logger = LoggerFactory.getLogger(HotelRegistrationService.class);
     private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
     private static final int PASSWORD_LENGTH = 12;
-    private static final String DEFAULT_TENANT_ID = "all-hotels";
-    private static final String DEFAULT_TENANT_NAME = "All Hotels";
 
     @Autowired
     private HotelRegistrationRepository registrationRepository;
@@ -64,10 +62,10 @@ public class HotelRegistrationService {
     private PasswordEncoder passwordEncoder;
 
     /**
-     * Submit a new hotel registration.
-     * Atomically creates: HotelRegistration record + Hotel (inactive, pending
-     * approval)
-     * + HOTEL_ADMIN user assigned to that hotel.
+    * Submit a new hotel registration.
+    * Public registration only stores the draft. Tenant binding and hotel/user
+    * creation happen during approval so production does not silently invent a
+    * fallback tenant.
      */
     public HotelRegistrationSubmitResponse submitRegistration(HotelRegistrationRequest request) {
         // Check if email is already registered
@@ -103,33 +101,8 @@ public class HotelRegistrationService {
         registration.setCheckOutTime(request.getCheckOutTime());
         registration = registrationRepository.save(registration);
 
-        // 2. Create the Hotel immediately (inactive until admin approves)
-        String resolvedTenantId = resolveDefaultTenant(null);
-        Hotel hotel = createHotelFromRegistration(registration, resolvedTenantId, false);
-
-        // 3. Track hotel on the registration record
-        registration.setApprovedHotelId(hotel.getId());
-        registration.setTenantId(resolvedTenantId);
-        registration = registrationRepository.save(registration);
-
-        // 4. Create the HOTEL_ADMIN user with the hotel already assigned
-        String temporaryPassword = generateSixDigitPassword();
-        User registrationUser = createRegistrationUser(registration, temporaryPassword, hotel);
-
-        logger.info("Hotel registration submitted — hotel ID: {}, user ID: {}, email: {}",
-                hotel.getId(), registrationUser.getId(), registration.getContactEmail());
-
-        // 5. Send welcome email (non-fatal)
-        try {
-            emailService.sendHotelAdminWelcomeEmail(
-                    registration.getContactEmail(),
-                    extractFirstName(registration.getContactPerson()),
-                    registration.getHotelName(),
-                    temporaryPassword);
-            logger.info("Registration welcome email sent to: {}", registration.getContactEmail());
-        } catch (Exception e) {
-            logger.error("Failed to send registration welcome email to: {}", registration.getContactEmail(), e);
-        }
+        logger.info("Hotel registration submitted for staged approval — registration ID: {}, email: {}",
+            registration.getId(), registration.getContactEmail());
 
         HotelRegistrationSubmitResponse response = new HotelRegistrationSubmitResponse();
         response.setRegistrationId(registration.getId());
@@ -138,7 +111,7 @@ public class HotelRegistrationService {
         response.setLoginEmail(registration.getContactEmail());
         response.setStatus(registration.getStatus().name());
         response.setMessage(
-                "Registration submitted successfully. A welcome email with your login credentials has been sent to your email address.");
+            "Registration submitted successfully. Your hotel will be created after an administrator reviews and approves the application.");
 
         return response;
     }
@@ -315,13 +288,9 @@ public class HotelRegistrationService {
             throw new RuntimeException("Only pending or under review registrations can be approved");
         }
 
-        // Hotel was created atomically during submission — look it up, sync all
-        // registration
-        // fields (in case they were updated after initial submission), then activate
-        // it.
-        final Long hotelId = registration.getApprovedHotelId();
-        final Hotel hotel = hotelRepository.findById(hotelId)
-                .orElseThrow(() -> new RuntimeException("Hotel not found with id: " + hotelId));
+        // Legacy registrations may predate the linked-hotel workflow. Recreate and
+        // relink the hotel at approval time instead of failing the approval.
+        final Hotel hotel = resolveHotelForApproval(registration, request.getTenantId());
         hotel.setName(registration.getHotelName());
         hotel.setDescription(registration.getDescription());
         hotel.setAddress(registration.getAddress());
@@ -375,30 +344,55 @@ public class HotelRegistrationService {
         return convertToResponse(registration);
     }
 
-    /**
-     * Resolve the tenant ID to use for hotel approval.
-     * If no tenant ID is provided, find or create the default "All Hotels" tenant.
-     */
-    private String resolveDefaultTenant(String tenantId) {
-        if (tenantId != null && !tenantId.isBlank()) {
-            return tenantId;
+    private Hotel resolveHotelForApproval(HotelRegistration registration, String requestedTenantId) {
+        Long hotelId = registration.getApprovedHotelId();
+        if (hotelId != null) {
+            return hotelRepository.findById(hotelId)
+                    .orElseGet(() -> createLinkedHotelForApproval(registration, requestedTenantId));
         }
 
-        // Look for existing default tenant
-        return tenantRepository.findById(DEFAULT_TENANT_ID)
+        return createLinkedHotelForApproval(registration, requestedTenantId);
+    }
+
+    private Hotel createLinkedHotelForApproval(HotelRegistration registration, String requestedTenantId) {
+        String resolvedTenantId = resolveRequiredTenant(
+                registration.getTenantId() != null && !registration.getTenantId().isBlank()
+                        ? registration.getTenantId()
+                        : requestedTenantId);
+        Hotel hotel = hotelRepository.findFirstByEmailIgnoreCase(registration.getContactEmail())
+            .map(existingHotel -> {
+                String existingTenantId = existingHotel.getTenantId();
+                registration.setTenantId(existingTenantId != null && !existingTenantId.isBlank()
+                    ? existingTenantId
+                    : resolvedTenantId);
+                logger.info("Reused existing hotel {} while approving registration {}",
+                    existingHotel.getId(), registration.getId());
+                return existingHotel;
+            })
+            .orElseGet(() -> {
+                Hotel createdHotel = createHotelFromRegistration(registration, resolvedTenantId, false);
+                registration.setTenantId(resolvedTenantId);
+                logger.info("Created missing linked hotel {} while approving registration {}",
+                    createdHotel.getId(), registration.getId());
+                return createdHotel;
+            });
+
+        registration.setApprovedHotelId(hotel.getId());
+        return hotel;
+    }
+
+    /**
+     * Resolve the tenant ID to use for hotel approval.
+     */
+    private String resolveRequiredTenant(String tenantId) {
+        if (tenantId == null || tenantId.isBlank()) {
+            throw new IllegalArgumentException("Tenant ID is required for hotel registration");
+        }
+
+        return tenantRepository.findById(tenantId)
+                .filter(Tenant::getIsActive)
                 .map(Tenant::getId)
-                .orElseGet(() -> {
-                    // Create the default tenant if it doesn't exist
-                    Tenant defaultTenant = new Tenant();
-                    defaultTenant.setId(DEFAULT_TENANT_ID);
-                    defaultTenant.setName(DEFAULT_TENANT_NAME);
-                    defaultTenant.setSubdomain("all");
-                    defaultTenant.setDescription("Default tenant for all hotels");
-                    defaultTenant.setIsActive(true);
-                    tenantRepository.save(defaultTenant);
-                    logger.info("Created default tenant: {} ({})", DEFAULT_TENANT_NAME, DEFAULT_TENANT_ID);
-                    return DEFAULT_TENANT_ID;
-                });
+                .orElseThrow(() -> new IllegalArgumentException("Active tenant not found: " + tenantId));
     }
 
     /**

@@ -37,8 +37,7 @@ import {
 import { useTenant } from '../../contexts/TenantContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { hotelAdminApi } from '../../services/hotelAdminApi';
-import { frontDeskApiService } from '../../services/frontDeskApi';
-import { COLORS, addAlpha } from '../../theme/themeColors';
+import { actionIconButtonSx, guestNameBadgeSx, refreshActionButtonSx, tableHeadRowSx } from '../../theme/sxHelpers';
 
 interface Booking {
   reservationId: number;
@@ -73,13 +72,15 @@ const HotelBookings: React.FC<HotelBookingsProps> = ({
   onBookingAction
 }) => {
   const { tenant } = useTenant();
-  const { token, user } = useAuth();
+  const { token } = useAuth();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
   const [totalElements, setTotalElements] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, searchTerm.trim() ? 300 : 0);
+  const effectiveSearchTerm = getEffectiveSearchTerm(debouncedSearchTerm);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
   const [snackbar, setSnackbar] = useState({ 
@@ -110,7 +111,7 @@ const HotelBookings: React.FC<HotelBookingsProps> = ({
     try {
       const pageToUse = customPage !== undefined ? customPage : page;
       const sizeToUse = customSize !== undefined ? customSize : size;
-      const searchToUse = customSearch !== undefined ? customSearch : searchTerm;
+      const searchToUse = customSearch !== undefined ? customSearch : (effectiveSearchTerm ?? '');
 
       let result;
       // Both hotel admin and front desk should use the same booking management API
@@ -140,7 +141,7 @@ const HotelBookings: React.FC<HotelBookingsProps> = ({
     } finally {
       setLoading(false);
     }
-  }, [tenant, token, page, size, searchTerm]);
+  }, [tenant, token, page, size, effectiveSearchTerm]);
 
   // Load bookings on component mount and tenant change
   useEffect(() => {
@@ -151,15 +152,15 @@ const HotelBookings: React.FC<HotelBookingsProps> = ({
 
   // Handle search
   useEffect(() => {
-    const timeoutId = setTimeout(() => {
+    if (effectiveSearchTerm === null) {
+      return;
+    }
+
       setPage(0);
       if (tenant) {
         loadBookings();
       }
-    }, 500);
-
-    return () => clearTimeout(timeoutId);
-  }, [searchTerm, tenant, loadBookings]);
+  }, [effectiveSearchTerm, tenant, loadBookings]);
 
   // Handle page change
   const handlePageChange = (event: React.MouseEvent<HTMLButtonElement> | null, newPage: number) => {
@@ -263,6 +264,7 @@ const HotelBookings: React.FC<HotelBookingsProps> = ({
           {mode === 'front-desk' && (
             <Button 
               variant="contained" 
+            sx={refreshActionButtonSx}
               startIcon={<AddGuestIcon />}
             >
               Walk-in Guest
@@ -289,30 +291,7 @@ const HotelBookings: React.FC<HotelBookingsProps> = ({
           <Table>
             <TableHead>
               <TableRow
-                sx={{
-                  background: COLORS.GRADIENT_SLATE,
-                  boxShadow: `0 4px 12px ${addAlpha(COLORS.SLATE_600, 0.15)}`,
-                  '& .MuiTableCell-head': {
-                    color: COLORS.WHITE,
-                    fontWeight: 600,
-                    fontSize: '0.95rem',
-                    letterSpacing: '0.5px',
-                    textTransform: 'uppercase',
-                    border: 'none',
-                    padding: '20px 16px',
-                    position: 'relative',
-                    textShadow: `0 1px 2px ${addAlpha(COLORS.BLACK, 0.1)}`,
-                    '&::after': {
-                      content: '""',
-                      position: 'absolute',
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      height: '3px',
-                      background: `linear-gradient(90deg, ${addAlpha(COLORS.WHITE, 0.6)} 0%, ${addAlpha(COLORS.WHITE, 0.8)} 50%, ${addAlpha(COLORS.WHITE, 0.6)} 100%)`
-                    }
-                  }
-                }}
+                sx={tableHeadRowSx()}
               >
                 <TableCell><strong>Confirmation #</strong></TableCell>
                 <TableCell><strong>Guest</strong></TableCell>
@@ -344,7 +323,7 @@ const HotelBookings: React.FC<HotelBookingsProps> = ({
                     <TableCell>{booking.confirmationNumber}</TableCell>
                     <TableCell>
                       <Box>
-                        <Typography variant="body2" fontWeight="bold">
+                        <Typography variant="body2" sx={guestNameBadgeSx}>
                           {booking.guestName}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
@@ -371,6 +350,7 @@ const HotelBookings: React.FC<HotelBookingsProps> = ({
                             <IconButton 
                               size="small"
                               onClick={() => handleViewBookingDetails(booking)}
+                              sx={actionIconButtonSx('accent')}
                             >
                               <VisibilityIcon />
                             </IconButton>
@@ -382,7 +362,7 @@ const HotelBookings: React.FC<HotelBookingsProps> = ({
                                 <Tooltip title="Check In">
                                   <IconButton 
                                     size="small" 
-                                    color="success"
+                                    sx={actionIconButtonSx('success')}
                                     onClick={() => handleBookingAction(booking, 'check-in')}
                                   >
                                     <CheckInIcon />
@@ -393,7 +373,7 @@ const HotelBookings: React.FC<HotelBookingsProps> = ({
                                 <Tooltip title="Check Out">
                                   <IconButton 
                                     size="small" 
-                                    color="warning"
+                                    sx={actionIconButtonSx('warning')}
                                     onClick={() => handleBookingAction(booking, 'check-out')}
                                   >
                                     <CheckOutIcon />
@@ -401,7 +381,7 @@ const HotelBookings: React.FC<HotelBookingsProps> = ({
                                 </Tooltip>
                               )}
                               <Tooltip title="Print Receipt">
-                                <IconButton size="small">
+                                <IconButton size="small" sx={actionIconButtonSx('info')}>
                                   <PrintIcon />
                                 </IconButton>
                               </Tooltip>

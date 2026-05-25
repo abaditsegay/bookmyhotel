@@ -38,6 +38,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Transactional
 public class UatService {
 
+    private static final String PLATFORM_WORKSPACE_KEY = "PLATFORM";
+    private static final String PLATFORM_WORKSPACE_NAME = "Platform UAT Workspace";
+
     private static final TypeReference<Map<String, Boolean>> CHECKLIST_TYPE = new TypeReference<>() {
     };
 
@@ -66,15 +69,19 @@ public class UatService {
     }
 
     public UatWorkspaceHotelResponse getWorkspaceHotel(Authentication authentication) {
-        User actor = loadActor(authentication);
-        Hotel hotel = resolveSharedWorkspaceHotel(actor);
+        loadActor(authentication);
 
         UatWorkspaceHotelResponse response = new UatWorkspaceHotelResponse();
-        response.setHotelId(hotel.getId());
-        response.setHotelName(hotel.getName());
-        response.setCity(hotel.getCity());
-        response.setCountry(hotel.getCountry());
+        response.setHotelId(null);
+        response.setHotelName(PLATFORM_WORKSPACE_NAME);
+        response.setCity(null);
+        response.setCountry(null);
         return response;
+    }
+
+    public UatChecklistResponse getChecklist(Authentication authentication) {
+        loadActor(authentication);
+        return toChecklistResponse(getOrCreatePlatformChecklist(), null);
     }
 
     public UatChecklistResponse getChecklist(Long hotelId, Authentication authentication) {
@@ -83,11 +90,54 @@ public class UatService {
         return toChecklistResponse(getOrCreateChecklist(hotel), hotel);
     }
 
+    public UatChecklistResponse upsertChecklist(UatChecklistRequest request, Authentication authentication) {
+        loadActor(authentication);
+        return upsertChecklistForWorkspace(getOrCreatePlatformChecklist(), request, null);
+    }
+
     public UatChecklistResponse upsertChecklist(Long hotelId, UatChecklistRequest request, Authentication authentication) {
         User actor = loadActor(authentication);
         Hotel hotel = validateWorkspaceHotelAccess(hotelId, actor);
 
-        UatChecklist checklist = getOrCreateChecklist(hotel);
+        return upsertChecklistForWorkspace(getOrCreateChecklist(hotel), request, hotel);
+    }
+
+    public List<UatDefectResponse> getDefects(Authentication authentication) {
+        loadActor(authentication);
+        return getDefectsForWorkspace(PLATFORM_WORKSPACE_KEY);
+    }
+
+    public UatDefectResponse createDefect(UatDefectRequest request, Authentication authentication) {
+        User actor = loadActor(authentication);
+        return createDefectForWorkspace(null, PLATFORM_WORKSPACE_KEY, request, actor);
+    }
+
+    public UatDefectResponse updateDefect(Long defectId, UatDefectRequest request,
+            Authentication authentication) {
+        User actor = loadActor(authentication);
+        return updateDefectForWorkspace(PLATFORM_WORKSPACE_KEY, null, defectId, request, actor);
+    }
+
+    public List<UatDefectResponse> getDefects(Long hotelId, Authentication authentication) {
+        User actor = loadActor(authentication);
+        validateWorkspaceHotelAccess(hotelId, actor);
+        return getDefectsForHotel(hotelId);
+    }
+
+    public UatDefectResponse createDefect(Long hotelId, UatDefectRequest request, Authentication authentication) {
+        User actor = loadActor(authentication);
+        Hotel hotel = validateWorkspaceHotelAccess(hotelId, actor);
+        return createDefectForWorkspace(hotel, hotelWorkspaceKey(hotel.getId()), request, actor);
+    }
+
+    public UatDefectResponse updateDefect(Long hotelId, Long defectId, UatDefectRequest request,
+            Authentication authentication) {
+        User actor = loadActor(authentication);
+        validateWorkspaceHotelAccess(hotelId, actor);
+        return updateDefectForWorkspace(hotelWorkspaceKey(hotelId), hotelId, defectId, request, actor);
+    }
+
+    private UatChecklistResponse upsertChecklistForWorkspace(UatChecklist checklist, UatChecklistRequest request, Hotel hotel) {
         checklist.setTesterName(request.getTesterName());
         checklist.setTestEnvironment(request.getTestEnvironment());
         checklist.setTestDate(request.getTestDate());
@@ -103,20 +153,23 @@ public class UatService {
         return toChecklistResponse(uatChecklistRepository.save(checklist), hotel);
     }
 
-    public List<UatDefectResponse> getDefects(Long hotelId, Authentication authentication) {
-        User actor = loadActor(authentication);
-        validateWorkspaceHotelAccess(hotelId, actor);
+    private List<UatDefectResponse> getDefectsForWorkspace(String workspaceKey) {
+        return uatDefectRepository.findByWorkspaceKeyOrderByUpdatedAtDescCreatedAtDesc(workspaceKey).stream()
+                .map(this::toDefectResponse)
+                .collect(Collectors.toList());
+    }
+
+    private List<UatDefectResponse> getDefectsForHotel(Long hotelId) {
         return uatDefectRepository.findByHotelIdOrderByUpdatedAtDescCreatedAtDesc(hotelId).stream()
                 .map(this::toDefectResponse)
                 .collect(Collectors.toList());
     }
 
-    public UatDefectResponse createDefect(Long hotelId, UatDefectRequest request, Authentication authentication) {
-        User actor = loadActor(authentication);
-        Hotel hotel = validateWorkspaceHotelAccess(hotelId, actor);
+    private UatDefectResponse createDefectForWorkspace(Hotel hotel, String workspaceKey, UatDefectRequest request, User actor) {
         boolean platformAdmin = isPlatformAdmin(actor);
 
         UatDefect defect = new UatDefect();
+        defect.setWorkspaceKey(workspaceKey);
         defect.setHotel(hotel);
         defect.setSummary(request.getSummary());
         defect.setTesterDetail(request.getTesterDetail());
@@ -137,16 +190,18 @@ public class UatService {
         return toDefectResponse(uatDefectRepository.save(defect));
     }
 
-    public UatDefectResponse updateDefect(Long hotelId, Long defectId, UatDefectRequest request,
-            Authentication authentication) {
-        User actor = loadActor(authentication);
-        validateWorkspaceHotelAccess(hotelId, actor);
+    private UatDefectResponse updateDefectForWorkspace(String workspaceKey, Long hotelId, Long defectId, UatDefectRequest request,
+            User actor) {
         boolean platformAdmin = isPlatformAdmin(actor);
 
         UatDefect defect = uatDefectRepository.findById(defectId)
                 .orElseThrow(() -> new ResourceNotFoundException("UAT defect not found with id: " + defectId));
 
-        if (!defect.getHotel().getId().equals(hotelId)) {
+        if (!workspaceKey.equals(defect.getWorkspaceKey())) {
+            throw new ResourceNotFoundException("UAT defect does not belong to workspace: " + workspaceKey);
+        }
+
+        if (hotelId != null && (defect.getHotel() == null || !defect.getHotel().getId().equals(hotelId))) {
             throw new ResourceNotFoundException("UAT defect does not belong to hotel id: " + hotelId);
         }
 
@@ -177,13 +232,36 @@ public class UatService {
     }
 
     private UatChecklist getOrCreateChecklist(Hotel hotel) {
-        return uatChecklistRepository.findByHotelId(hotel.getId()).orElseGet(() -> {
+        return uatChecklistRepository.findByWorkspaceKey(hotelWorkspaceKey(hotel.getId()))
+                .or(() -> uatChecklistRepository.findByHotelId(hotel.getId()).map(existing -> {
+                    if (existing.getWorkspaceKey() == null || existing.getWorkspaceKey().isBlank()) {
+                        existing.setWorkspaceKey(hotelWorkspaceKey(hotel.getId()));
+                    }
+                    return existing;
+                }))
+                .orElseGet(() -> {
             UatChecklist checklist = new UatChecklist();
+            checklist.setWorkspaceKey(hotelWorkspaceKey(hotel.getId()));
             checklist.setHotel(hotel);
             checklist.setHotelTenantTested(hotel.getName());
             checklist.setChecklistItemsJson(writeChecklistItems(new LinkedHashMap<>()));
             return uatChecklistRepository.save(checklist);
         });
+    }
+
+    private UatChecklist getOrCreatePlatformChecklist() {
+        return uatChecklistRepository.findByWorkspaceKey(PLATFORM_WORKSPACE_KEY).orElseGet(() -> {
+            UatChecklist checklist = new UatChecklist();
+            checklist.setWorkspaceKey(PLATFORM_WORKSPACE_KEY);
+            checklist.setHotel(null);
+            checklist.setHotelTenantTested(PLATFORM_WORKSPACE_NAME);
+            checklist.setChecklistItemsJson(writeChecklistItems(new LinkedHashMap<>()));
+            return uatChecklistRepository.save(checklist);
+        });
+    }
+
+    private String hotelWorkspaceKey(Long hotelId) {
+        return "HOTEL:" + hotelId;
     }
 
     private Hotel validateWorkspaceHotelAccess(Long hotelId, User actor) {
@@ -271,8 +349,10 @@ public class UatService {
     private UatChecklistResponse toChecklistResponse(UatChecklist checklist, Hotel hotel) {
         UatChecklistResponse response = new UatChecklistResponse();
         response.setId(checklist.getId());
-        response.setHotelId(hotel.getId());
-        response.setHotelName(hotel.getName());
+        Hotel effectiveHotel = hotel != null ? hotel : checklist.getHotel();
+        boolean platformWorkspace = PLATFORM_WORKSPACE_KEY.equals(checklist.getWorkspaceKey());
+        response.setHotelId(platformWorkspace ? null : effectiveHotel != null ? effectiveHotel.getId() : null);
+        response.setHotelName(platformWorkspace ? PLATFORM_WORKSPACE_NAME : effectiveHotel != null ? effectiveHotel.getName() : null);
         response.setTesterName(checklist.getTesterName());
         response.setTestEnvironment(checklist.getTestEnvironment());
         response.setTestDate(checklist.getTestDate());
@@ -293,7 +373,7 @@ public class UatService {
         UatDefectResponse response = new UatDefectResponse();
         response.setId(defect.getId());
         response.setDefectId("DEF-" + defect.getId());
-        response.setHotelId(defect.getHotel().getId());
+        response.setHotelId(defect.getHotel() != null ? defect.getHotel().getId() : null);
         response.setSummary(defect.getSummary());
         response.setTesterDetail(defect.getTesterDetail());
         response.setSeverity(defect.getSeverity());

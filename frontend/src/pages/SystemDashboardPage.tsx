@@ -28,6 +28,7 @@ import {
   IconButton,
   Tooltip,
   Chip,
+  useTheme,
 } from '@mui/material';
 import {
   Dashboard,
@@ -48,8 +49,7 @@ import {
 import { MetricCard, BarChart, DonutChart } from '../components/common/DataVisualization';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import BookIcon from '@mui/icons-material/Book';
-import { designSystem } from '../theme/designSystem';
-import { COLORS } from '../theme/themeColors';
+import { useThemeColors } from '../theme/useThemeColors';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -60,38 +60,18 @@ import {
   getAllEndpoints
 } from '../data/apiDocumentation';
 import AuditLogTab from './admin/AuditLogTab';
-
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
-}
-
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`system-dashboard-tabpanel-${index}`}
-      aria-labelledby={`system-dashboard-tab-${index}`}
-      {...other}
-    >
-      {value === index && (
-        <Box sx={{ py: 3 }}>
-          {children}
-        </Box>
-      )}
-    </div>
-  );
-}
+import TabPanel from '../components/common/TabPanel';
+import { getReadableAccentTextColor, getSectionTint } from '../theme/surfaces';
+import { composeSx, infoPanelSx, surfaceCardSx } from '../theme/sxHelpers';
 
 /**
  * Dashboard page for system-wide users (ADMIN and CUSTOMER roles)
  * Shows different content based on user role
  */
 export const SystemDashboardPage: React.FC = () => {
+  const { COLORS } = useThemeColors();
+  const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
   const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -328,23 +308,20 @@ export const SystemDashboardPage: React.FC = () => {
       </Box>
 
       {/* Tab Panels */}
-      <TabPanel value={activeTab} index={0}>
+      <TabPanel value={activeTab} index={0} idPrefix="system-dashboard" contentSx={{ py: 3 }}>
         {/* Overview Tab - Original Dashboard Content */}
 
         {/* Business Onboarding URL — share with businesses to submit hotel registration */}
         <Paper
           elevation={0}
-          sx={{
+          sx={composeSx(infoPanelSx, {
             p: 3,
             mb: 4,
-            borderRadius: 2,
-            background: `linear-gradient(135deg, ${COLORS.PRIMARY}08 0%, ${COLORS.SECONDARY}08 100%)`,
-            boxShadow: `0 10px 24px ${COLORS.PRIMARY}14`,
-          }}
+          })}
         >
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-            <LinkIcon sx={{ mr: 1, color: COLORS.PRIMARY }} />
-            <Typography variant="h6" fontWeight="bold" color="primary">
+            <LinkIcon sx={{ mr: 1, color: readableAccentColor }} />
+            <Typography variant="h6" fontWeight="bold" sx={{ color: readableAccentColor }}>
               Business Onboarding URL
             </Typography>
             <Chip
@@ -383,8 +360,8 @@ export const SystemDashboardPage: React.FC = () => {
                   setOnboardingUrlCopied(true);
                   setTimeout(() => setOnboardingUrlCopied(false), 2500);
                 }}
-                color={onboardingUrlCopied ? 'success' : 'primary'}
-                sx={{ flexShrink: 0 }}
+                color={onboardingUrlCopied ? 'success' : undefined}
+                sx={{ flexShrink: 0, color: onboardingUrlCopied ? undefined : readableAccentColor }}
               >
                 <ContentCopy />
               </IconButton>
@@ -392,8 +369,7 @@ export const SystemDashboardPage: React.FC = () => {
             <Tooltip title="Open in new tab">
               <IconButton
                 onClick={() => window.open(`${window.location.origin}/business-onboarding`, '_blank')}
-                color="primary"
-                sx={{ flexShrink: 0 }}
+                sx={{ flexShrink: 0, color: readableAccentColor }}
               >
                 <OpenInNew />
               </IconButton>
@@ -437,7 +413,7 @@ export const SystemDashboardPage: React.FC = () => {
         <Grid container spacing={3}>
           {isSystemAdmin && (
             <Grid item xs={12} md={6}>
-              <Paper elevation={0} sx={{ p: 3, borderRadius: designSystem.borderRadius.lg, boxShadow: designSystem.shadows.card }}>
+              <Paper elevation={0} sx={composeSx(surfaceCardSx('default'), { p: 3 })}>
                 <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
                   <TrendingUp sx={{ mr: 1 }} />
                   {t('dashboard.system.systemOverview')}
@@ -445,7 +421,7 @@ export const SystemDashboardPage: React.FC = () => {
                 <List dense>
                   <ListItem>
                     <ListItemIcon>
-                      <Hotel sx={{ color: 'primary.main' }} />
+                      <Hotel sx={{ color: readableAccentColor }} />
                     </ListItemIcon>
                     <ListItemText 
                       primary={t('dashboard.system.hotelApproval')} 
@@ -478,7 +454,7 @@ export const SystemDashboardPage: React.FC = () => {
           )}
 
           <Grid item xs={12} md={isSystemAdmin ? 6 : 12}>
-            <Paper elevation={0} sx={{ p: 3, borderRadius: designSystem.borderRadius.lg, boxShadow: designSystem.shadows.card }}>
+            <Paper elevation={0} sx={composeSx(surfaceCardSx('default'), { p: 3 })}>
               <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
                 <Dashboard sx={{ mr: 1 }} />
                 {t('dashboard.system.recentActivity')}
@@ -533,7 +509,7 @@ export const SystemDashboardPage: React.FC = () => {
 
       {/* Analytics Tab */}
       {isSystemAdmin && (
-        <TabPanel value={activeTab} index={1}>
+        <TabPanel value={activeTab} index={1} idPrefix="system-dashboard" contentSx={{ py: 3 }}>
           <Typography variant="h5" sx={{ mb: 3, fontWeight: 'bold' }}>
             {t('dashboard.system.analyticsVisualization')}
           </Typography>
@@ -586,7 +562,7 @@ export const SystemDashboardPage: React.FC = () => {
           {/* Charts */}
           <Grid container spacing={3}>
             <Grid item xs={12} lg={8}>
-              <Paper elevation={0} sx={{ p: 3, borderRadius: designSystem.borderRadius.lg, boxShadow: designSystem.shadows.card }}>
+              <Paper elevation={0} sx={composeSx(surfaceCardSx('default'), { p: 3 })}>
                 <Typography variant="h6" sx={{ mb: 3, fontWeight: 'bold' }}>
                   {t('dashboard.system.monthlyRevenueChart')}
                 </Typography>
@@ -599,7 +575,7 @@ export const SystemDashboardPage: React.FC = () => {
             </Grid>
             
             <Grid item xs={12} lg={4}>
-              <Paper elevation={0} sx={{ p: 3, borderRadius: designSystem.borderRadius.lg, boxShadow: designSystem.shadows.card, height: '100%' }}>
+              <Paper elevation={0} sx={composeSx(surfaceCardSx('default'), { p: 3, height: '100%' })}>
                 <Typography variant="h6" sx={{ mb: 3, fontWeight: 'bold' }}>
                   {t('dashboard.system.bookingStatusChart')}
                 </Typography>
@@ -616,14 +592,14 @@ export const SystemDashboardPage: React.FC = () => {
 
       {/* Audit Log Tab */}
       {isSystemAdmin && (
-        <TabPanel value={activeTab} index={3}>
+        <TabPanel value={activeTab} index={3} idPrefix="system-dashboard" contentSx={{ py: 3 }}>
           <AuditLogTab />
         </TabPanel>
       )}
 
       {/* API Documentation Tab */}
       {isSystemAdmin && (
-        <TabPanel value={activeTab} index={2}>
+        <TabPanel value={activeTab} index={2} idPrefix="system-dashboard" contentSx={{ py: 3 }}>
           <Grid container spacing={3}>
             {/* API Documentation Card */}
             <Grid item xs={12}>
@@ -727,7 +703,7 @@ export const SystemDashboardPage: React.FC = () => {
                               {/* Request Section */}
                               {endpoint.request && (
                                 <Box sx={{ mb: 3 }}>
-                                  <Typography variant="h6" sx={{ mb: 1, color: 'primary.main' }}>
+                                  <Typography variant="h6" sx={{ mb: 1, color: readableAccentColor }}>
                                     Request
                                   </Typography>
                                   
@@ -735,7 +711,7 @@ export const SystemDashboardPage: React.FC = () => {
                                     <Box sx={{ mb: 2 }}>
                                       <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Headers:</Typography>
                                       <Box component="pre" sx={{ 
-                                        bgcolor: 'grey.100', 
+                                        bgcolor: getSectionTint(theme, 'primary'),
                                         p: 1, 
                                         borderRadius: 1, 
                                         fontSize: '0.875rem',
@@ -751,7 +727,7 @@ export const SystemDashboardPage: React.FC = () => {
                                     <Box sx={{ mb: 2 }}>
                                       <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Path Parameters:</Typography>
                                       <Box component="pre" sx={{ 
-                                        bgcolor: 'grey.100', 
+                                        bgcolor: getSectionTint(theme, 'primary'),
                                         p: 1, 
                                         borderRadius: 1, 
                                         fontSize: '0.875rem',
@@ -767,7 +743,7 @@ export const SystemDashboardPage: React.FC = () => {
                                     <Box sx={{ mb: 2 }}>
                                       <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Query Parameters:</Typography>
                                       <Box component="pre" sx={{ 
-                                        bgcolor: 'grey.100', 
+                                        bgcolor: getSectionTint(theme, 'primary'),
                                         p: 1, 
                                         borderRadius: 1, 
                                         fontSize: '0.875rem',
@@ -783,7 +759,7 @@ export const SystemDashboardPage: React.FC = () => {
                                     <Box sx={{ mb: 2 }}>
                                       <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Request Body:</Typography>
                                       <Box component="pre" sx={{ 
-                                        bgcolor: 'grey.100', 
+                                        bgcolor: getSectionTint(theme, 'primary'),
                                         p: 1, 
                                         borderRadius: 1, 
                                         fontSize: '0.875rem',

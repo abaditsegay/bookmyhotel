@@ -3,6 +3,7 @@
  */
 
 import { buildApiUrl, API_ENDPOINTS } from '../config/apiConfig';
+import { buildFrontDeskAuthHeaders, buildWalkInBookingRequest } from './frontDeskApi';
 import { offlineStorage } from './OfflineStorageService';
 
 interface SyncResult {
@@ -17,42 +18,130 @@ interface SyncResult {
 
 class SyncManager {
   private issyncing = false;
+  private readonly validRoomTypes = new Set([
+    'STANDARD',
+    'DELUXE',
+    'SUITE',
+    'PRESIDENTIAL',
+    'FAMILY',
+    'ACCESSIBLE',
+  ]);
+
+  private getStoredTenantId(): string | null {
+    try {
+      const userData = localStorage.getItem('auth_user');
+      if (!userData) {
+        return null;
+      }
+
+      const parsedUser = JSON.parse(userData) as { tenantId?: string | null };
+      return parsedUser.tenantId ?? null;
+    } catch {
+      return null;
+    }
+  }
+
+  private async getErrorMessage(response: Response): Promise<string> {
+    try {
+      const errorData = await response.json();
+      return errorData.details || errorData.message || errorData.error || `HTTP ${response.status}`;
+    } catch {
+      const errorText = await response.text();
+      return errorText || `HTTP ${response.status}`;
+    }
+  }
+
+  private validateOfflineBooking(booking: any): string | null {
+    if (!booking.hotelId || typeof booking.hotelId !== 'number') {
+      return 'Offline booking is missing a valid hotel ID.';
+    }
+
+    if (!booking.roomId || typeof booking.roomId !== 'number') {
+      return 'Offline booking is missing the selected room assignment.';
+    }
+
+    if (!booking.roomType || typeof booking.roomType !== 'string' || !this.validRoomTypes.has(booking.roomType.trim().toUpperCase())) {
+      return `Offline booking has an invalid room type: ${booking.roomType || 'unknown'}.`;
+    }
+
+    if (!booking.guestName || !booking.guestName.trim()) {
+      return 'Offline booking is missing the guest name.';
+    }
+
+    if (!booking.guestEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(booking.guestEmail)) {
+      return 'Offline booking has an invalid guest email address.';
+    }
+
+    if (!booking.numberOfGuests || booking.numberOfGuests <= 0) {
+      return 'Offline booking has an invalid guest count.';
+    }
+
+    if (!booking.checkInDate || !booking.checkOutDate) {
+      return 'Offline booking is missing check-in or check-out dates.';
+    }
+
+    if (booking.checkInDate >= booking.checkOutDate) {
+      return 'Offline booking has an invalid date range.';
+    }
+
+    return null;
+  }
+
+  private getFailureStatus(statusCode?: number): 'SYNC_FAILED' | 'MANUAL_REVIEW_REQUIRED' {
+    if (statusCode === 400 || statusCode === 404) {
+      return 'MANUAL_REVIEW_REQUIRED';
+    }
+
+    return 'SYNC_FAILED';
+  }
 
   /**
    * Sync a single booking to server
    */
   private async syncSingleBooking(booking: any, token: string) {
     try {
-      const walkInBookingRequest = {
+      const validationError = this.validateOfflineBooking(booking);
+      if (validationError) {
+        await offlineStorage.updateBookingStatus(booking.id, 'MANUAL_REVIEW_REQUIRED', validationError);
+        return { success: false, error: validationError };
+      }
+
+      const tenantId = this.getStoredTenantId();
+      const walkInBookingRequest = buildWalkInBookingRequest({
         hotelId: booking.hotelId,
-        guestName: booking.guestName,
-        guestEmail: booking.guestEmail,
-        guestPhone: booking.guestPhone,
-        roomType: booking.roomType,
+        roomType: booking.roomType.trim().toUpperCase(),
         roomId: booking.roomId,
         checkInDate: booking.checkInDate,
         checkOutDate: booking.checkOutDate,
         guests: booking.numberOfGuests,
-        paymentMethodId: booking.paymentMethod === 'CASH' ? 'pay_at_frontdesk' : booking.paymentMethod,
-        specialRequests: booking.specialRequests
+        specialRequests: booking.specialRequests,
+        guestName: booking.guestName,
+        guestEmail: booking.guestEmail,
+        guestPhone: booking.guestPhone,
+      });
+
+      const headers = {
+        ...buildFrontDeskAuthHeaders(token, tenantId),
+        'X-Hotel-ID': booking.hotelId.toString(),
       };
 
       const response = await fetch(buildApiUrl(API_ENDPOINTS.BOOKINGS.WALK_IN), {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-          'X-Hotel-ID': booking.hotelId.toString()
-        },
+        headers,
         body: JSON.stringify(walkInBookingRequest)
       });
 
       if (response.ok) {
         await offlineStorage.updateBookingStatus(booking.id, 'SYNCED');
+        await offlineStorage.releaseRoomOccupancy(booking.roomId, booking.id);
         return { success: true };
       } else {
-        const errorText = await response.text();
-        await offlineStorage.updateBookingStatus(booking.id, 'SYNC_FAILED', `HTTP ${response.status}: ${errorText}`);
+        const errorText = await this.getErrorMessage(response);
+        await offlineStorage.updateBookingStatus(
+          booking.id,
+          this.getFailureStatus(response.status),
+          `HTTP ${response.status}: ${errorText}`
+        );
         return { success: false, error: errorText };
       }
     } catch (error) {
@@ -144,7 +233,9 @@ class SyncManager {
     const bookings = await offlineStorage.getOfflineBookings();
     const pendingCount = bookings.filter(b => b.status === 'PENDING_SYNC').length;
     const syncedBookings = bookings.filter(b => b.status === 'SYNCED');
-    const failedBookings = bookings.filter(b => b.status === 'SYNC_FAILED');
+    const failedBookings = bookings.filter(
+      b => b.status === 'SYNC_FAILED' || b.status === 'MANUAL_REVIEW_REQUIRED'
+    );
     
     // Debug logging to understand the issue
     // console.debug(`📊 Sync Status Debug:
@@ -233,7 +324,7 @@ class SyncManager {
     const bookings = await offlineStorage.getOfflineBookings();
     const toDelete = bookings.filter(b => 
       b.status === 'SYNCED' && 
-      new Date(b.createdAt) < cutoffDate
+      new Date(b.syncedAt || b.createdAt) < cutoffDate
     );
 
     for (const booking of toDelete) {

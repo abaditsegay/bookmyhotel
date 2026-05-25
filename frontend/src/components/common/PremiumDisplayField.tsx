@@ -1,7 +1,6 @@
 import React from 'react';
-import { Box, Typography } from '@mui/material';
+import { alpha, Box, Typography, useTheme } from '@mui/material';
 import PremiumTextField from './PremiumTextField';
-import { COLORS, addAlpha } from '../../theme/themeColors';
 
 interface PremiumDisplayFieldProps {
   label: string;
@@ -33,6 +32,8 @@ const PremiumDisplayField: React.FC<PremiumDisplayFieldProps> = ({
   placeholder,
   minHeight
 }) => {
+  const theme = useTheme();
+
   if (isEditMode) {
     return (
       <PremiumTextField
@@ -54,7 +55,7 @@ const PremiumDisplayField: React.FC<PremiumDisplayFieldProps> = ({
       <Typography 
         variant="caption" 
         sx={{
-          color: COLORS.TEXT_SECONDARY,
+          color: theme.palette.text.secondary,
           mb: 0.5,
           display: 'block',
           fontSize: '0.75rem',
@@ -67,15 +68,15 @@ const PremiumDisplayField: React.FC<PremiumDisplayFieldProps> = ({
       </Typography>
       <Box sx={{
         p: 1.5,
-        border: `1px solid ${COLORS.BORDER_LIGHT}`,
+        border: `1px solid ${theme.palette.divider}`,
         borderRadius: 1,
-        backgroundColor: COLORS.BG_LIGHT,
-        borderLeft: `3px solid ${COLORS.SECONDARY}`,
+        backgroundColor: theme.palette.background.default,
+        borderLeft: `3px solid ${theme.palette.secondary.main}`,
         minHeight: minHeight || (multiline ? '80px' : 'auto'),
         transition: 'all 0.2s ease',
         '&:hover': {
-          borderColor: COLORS.BORDER_DEFAULT,
-          boxShadow: `0 2px 4px ${addAlpha(COLORS.BLACK, 0.08)}`
+          borderColor: theme.palette.grey[400],
+          boxShadow: `0 2px 4px ${alpha(theme.palette.common.black, 0.08)}`
         }
       }}>
         <Typography 
@@ -83,7 +84,7 @@ const PremiumDisplayField: React.FC<PremiumDisplayFieldProps> = ({
           sx={{ 
             fontWeight: multiline ? 400 : 500,
             whiteSpace: multiline ? 'pre-wrap' : 'normal',
-            color: value ? COLORS.TEXT_PRIMARY : COLORS.TEXT_DISABLED
+            color: value ? theme.palette.text.primary : theme.palette.text.disabled
           }}
         >
           {value || 'Not provided'}

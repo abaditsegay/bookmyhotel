@@ -27,6 +27,13 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
        @Lock(LockModeType.PESSIMISTIC_WRITE)
        @Query("SELECT r FROM Room r WHERE r.id = :roomId")
        Optional<Room> findByIdForUpdate(@Param("roomId") Long roomId);
+       
+              @Lock(LockModeType.PESSIMISTIC_WRITE)
+              @Query("SELECT r FROM Room r WHERE r.id = :roomId AND r.hotel.id = :hotelId")
+              Optional<Room> findByIdAndHotelIdForUpdate(@Param("roomId") Long roomId, @Param("hotelId") Long hotelId);
+       
+              @Query("SELECT r FROM Room r WHERE r.id = :roomId AND r.hotel.id = :hotelId")
+              Optional<Room> findByIdAndHotelId(@Param("roomId") Long roomId, @Param("hotelId") Long hotelId);
 
        /**
         * Find available rooms for a hotel within date range
@@ -103,12 +110,15 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
                      @Param("checkOutDate") LocalDate checkOutDate);
 
        /**
-        * Check if room is currently booked (has active reservations) - hotel aware
+        * Check if room is currently occupied by a checked-in guest - hotel aware.
+        *
+        * Reserved rooms should remain BOOKED until check-in; they should not be
+        * surfaced as OCCUPIED in room management views.
         */
        @Query("SELECT COUNT(res) > 0 FROM Reservation res " +
                      "WHERE res.assignedRoom.id = :roomId " +
                      "AND res.hotel.id = :hotelId " +
-                     "AND res.status NOT IN ('CANCELLED', 'NO_SHOW') " +
+                     "AND res.status = com.bookmyhotel.entity.ReservationStatus.CHECKED_IN " +
                      "AND res.checkInDate <= CURRENT_DATE " +
                      "AND res.checkOutDate > CURRENT_DATE")
        boolean isRoomCurrentlyBooked(@Param("roomId") Long roomId, @Param("hotelId") Long hotelId);

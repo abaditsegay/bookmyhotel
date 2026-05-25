@@ -1,12 +1,17 @@
 import React from 'react';
-import { TextField, TextFieldProps } from '@mui/material';
-import { COLORS } from '../../theme/themeColors';
+import { alpha, TextField, TextFieldProps, useTheme } from '@mui/material';
+import { getColorScheme } from '../../theme/designSystem';
 
 /**
  * Premium styled TextField component for forms
- * Features gold border, cream background, and uppercase labels to match PremiumDisplayField
+ * Keeps a lightly elevated form treatment while deferring typography and color rules to the theme.
  */
 const PremiumTextField: React.FC<TextFieldProps> = (props) => {
+  const theme = useTheme();
+  const scheme = getColorScheme(theme.palette.mode === 'dark' ? 'dark' : 'light');
+  const borderColor = theme.palette.mode === 'dark' ? scheme.border.strong : scheme.border.input;
+  const hoverBorderColor = theme.palette.mode === 'dark' ? alpha(scheme.border.strong, 1) : scheme.border.strong;
+
   return (
     <TextField
       {...props}
@@ -14,13 +19,11 @@ const PremiumTextField: React.FC<TextFieldProps> = (props) => {
       InputLabelProps={{
         ...props.InputLabelProps,
         sx: {
-          textTransform: 'uppercase',
-          fontSize: '0.7rem',
-          fontWeight: 600,
-          letterSpacing: '0.5px',
-          color: COLORS.PRIMARY,
+          fontSize: '0.82rem',
+          fontWeight: 500,
+          color: theme.palette.text.secondary,
           '&.Mui-focused': {
-            color: `${COLORS.PRIMARY} !important`,
+            color: `${theme.palette.primary.main} !important`,
             fontWeight: 600,
           },
           ...props.InputLabelProps?.sx,
@@ -28,63 +31,64 @@ const PremiumTextField: React.FC<TextFieldProps> = (props) => {
       }}
       sx={{
         '& .MuiOutlinedInput-root': {
-          backgroundColor: '#fafafa',
-          borderRadius: '4px',
+          backgroundColor: scheme.background.input,
+          borderRadius: `${theme.shape.borderRadius}px`,
           '& fieldset': {
-            borderColor: '#e0e0e0',
-            borderWidth: '1px',
-            borderLeftWidth: '2px',
-            borderLeftColor: '#E8B86D',
+            borderColor,
+            borderWidth: theme.palette.mode === 'dark' ? '1.5px' : '1px',
           },
           '&:hover fieldset': {
-            borderColor: '#d0d0d0',
-            borderLeftWidth: '2px',
-            borderLeftColor: '#E8B86D',
+            borderColor: hoverBorderColor,
           },
           '&.Mui-focused': {
-            backgroundColor: '#fffef8',
+            backgroundColor: scheme.background.input,
+            boxShadow: `0 0 0 4px ${alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.18 : 0.08)}`,
             '& fieldset': {
-              borderColor: '#E8B86D',
-              borderWidth: '1px',
-              borderLeftWidth: '2px',
-              borderLeftColor: '#E8B86D',
+              borderColor: theme.palette.primary.main,
+              borderWidth: theme.palette.mode === 'dark' ? '1.5px' : '1px',
             },
           },
           '&.Mui-disabled': {
-            backgroundColor: '#e8e8e8',
+            backgroundColor: theme.palette.action.disabledBackground,
             '& fieldset': {
-              borderColor: '#d0d0d0',
+              borderColor: scheme.border.default,
               borderWidth: '1px',
-              borderLeftWidth: '2px',
-              borderLeftColor: '#E8B86D',
             },
             '& input': {
-              color: '#666',
-              WebkitTextFillColor: '#666',
+              color: theme.palette.text.disabled,
+              WebkitTextFillColor: theme.palette.text.disabled,
             },
             '& textarea': {
-              color: '#666',
-              WebkitTextFillColor: '#666',
+              color: theme.palette.text.disabled,
+              WebkitTextFillColor: theme.palette.text.disabled,
             },
           },
           '&.Mui-error fieldset': {
-            borderLeftColor: '#d32f2f',
+            borderColor: theme.palette.error.main,
           },
           '& input': {
-            color: '#333',
+            color: theme.palette.text.primary,
+            WebkitTextFillColor: theme.palette.text.primary,
+            '&::placeholder': {
+              color: theme.palette.text.secondary,
+              opacity: 1,
+            },
           },
           '& textarea': {
-            color: '#333',
+            color: theme.palette.text.primary,
+            WebkitTextFillColor: theme.palette.text.primary,
+            '&::placeholder': {
+              color: theme.palette.text.secondary,
+              opacity: 1,
+            },
           },
         },
         '& .MuiInputLabel-root': {
-          textTransform: 'uppercase',
-          fontSize: '0.7rem',
-          fontWeight: 600,
-          letterSpacing: '0.5px',
-          color: COLORS.PRIMARY,
+          fontSize: '0.82rem',
+          fontWeight: 500,
+          color: theme.palette.text.secondary,
           '&.Mui-focused': {
-            color: `${COLORS.PRIMARY} !important`,
+            color: `${theme.palette.primary.main} !important`,
             fontWeight: 600,
           },
         },

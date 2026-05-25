@@ -23,50 +23,63 @@ import { useAuth } from '../../contexts/AuthContext';
 import { frontDeskApiService, FrontDeskStats } from '../../services/frontDeskApi';
 import BookingManagementTable from '../../components/booking/BookingManagementTable';
 import WalkInBookingModal from '../../components/booking/WalkInBookingModal';
+import TabPanel from '../../components/common/TabPanel';
 import UnifiedRoomManagement from '../../components/common/UnifiedRoomManagement';
 import OfflineWalkInBooking from '../../components/OfflineWalkInBooking';
 import HousekeepingPage from '../housekeeping/HousekeepingPage';
 import { roomCacheService } from '../../services/RoomCacheService';
-import { COLORS } from '../../theme/themeColors';
+import { useThemeColors } from '../../theme/useThemeColors';
+import { getReadableAccentTextColor } from '../../theme/surfaces';
 
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
-}
+const FRONTDESK_OFFLINE_TAB = 3;
 
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`simple-tabpanel-${index}`}
-      aria-labelledby={`simple-tab-${index}`}
-      {...other}
-    >
-      {value === index && <Box sx={{ p: 0 }}>{children}</Box>}
-    </div>
-  );
-}
+const normalizeFrontDeskTab = (requestedTab: number, isOnline: boolean) => {
+  if (!Number.isFinite(requestedTab)) {
+    return isOnline ? 0 : FRONTDESK_OFFLINE_TAB;
+  }
+
+  const clampedTab = Math.max(0, Math.min(requestedTab, FRONTDESK_OFFLINE_TAB));
+  if (isOnline) {
+    return clampedTab === FRONTDESK_OFFLINE_TAB ? 0 : clampedTab;
+  }
+
+  return FRONTDESK_OFFLINE_TAB;
+};
 
 const FrontDeskDashboard: React.FC = () => {
   const { t } = useTranslation();
   const { token, user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { COLORS } = useThemeColors();
   const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
   
   // Get initial tab from URL parameter, default to 0
   const initialTab = parseInt(searchParams.get('tab') || '0', 10);
-  const [activeTab, setActiveTab] = useState(Math.max(0, Math.min(initialTab, 3))); // Ensure tab is 0, 1, 2, or 3
+  const [activeTab, setActiveTab] = useState(() => normalizeFrontDeskTab(initialTab, navigator.onLine));
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   // Sync tab state with URL parameters when they change externally
   useEffect(() => {
     const urlTab = parseInt(searchParams.get('tab') || '0', 10);
-    const validTab = Math.max(0, Math.min(urlTab, 3));
-    // console.log(`🔗 FrontDesk: URL tab changed to ${urlTab}, setting valid tab to ${validTab}`);
-    setActiveTab(validTab);
-  }, [searchParams]); // Remove activeTab from dependencies to prevent circular updates
+    const nextTab = normalizeFrontDeskTab(urlTab, isOnline);
+    if (nextTab !== activeTab) {
+      setActiveTab(nextTab);
+    }
+  }, [activeTab, isOnline, searchParams]);
   const [stats, setStats] = useState<FrontDeskStats | null>(null);
   const [walkInModalOpen, setWalkInModalOpen] = useState(false);
   
@@ -244,7 +257,7 @@ const FrontDeskDashboard: React.FC = () => {
         <Grid item xs={12} sm={6} md={2}>
           <Card>
             <CardContent sx={{ textAlign: 'center', py: 0.75, px: 1.5 }}>
-              <Typography variant="h6" sx={{ fontWeight: 'bold', color: COLORS.PRIMARY, lineHeight: 1.2 }}>
+              <Typography variant="h6" sx={{ fontWeight: 'bold', color: readableAccentColor, lineHeight: 1.2 }}>
                 {todayStats.currentOccupancy}
               </Typography>
               <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
@@ -280,7 +293,7 @@ const FrontDeskDashboard: React.FC = () => {
         <Grid item xs={12} sm={6} md={2}>
           <Card>
             <CardContent sx={{ textAlign: 'center', py: 0.75, px: 1.5 }}>
-              <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'primary.main', lineHeight: 1.2 }}>
+              <Typography variant="h6" sx={{ fontWeight: 'bold', color: readableAccentColor, lineHeight: 1.2 }}>
                 {todayStats.availableRooms}
               </Typography>
               <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
@@ -320,15 +333,15 @@ const FrontDeskDashboard: React.FC = () => {
             },
           }}
         >
-          <Tab label={t('dashboard.frontDesk.tabs.bookings')} />
-          <Tab label={t('dashboard.frontDesk.tabs.rooms')} />
-          <Tab label={t('dashboard.frontDesk.tabs.housekeeping')} />
-          <Tab label={t('dashboard.frontDesk.tabs.offlineBookings')} />
+          <Tab value={0} disabled={!isOnline} label={t('dashboard.frontDesk.tabs.bookings')} />
+          <Tab value={1} disabled={!isOnline} label={t('dashboard.frontDesk.tabs.rooms')} />
+          <Tab value={2} disabled={!isOnline} label={t('dashboard.frontDesk.tabs.housekeeping')} />
+          <Tab value={FRONTDESK_OFFLINE_TAB} disabled={isOnline} label={t('dashboard.frontDesk.tabs.offlineBookings')} />
         </Tabs>
       </Paper>
 
       {/* Comprehensive Booking Management Tab */}
-      <TabPanel value={activeTab} index={0}>
+      {isOnline && <TabPanel value={activeTab} index={0} idPrefix="frontdesk" contentSx={{ p: 0 }}>
         <BookingManagementTable
           mode="front-desk"
           title=""
@@ -345,10 +358,10 @@ const FrontDeskDashboard: React.FC = () => {
             setWalkInModalOpen(true);
           }}
         />
-      </TabPanel>
+      </TabPanel>}
 
       {/* Room Management Tab */}
-      <TabPanel value={activeTab} index={1}>
+      {isOnline && <TabPanel value={activeTab} index={1} idPrefix="frontdesk" contentSx={{ p: 0 }}>
         <UnifiedRoomManagement
           mode="front-desk"
           onRoomUpdate={(room: any) => {
@@ -364,15 +377,15 @@ const FrontDeskDashboard: React.FC = () => {
             }
           }}
         />
-      </TabPanel>
+      </TabPanel>}
 
       {/* Housekeeping Tab */}
-      <TabPanel value={activeTab} index={2}>
+      {isOnline && <TabPanel value={activeTab} index={2} idPrefix="frontdesk" contentSx={{ p: 0 }}>
         <HousekeepingPage />
-      </TabPanel>
+      </TabPanel>}
 
       {/* Offline Bookings Tab */}
-      <TabPanel value={activeTab} index={3}>
+      <TabPanel value={activeTab} index={FRONTDESK_OFFLINE_TAB} idPrefix="frontdesk" contentSx={{ p: 0 }}>
         <OfflineWalkInBooking
           onBookingComplete={(booking) => {
             // console.log('Offline booking created:', booking);

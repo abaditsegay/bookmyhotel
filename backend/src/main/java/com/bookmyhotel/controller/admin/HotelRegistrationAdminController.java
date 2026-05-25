@@ -55,7 +55,16 @@ public class HotelRegistrationAdminController {
             HotelRegistrationSubmitResponse response = registrationService.submitRegistration(request);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().build();
+            logger.error("Failed to submit hotel registration for hotel={} email={}",
+                    request.getHotelName(), request.getContactEmail(), e);
+
+            HotelRegistrationSubmitResponse errorResponse = new HotelRegistrationSubmitResponse();
+            errorResponse.setHotelName(request.getHotelName());
+            errorResponse.setLoginEmail(request.getContactEmail());
+            errorResponse.setStatus("FAILED");
+            errorResponse.setMessage(e.getMessage());
+
+            return ResponseEntity.badRequest().body(errorResponse);
         }
     }
 

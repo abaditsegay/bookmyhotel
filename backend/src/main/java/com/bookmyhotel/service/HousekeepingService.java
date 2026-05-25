@@ -184,8 +184,7 @@ public class HousekeepingService {
      * Assign a task to a staff member
      */
     public HousekeepingTask assignTask(Long hotelId, Long taskId, Long userId) {
-        HousekeepingTask task = housekeepingTaskRepository.findById(taskId)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
+        HousekeepingTask task = getTaskForHotel(taskId, hotelId);
         Map<String, Object> oldSnapshot = createTaskSnapshot(task);
 
         User user = userRepository.findById(userId)
@@ -194,11 +193,6 @@ public class HousekeepingService {
         // Verify user has HOUSEKEEPING role
         if (user.getRoles() == null || !user.getRoles().contains(UserRole.HOUSEKEEPING)) {
             throw new RuntimeException("User is not a housekeeping staff member");
-        }
-
-        // Verify task belongs to the specified hotel
-        if (!task.getHotel().getId().equals(hotelId)) {
-            throw new RuntimeException("Task not found for this hotel");
         }
 
         // Verify user belongs to the same hotel
@@ -229,14 +223,8 @@ public class HousekeepingService {
      * Start a task (staff member begins work)
      */
     public HousekeepingTask startTask(Long hotelId, Long taskId) {
-        HousekeepingTask task = housekeepingTaskRepository.findById(taskId)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
+        HousekeepingTask task = getTaskForHotel(taskId, hotelId);
         Map<String, Object> oldSnapshot = createTaskSnapshot(task);
-
-        // Verify task belongs to the specified hotel
-        if (!task.getHotel().getId().equals(hotelId)) {
-            throw new RuntimeException("Task not found for this hotel");
-        }
 
         if (task.getAssignedUser() == null) {
             throw new RuntimeException("Task must be assigned to a user before starting");
@@ -268,14 +256,8 @@ public class HousekeepingService {
      * Complete a task
      */
     public HousekeepingTask completeTask(Long hotelId, Long taskId, String notes, Integer qualityScore) {
-        HousekeepingTask task = housekeepingTaskRepository.findById(taskId)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
+        HousekeepingTask task = getTaskForHotel(taskId, hotelId);
         Map<String, Object> oldSnapshot = createTaskSnapshot(task);
-
-        // Verify task belongs to the specified hotel
-        if (!task.getHotel().getId().equals(hotelId)) {
-            throw new RuntimeException("Task not found for this hotel");
-        }
 
         if (task.getStatus() != HousekeepingTaskStatus.IN_PROGRESS) {
             throw new RuntimeException("Task can only be completed from IN_PROGRESS status");
@@ -314,14 +296,8 @@ public class HousekeepingService {
      * Complete a task with issues
      */
     public HousekeepingTask completeTaskWithIssues(Long hotelId, Long taskId, String notes, String issueDescription) {
-        HousekeepingTask task = housekeepingTaskRepository.findById(taskId)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
+        HousekeepingTask task = getTaskForHotel(taskId, hotelId);
         Map<String, Object> oldSnapshot = createTaskSnapshot(task);
-
-        // Verify task belongs to the specified hotel
-        if (!task.getHotel().getId().equals(hotelId)) {
-            throw new RuntimeException("Task not found for this hotel");
-        }
 
         if (task.getStatus() != HousekeepingTaskStatus.IN_PROGRESS) {
             throw new RuntimeException("Task can only be completed from IN_PROGRESS status");
@@ -358,14 +334,8 @@ public class HousekeepingService {
      * Cancel a task
      */
     public HousekeepingTask cancelTask(Long hotelId, Long taskId, String reason) {
-        HousekeepingTask task = housekeepingTaskRepository.findById(taskId)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
+        HousekeepingTask task = getTaskForHotel(taskId, hotelId);
         Map<String, Object> oldSnapshot = createTaskSnapshot(task);
-
-        // Verify task belongs to the specified hotel
-        if (!task.getHotel().getId().equals(hotelId)) {
-            throw new RuntimeException("Task not found for this hotel");
-        }
 
         if (task.getStatus() == HousekeepingTaskStatus.COMPLETED ||
                 task.getStatus() == HousekeepingTaskStatus.COMPLETED_WITH_ISSUES) {
@@ -394,14 +364,8 @@ public class HousekeepingService {
      * Update task details
      */
     public HousekeepingTask updateTask(Long hotelId, Long taskId, HousekeepingTask updatedTask) {
-        HousekeepingTask existingTask = housekeepingTaskRepository.findById(taskId)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
+        HousekeepingTask existingTask = getTaskForHotel(taskId, hotelId);
         Map<String, Object> oldSnapshot = createTaskSnapshot(existingTask);
-
-        // Verify task belongs to the specified hotel
-        if (!existingTask.getHotel().getId().equals(hotelId)) {
-            throw new RuntimeException("Task not found for this hotel");
-        }
 
         // Update allowed fields
         if (updatedTask.getDescription() != null) {
@@ -436,14 +400,8 @@ public class HousekeepingService {
      * Update task status and notes
      */
     public HousekeepingTask updateTaskStatus(Long hotelId, Long taskId, String status, String notes) {
-        HousekeepingTask existingTask = housekeepingTaskRepository.findById(taskId)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
+        HousekeepingTask existingTask = getTaskForHotel(taskId, hotelId);
         Map<String, Object> oldSnapshot = createTaskSnapshot(existingTask);
-
-        // Verify task belongs to the specified hotel
-        if (!existingTask.getHotel().getId().equals(hotelId)) {
-            throw new RuntimeException("Task not found for this hotel");
-        }
 
         // Update task status
         if (status.equals("IN_PROGRESS")) {
@@ -475,6 +433,11 @@ public class HousekeepingService {
             false,
             null);
         return savedTask;
+    }
+
+    private HousekeepingTask getTaskForHotel(Long taskId, Long hotelId) {
+        return housekeepingTaskRepository.findByIdAndHotelIdWithUserAndHotel(taskId, hotelId)
+                .orElseThrow(() -> new RuntimeException("Task not found for this hotel"));
     }
 
     // ===== TASK QUERY METHODS =====

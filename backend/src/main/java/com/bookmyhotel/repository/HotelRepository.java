@@ -99,6 +99,11 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
        Optional<Hotel> findByIdAndIsActiveTrue(Long id);
 
        /**
+        * Find a hotel by contact email regardless of status.
+        */
+       Optional<Hotel> findFirstByEmailIgnoreCase(String email);
+
+       /**
         * Find publicly-listed hotel by ID (for public guest search)
         */
        Optional<Hotel> findByIdAndIsPubliclyListedTrue(Long id);

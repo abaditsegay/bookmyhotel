@@ -28,7 +28,7 @@ import {
   Alert,
   Switch,
   FormControlLabel,
-  TextField
+  TextField,
 } from '@mui/material';
 import {
   Edit as EditIcon,
@@ -40,11 +40,13 @@ import {
   Report as DirtyIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
 import { buildApiUrl } from '../../config/apiConfig';
 import { roomCacheService } from '../../services/RoomCacheService';
 import { CachedRoom } from '../../services/OfflineStorageService';
 import { getRoomTypeLabel } from '../../constants/roomTypes';
 import { formatCurrencyWithDecimals } from '../../utils/currencyUtils';
+import { guestNameBadgeSx, tableHeadRowSx } from '../../theme/sxHelpers';
 
 interface RoomResponse {
   id: number;
@@ -213,6 +215,7 @@ interface FrontDeskRoomManagementProps {
 const FrontDeskRoomManagement: React.FC<FrontDeskRoomManagementProps> = ({ onRoomUpdate }) => {
   const { t } = useTranslation();
   const { token } = useAuth();
+  const { showSubmissionError } = useSubmissionError();
 
   const ROOM_STATUS_OPTIONS = [
     { value: 'AVAILABLE', label: t('dashboard.frontDesk.roomManagement.roomStatuses.available'), color: 'success' as const },
@@ -405,11 +408,15 @@ const FrontDeskRoomManagement: React.FC<FrontDeskRoomManagementProps> = ({ onRoo
         handleStatusDialogClose();
         onRoomUpdate?.(result.data);
       } else {
-        setError(result.message || 'Failed to update room status');
+        showSubmissionError(result.message || 'Failed to update room status', {
+          fallbackMessage: 'Failed to update room status',
+        });
       }
     } catch (error) {
       // console.error('Failed to update room status:', error);
-      setError('Failed to update room status');
+      showSubmissionError(error, {
+        fallbackMessage: 'Failed to update room status',
+      });
     } finally {
       setStatusUpdating(false);
     }
@@ -437,11 +444,15 @@ const FrontDeskRoomManagement: React.FC<FrontDeskRoomManagementProps> = ({ onRoo
         
         onRoomUpdate?.(result.data);
       } else {
-        setError(result.message || 'Failed to toggle room availability');
+        showSubmissionError(result.message || 'Failed to toggle room availability', {
+          fallbackMessage: 'Failed to toggle room availability',
+        });
       }
     } catch (error) {
       // console.error('Failed to toggle room availability:', error);
-      setError('Failed to toggle room availability');
+      showSubmissionError(error, {
+        fallbackMessage: 'Failed to toggle room availability',
+      });
     } finally {
       setAvailabilityUpdating(prev => ({ ...prev, [room.id]: false }));
     }
@@ -503,30 +514,7 @@ const FrontDeskRoomManagement: React.FC<FrontDeskRoomManagementProps> = ({ onRoo
         <Table>
           <TableHead>
             <TableRow
-              sx={{
-                background: 'linear-gradient(135deg, #64748b 0%, #475569 50%, #334155 100%)',
-                boxShadow: '0 4px 12px rgba(100, 116, 139, 0.15)',
-                '& .MuiTableCell-head': {
-                  color: '#ffffff',
-                  fontWeight: 600,
-                  fontSize: '0.95rem',
-                  letterSpacing: '0.5px',
-                  textTransform: 'uppercase',
-                  border: 'none',
-                  padding: '20px 16px',
-                  position: 'relative',
-                  textShadow: '0 1px 2px rgba(0,0,0,0.1)',
-                  '&::after': {
-                    content: '""',
-                    position: 'absolute',
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    height: '3px',
-                    background: 'linear-gradient(90deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0.6) 100%)'
-                  }
-                }
-              }}
+              sx={tableHeadRowSx()}
             >
               <TableCell>{t('dashboard.frontDesk.roomManagement.tableHeaders.roomNumber')}</TableCell>
               <TableCell>{t('dashboard.frontDesk.roomManagement.tableHeaders.type')}</TableCell>
@@ -565,7 +553,7 @@ const FrontDeskRoomManagement: React.FC<FrontDeskRoomManagementProps> = ({ onRoo
                   </TableCell>
                   <TableCell>
                     {room.currentGuest ? (
-                      <Typography variant="body2">
+                      <Typography variant="body2" sx={guestNameBadgeSx}>
                         {room.currentGuest}
                       </Typography>
                     ) : (

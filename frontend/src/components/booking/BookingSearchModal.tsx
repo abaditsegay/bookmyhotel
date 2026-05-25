@@ -30,6 +30,8 @@ import {
 import { bookingApiService, BookingSearchResponse } from '../../services/bookingApi';
 import { formatDateForDisplay } from '../../utils/dateUtils';
 import { getRoomTypeLabel } from '../../constants/roomTypes';
+import { getReadableAccentTextColor } from '../../theme/surfaces';
+import { composeSx, surfaceCardSx } from '../../theme/sxHelpers';
 
 interface BookingSearchModalProps {
   open: boolean;
@@ -39,6 +41,7 @@ interface BookingSearchModalProps {
 const BookingSearchModal: React.FC<BookingSearchModalProps> = ({ open, onClose }) => {
   const { t } = useTranslation();
   const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   
   const [searchType, setSearchType] = useState<'confirmation' | 'email'>('confirmation');
@@ -175,10 +178,11 @@ const BookingSearchModal: React.FC<BookingSearchModalProps> = ({ open, onClose }
       fullWidth
       fullScreen={isMobile}
       PaperProps={{
-        sx: {
-          borderRadius: isMobile ? 0 : 2,
+        sx: composeSx(surfaceCardSx('default'), {
+          borderRadius: isMobile ? 0 : 4,
           m: isMobile ? 0 : 1,
-        }
+          boxShadow: theme => theme.shadows[10],
+        })
       }}
     >
       <DialogTitle sx={{ m: 0, p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -286,7 +290,7 @@ const BookingSearchModal: React.FC<BookingSearchModalProps> = ({ open, onClose }
 
         {/* Booking Results */}
         {booking && (
-          <Card elevation={2}>
+          <Card elevation={0} sx={surfaceCardSx('default')}>
             <CardContent>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
                 <Box>
@@ -319,7 +323,7 @@ const BookingSearchModal: React.FC<BookingSearchModalProps> = ({ open, onClose }
               <Grid container spacing={2}>
                 <Grid item xs={12}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                    <HotelIcon sx={{ mr: 1, color: 'primary.main', fontSize: 20 }} />
+                    <HotelIcon sx={{ mr: 1, color: readableAccentColor, fontSize: 20 }} />
                     <Typography variant="body2" color="text.secondary">{t('booking.manage.hotelAndRoom')}</Typography>
                   </Box>
                   
@@ -378,7 +382,7 @@ const BookingSearchModal: React.FC<BookingSearchModalProps> = ({ open, onClose }
 
                 <Grid item xs={12} sm={6}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                    <CalendarIcon sx={{ mr: 1, color: 'primary.main', fontSize: 20 }} />
+                    <CalendarIcon sx={{ mr: 1, color: readableAccentColor, fontSize: 20 }} />
                     <Typography variant="body2" color="text.secondary">{t('booking.find.found.labels.checkIn')}</Typography>
                   </Box>
                   <Typography variant="body1" fontWeight="medium">
@@ -388,7 +392,7 @@ const BookingSearchModal: React.FC<BookingSearchModalProps> = ({ open, onClose }
 
                 <Grid item xs={12} sm={6}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                    <CalendarIcon sx={{ mr: 1, color: 'primary.main', fontSize: 20 }} />
+                    <CalendarIcon sx={{ mr: 1, color: readableAccentColor, fontSize: 20 }} />
                     <Typography variant="body2" color="text.secondary">{t('booking.find.found.labels.checkOut')}</Typography>
                   </Box>
                   <Typography variant="body1" fontWeight="medium">
@@ -398,7 +402,7 @@ const BookingSearchModal: React.FC<BookingSearchModalProps> = ({ open, onClose }
 
                 <Grid item xs={12}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                    <PersonIcon sx={{ mr: 1, color: 'primary.main', fontSize: 20 }} />
+                    <PersonIcon sx={{ mr: 1, color: readableAccentColor, fontSize: 20 }} />
                     <Typography variant="body2" color="text.secondary">{t('booking.find.found.labels.guestName')}</Typography>
                   </Box>
                   <Typography variant="body1" fontWeight="medium">

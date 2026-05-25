@@ -1,5 +1,3 @@
-import { COLORS } from '../theme/themeColors';
-
 export enum ProductCategory {
   BEVERAGES = 'BEVERAGES',
   SNACKS = 'SNACKS',
@@ -99,6 +97,7 @@ export interface ShopOrderItem {
   productId: number;
   quantity: number;
   unitPrice: number;
+  totalPrice?: number;
   productName: string;
   productDescription?: string;
   productSku: string;
@@ -289,11 +288,11 @@ export const ShopOrderUtils = {
   getStatusColor: (status: ShopOrderStatus): string => {
     switch (status) {
       case ShopOrderStatus.PENDING:
-        return COLORS.WARNING;
+        return '#ed6c02';
       case ShopOrderStatus.PAID:
-        return COLORS.SUCCESS;
+        return '#2e7d32';
       default:
-        return COLORS.TEXT_DISABLED;
+        return '#9e9e9e';
     }
   },
 

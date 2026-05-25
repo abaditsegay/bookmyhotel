@@ -17,8 +17,8 @@ const SurfaceCard: React.FC<SurfaceCardProps> = ({
   ...cardProps
 }) => {
   return (
-    <Card elevation={0} sx={{ ...surfaceCardSx(variantStyle), ...sx }} {...cardProps}>
-      <CardContent sx={{ ...surfaceCardContentSx, ...contentSx }}>{children}</CardContent>
+    <Card elevation={0} sx={[surfaceCardSx(variantStyle), sx]} {...cardProps}>
+      <CardContent sx={[surfaceCardContentSx, contentSx]}>{children}</CardContent>
     </Card>
   );
 };

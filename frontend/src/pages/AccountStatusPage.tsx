@@ -1,9 +1,10 @@
 import React from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Box, Button, Container, Paper, Typography } from '@mui/material';
+import { Box, Button, Typography } from '@mui/material';
 import BlockIcon from '@mui/icons-material/Block';
 import HotelIcon from '@mui/icons-material/Hotel';
 import LogoutIcon from '@mui/icons-material/Logout';
+import { PageContainer, SurfaceCard } from '../components/common';
 import { useAuth } from '../contexts/AuthContext';
 
 const AccountStatusPage: React.FC = () => {
@@ -28,13 +29,12 @@ const AccountStatusPage: React.FC = () => {
   );
 
   return (
-    <Container maxWidth="sm" sx={{ py: 8 }}>
-      <Paper
-        elevation={3}
-        sx={{
-          p: 6,
+    <PageContainer maxWidth="sm" sx={{ justifyContent: 'center', minHeight: '100vh', py: { xs: 4, md: 8 } }}>
+      <SurfaceCard
+        elevation={0}
+        contentSx={{
+          p: { xs: 4, md: 6 },
           textAlign: 'center',
-          borderRadius: 3,
         }}
       >
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -50,13 +50,13 @@ const AccountStatusPage: React.FC = () => {
             startIcon={<LogoutIcon />}
             onClick={logout}
             size="large"
-            sx={{ bgcolor: '#1c2a3a', color: 'white', '&:hover': { bgcolor: '#0d1b29' } }}
+            sx={{ bgcolor: 'primary.main', color: 'common.white', '&:hover': { bgcolor: 'primary.dark' } }}
           >
             Sign Out
           </Button>
         </Box>
-      </Paper>
-    </Container>
+      </SurfaceCard>
+    </PageContainer>
   );
 };
 

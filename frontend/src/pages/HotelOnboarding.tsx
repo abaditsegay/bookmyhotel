@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { normalizeEthiopianPhone } from '../utils/phoneUtils';
-import { COLORS } from '../theme/themeColors';
 import {
   Container,
   Typography,
@@ -11,7 +10,8 @@ import {
   Grid,
   Chip,
   Divider,
-  CircularProgress
+  CircularProgress,
+  useTheme
 } from '@mui/material';
 import {
   CheckCircle,
@@ -24,6 +24,7 @@ import {
 import PremiumTextField from '../components/common/PremiumTextField';
 import { API_CONFIG } from '../config/apiConfig';
 import { useAuth } from '../contexts/AuthContext';
+import { getReadableAccentTextColor } from '../theme/surfaces';
 
 interface RegistrationData {
   id: number;
@@ -55,6 +56,8 @@ interface VerificationStatus {
 }
 
 const HotelOnboarding: React.FC = () => {
+  const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
   const { user, token } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -219,7 +222,7 @@ const HotelOnboarding: React.FC = () => {
   return (
     <Container maxWidth="md">
       <Box sx={{ py: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom sx={{ color: COLORS.PRIMARY, fontWeight: 600 }}>
+        <Typography variant="h4" component="h1" gutterBottom sx={{ color: readableAccentColor, fontWeight: 600 }}>
           Complete Your Hotel Profile
         </Typography>
         <Typography variant="body1" color="text.secondary" paragraph>

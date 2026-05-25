@@ -1,24 +1,26 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { COLORS, addAlpha } from '../theme/themeColors';
 import { useTranslation } from 'react-i18next';
 import {
   Alert,
+  alpha,
   Typography,
   Box,
   Snackbar,
-  Container,
   useMediaQuery,
   useTheme,
   Stack,
-  Button,
 } from '@mui/material';
 
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import HotelDetailsCard from '../components/hotel/HotelDetailsCard';
-import { DataState } from '../components/common';
+import { DataState, PageContainer } from '../components/common';
 import { PageHeader, SurfaceCard } from '../components/ui';
+import StandardButton from '../components/common/StandardButton';
 import { usePublicHotelSearchResults, PublicHotelSearchLocationState, formatHotelSearchSummary } from '../hooks/usePublicHotelSearchResults';
+import { getPageShellBackground, getReadableAccentTextColor } from '../theme/surfaces';
+import { designSystem } from '../theme/designSystem';
+import { tintedPanelSx } from '../theme/sxHelpers';
 import { 
   HotelSearchResult,
   AvailableRoom,
@@ -31,6 +33,7 @@ const SearchResultsPage: React.FC = () => {
   const { isAuthenticated } = useAuth();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const readableAccentColor = getReadableAccentTextColor(theme);
 
   const locationState = (location.state as PublicHotelSearchLocationState | null) ?? null;
   const { searchRequest, hotels, successMessage: initialSuccessMessage, isLoading, error, hasSearchRequest, refetch } =
@@ -171,86 +174,68 @@ const SearchResultsPage: React.FC = () => {
   }
 
   return (
-    <Box
+    <PageContainer
+      maxWidth="lg"
       sx={{
         minHeight: '100vh',
-        backgroundColor: theme.palette.background.default,
+        backgroundColor: getPageShellBackground(theme),
+        py: isMobile ? 3 : 4,
       }}
     >
-      <Container 
-        maxWidth="lg" 
-        sx={{ 
-          py: isMobile ? 2 : 4,
-          px: isMobile ? 1 : 3,
-        }}
-      >
-      <Box sx={{ mb: 3 }}>
-        <Button 
+      <Stack spacing={designSystem.layout.sectionGap.md}>
+      <Box>
+        <StandardButton
           onClick={handleBackToSearch}
           variant="outlined"
           sx={{ 
-            borderRadius: 1,
-            textTransform: 'none',
-            fontWeight: 500,
-            borderColor: COLORS.SECONDARY,
-            borderWidth: '2px',
-            color: COLORS.PRIMARY,
-            backgroundColor: COLORS.WHITE,
-            '&:hover': {
-              borderColor: COLORS.SECONDARY_HOVER,
-              backgroundColor: COLORS.BG_LIGHT,
-              borderWidth: '2px',
-              transform: 'translateY(-1px)',
-            },
+            minWidth: 'auto',
+            color: readableAccentColor,
+            borderColor: alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.3 : 0.2),
           }}
         >
           {t('hotelSearch.results.backToSearch')}
-        </Button>
+        </StandardButton>
       </Box>
 
       {/* Search Summary and Actions */}
       <SurfaceCard 
         variantStyle="default"
         sx={{ 
-          mb: 3,
-          boxShadow: `0 2px 8px ${addAlpha(COLORS.SECONDARY, 0.1)}`,
+          boxShadow: `0 2px 8px ${alpha(theme.palette.primary.main, 0.06)}`,
         }}
         contentSx={{ p: { xs: 2.5, md: 3 } }}
       >
-        <PageHeader
-          title={t('hotelSearch.results.title')}
-          description={searchRequest ? `${t('hotelSearch.results.descriptionPrefix')} ${searchSummary}` : t('hotelSearch.results.loadingDescription')}
-          actions={
-            <Stack direction={isMobile ? 'column' : 'row'} spacing={2} justifyContent="flex-start">
-              <Button 
-                variant="outlined"
-                onClick={handleBackToSearch}
-                sx={{ 
-                  borderRadius: 1,
-                  textTransform: 'none',
-                  fontWeight: 600,
-                  borderColor: addAlpha(COLORS.SECONDARY, 0.8),
-                  borderWidth: '1px',
-                  color: COLORS.PRIMARY,
-                  backgroundColor: COLORS.BG_LIGHT,
-                  '&:hover': {
-                    borderColor: COLORS.SECONDARY_HOVER,
-                    backgroundColor: COLORS.BG_DEFAULT,
-                    borderWidth: '1px',
-                    transform: 'translateY(-1px)',
-                  },
-                }}
-              >
-                {t('hotelSearch.results.modifySearch')}
-              </Button>
-            </Stack>
-          }
-        />
-        <Typography variant="body2" sx={{ color: 'text.primary', fontWeight: 600, mt: 2 }}>
-          {hotels.length === 1
-            ? t('hotelSearch.results.hotelsFoundSingle', { count: hotels.length })
-            : t('hotelSearch.results.hotelsFoundPlural', { count: hotels.length })}
-        </Typography>
+        <Stack spacing={2}>
+          <PageHeader
+            title={t('hotelSearch.results.title')}
+            description={searchRequest ? `${t('hotelSearch.results.descriptionPrefix')} ${searchSummary}` : t('hotelSearch.results.loadingDescription')}
+          />
+          <Box sx={{
+            ...tintedPanelSx('primary'),
+            display: 'flex',
+            alignItems: isMobile ? 'flex-start' : 'center',
+            justifyContent: 'space-between',
+            flexDirection: isMobile ? 'column' : 'row',
+            gap: 2,
+          }}>
+            <Typography variant="body2" sx={{ color: 'text.primary', fontWeight: 600 }}>
+              {hotels.length === 1
+                ? t('hotelSearch.results.hotelsFoundSingle', { count: hotels.length })
+                : t('hotelSearch.results.hotelsFoundPlural', { count: hotels.length })}
+            </Typography>
+            <StandardButton
+              variant="outlined"
+              onClick={handleBackToSearch}
+              sx={{
+                minWidth: 'auto',
+                color: readableAccentColor,
+                borderColor: alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.3 : 0.2),
+              }}
+            >
+              {t('hotelSearch.results.modifySearch')}
+            </StandardButton>
+          </Box>
+        </Stack>
       </SurfaceCard>
 
       <DataState
@@ -297,8 +282,8 @@ const SearchResultsPage: React.FC = () => {
           {successMessage}
         </Alert>
       </Snackbar>
-      </Container>
-    </Box>
+      </Stack>
+    </PageContainer>
   );
 };
 

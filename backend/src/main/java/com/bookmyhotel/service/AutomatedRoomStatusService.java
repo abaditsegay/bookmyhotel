@@ -164,13 +164,6 @@ public class AutomatedRoomStatusService {
                         .anyMatch(reservation -> reservation.getStatus() == ReservationStatus.CHECKED_IN &&
                                 reservation.getCheckOutDate().isAfter(today));
 
-        // Check if room has future booked reservation for today
-        boolean hasTodayBookedReservation = room.getReservations() != null &&
-                room.getReservations().stream()
-                        .anyMatch(reservation -> reservation.getStatus() == ReservationStatus.BOOKED &&
-                                !reservation.getCheckInDate().isAfter(today) &&
-                                !reservation.getCheckOutDate().isBefore(today));
-
         boolean statusChanged = false;
 
         // Fix logic: Update room status based on actual occupancy
@@ -181,18 +174,11 @@ public class AutomatedRoomStatusService {
                     room.getRoomNumber(), originalStatus);
 
         } else if (!hasCheckedInGuest && room.getStatus() == RoomStatus.OCCUPIED && room.getIsAvailable()) {
-            // If room is marked as occupied but has no checked-in guest
-            if (hasTodayBookedReservation) {
-                // Keep as occupied if there's a booked reservation for today (guest might be
-                // arriving)
-                logger.debug("🔍 Room {} stays OCCUPIED (booked reservation for today)", room.getRoomNumber());
-            } else {
-                // Set to AVAILABLE if no active reservations
-                room.setStatus(RoomStatus.AVAILABLE);
-                statusChanged = true;
-                logger.debug("🔧 Fixed room {} status: {} → AVAILABLE (no checked-in guest)",
-                        room.getRoomNumber(), originalStatus);
-            }
+            // Set to AVAILABLE if no checked-in guest is actually occupying the room.
+            room.setStatus(RoomStatus.AVAILABLE);
+            statusChanged = true;
+            logger.debug("🔧 Fixed room {} status: {} → AVAILABLE (no checked-in guest)",
+                    room.getRoomNumber(), originalStatus);
         }
 
         if (statusChanged) {

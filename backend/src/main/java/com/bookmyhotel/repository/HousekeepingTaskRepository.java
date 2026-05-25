@@ -34,6 +34,10 @@ public interface HousekeepingTaskRepository extends JpaRepository<HousekeepingTa
         @Query("SELECT h FROM HousekeepingTask h LEFT JOIN FETCH h.assignedUser LEFT JOIN FETCH h.hotel WHERE h.id = :id")
         Optional<HousekeepingTask> findByIdWithUserAndHotel(@Param("id") Long id);
 
+        @Query("SELECT h FROM HousekeepingTask h LEFT JOIN FETCH h.assignedUser LEFT JOIN FETCH h.hotel WHERE h.id = :id AND h.hotel.id = :hotelId")
+        Optional<HousekeepingTask> findByIdAndHotelIdWithUserAndHotel(@Param("id") Long id,
+                        @Param("hotelId") Long hotelId);
+
         // Status-based queries
         @Query("SELECT h FROM HousekeepingTask h WHERE h.hotel.id = :hotelId AND h.status = :status")
         List<HousekeepingTask> findByHotelIdAndStatus(@Param("hotelId") Long hotelId,
@@ -77,8 +81,16 @@ public interface HousekeepingTaskRepository extends JpaRepository<HousekeepingTa
         @Query("SELECT COUNT(h) FROM HousekeepingTask h WHERE h.assignedUser.id = :userId")
         long countByAssignedUserId(@Param("userId") Long userId);
 
+        @Query("SELECT COUNT(h) FROM HousekeepingTask h WHERE h.assignedUser.id = :userId AND h.hotel.id = :hotelId")
+        long countByAssignedUserIdAndHotelId(@Param("userId") Long userId, @Param("hotelId") Long hotelId);
+
         @Query("SELECT COUNT(h) FROM HousekeepingTask h WHERE h.assignedUser.id = :userId AND h.status = :status")
         long countByAssignedUserIdAndStatus(@Param("userId") Long userId,
+                        @Param("status") HousekeepingTaskStatus status);
+
+        @Query("SELECT COUNT(h) FROM HousekeepingTask h WHERE h.assignedUser.id = :userId AND h.hotel.id = :hotelId AND h.status = :status")
+        long countByAssignedUserIdAndHotelIdAndStatus(@Param("userId") Long userId,
+                        @Param("hotelId") Long hotelId,
                         @Param("status") HousekeepingTaskStatus status);
 
         // Room number-based queries (using string field)

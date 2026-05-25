@@ -3,6 +3,7 @@ package com.bookmyhotel.repository;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -30,6 +31,12 @@ public interface RoomChargeRepository extends JpaRepository<RoomCharge, Long> {
         * Find all room charges for a specific reservation
         */
        List<RoomCharge> findByReservationIdOrderByChargeDateDesc(Long reservationId);
+
+       /**
+        * Find a room charge by ID within a specific hotel.
+        */
+       @Query("SELECT rc FROM RoomCharge rc WHERE rc.id = :chargeId AND rc.hotel.id = :hotelId")
+       Optional<RoomCharge> findByIdAndHotelId(@Param("chargeId") Long chargeId, @Param("hotelId") Long hotelId);
 
        /**
         * Find all room charges by type for a hotel

@@ -75,6 +75,8 @@ public class StaffScheduleService {
         Hotel hotel = hotelRepository.findById(request.getHotelId())
                 .orElseThrow(() -> new ResourceNotFoundException("Hotel not found"));
 
+        validateScheduleAccess(admin, staff, hotel);
+
         // Check for schedule conflicts
         checkScheduleConflicts(request.getStaffId(), request.getScheduleDate(),
                 request.getStartTime(), request.getEndTime(), null);
@@ -111,12 +113,15 @@ public class StaffScheduleService {
     public StaffScheduleResponse updateSchedule(Long scheduleId, StaffScheduleRequest request, String adminEmail) {
         logger.info("Updating schedule ID: {}", scheduleId);
 
-        // Validate request
-        validateScheduleRequest(request);
-
         // Get existing schedule
-        StaffSchedule schedule = staffScheduleRepository.findById(scheduleId)
-                .orElseThrow(() -> new ResourceNotFoundException("Schedule not found"));
+        User admin = userRepository.findByEmail(adminEmail)
+            .orElseThrow(() -> new ResourceNotFoundException("Admin user not found"));
+
+        StaffSchedule schedule = findAuthorizedSchedule(scheduleId, admin);
+
+        // Reuse create-time validation, but allow updates to historical schedules when
+        // the schedule date itself is unchanged.
+        validateScheduleRequestForUpdate(request, schedule);
 
         // Get staff user
         User staff = userRepository.findById(request.getStaffId())
@@ -125,6 +130,8 @@ public class StaffScheduleService {
         // Get hotel
         Hotel hotel = hotelRepository.findById(request.getHotelId())
                 .orElseThrow(() -> new ResourceNotFoundException("Hotel not found"));
+
+        validateScheduleAccess(admin, staff, hotel);
 
         // Check for schedule conflicts (excluding current schedule)
         checkScheduleConflicts(request.getStaffId(), request.getScheduleDate(),
@@ -198,6 +205,28 @@ public class StaffScheduleService {
         return schedules.stream()
                 .map(this::convertToResponse)
                 .collect(Collectors.toList());
+    }
+
+    private StaffSchedule findAuthorizedSchedule(Long scheduleId, User admin) {
+        return staffScheduleRepository.findById(scheduleId)
+                .filter(schedule -> canManageHotel(admin, schedule.getHotel()))
+                .orElseThrow(() -> new ResourceNotFoundException("Schedule not found"));
+    }
+
+    private void validateScheduleAccess(User admin, User staff, Hotel hotel) {
+        if (!canManageHotel(admin, hotel)) {
+            throw new IllegalArgumentException("You do not have access to manage schedules for this hotel");
+        }
+
+        if (staff.getHotel() == null || staff.getHotel().getId() == null || !staff.getHotel().getId().equals(hotel.getId())) {
+            throw new IllegalArgumentException("Staff member does not belong to the selected hotel");
+        }
+    }
+
+    private boolean canManageHotel(User admin, Hotel hotel) {
+        return admin.getHotel() == null ||
+                (hotel != null && hotel.getId() != null && admin.getHotel().getId() != null
+                        && admin.getHotel().getId().equals(hotel.getId()));
     }
 
     /**
@@ -302,6 +331,26 @@ public class StaffScheduleService {
         }
 
         // Validate reasonable shift duration (not more than 16 hours)
+        long hoursWorked = java.time.Duration.between(request.getStartTime(), request.getEndTime()).toHours();
+        if (hoursWorked > 16) {
+            throw new IllegalArgumentException("Shift duration cannot exceed 16 hours");
+        }
+    }
+
+    private void validateScheduleRequestForUpdate(StaffScheduleRequest request, StaffSchedule existingSchedule) {
+        if (request.getEndTime().isBefore(request.getStartTime()) ||
+                request.getEndTime().equals(request.getStartTime())) {
+            throw new IllegalArgumentException("End time must be after start time");
+        }
+
+        boolean changingToDifferentDate = existingSchedule == null
+                || existingSchedule.getScheduleDate() == null
+                || !existingSchedule.getScheduleDate().equals(request.getScheduleDate());
+
+        if (changingToDifferentDate && request.getScheduleDate().isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("Cannot schedule in the past");
+        }
+
         long hoursWorked = java.time.Duration.between(request.getStartTime(), request.getEndTime()).toHours();
         if (hoursWorked > 16) {
             throw new IllegalArgumentException("Shift duration cannot exceed 16 hours");

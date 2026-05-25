@@ -52,11 +52,14 @@ public class PasswordResetService {
     @Value("${app.url:http://localhost:3000}")
     private String appUrl;
 
-    @Value("${app.email.from:noreply@shegersolutions.com}")
+    @Value("${app.email.from:noreply@bakaroo.com}")
     private String fromEmail;
 
     @Value("${app.name:BookMyHotel}")
     private String appName;
+
+    @Value("${app.email.support:support@bakaroo.com}")
+    private String supportEmail;
 
     /**
      * Generate a cryptographically secure token
@@ -207,6 +210,7 @@ public class PasswordResetService {
             templateData.put("resetLink", resetLink);
             templateData.put("appName", appName);
             templateData.put("expiryMinutes", 60);
+            templateData.put("supportEmail", supportEmail);
 
             Context context = new Context();
             context.setVariables(templateData);

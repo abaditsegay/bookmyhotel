@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { alpha } from '@mui/material/styles';
 import {
   Box,
   Grid,
@@ -37,6 +38,8 @@ import {
 } from '@mui/icons-material';
 import { Hotel } from '../../types/hotel';
 import { hotelAdminApi } from '../../services/hotelAdminApi';
+import { actionIconButtonSx } from '../../theme/sxHelpers';
+import { getReadableAccentTextColor } from '../../theme/surfaces';
 
 interface HotelDetailsManagementProps {
   hotel: Hotel | null;
@@ -72,6 +75,9 @@ const HotelDetailsManagement: React.FC<HotelDetailsManagementProps> = ({
   error,
 }) => {
   const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
+  const accentBorder = alpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.34 : 0.18);
+  const accentHover = alpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.14 : 0.08);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editPhoneDialogOpen, setEditPhoneDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -287,7 +293,7 @@ const HotelDetailsManagement: React.FC<HotelDetailsManagementProps> = ({
         <Box>
           <Typography variant="h4" sx={{
             fontWeight: 'bold',
-            color: theme.palette.primary.main,
+            color: readableAccentColor,
             mb: 1
           }}>
             {hotel.name}
@@ -305,10 +311,7 @@ const HotelDetailsManagement: React.FC<HotelDetailsManagementProps> = ({
             py: 1.5,
             borderRadius: 2,
             fontWeight: 'bold',
-            background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
-            '&:hover': {
-              background: `linear-gradient(45deg, ${theme.palette.primary.dark}, ${theme.palette.primary.main})`
-            }
+            boxShadow: 'none',
           }}
         >
           Edit Hotel Details
@@ -322,10 +325,10 @@ const HotelDetailsManagement: React.FC<HotelDetailsManagementProps> = ({
           <Card elevation={0} sx={{ border: `1px solid ${theme.palette.divider}`, borderRadius: 3, height: '100%' }}>
             <CardContent sx={{ p: 4 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 3, pb: 2, borderBottom: `1px solid ${theme.palette.divider}` }}>
-                <Box sx={{ width: 48, height: 48, borderRadius: 2, backgroundColor: theme.palette.primary.main, display: 'flex', alignItems: 'center', justifyContent: 'center', mr: 2 }}>
+                <Box sx={{ width: 48, height: 48, borderRadius: 2, backgroundColor: readableAccentColor, display: 'flex', alignItems: 'center', justifyContent: 'center', mr: 2 }}>
                   <BusinessIcon sx={{ color: 'white', fontSize: 24 }} />
                 </Box>
-                <Typography variant="h5" sx={{ fontWeight: 'bold', color: theme.palette.primary.main }}>
+                <Typography variant="h5" sx={{ fontWeight: 'bold', color: readableAccentColor }}>
                   Hotel Information
                 </Typography>
               </Box>
@@ -359,7 +362,7 @@ const HotelDetailsManagement: React.FC<HotelDetailsManagementProps> = ({
                   <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 'medium', mb: 1 }}>Website</Typography>
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <WebIcon sx={{ color: theme.palette.text.secondary, mr: 1, fontSize: 20 }} />
-                    <Typography variant="body1" component="a" href={hotel.websiteUrl} target="_blank" rel="noopener noreferrer" sx={{ color: theme.palette.primary.main }}>
+                    <Typography variant="body1" component="a" href={hotel.websiteUrl} target="_blank" rel="noopener noreferrer" sx={{ color: readableAccentColor }}>
                       {hotel.websiteUrl}
                     </Typography>
                   </Box>
@@ -403,7 +406,7 @@ const HotelDetailsManagement: React.FC<HotelDetailsManagementProps> = ({
                     Contact & Operations
                   </Typography>
                 </Box>
-                <IconButton onClick={handlePhoneEditClick} sx={{ color: theme.palette.primary.main, '&:hover': { backgroundColor: theme.palette.primary.main + '10' } }}>
+                <IconButton onClick={handlePhoneEditClick} sx={actionIconButtonSx('accent')}>
                   <EditIcon />
                 </IconButton>
               </Box>
@@ -565,7 +568,7 @@ const HotelDetailsManagement: React.FC<HotelDetailsManagementProps> = ({
           <Grid container spacing={3} sx={{ mt: 1 }}>
             {/* Basic Information */}
             <Grid item xs={12}>
-              <Typography variant="subtitle1" sx={{ fontWeight: 600, color: theme.palette.primary.main, display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 600, color: readableAccentColor, display: 'flex', alignItems: 'center', gap: 1 }}>
                 <BusinessIcon fontSize="small" /> Basic Information
               </Typography>
               <Divider sx={{ mt: 1 }} />
@@ -633,7 +636,7 @@ const HotelDetailsManagement: React.FC<HotelDetailsManagementProps> = ({
 
             {/* Location */}
             <Grid item xs={12}>
-              <Typography variant="subtitle1" sx={{ fontWeight: 600, color: theme.palette.primary.main, display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 600, color: readableAccentColor, display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
                 <LocationIcon fontSize="small" /> Location
               </Typography>
               <Divider sx={{ mt: 1 }} />
@@ -656,7 +659,7 @@ const HotelDetailsManagement: React.FC<HotelDetailsManagementProps> = ({
 
             {/* Contact */}
             <Grid item xs={12}>
-              <Typography variant="subtitle1" sx={{ fontWeight: 600, color: theme.palette.primary.main, display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 600, color: readableAccentColor, display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
                 <PhoneIcon fontSize="small" /> Contact & Payment
               </Typography>
               <Divider sx={{ mt: 1 }} />
@@ -693,7 +696,7 @@ const HotelDetailsManagement: React.FC<HotelDetailsManagementProps> = ({
 
             {/* Operational */}
             <Grid item xs={12}>
-              <Typography variant="subtitle1" sx={{ fontWeight: 600, color: theme.palette.primary.main, display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 600, color: readableAccentColor, display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
                 <ScheduleIcon fontSize="small" /> Operational Details
               </Typography>
               <Divider sx={{ mt: 1 }} />
@@ -734,7 +737,7 @@ const HotelDetailsManagement: React.FC<HotelDetailsManagementProps> = ({
 
             {/* Business */}
             <Grid item xs={12}>
-              <Typography variant="subtitle1" sx={{ fontWeight: 600, color: theme.palette.primary.main, display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 600, color: readableAccentColor, display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
                 <ReceiptIcon fontSize="small" /> Business Registration
               </Typography>
               <Divider sx={{ mt: 1 }} />
@@ -760,7 +763,19 @@ const HotelDetailsManagement: React.FC<HotelDetailsManagementProps> = ({
           </Grid>
         </DialogContent>
         <DialogActions sx={{ p: 3 }}>
-          <Button onClick={handleCloseDialog} startIcon={<CancelIcon />} disabled={saving}>
+          <Button
+            onClick={handleCloseDialog}
+            startIcon={<CancelIcon />}
+            disabled={saving}
+            sx={{
+              color: readableAccentColor,
+              borderColor: accentBorder,
+              '&:hover': {
+                backgroundColor: accentHover,
+                color: readableAccentColor,
+              },
+            }}
+          >
             Cancel
           </Button>
           <Button
@@ -849,6 +864,14 @@ const HotelDetailsManagement: React.FC<HotelDetailsManagementProps> = ({
             onClick={handleCloseDialog}
             startIcon={<CancelIcon />}
             disabled={saving}
+            sx={{
+              color: readableAccentColor,
+              borderColor: accentBorder,
+              '&:hover': {
+                backgroundColor: accentHover,
+                color: readableAccentColor,
+              },
+            }}
           >
             Cancel
           </Button>

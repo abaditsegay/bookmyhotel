@@ -1,5 +1,6 @@
 import React, { useState, createContext, useContext } from 'react';
 import {
+  alpha,
   Box,
   IconButton,
   Typography,
@@ -13,7 +14,7 @@ import ErrorIcon from '@mui/icons-material/Error';
 import WarningIcon from '@mui/icons-material/Warning';
 import InfoIcon from '@mui/icons-material/Info';
 import { designSystem } from '../../theme/designSystem';
-import { COLORS, addAlpha } from '../../theme/themeColors';
+import { composeSx, surfaceCardSx } from '../../theme/sxHelpers';
 
 // Animation for notification entrance
 const slideInRight = keyframes`
@@ -126,25 +127,25 @@ const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     switch (type) {
       case 'success':
         return {
-          bg: addAlpha(theme.palette.success.main, theme.palette.mode === 'dark' ? 0.1 : 0.05),
+          bg: alpha(theme.palette.success.main, theme.palette.mode === 'dark' ? 0.1 : 0.05),
           border: theme.palette.success.main,
           icon: theme.palette.success.main,
         };
       case 'error':
         return {
-          bg: addAlpha(theme.palette.error.main, theme.palette.mode === 'dark' ? 0.1 : 0.05),
+          bg: alpha(theme.palette.error.main, theme.palette.mode === 'dark' ? 0.1 : 0.05),
           border: theme.palette.error.main,
           icon: theme.palette.error.main,
         };
       case 'warning':
         return {
-          bg: addAlpha(theme.palette.warning.main, theme.palette.mode === 'dark' ? 0.1 : 0.05),
+          bg: alpha(theme.palette.warning.main, theme.palette.mode === 'dark' ? 0.1 : 0.05),
           border: theme.palette.warning.main,
           icon: theme.palette.warning.main,
         };
       case 'info':
         return {
-          bg: addAlpha(theme.palette.info.main, theme.palette.mode === 'dark' ? 0.1 : 0.05),
+          bg: alpha(theme.palette.info.main, theme.palette.mode === 'dark' ? 0.1 : 0.05),
           border: theme.palette.info.main,
           icon: theme.palette.info.main,
         };
@@ -190,12 +191,10 @@ const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ childre
               timeout={300}
             >
               <Box
-                sx={{
+                sx={composeSx(surfaceCardSx('subtle'), {
                   backgroundColor: colors.bg,
                   border: `1px solid ${colors.border}`,
-                  borderRadius: designSystem.borderRadius.lg,
                   padding: designSystem.spacing.md,
-                  boxShadow: designSystem.shadows.lg,
                   backdropFilter: 'blur(10px)',
                   display: 'flex',
                   alignItems: 'flex-start',
@@ -203,10 +202,10 @@ const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                   animation: `${slideInRight} 0.3s ease-out`,
                   transition: 'all 0.2s ease',
                   '&:hover': {
-                    transform: 'translateY(-2px)',
-                    boxShadow: designSystem.shadows.xl,
+                    transform: 'translateY(-1px)',
+                    boxShadow: 'none',
                   },
-                }}
+                })}
               >
                 {/* Icon */}
                 <Box
@@ -280,7 +279,7 @@ const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                   sx={{
                     color: theme.palette.text.secondary,
                     '&:hover': {
-                      backgroundColor: addAlpha(COLORS.BLACK, 0.04),
+                      backgroundColor: alpha(theme.palette.common.black, 0.04),
                     },
                   }}
                 >

@@ -18,7 +18,7 @@ import {
 } from '@mui/icons-material';
 import { AvailableRoom } from '../../types/hotel';
 import { useAuth } from '../../contexts/AuthContext';
-import { COLORS, addAlpha } from '../../theme/themeColors';
+import { useThemeColors } from '../../theme/useThemeColors';
 import { formatCurrency } from '../../utils/currencyUtils';
 
 interface RoomCardProps {
@@ -77,6 +77,7 @@ const getBedInfoKey = (roomType: string): string => {
 
 const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
   const { t } = useTranslation();
+  const { COLORS, addAlpha } = useThemeColors();
   const amenities = getRoomAmenities(room.roomType);
   const { isAuthenticated } = useAuth();
   const theme = useTheme();
@@ -87,7 +88,7 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
     <Card 
       sx={{ 
         height: '100%',
-        backgroundColor: COLORS.WHITE,
+        backgroundColor: COLORS.BG_PAPER,
         borderRadius: 2,
         boxShadow: `0 4px 12px ${addAlpha(COLORS.SECONDARY, 0.15)}`,
         transition: 'all 0.3s ease-in-out',
@@ -123,7 +124,7 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
                 sx={{ 
                   fontWeight: 'bold',
                   fontSize: isSmallMobile ? '0.95rem' : undefined,
-                  color: COLORS.PRIMARY,
+                  color: COLORS.PRIMARY_TEXT,
                 }}
               >
                 {t('hotelSearch.roomCard.roomNumber', { roomNumber: room.roomNumber })}
@@ -151,7 +152,7 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
               <Typography 
                 variant="h6" 
                 sx={{ 
-                  color: COLORS.PRIMARY,
+                  color: COLORS.PRIMARY_TEXT,
                   fontWeight: 700,
                   fontSize: isSmallMobile ? '1rem' : '1.25rem',
                 }}
@@ -171,7 +172,7 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
           /* Desktop Layout - Side by Side */
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.5 }}>
             <Box>
-              <Typography variant="subtitle1" component="h3" gutterBottom sx={{ fontWeight: 'bold', color: COLORS.PRIMARY }}>
+              <Typography variant="subtitle1" component="h3" gutterBottom sx={{ fontWeight: 'bold', color: COLORS.PRIMARY_TEXT }}>
                 {t('hotelSearch.roomCard.roomNumber', { roomNumber: room.roomNumber })}
               </Typography>
               <Chip 
@@ -189,7 +190,7 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
             </Box>
             <Box sx={{ textAlign: 'right' }}>
               <Typography variant="h6" sx={{ 
-                color: COLORS.PRIMARY,
+                color: COLORS.PRIMARY_TEXT,
                 fontWeight: 700 
               }}>
                 {formatCurrency(room.pricePerNight || 0)}
@@ -358,10 +359,10 @@ const RoomCard: React.FC<RoomCardProps> = ({ room, hotelId, onBookRoom }) => {
                   fontWeight: 700,
                   fontSize: isMobile ? '0.75rem' : '0.8rem',
                   py: isMobile ? 0.6 : 0.8,
-                  color: COLORS.PRIMARY,
+                  color: COLORS.PRIMARY_TEXT,
                   '&:hover': {
                     backgroundColor: addAlpha(COLORS.SECONDARY, 0.1),
-                    color: COLORS.PRIMARY_HOVER,
+                    color: COLORS.PRIMARY_TEXT,
                   },
                 }}
               >

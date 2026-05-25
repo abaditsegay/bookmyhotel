@@ -18,6 +18,9 @@ import {
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
 import { designSystem } from '../../theme/designSystem';
+import { composeSx, surfaceCardSx } from '../../theme/sxHelpers';
+
+const sharedSurfaceRadius = Math.max(4, designSystem.borderRadius.sm / 2);
 
 export interface SearchFilter {
   id: string;
@@ -176,7 +179,7 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
                 </InputAdornment>
               ),
               sx: {
-                borderRadius: designSystem.borderRadius.lg,
+                borderRadius: sharedSurfaceRadius,
                 backgroundColor: theme.palette.background.paper,
                 transition: 'all 0.3s ease',
                 '&:hover': {
@@ -185,7 +188,7 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
                 '&.Mui-focused': {
                   backgroundColor: theme.palette.background.paper,
                   transform: 'translateY(-1px)',
-                  boxShadow: designSystem.shadows.md,
+                  boxShadow: 'none',
                 },
               },
             }}
@@ -214,13 +217,11 @@ const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
               <Fade {...TransitionProps}>
                 <Paper
                   elevation={8}
-                  sx={{
+                  sx={composeSx(surfaceCardSx('default'), {
                     mt: 0.5,
                     maxHeight: 200,
                     overflow: 'auto',
-                    border: `1px solid ${theme.palette.divider}`,
-                    borderRadius: designSystem.borderRadius.md,
-                  }}
+                  })}
                 >
                   <List dense>
                     {filteredSuggestions.map((suggestion, index) => (

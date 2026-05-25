@@ -165,7 +165,7 @@ const EthCalendarPopover: React.FC<CalendarPopoverProps> = ({
       anchorEl={anchorEl}
       onClose={onClose}
       anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-      PaperProps={{ sx: { p: 2, width: 320, borderRadius: 3 } }}
+      PaperProps={{ sx: { p: 2, width: 320, borderRadius: 4 } }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
         <IconButton size="small" onClick={prevMonth}><ChevronLeft /></IconButton>
@@ -247,6 +247,9 @@ export function EthDatePicker(props: DatePickerProps<Date>) {
 
   const lang = getLangCode(i18n.language);
   const tfProps = (props.slotProps?.textField ?? {}) as any;
+  const mergedSx = Array.isArray(tfProps.sx)
+    ? [...tfProps.sx, props.sx].filter(Boolean)
+    : [tfProps.sx, props.sx].filter(Boolean);
 
   return (
     <Box ref={anchorRef}>
@@ -264,7 +267,7 @@ export function EthDatePicker(props: DatePickerProps<Date>) {
             </IconButton>
           ),
         }}
-        sx={props.sx}
+        sx={mergedSx}
       />
       <EthCalendarPopover
         value={props.value ?? null}
@@ -407,7 +410,7 @@ const EthCalendarTimePopover: React.FC<DateTimePopoverProps> = ({
       anchorEl={anchorEl}
       onClose={onClose}
       anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-      PaperProps={{ sx: { p: 2, width: 320, borderRadius: 3 } }}
+      PaperProps={{ sx: { p: 2, width: 320, borderRadius: 4 } }}
     >
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
         <IconButton size="small" onClick={prevMonth}><ChevronLeft /></IconButton>
@@ -495,6 +498,9 @@ export function EthDateTimePicker(props: DateTimePickerProps<Date>) {
 
   const lang = getLangCode(i18n.language);
   const tfProps = (props.slotProps?.textField ?? {}) as any;
+  const mergedSx = Array.isArray(tfProps.sx)
+    ? [...tfProps.sx, props.sx].filter(Boolean)
+    : [tfProps.sx, props.sx].filter(Boolean);
 
   return (
     <Box ref={anchorRef}>
@@ -512,7 +518,7 @@ export function EthDateTimePicker(props: DateTimePickerProps<Date>) {
             </IconButton>
           ),
         }}
-        sx={props.sx}
+        sx={mergedSx}
       />
       <EthCalendarTimePopover
         value={props.value ?? null}

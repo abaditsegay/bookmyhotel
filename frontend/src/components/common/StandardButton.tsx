@@ -1,7 +1,8 @@
 import React from 'react';
 import { Button, ButtonProps, CircularProgress } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import { designSystem } from '../../theme/designSystem';
-import { COLORS, addAlpha } from '../../theme/themeColors';
+import { getReadableAccentTextColor } from '../../theme/surfaces';
 
 interface StandardButtonProps extends Omit<ButtonProps, 'size'> {
   buttonSize?: 'small' | 'medium' | 'large';
@@ -88,60 +89,57 @@ const StandardButton: React.FC<StandardButtonProps> = ({
       fullWidth={fullWidth}
       disabled={loading || props.disabled}
       startIcon={loading ? <CircularProgress size={getSpinnerSize()} color="inherit" /> : props.startIcon}
-      sx={{
-        ...sizeConfig,
-        textTransform: 'none', // More modern look without all-caps
-        borderRadius: 2, // Larger border radius for modern look
-        fontWeight: 600,
-        boxShadow: variant === 'contained' ? 2 : 0,
-        transition: 'all 0.3s ease-in-out',
-        
-        // Gradient styling
-        ...(gradient && variant === 'contained' && {
-          background: (theme) => `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-          '&:hover': {
-            background: (theme) => `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`,
-          },
-        }),
-        
-        // Elevated styling
-        ...(elevated && {
-          boxShadow: designSystem.shadows.lg,
-          '&:hover': {
-            boxShadow: designSystem.shadows.xl,
-            transform: 'translateY(-2px)',
-          },
-        }),
-        
-        // Variant-specific styling
-        ...(variant === 'contained' && !gradient && {
-          boxShadow: designSystem.shadows.sm,
-          '&:hover': {
-            boxShadow: designSystem.shadows.md,
-            transform: 'translateY(-1px)',
-          },
-          '&:active': {
-            transform: 'translateY(0)',
-            boxShadow: designSystem.shadows.sm,
-          },
-        }),
-        
-        ...(variant === 'outlined' && {
-          borderWidth: '2px',
-          '&:hover': {
-            borderWidth: '2px',
-            backgroundColor: addAlpha(COLORS.BLACK, 0.04),
-          },
-        }),
-        
-        ...(variant === 'text' && {
-          '&:hover': {
-            backgroundColor: addAlpha(COLORS.BLACK, 0.04),
-          },
-        }),
-        
-        // Custom sx overrides
-        ...sx,
+      sx={(theme) => {
+        const paletteColor = props.color && props.color !== 'inherit' ? props.color : 'primary';
+        const tone = paletteColor in theme.palette
+          ? theme.palette[paletteColor as 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'info']
+          : theme.palette.primary;
+        const textVariantColor = theme.palette.mode === 'dark' ? tone.light : tone.main;
+        const readableAccentColor = getReadableAccentTextColor(
+          theme,
+          (paletteColor in theme.palette ? paletteColor : 'primary') as 'primary' | 'secondary' | 'info' | 'warning' | 'error'
+        );
+
+        return {
+          ...sizeConfig,
+          textTransform: 'none',
+          borderRadius: `${designSystem.borderRadius.md}px`,
+          fontWeight: 600,
+          boxShadow: 'none',
+          transition: 'all 0.24s ease-in-out',
+          ...(variant === 'contained' && {
+            backgroundColor: tone.main,
+            color: tone.contrastText,
+            boxShadow: gradient || elevated ? designSystem.shadows.card : 'none',
+            '&:hover': {
+              backgroundColor: tone.dark,
+              boxShadow: elevated ? designSystem.shadows.cardHover : designSystem.shadows.sm,
+              transform: elevated ? 'translateY(-1px)' : 'none',
+            },
+            '&:active': {
+              boxShadow: 'none',
+              transform: 'none',
+            },
+          }),
+          ...(variant === 'outlined' && {
+            borderWidth: '1px',
+            borderColor: theme.palette.mode === 'dark' ? alpha(readableAccentColor, 0.7) : tone.main,
+            color: readableAccentColor,
+            backgroundColor: 'transparent',
+            '&:hover': {
+              borderWidth: '1px',
+              borderColor: theme.palette.mode === 'dark' ? readableAccentColor : tone.main,
+              backgroundColor: alpha(theme.palette.mode === 'dark' ? readableAccentColor : tone.main, theme.palette.mode === 'dark' ? 0.14 : 0.04),
+            },
+          }),
+          ...(variant === 'text' && {
+            color: textVariantColor,
+            '&:hover': {
+              backgroundColor: alpha(textVariantColor, theme.palette.mode === 'dark' ? 0.16 : 0.06),
+            },
+          }),
+          ...(typeof sx === 'function' ? sx(theme) : sx),
+        };
       }}
       {...props}
     >

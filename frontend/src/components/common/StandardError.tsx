@@ -1,5 +1,5 @@
 import React from 'react';
-import { Alert, AlertTitle, Box, Button, Typography, Fade } from '@mui/material';
+import { Alert, AlertTitle, Box, Button, Typography, Fade, alpha, useTheme } from '@mui/material';
 import { 
   Error as ErrorIcon, 
   Warning as WarningIcon, 
@@ -8,7 +8,6 @@ import {
   Refresh as RefreshIcon 
 } from '@mui/icons-material';
 import { designSystem } from '../../theme/designSystem';
-import { COLORS, addAlpha } from '../../theme/themeColors';
 import { getErrorMessage, getErrorSeverity, getErrorTitle } from '../../utils/errorHandler';
 
 interface StandardErrorProps {
@@ -111,6 +110,7 @@ const StandardError: React.FC<StandardErrorProps> = ({
   fullWidth = true,
   fallbackMessage,
 }) => {
+  const theme = useTheme();
   const resolvedMessage = errorValue ? getErrorMessage(errorValue, fallbackMessage || message) : message;
   const resolvedSeverity = errorValue ? getErrorSeverity(errorValue) : severity;
   const resolvedTitle = title || (errorValue ? getErrorTitle(errorValue) : undefined);
@@ -157,7 +157,7 @@ const StandardError: React.FC<StandardErrorProps> = ({
                 borderRadius: `${designSystem.spacing.xs}px`,
                 transition: 'all 0.2s ease-in-out',
                 '&:hover': {
-                  backgroundColor: addAlpha(COLORS.WHITE, 0.1),
+                  backgroundColor: alpha(theme.palette.common.white, 0.1),
                 },
               }}
             >

@@ -1,7 +1,7 @@
-import { COLORS, addAlpha } from '../../theme/themeColors';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { 
+  alpha,
   AppBar, 
   Toolbar, 
   Typography, 
@@ -36,6 +36,7 @@ import { useTenant } from '../../contexts/TenantContext';
 import { useNavigate } from 'react-router-dom';
 import LanguageSelector from '../common/LanguageSelector';
 import CalendarSelector from '../common/CalendarSelector';
+import ThemeToggle from '../common/ThemeToggle';
 
 /**
  * Navigation bar for system-wide users (CUSTOMER and ADMIN roles)
@@ -156,8 +157,8 @@ export const SystemWideNavbar: React.FC = () => {
             size="small"
             variant="outlined"
             sx={{ 
-              color: COLORS.WHITE, 
-              borderColor: addAlpha(COLORS.WHITE, 0.5),
+              color: theme.palette.common.white, 
+              borderColor: alpha(theme.palette.common.white, 0.5),
               fontSize: '0.75rem',
               fontWeight: 500,
             }}
@@ -173,8 +174,8 @@ export const SystemWideNavbar: React.FC = () => {
               onClick={() => navigate('/system/hotels')}
               sx={{ 
                 fontSize: '0.8rem',
-                color: COLORS.WHITE,
-                '&:hover': { color: COLORS.WHITE }
+                color: theme.palette.common.white,
+                '&:hover': { color: theme.palette.common.white }
               }}
             >
               Hotels
@@ -185,8 +186,8 @@ export const SystemWideNavbar: React.FC = () => {
               onClick={() => navigate('/system/users')}
               sx={{ 
                 fontSize: '0.8rem',
-                color: COLORS.WHITE,
-                '&:hover': { color: COLORS.WHITE }
+                color: theme.palette.common.white,
+                '&:hover': { color: theme.palette.common.white }
               }}
             >
               Users
@@ -197,8 +198,8 @@ export const SystemWideNavbar: React.FC = () => {
               onClick={handleSystemSettings}
               sx={{ 
                 fontSize: '0.8rem',
-                color: COLORS.WHITE,
-                '&:hover': { color: COLORS.WHITE }
+                color: theme.palette.common.white,
+                '&:hover': { color: theme.palette.common.white }
               }}
             >
               Settings
@@ -215,8 +216,8 @@ export const SystemWideNavbar: React.FC = () => {
               onClick={() => navigate('/search')}
               sx={{ 
                 fontSize: '0.8rem',
-                color: COLORS.WHITE,
-                '&:hover': { color: COLORS.WHITE }
+                color: theme.palette.common.white,
+                '&:hover': { color: theme.palette.common.white }
               }}
             >
               {t('hotelSearch.form.searchButton')}
@@ -225,7 +226,8 @@ export const SystemWideNavbar: React.FC = () => {
         )}
 
         {/* User menu */}
-        <div>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <ThemeToggle variant="menu" size="small" />
           <IconButton
             size="large"
             aria-label="account of current user"
@@ -267,7 +269,7 @@ export const SystemWideNavbar: React.FC = () => {
               {t('navigation.logout')}
             </MenuItem>
           </Menu>
-        </div>
+        </Box>
       </Toolbar>
       
       {/* Mobile Navigation Drawer */}
@@ -293,6 +295,14 @@ export const SystemWideNavbar: React.FC = () => {
         </Box>
         
         <List>
+          <ListItem disablePadding>
+            <ListItemButton>
+              <ThemeToggle variant="button" size="small" showLabel />
+            </ListItemButton>
+          </ListItem>
+
+          <Divider sx={{ my: 1 }} />
+
           {/* System Admin Navigation */}
           {isSystemAdmin && (
             <>

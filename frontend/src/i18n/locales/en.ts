@@ -33,7 +33,9 @@ export const enTranslations = {
       passwordTooShort: "Password must be at least 6 characters long",
       invalidEmail: "Please provide a valid email address",
       passwordsNoMatch: "Passwords do not match",
-      registrationSuccess: "Registration successful! Redirecting...",
+      registrationSuccess: "Registration successful. Check your email to verify your account before signing in.",
+      emailVerificationSuccess: "Email verified. You can sign in now.",
+      emailVerificationFailed: "That verification link is invalid or has expired. Register again or contact support if you still need help.",
       loginFailed: "Login failed",
       registrationFailed: "Registration failed",
       loading: "Loading...",
@@ -160,62 +162,8 @@ export const enTranslations = {
         staffSchedules: "Staff Schedules",
         housekeeping: "Housekeeping",
         reports: "Reports",
-        audit: "Audit Center",
         pricingTax: "Pricing & Tax",
         offlineBookings: "Offline Bookings"
-      },
-
-      audit: {
-        title: 'Hotel Audit Center',
-        subtitle: 'Review recent activity, inspect entity history, and pull compliance-focused audit records.',
-        refresh: 'Refresh activity',
-        manualEntryTitle: 'Manual Audit Entry',
-        manualEntryDescription: 'Create a hotel-scoped audit record using backend-approved taxonomy values and your current logged-in identity.',
-        recentActivity: 'Recent Hotel Activity',
-        recentActivityDescription: 'Latest persisted hotel-scoped audit entries for this property.',
-        taxonomyTitle: 'Supported Taxonomy',
-        taxonomyDescription: 'These values come directly from the backend validation rules and can be used safely in filters and manual audit workflows.',
-        supportedEntityTypes: 'Entity types',
-        supportedActions: 'Actions',
-        supportedComplianceCategories: 'Compliance categories',
-        auditTrailTitle: 'Entity Audit Trail',
-        auditTrailDescription: 'Inspect the history for a specific audited entity by type and numeric id.',
-        complianceTitle: 'Compliance Report',
-        complianceDescription: 'Load the most recent entries for a compliance category without relying on hardcoded values.',
-        entityType: 'Entity type',
-        action: 'Action',
-        entityId: 'Entity id',
-        entityIdPlaceholder: 'Enter a numeric entity id',
-        complianceCategory: 'Compliance category',
-        complianceCategoryOptional: 'Compliance category (optional)',
-        reason: 'Reason',
-        changedFields: 'Changed fields',
-        changedFieldsPlaceholder: 'Example: status,paymentStatus,assignedRoom',
-        oldValues: 'Old values',
-        newValues: 'New values',
-        sensitiveEntry: 'Mark this entry as sensitive',
-        createEntry: 'Create audit entry',
-        submitting: 'Creating entry...',
-        none: 'None',
-        loggedInAs: 'Submitting as {{name}} ({{role}})',
-        userContextUnavailable: 'Your current user context is incomplete, so manual audit submission is unavailable.',
-        loadTrail: 'Load audit trail',
-        loadCompliance: 'Load compliance report',
-        emptyRecent: 'No recent hotel audit entries were found.',
-        emptyTrail: 'No audit entries were found for that entity yet.',
-        emptyCompliance: 'No compliance records were found for that category.',
-        noDetails: 'No details recorded',
-        hotelUnavailable: 'Hotel context is not available for audit queries.',
-        messages: {
-          createSuccess: 'Manual audit entry created successfully.'
-        },
-        errors: {
-          loadInitial: 'Failed to load hotel audit taxonomy and recent activity.',
-          loadRecent: 'Failed to refresh recent hotel audit activity.',
-          loadTrail: 'Failed to load the requested audit trail.',
-          loadCompliance: 'Failed to load the compliance report.',
-          createManual: 'Failed to create the manual audit entry.'
-        }
       },
       
       // Hotel Details Sub-tabs
@@ -1989,7 +1937,7 @@ export const enTranslations = {
       description: "If you can't find your registration or have questions about the process:",
       tip1: "Make sure you're using the exact email address from your registration",
       tip2: "Check your spam/junk folder for notification emails",
-      tip3: "Contact our support team at support@shegersolutions.com"
+      tip3: "Contact our support team at support@bakaroo.com"
     },
     errors: {
       enterEmail: "Please enter your email address",
@@ -3024,7 +2972,7 @@ export const enTranslations = {
       title: "Contact Us",
       description: "Have questions or need assistance? Our team is here to help you with bookings, partnerships, or any inquiries.",
       emailLabel: "Email",
-      email: "support@shegersolutions.com",
+      email: "info@bakaroo.com",
       phoneLabel: "Phone",
       phone: "+251-911-000-000"
     },

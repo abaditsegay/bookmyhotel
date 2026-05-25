@@ -5,13 +5,16 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bookmyhotel.entity.BookingModificationHistory;
+import com.bookmyhotel.security.BookingSecurity;
 import com.bookmyhotel.service.BookingModificationHistoryService;
 
 /**
@@ -26,12 +29,20 @@ public class BookingModificationHistoryController {
     @Autowired
     private BookingModificationHistoryService historyService;
 
+    @Autowired
+    private BookingSecurity bookingSecurity;
+
     /**
      * Get modification history for a specific reservation ID
      */
     @GetMapping("/reservation/{reservationId}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<BookingModificationHistory>> getHistoryByReservationId(
             @PathVariable Long reservationId) {
+        if (!bookingSecurity.canAccessReservation(reservationId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         try {
             logger.debug("Fetching modification history for reservation ID: {}", reservationId);
             List<BookingModificationHistory> history = historyService.getHistoryByReservationId(reservationId);

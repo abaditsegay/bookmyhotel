@@ -86,6 +86,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
        @Query("SELECT u FROM User u WHERE u.hotel.id = :hotelId")
        Page<User> findByHotelId(@Param("hotelId") Long hotelId, Pageable pageable);
 
+       @Query("SELECT u FROM User u LEFT JOIN FETCH u.hotel WHERE u.id = :userId AND u.hotel.id = :hotelId")
+       Optional<User> findByIdAndHotelId(@Param("userId") Long userId, @Param("hotelId") Long hotelId);
+
        /**
         * Count users by hotel ID
         */

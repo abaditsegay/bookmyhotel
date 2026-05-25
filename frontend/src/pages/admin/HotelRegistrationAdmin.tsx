@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { COLORS, addAlpha } from '../../theme/themeColors';
 import {
+  useTheme,
   Container,
   Typography,
   Paper,
@@ -28,6 +28,8 @@ import {
 } from '@mui/material';
 import { Refresh, CheckCircle, Cancel, Visibility, NavigateNext, NavigateBefore } from '@mui/icons-material';
 import PremiumDisplayField from '../../components/common/PremiumDisplayField';
+import { dialogSecondaryActionSx, tableHeadRowSx } from '../../theme/sxHelpers';
+import { getReadableAccentTextColor } from '../../theme/surfaces';
 import { formatDateTimeForDisplay } from '../../utils/dateUtils';
 
 interface HotelRegistration {
@@ -67,6 +69,7 @@ interface RegistrationStatistics {
 }
 
 const HotelRegistrationAdmin: React.FC = () => {
+  const theme = useTheme();
   const [registrations, setRegistrations] = useState<HotelRegistration[]>([]);
   const [statistics, setStatistics] = useState<RegistrationStatistics | null>(null);
   const [loading, setLoading] = useState(true);
@@ -162,10 +165,18 @@ const HotelRegistrationAdmin: React.FC = () => {
     return formatDateTimeForDisplay(dateString);
   };
 
+  const adminTableHeaderSx = tableHeadRowSx();
+  const readableAccentText = getReadableAccentTextColor(theme);
+
+  const adminSectionTitleSx = {
+    color: readableAccentText,
+    fontWeight: 600,
+  } as const;
+
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
       <Typography variant="h4" component="h1" gutterBottom sx={{
-        color: COLORS.PRIMARY,
+        color: readableAccentText,
         fontWeight: 600
       }}>
         Hotel Registration Management
@@ -177,7 +188,7 @@ const HotelRegistrationAdmin: React.FC = () => {
           <Grid item xs={12} sm={6} md={2.4}>
             <Card>
               <CardContent>
-                <Typography color="textSecondary" gutterBottom>
+                <Typography color="text.secondary" gutterBottom>
                   Total
                 </Typography>
                 <Typography variant="h4">
@@ -189,7 +200,7 @@ const HotelRegistrationAdmin: React.FC = () => {
           <Grid item xs={12} sm={6} md={2.4}>
             <Card>
               <CardContent>
-                <Typography color="textSecondary" gutterBottom>
+                <Typography color="text.secondary" gutterBottom>
                   Pending
                 </Typography>
                 <Typography variant="h4" color="warning.main">
@@ -201,7 +212,7 @@ const HotelRegistrationAdmin: React.FC = () => {
           <Grid item xs={12} sm={6} md={2.4}>
             <Card>
               <CardContent>
-                <Typography color="textSecondary" gutterBottom>
+                <Typography color="text.secondary" gutterBottom>
                   Under Review
                 </Typography>
                 <Typography variant="h4" color="info.main">
@@ -213,7 +224,7 @@ const HotelRegistrationAdmin: React.FC = () => {
           <Grid item xs={12} sm={6} md={2.4}>
             <Card>
               <CardContent>
-                <Typography color="textSecondary" gutterBottom>
+                <Typography color="text.secondary" gutterBottom>
                   Approved
                 </Typography>
                 <Typography variant="h4" color="success.main">
@@ -225,7 +236,7 @@ const HotelRegistrationAdmin: React.FC = () => {
           <Grid item xs={12} sm={6} md={2.4}>
             <Card>
               <CardContent>
-                <Typography color="textSecondary" gutterBottom>
+                <Typography color="text.secondary" gutterBottom>
                   Rejected
                 </Typography>
                 <Typography variant="h4" color="error.main">
@@ -253,32 +264,7 @@ const HotelRegistrationAdmin: React.FC = () => {
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
-            <TableRow
-              sx={{
-                background: (theme) => `linear-gradient(135deg, ${theme.palette.grey[600]} 0%, ${theme.palette.grey[700]} 50%, ${theme.palette.grey[800]} 100%)`,
-                boxShadow: (theme) => `0 4px 12px ${theme.palette.grey[600]}26`,
-                '& .MuiTableCell-head': {
-                  color: (theme) => theme.palette.grey[50],
-                  fontWeight: 600,
-                  fontSize: '0.95rem',
-                  letterSpacing: '0.5px',
-                  textTransform: 'uppercase',
-                  border: 'none',
-                  padding: '20px 16px',
-                  position: 'relative',
-                  textShadow: `0 1px 2px ${addAlpha(COLORS.BLACK, 0.1)}`,
-                  '&::after': {
-                    content: '""',
-                    position: 'absolute',
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    height: '3px',
-                    background: `linear-gradient(90deg, ${addAlpha(COLORS.WHITE, 0.6)} 0%, ${addAlpha(COLORS.WHITE, 0.8)} 50%, ${addAlpha(COLORS.WHITE, 0.6)} 100%)`
-                  }
-                }
-              }}
-            >
+            <TableRow sx={adminTableHeaderSx}>
               <TableCell>Hotel Name</TableCell>
               <TableCell>Contact Person</TableCell>
               <TableCell>Email</TableCell>
@@ -295,7 +281,7 @@ const HotelRegistrationAdmin: React.FC = () => {
                   <Typography variant="subtitle2">
                     {registration.hotelName}
                   </Typography>
-                  <Typography variant="body2" color="textSecondary">
+                  <Typography variant="body2" color="text.secondary">
                     {registration.address}
                   </Typography>
                 </TableCell>
@@ -370,7 +356,7 @@ const HotelRegistrationAdmin: React.FC = () => {
               {wizardStep === 0 && (
                 <Grid container spacing={2}>
                   <Grid item xs={12}>
-                    <Typography variant="subtitle1" fontWeight={600} color="primary" sx={{ mb: 1 }}>
+                    <Typography variant="subtitle1" sx={adminSectionTitleSx}>
                       Hotel Information
                     </Typography>
                     <Divider sx={{ mb: 2 }} />
@@ -428,7 +414,7 @@ const HotelRegistrationAdmin: React.FC = () => {
                   )}
 
                   <Grid item xs={12}>
-                    <Typography variant="subtitle1" fontWeight={600} color="primary" sx={{ mt: 1, mb: 1 }}>
+                    <Typography variant="subtitle1" sx={{ ...adminSectionTitleSx, mt: 1, mb: 1 }}>
                       Registered Hotel Admin
                     </Typography>
                     <Divider sx={{ mb: 2 }} />
@@ -454,7 +440,7 @@ const HotelRegistrationAdmin: React.FC = () => {
               {wizardStep === 1 && (
                 <Grid container spacing={2}>
                   <Grid item xs={12}>
-                    <Typography variant="subtitle1" fontWeight={600} color="primary" sx={{ mb: 1 }}>
+                    <Typography variant="subtitle1" sx={adminSectionTitleSx}>
                       Business Details
                     </Typography>
                     <Divider sx={{ mb: 2 }} />
@@ -484,7 +470,7 @@ const HotelRegistrationAdmin: React.FC = () => {
                   </Grid>
 
                   <Grid item xs={12}>
-                    <Typography variant="subtitle1" fontWeight={600} color="primary" sx={{ mt: 1, mb: 1 }}>
+                    <Typography variant="subtitle1" sx={{ ...adminSectionTitleSx, mt: 1, mb: 1 }}>
                       Payment Information
                     </Typography>
                     <Divider sx={{ mb: 2 }} />
@@ -505,7 +491,7 @@ const HotelRegistrationAdmin: React.FC = () => {
                   </Grid>
 
                   <Grid item xs={12}>
-                    <Typography variant="subtitle1" fontWeight={600} color="primary" sx={{ mt: 1, mb: 1 }}>
+                    <Typography variant="subtitle1" sx={{ ...adminSectionTitleSx, mt: 1, mb: 1 }}>
                       Tax & License
                     </Typography>
                     <Divider sx={{ mb: 2 }} />
@@ -526,7 +512,7 @@ const HotelRegistrationAdmin: React.FC = () => {
                   </Grid>
 
                   <Grid item xs={12}>
-                    <Typography variant="subtitle1" fontWeight={600} color="primary" sx={{ mt: 1, mb: 1 }}>
+                    <Typography variant="subtitle1" sx={{ ...adminSectionTitleSx, mt: 1, mb: 1 }}>
                       Facility Information
                     </Typography>
                     <Divider sx={{ mb: 2 }} />
@@ -605,7 +591,7 @@ const HotelRegistrationAdmin: React.FC = () => {
         <DialogActions sx={{ px: 3, pb: 2 }}>
           {wizardStep === 0 ? (
             <>
-              <Button onClick={() => setDialogOpen(false)}>Cancel</Button>
+              <Button variant="outlined" sx={dialogSecondaryActionSx} onClick={() => setDialogOpen(false)}>Cancel</Button>
               <Box sx={{ flex: 1 }} />
               <Button
                 variant="contained"
@@ -618,13 +604,15 @@ const HotelRegistrationAdmin: React.FC = () => {
           ) : (
             <>
               <Button
+                variant="outlined"
+                sx={dialogSecondaryActionSx}
                 startIcon={<NavigateBefore />}
                 onClick={() => setWizardStep(0)}
               >
                 Back
               </Button>
               <Box sx={{ flex: 1 }} />
-              <Button onClick={() => setDialogOpen(false)}>Cancel</Button>
+              <Button variant="outlined" sx={dialogSecondaryActionSx} onClick={() => setDialogOpen(false)}>Cancel</Button>
               {actionType !== 'view' && (
                 <>
                   {actionType === 'approve' && (

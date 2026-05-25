@@ -7,7 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.bookmyhotel.dto.auth.RegistrationResponse;
 import com.bookmyhotel.dto.auth.LoginRequest;
 import com.bookmyhotel.dto.auth.LoginResponse;
 import com.bookmyhotel.dto.auth.RegisterRequest;
@@ -50,10 +52,14 @@ public class AuthService {
     @Autowired
     private HotelRegistrationRepository hotelRegistrationRepository;
 
+    @Autowired
+    private EmailVerificationService emailVerificationService;
+
     /**
      * Register a new customer user (system-wide registered users)
      */
-    public LoginResponse register(RegisterRequest registerRequest) {
+    @Transactional
+    public RegistrationResponse register(RegisterRequest registerRequest) {
         // Check if user already exists
         if (userRepository.findByEmail(registerRequest.getEmail()).isPresent()) {
             throw new ResourceAlreadyExistsException(
@@ -78,45 +84,19 @@ public class AuthService {
         user.setLastName(registerRequest.getLastName());
         user.setPhone(registerRequest.getPhone());
         user.setIsActive(true);
+        user.setEmailVerified(false);
         user.setRoles(Set.of(UserRole.CUSTOMER));
         // Do NOT set tenant_id - CUSTOMER users are system-wide (tenant_id = null)
 
         // Save the user
         user = userRepository.save(user);
 
-        // Send welcome email to the new user
-        try {
-            emailService.sendUserWelcomeEmail(
-                    user.getEmail(),
-                    user.getFirstName(),
-                    user.getLastName());
-        } catch (Exception e) {
-            // Log the error but don't fail registration
-            // Email is nice-to-have, registration success is critical
-            // System.err.println("Failed to send welcome email to " + user.getEmail() + ":
-            // " + e.getMessage());
-        }
+        emailVerificationService.sendVerificationEmail(user);
 
-        // Generate token for immediate login
-        String token = jwtUtil.generateToken(user);
-
-        // Generate refresh token
-        String refreshToken = refreshTokenService.generateRefreshToken(user.getId());
-
-        // Create session for the newly registered user (no user agent/IP for now)
-        sessionManagementService.createSession(user.getId(), token, null, null);
-
-        return new LoginResponse(
-                token,
-                refreshToken,
-                user.getId(),
-                user.getEmail(),
-                user.getFirstName(),
-                user.getLastName(),
-                user.getRoles(),
-                null, // No hotel for guest users
-                null, // No hotel name for guest users
-                null); // No tenantId for guest users
+        return new RegistrationResponse(
+            user.getEmail(),
+            true,
+            "Registration successful. Check your email to verify your account before signing in.");
     }
 
     /**
@@ -150,6 +130,12 @@ public class AuthService {
         // Validate password before any status checks
         if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
             throw new BadCredentialsException("Invalid email or password");
+        }
+
+        if (user.getRoles() != null
+                && user.getRoles().contains(UserRole.CUSTOMER)
+                && !Boolean.TRUE.equals(user.getEmailVerified())) {
+            throw new IllegalStateException("Please verify your email address before signing in.");
         }
 
         // Determine account status (login is still allowed so the frontend can show

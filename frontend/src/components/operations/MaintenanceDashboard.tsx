@@ -30,7 +30,7 @@ import {
   Chip,
   Tooltip,
   TablePagination,
-  Grid
+  Grid,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -41,7 +41,8 @@ import {
   PlayArrow as StartIcon,
   CheckCircle as CompleteIcon
 } from '@mui/icons-material';
-import { COLORS, addAlpha } from '../../theme/themeColors';
+import { actionIconButtonSx, refreshActionButtonSx, tableHeadRowSx } from '../../theme/sxHelpers';
+import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
 
 interface MaintenanceTask {
   id: number;
@@ -106,6 +107,7 @@ const MAINTENANCE_TASK_TYPES = [
 const PRIORITIES = ['LOW', 'NORMAL', 'HIGH', 'URGENT', 'CRITICAL'];
 
 const MaintenanceDashboard: React.FC = () => {
+  const { showSubmissionError } = useSubmissionError();
   const [tasks, setTasks] = useState<MaintenanceTask[]>([]);
   const [staff, setStaff] = useState<MaintenanceStaff[]>([]);
   const [activeTab, setActiveTab] = useState(0);
@@ -298,12 +300,12 @@ const MaintenanceDashboard: React.FC = () => {
       
       // Validate required data
       if (!hotelId) {
-        setError('No hotel ID available in user profile');
+        showSubmissionError('No hotel ID available in user profile');
         return;
       }
       
       if (!currentUser?.id) {
-        setError('User authentication required');
+        showSubmissionError('User authentication required');
         return;
       }
       
@@ -332,7 +334,7 @@ const MaintenanceDashboard: React.FC = () => {
       if (!response.ok) {
         const errorText = await response.text();
         // console.error('Error response:', errorText);
-        setError(`Failed to create maintenance task: ${errorText}`);
+        showSubmissionError(`Failed to create maintenance task: ${errorText}`);
         return;
       }
       
@@ -350,10 +352,12 @@ const MaintenanceDashboard: React.FC = () => {
         });
         await loadTasks();
       } else {
-        setError('Failed to create maintenance task');
+        showSubmissionError('Failed to create maintenance task');
       }
     } catch (err) {
-      setError('Failed to create maintenance task');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to create maintenance task',
+      });
     }
   };
 
@@ -372,10 +376,12 @@ const MaintenanceDashboard: React.FC = () => {
         setSelectedStaffId('');
         await loadTasks();
       } else {
-        setError('Failed to assign maintenance task');
+        showSubmissionError('Failed to assign maintenance task');
       }
     } catch (err) {
-      setError('Failed to assign maintenance task');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to assign maintenance task',
+      });
     }
   };
 
@@ -389,10 +395,12 @@ const MaintenanceDashboard: React.FC = () => {
       if (response.ok) {
         await loadTasks();
       } else {
-        setError('Failed to start maintenance task');
+        showSubmissionError('Failed to start maintenance task');
       }
     } catch (err) {
-      setError('Failed to start maintenance task');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to start maintenance task',
+      });
     }
   };
 
@@ -421,10 +429,12 @@ const MaintenanceDashboard: React.FC = () => {
         setActualCost('');
         await loadTasks();
       } else {
-        setError('Failed to complete maintenance task');
+        showSubmissionError('Failed to complete maintenance task');
       }
     } catch (err) {
-      setError('Failed to complete maintenance task');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to complete maintenance task',
+      });
     }
   };
 
@@ -568,6 +578,7 @@ const MaintenanceDashboard: React.FC = () => {
           {currentUserRole === 'OPERATIONAL_ADMIN' && (
             <Button
               variant="contained"
+            sx={refreshActionButtonSx}
               startIcon={<AddIcon />}
               onClick={() => setCreateTaskOpen(true)}
             >
@@ -617,29 +628,7 @@ const MaintenanceDashboard: React.FC = () => {
         <Table>
           <TableHead>
             <TableRow
-              sx={{
-                background: COLORS.GRADIENT_SLATE,
-                '& .MuiTableCell-head': {
-                  color: COLORS.WHITE,
-                  fontWeight: 600,
-                  fontSize: '0.95rem',
-                  letterSpacing: '0.5px',
-                  textTransform: 'uppercase',
-                  border: 'none',
-                  padding: '20px 16px',
-                  position: 'relative',
-                  textShadow: `0 1px 2px ${addAlpha(COLORS.BLACK, 0.1)}`,
-                  '&::after': {
-                    content: '""',
-                    position: 'absolute',
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    height: '3px',
-                    background: `linear-gradient(90deg, ${addAlpha(COLORS.WHITE, 0.6)} 0%, ${addAlpha(COLORS.WHITE, 0.8)} 50%, ${addAlpha(COLORS.WHITE, 0.6)} 100%)`
-                  }
-                }
-              }}
+              sx={tableHeadRowSx()}
             >
               <TableCell>Task</TableCell>
               <TableCell>Type</TableCell>
@@ -742,7 +731,7 @@ const MaintenanceDashboard: React.FC = () => {
                       <Tooltip title="Assign Task">
                         <IconButton 
                           size="small"
-                          color="primary"
+                          sx={actionIconButtonSx('accent')}
                           onClick={() => openAssignDialog(task.id)}
                         >
                           <AssignIcon fontSize="small" />
@@ -757,7 +746,7 @@ const MaintenanceDashboard: React.FC = () => {
                       <Tooltip title="Reassign Task">
                         <IconButton 
                           size="small"
-                          color="secondary"
+                          sx={actionIconButtonSx('warning')}
                           onClick={() => openAssignDialog(task.id)}
                         >
                           <AssignIcon fontSize="small" />
@@ -769,7 +758,7 @@ const MaintenanceDashboard: React.FC = () => {
                       <Tooltip title="Start Task">
                         <IconButton 
                           size="small"
-                          color="success"
+                          sx={actionIconButtonSx('success')}
                           onClick={() => handleStartTask(task.id)}
                         >
                           <StartIcon fontSize="small" />
@@ -781,7 +770,7 @@ const MaintenanceDashboard: React.FC = () => {
                       <Tooltip title="Complete Task">
                         <IconButton 
                           size="small"
-                          color="success"
+                          sx={actionIconButtonSx('success')}
                           onClick={() => openCompleteDialog(task.id)}
                         >
                           <CompleteIcon fontSize="small" />
@@ -797,6 +786,7 @@ const MaintenanceDashboard: React.FC = () => {
                             setSelectedTask(task);
                             // TODO: Implement edit functionality
                           }}
+                          sx={actionIconButtonSx('accent')}
                         >
                           <EditIcon fontSize="small" />
                         </IconButton>

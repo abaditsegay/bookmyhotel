@@ -33,7 +33,9 @@ export const omTranslations = {
       passwordTooShort: "Jecha icciitiin yoo xiqqaate arfii 6 qabaachuu qaba",
       invalidEmail: "Maaloo teessoo imeelii sirrii ta'e kenni",
       passwordsNoMatch: "Jecha icciitiin wal hin simnu",
-      registrationSuccess: "Galmaan galuun milkaa'e! Kallatti jijjiiraa...",
+      registrationSuccess: "Galmeen milkaa'eera. Osoo hin seenin dura akkaawuntii kee mirkaneessuuf imeelii kee ilaali.",
+      emailVerificationSuccess: "Imeeliin kee mirkanaa'eera. Amma seenuu dandeessa.",
+      emailVerificationFailed: "Geessituun mirkaneessaa kun sirrii miti yookaan yeroo isaa darbeera. Deebitee galmaa'i yookaan gargaarsa yoo barbaadde deeggarsa qunnami.",
       loginFailed: "Seenan dadhabe",
       registrationFailed: "Galmaan galuun dadhabe",
       loading: "Fe'aa jira...",
@@ -160,62 +162,8 @@ export const omTranslations = {
         staffSchedules: "Sagantaa Hojjettuu",
         housekeeping: "Qulqulleessaa Manaa",
         reports: "Gabaasalee",
-        audit: "Giddugala Ooditii",
         pricingTax: "Gatii fi Gibira",
         offlineBookings: "Kutaalee Oflaayinii"
-      },
-
-      audit: {
-        title: 'Giddugala Ooditii Hotela',
-        subtitle: 'Sochii dhihoo ilaali, seenaa wantaa qoradhu, fi galmee ooditii xiyyeeffannoo uwwisaa qabu baasi.',
-        refresh: 'Sochii haaromsuu',
-        manualEntryTitle: 'Galmee Ooditii Harkaa',
-        manualEntryDescription: 'Gatii taxonomy backend irraa mirkanaa’e fi eenyummaa kee yeroo amma galmeeffame fayyadamuun galmee ooditii hotelaa uumi.',
-        recentActivity: 'Sochii Hotela Dhihoo',
-        recentActivityDescription: 'Galmeewwan ooditii hotela kanaaf kuufaman keessaa warra dhihoo.',
-        taxonomyTitle: 'Gosa Deeggaramu',
-        taxonomyDescription: 'Gatiin kun kallattiin seera mirkaneessaa backend irraa dhufa; kanaaf filannoowwan fi adeemsa ooditii harkaa keessatti nagaan fayyadamuu dandeessa.',
-        supportedEntityTypes: 'Akaakuu wantaa',
-        supportedActions: 'Gochaalee',
-        supportedComplianceCategories: 'Ramaddii uwwisaa',
-        auditTrailTitle: 'Seenaa Ooditii Wantaa',
-        auditTrailDescription: 'Akaakuu fi lakkoofsa id kan wanta tokkoo seenaa ooditii isaa ilaali.',
-        complianceTitle: 'Gabaasa Uwwisaa',
-        complianceDescription: 'Ramaddii uwwisaa tokkoof galmeewwan dhihoo baasii, gatii hardcoded irratti osoo hin hirkatiin.',
-        entityType: 'Akaakuu wantaa',
-        action: 'Gochaa',
-        entityId: 'ID wantaa',
-        entityIdPlaceholder: 'Lakkoofsa id galchi',
-        complianceCategory: 'Ramaddii uwwisaa',
-        complianceCategoryOptional: 'Ramaddii uwwisaa (dirqama miti)',
-        reason: 'Sababa',
-        changedFields: 'Dirreewwan jijjiiraman',
-        changedFieldsPlaceholder: 'Fakkeenyaaf: status,paymentStatus,assignedRoom',
-        oldValues: 'Gatii durii',
-        newValues: 'Gatii haaraa',
-        sensitiveEntry: 'Galmee kana akka miira qabeessaatti mallatteessi',
-        createEntry: 'Galmee ooditii uumi',
-        submitting: 'Galmee uumamaa jira...',
-        none: 'Homaa',
-        loggedInAs: 'Akka {{name}} ({{role}})tti ergaa jira',
-        userContextUnavailable: 'Contextiin fayyadamaa kee amma guutuu miti; kanaaf galmeen ooditii harkaa hin danda’amu.',
-        loadTrail: 'Seenaa ooditii feii',
-        loadCompliance: 'Gabaasa uwwisaa feii',
-        emptyRecent: 'Galmeen ooditii hotela dhihoo hin argamne.',
-        emptyTrail: 'Wantichaaf hanga ammaatti galmeen ooditii hin argamne.',
-        emptyCompliance: 'Ramaddii sanaaf galmeen uwwisaa hin argamne.',
-        noDetails: 'Bal’inni hin galmoofne',
-        hotelUnavailable: 'Ga’umsi hotela gaaffii ooditii kanaaf hin argamne.',
-        messages: {
-          createSuccess: 'Galmeen ooditii harkaa milkaa’inaan uumameera.'
-        },
-        errors: {
-          loadInitial: 'Taxonomy ooditii hotelaa fi sochii dhihoo feuun hin milkoofne.',
-          loadRecent: 'Sochii ooditii hotelaa dhihoo haaromsuun hin milkoofne.',
-          loadTrail: 'Seenaa ooditii gaafatame feuun hin milkoofne.',
-          loadCompliance: 'Gabaasa uwwisaa feuun hin milkoofne.',
-          createManual: 'Galmee ooditii harkaa uumuu hin milkoofne.'
-        }
       },
       
       // Caancaloota Xiqqaa Bal'ina Hotela
@@ -1969,7 +1917,7 @@ export const omTranslations = {
       description: "Galmee keessan argachuu yoo dadhabdan yookaan adeemsa irratti gaaffii yoo qabaattan:",
       tip1: "Imeelii sirrii galmee keessaniin fayyadamtan akka jirattan mirkaneeffadhaa",
       tip2: "Imeelii beeksisaa argachuuf galmee spam/junk ilaalaa",
-      tip3: "Garee deeggarsa keenya support@shegersolutions.com irratti quunnamaa"
+      tip3: "Garee deeggarsa keenya support@bakaroo.com irratti quunnamaa"
     },
     errors: {
       enterEmail: "Maaloo teessoo imeelii keessan galchaa",
@@ -2974,7 +2922,7 @@ export const omTranslations = {
       title: "Nu Quunnamaa",
       description: "Gaaffii qabduu ykn gargaarsa barbaadduu? Gareen keenya beellama, michummaa ykn gaaffii kamiifuu isin gargaaruuf qophiidha.",
       emailLabel: "Imeelii",
-      email: "support@shegersolutions.com",
+      email: "info@bakaroo.com",
       phoneLabel: "Bilbila",
       phone: "+251-911-000-000"
     },

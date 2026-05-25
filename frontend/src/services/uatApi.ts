@@ -12,8 +12,8 @@ export type UatDefectStatus = 'OPEN' | 'IN_PROGRESS' | 'FIXED' | 'CLOSED';
 
 export interface UatChecklist {
   id: number;
-  hotelId: number;
-  hotelName: string;
+  hotelId: number | null;
+  hotelName: string | null;
   testerName?: string;
   testEnvironment?: string;
   testDate?: string;
@@ -53,7 +53,7 @@ export interface UatChecklistRequest {
 export interface UatDefect {
   id: number;
   defectId: string;
-  hotelId: number;
+  hotelId: number | null;
   summary: string;
   testerDetail?: string;
   severity: UatDefectSeverity;
@@ -106,33 +106,62 @@ async function fetchUat<T>(token: string, endpoint: string, options?: RequestIni
 }
 
 export const uatApi = {
+  getChecklist(token: string): Promise<UatChecklist> {
+    return fetchUat<UatChecklist>(token, '/uat/checklist');
+  },
+
+  saveChecklist(token: string, request: UatChecklistRequest): Promise<UatChecklist> {
+    return fetchUat<UatChecklist>(token, '/uat/checklist', {
+      method: 'PUT',
+      body: JSON.stringify(request),
+    });
+  },
+
+  getDefects(token: string): Promise<UatDefect[]> {
+    return fetchUat<UatDefect[]>(token, '/uat/defects');
+  },
+
+  createDefect(token: string, request: UatDefectRequest): Promise<UatDefect> {
+    return fetchUat<UatDefect>(token, '/uat/defects', {
+      method: 'POST',
+      body: JSON.stringify(request),
+    });
+  },
+
+  updateDefect(token: string, defectId: number, request: UatDefectRequest): Promise<UatDefect> {
+    return fetchUat<UatDefect>(token, `/uat/defects/${defectId}`, {
+      method: 'PUT',
+      body: JSON.stringify(request),
+    });
+  },
+
   getWorkspaceHotel(token: string): Promise<UatWorkspaceHotel> {
     return fetchUat<UatWorkspaceHotel>(token, '/uat/workspace-hotel');
   },
 
-  getChecklist(token: string, hotelId: number): Promise<UatChecklist> {
+  getChecklistByHotel(token: string, hotelId: number): Promise<UatChecklist> {
     return fetchUat<UatChecklist>(token, `/uat/hotels/${hotelId}/checklist`);
   },
 
-  saveChecklist(token: string, hotelId: number, request: UatChecklistRequest): Promise<UatChecklist> {
+  saveChecklistByHotel(token: string, hotelId: number, request: UatChecklistRequest): Promise<UatChecklist> {
     return fetchUat<UatChecklist>(token, `/uat/hotels/${hotelId}/checklist`, {
       method: 'PUT',
       body: JSON.stringify(request),
     });
   },
 
-  getDefects(token: string, hotelId: number): Promise<UatDefect[]> {
+  getDefectsByHotel(token: string, hotelId: number): Promise<UatDefect[]> {
     return fetchUat<UatDefect[]>(token, `/uat/hotels/${hotelId}/defects`);
   },
 
-  createDefect(token: string, hotelId: number, request: UatDefectRequest): Promise<UatDefect> {
+  createDefectByHotel(token: string, hotelId: number, request: UatDefectRequest): Promise<UatDefect> {
     return fetchUat<UatDefect>(token, `/uat/hotels/${hotelId}/defects`, {
       method: 'POST',
       body: JSON.stringify(request),
     });
   },
 
-  updateDefect(token: string, hotelId: number, defectId: number, request: UatDefectRequest): Promise<UatDefect> {
+  updateDefectByHotel(token: string, hotelId: number, defectId: number, request: UatDefectRequest): Promise<UatDefect> {
     return fetchUat<UatDefect>(token, `/uat/hotels/${hotelId}/defects/${defectId}`, {
       method: 'PUT',
       body: JSON.stringify(request),

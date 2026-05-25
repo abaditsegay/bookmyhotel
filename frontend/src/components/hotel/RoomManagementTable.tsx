@@ -34,8 +34,10 @@ import {
   Edit as EditIcon
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
 import { hotelAdminApi } from '../../services/hotelAdminApi';
 import { formatCurrencyWithDecimals } from '../../utils/currencyUtils';
+import { guestNameBadgeSx } from '../../theme/sxHelpers';
 
 // Hotel admin specific room response interface (matching FrontDesk)
 interface RoomResponse {
@@ -69,6 +71,7 @@ const ROOM_STATUS_OPTIONS = [
 
 const RoomManagementTable: React.FC<RoomManagementTableProps> = ({ onRoomUpdate }) => {
   const { token } = useAuth();
+  const { showSubmissionError } = useSubmissionError();
   const [rooms, setRooms] = useState<RoomResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -176,11 +179,15 @@ const RoomManagementTable: React.FC<RoomManagementTableProps> = ({ onRoomUpdate 
         handleStatusDialogClose();
         onRoomUpdate?.(result.data);
       } else {
-        setError(result.message || 'Failed to update room status');
+        showSubmissionError(result.message || 'Failed to update room status', {
+          fallbackMessage: 'Failed to update room status',
+        });
       }
     } catch (error) {
       // console.error('Failed to update room status:', error);
-      setError('Failed to update room status');
+      showSubmissionError(error, {
+        fallbackMessage: 'Failed to update room status',
+      });
     } finally {
       setStatusUpdating(false);
     }
@@ -208,11 +215,15 @@ const RoomManagementTable: React.FC<RoomManagementTableProps> = ({ onRoomUpdate 
         
         onRoomUpdate?.(result.data);
       } else {
-        setError(result.message || 'Failed to toggle room availability');
+        showSubmissionError(result.message || 'Failed to toggle room availability', {
+          fallbackMessage: 'Failed to toggle room availability',
+        });
       }
     } catch (error) {
       // console.error('Failed to toggle room availability:', error);
-      setError('Failed to toggle room availability');
+      showSubmissionError(error, {
+        fallbackMessage: 'Failed to toggle room availability',
+      });
     } finally {
       setAvailabilityUpdating(prev => ({ ...prev, [room.id]: false }));
     }
@@ -315,7 +326,7 @@ const RoomManagementTable: React.FC<RoomManagementTableProps> = ({ onRoomUpdate 
                   </TableCell>
                   <TableCell>
                     {room.currentGuest ? (
-                      <Typography variant="body2">
+                      <Typography variant="body2" sx={guestNameBadgeSx}>
                         {room.currentGuest}
                       </Typography>
                     ) : (

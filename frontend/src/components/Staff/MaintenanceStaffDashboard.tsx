@@ -36,11 +36,14 @@ import {
   Schedule as ScheduleIcon,
   Warning as WarningIcon
 } from '@mui/icons-material';
-import { COLORS, addAlpha } from '../../theme/themeColors';
+import { actionIconButtonSx, tableHeadRowSx } from '../../theme/sxHelpers';
 import { staffApi } from '../../services/staffApi';
 import { MaintenanceTask } from '../../types/operations';
+import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
+import { composeSx, surfaceCardSx } from '../../theme/sxHelpers';
 
 const MaintenanceStaffDashboard: React.FC = () => {
+  const { showSubmissionError } = useSubmissionError();
   const [tasks, setTasks] = useState<MaintenanceTask[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -95,7 +98,9 @@ const MaintenanceStaffDashboard: React.FC = () => {
       await loadMyTasks();
       await loadStats();
     } catch (err) {
-      setError('Failed to update task status');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to update task status',
+      });
       // console.error('Error updating task:', err);
     }
   };
@@ -106,7 +111,9 @@ const MaintenanceStaffDashboard: React.FC = () => {
       await loadMyTasks();
       await loadStats();
     } catch (err) {
-      setError('Failed to start task');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to start task',
+      });
       // console.error('Error starting task:', err);
     }
   };
@@ -117,7 +124,9 @@ const MaintenanceStaffDashboard: React.FC = () => {
       await loadMyTasks();
       await loadStats();
     } catch (err) {
-      setError('Failed to complete task');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to complete task',
+      });
       // console.error('Error completing task:', err);
     }
   };
@@ -196,7 +205,7 @@ const MaintenanceStaffDashboard: React.FC = () => {
         {stats && (
           <Grid container spacing={3} sx={{ mb: 4 }}>
             <Grid item xs={12} sm={6} md={3}>
-              <Card>
+              <Card sx={surfaceCardSx('subtle')}>
                 <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                   <AssignmentIcon color="primary" />
                   <Box>
@@ -211,7 +220,7 @@ const MaintenanceStaffDashboard: React.FC = () => {
               </Card>
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
-              <Card>
+              <Card sx={surfaceCardSx('subtle')}>
                 <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                   <ScheduleIcon color="warning" />
                   <Box>
@@ -226,7 +235,7 @@ const MaintenanceStaffDashboard: React.FC = () => {
               </Card>
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
-              <Card>
+              <Card sx={surfaceCardSx('subtle')}>
                 <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                   <PlayArrowIcon color="info" />
                   <Box>
@@ -241,7 +250,7 @@ const MaintenanceStaffDashboard: React.FC = () => {
               </Card>
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
-              <Card>
+              <Card sx={surfaceCardSx('subtle')}>
                 <CardContent sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                                     <CheckCircleIcon color="primary" />
                   <Box>
@@ -265,7 +274,7 @@ const MaintenanceStaffDashboard: React.FC = () => {
         )}
 
         {/* Tasks Table */}
-        <Card>
+        <Card sx={surfaceCardSx('default')}>
           <CardContent>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
               <Typography variant="h6">
@@ -283,34 +292,11 @@ const MaintenanceStaffDashboard: React.FC = () => {
                 </Typography>
               </Box>
             ) : (
-              <TableContainer component={Paper}>
+              <TableContainer component={Paper} sx={composeSx(surfaceCardSx('subtle'), { boxShadow: 'none' })}>
                 <Table>
                   <TableHead>
                     <TableRow
-                      sx={{
-                        background: COLORS.GRADIENT_SLATE,
-                        boxShadow: `0 4px 12px ${addAlpha(COLORS.SLATE_500, 0.15)}`,
-                        '& .MuiTableCell-head': {
-                          color: COLORS.WHITE,
-                          fontWeight: 600,
-                          fontSize: '0.95rem',
-                          letterSpacing: '0.5px',
-                          textTransform: 'uppercase',
-                          border: 'none',
-                          padding: '20px 16px',
-                          position: 'relative',
-                          textShadow: `0 1px 2px ${addAlpha(COLORS.BLACK, 0.1)}`,
-                          '&::after': {
-                            content: '""',
-                            position: 'absolute',
-                            bottom: 0,
-                            left: 0,
-                            right: 0,
-                            height: '3px',
-                            background: `linear-gradient(90deg, ${addAlpha(COLORS.WHITE, 0.6)} 0%, ${addAlpha(COLORS.WHITE, 0.8)} 50%, ${addAlpha(COLORS.WHITE, 0.6)} 100%)`
-                          }
-                        }
-                      }}
+                      sx={tableHeadRowSx()}
                     >
                       <TableCell>Location</TableCell>
                       <TableCell>Category</TableCell>
@@ -363,7 +349,7 @@ const MaintenanceStaffDashboard: React.FC = () => {
                           <Box sx={{ display: 'flex', gap: 1 }}>
                             {canStartTask(task) && (
                               <IconButton
-                                color="primary"
+                                sx={actionIconButtonSx('accent')}
                                 onClick={() => handleStartTask(task)}
                                 title="Start Task"
                               >
@@ -372,7 +358,7 @@ const MaintenanceStaffDashboard: React.FC = () => {
                             )}
                             {canCompleteTask(task) && (
                               <IconButton
-                                color="primary"
+                                sx={actionIconButtonSx('accent')}
                                 onClick={() => handleCompleteTask(task)}
                                 title="Complete Task"
                               >
@@ -381,7 +367,7 @@ const MaintenanceStaffDashboard: React.FC = () => {
                             )}
                             {canUpdateStatus(task) && (
                               <IconButton
-                                color="info"
+                                sx={actionIconButtonSx('info')}
                                 onClick={() => openStatusDialog(task)}
                                 title="Update Status"
                               >

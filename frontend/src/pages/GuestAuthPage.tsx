@@ -1,10 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
   Box,
-  Button,
-  Card,
-  CardContent,
-  Container,
   Typography,
   Alert,
   Tabs,
@@ -14,33 +10,15 @@ import {
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import PremiumTextField from '../components/common/PremiumTextField';
+import { PageContainer, SurfaceCard, TabPanel } from '../components/common';
+import StandardButton from '../components/common/StandardButton';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { API_CONFIG } from '../config/apiConfig';
 import { useTheme, alpha } from '@mui/material/styles';
-import { COLORS, addAlpha, getGradient } from '../theme/themeColors';
-
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
-}
-
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`auth-tabpanel-${index}`}
-      aria-labelledby={`auth-tab-${index}`}
-      {...other}
-    >
-      {value === index && <Box sx={{ pt: 3 }}>{children}</Box>}
-    </div>
-  );
-}
+import { getPageShellBackground } from '../theme/surfaces';
+import { tintedPanelSx } from '../theme/sxHelpers';
+import { extractAuthErrorMessage } from '../utils/authErrorMessage';
 
 const GuestAuthPage: React.FC = () => {
   const theme = useTheme();
@@ -71,6 +49,25 @@ const GuestAuthPage: React.FC = () => {
   // Get the intended destination from navigation state
   const intendedDestination = location.state?.from || '/';
   const bookingData = location.state?.bookingData;
+
+  useEffect(() => {
+    const verificationStatus = new URLSearchParams(location.search).get('verified');
+
+    if (verificationStatus === 'success') {
+      setTabValue(0);
+      setSuccess(t('auth.login.emailVerificationSuccess'));
+      setError('');
+      clearError();
+      return;
+    }
+
+    if (verificationStatus === 'invalid') {
+      setTabValue(0);
+      setError(t('auth.login.emailVerificationFailed'));
+      setSuccess('');
+      clearError();
+    }
+  }, [location.search, t, clearError]);
 
   // Redirect already authenticated users to their intended destination
   useEffect(() => {
@@ -142,6 +139,7 @@ const GuestAuthPage: React.FC = () => {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    clearError();
 
     // Validation
     if (registerPassword !== confirmPassword) {
@@ -178,42 +176,21 @@ const GuestAuthPage: React.FC = () => {
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || t('auth.login.registrationFailed'));
+        const errorMessage = await extractAuthErrorMessage(response, t('auth.login.registrationFailed'));
+        throw new Error(errorMessage);
       }
 
       const registrationData = await response.json();
-      
-      // Store authentication data (same format as login)
-      const user = {
-        id: registrationData.id.toString(),
-        email: registrationData.email,
-        firstName: registrationData.firstName || '',
-        lastName: registrationData.lastName || '',
-        phone: '',
-        role: Array.isArray(registrationData.roles) ? registrationData.roles[0] : registrationData.roles,
-        roles: Array.isArray(registrationData.roles) ? registrationData.roles : [registrationData.roles],
-        hotelId: undefined,
-        hotelName: undefined,
-        createdAt: new Date().toISOString(),
-        lastLogin: new Date().toISOString(),
-        isActive: true,
-      };
 
-      // Store in localStorage (mimicking the login process)
-      localStorage.setItem('auth_token', registrationData.token);
-      localStorage.setItem('auth_user', JSON.stringify(user));
-
-      setSuccess(t('auth.login.registrationSuccess'));
-
-      // Small delay to show success message
-      setTimeout(() => {
-        if (bookingData) {
-          navigate('/booking', { state: bookingData });
-        } else {
-          navigate(intendedDestination);
-        }
-      }, 1500);
+      setTabValue(0);
+      setSuccess(registrationData.message || t('auth.login.registrationSuccess'));
+      setError('');
+      setRegisterEmail('');
+      setRegisterPassword('');
+      setConfirmPassword('');
+      setFirstName('');
+      setLastName('');
+      setPhone('');
     } catch (err) {
       setError(err instanceof Error ? err.message : t('auth.login.registrationFailed'));
     } finally {
@@ -224,7 +201,7 @@ const GuestAuthPage: React.FC = () => {
   // Show loading state while checking authentication from localStorage
   if (isInitializing) {
     return (
-      <Container maxWidth="sm">
+      <PageContainer maxWidth="sm" sx={{ justifyContent: 'center', minHeight: '100vh', py: 4, pb: 4 }}>
         <Box
           sx={{
             minHeight: '100vh',
@@ -237,12 +214,12 @@ const GuestAuthPage: React.FC = () => {
         >
           <Typography variant="h6">{t('auth.login.loading')}</Typography>
         </Box>
-      </Container>
+      </PageContainer>
     );
   }
 
   return (
-    <Container maxWidth="sm">
+    <PageContainer maxWidth="sm" sx={{ justifyContent: 'center', minHeight: '100vh', py: 4, pb: 4 }}>
       <Box
         sx={{
           minHeight: '100vh',
@@ -250,72 +227,75 @@ const GuestAuthPage: React.FC = () => {
           alignItems: 'center',
           justifyContent: 'center',
           py: 4,
-          background: theme.palette.mode === 'light' 
-            ? getGradient('white')
-            : `linear-gradient(135deg, ${alpha(theme.palette.primary.dark, 0.1)} 0%, transparent 100%)`,
+          backgroundColor: getPageShellBackground(theme),
         }}
       >
-        <Card 
-          elevation={theme.palette.mode === 'light' ? 8 : 4}
+        <SurfaceCard
+          elevation={0}
           sx={{ 
             width: '100%', 
             maxWidth: 500,
-            boxShadow: theme.palette.mode === 'light' 
-              ? `0 2px 8px ${addAlpha(COLORS.SECONDARY, 0.1)}`
-              : `0 8px 32px -4px ${alpha(theme.palette.primary.main, 0.25)}`,
-            borderRadius: 3,
-            overflow: 'hidden',
-            position: 'relative',
-            '&::before': {
-              content: '""',
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              height: 4,
-              background: `linear-gradient(90deg, ${COLORS.SECONDARY} 0%, ${COLORS.SECONDARY_HOVER} 100%)`,
-              zIndex: 1,
-            },
           }}
+          contentSx={{ p: 4 }}
         >
-          <CardContent sx={{ p: 4 }}>
-            <Typography 
-              variant="h4" 
-              component="h1" 
-              gutterBottom 
-              align="center"
+            <Box
               sx={{
-                fontWeight: 'bold',
-                color: COLORS.PRIMARY,
-                mb: 1,
+                width: 'min(220px, 68%)',
+                mx: 'auto',
+                mb: 2,
+                overflow: 'hidden',
               }}
             >
-              BookMyHotel
-            </Typography>
-            <Typography 
-              variant="h6" 
-              component="h2" 
-              gutterBottom 
-              align="center" 
-              color="textSecondary"
-              sx={{ 
-                mb: 3,
-                color: theme.palette.text.secondary,
-              }}
-            >
-              {bookingData?.hotelName
-                ? t('auth.login.signInToBook', { hotelName: bookingData.hotelName })
-                : tabValue === 0
-                  ? t('auth.login.signInSubtitle')
-                  : t('auth.login.createAccountSubtitle')}
-            </Typography>
+              <Box
+                component="img"
+                src="/logos/logo.png"
+                alt="BookMyHotel logo"
+                sx={{
+                  display: 'block',
+                  width: '112%',
+                  maxWidth: 'none',
+                  height: 'auto',
+                  ml: '-5%',
+                  mt: '-4%',
+                  mb: '-6%',
+                }}
+              />
+            </Box>
+            <Box sx={{ ...tintedPanelSx(tabValue === 0 ? 'primary' : 'secondary'), textAlign: 'center', mb: 3 }}>
+              <Typography 
+                variant="h4" 
+                component="h1" 
+                gutterBottom 
+                align="center"
+                sx={{
+                  fontWeight: 700,
+                  color: 'text.primary',
+                  mb: 1,
+                }}
+              >
+                BookMyHotel
+              </Typography>
+              <Typography 
+                variant="h6" 
+                component="h2" 
+                gutterBottom 
+                align="center" 
+                color="text.secondary"
+              >
+                {bookingData?.hotelName
+                  ? t('auth.login.signInToBook', { hotelName: bookingData.hotelName })
+                  : tabValue === 0
+                    ? t('auth.login.signInSubtitle')
+                    : t('auth.login.createAccountSubtitle')}
+              </Typography>
+            </Box>
 
             <Box 
               sx={{ 
-                borderBottom: `2px solid ${COLORS.SECONDARY}`, 
+                borderBottom: `1px solid ${theme.palette.divider}`,
                 mt: 3,
                 '& .MuiTabs-indicator': {
-                  backgroundColor: COLORS.SECONDARY,
+                  backgroundColor: tabValue === 0 ? 'primary.main' : 'secondary.main',
                   height: 3,
                 },
               }}
@@ -332,12 +312,12 @@ const GuestAuthPage: React.FC = () => {
                     fontSize: '1rem',
                     color: theme.palette.text.secondary,
                     '&:hover': {
-                      color: COLORS.PRIMARY,
-                      backgroundColor: COLORS.BG_LIGHT,
+                      color: 'text.primary',
+                      backgroundColor: alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.12 : 0.05),
                     },
                   },
                   '& .Mui-selected': {
-                    color: COLORS.PRIMARY,
+                    color: tabValue === 0 ? theme.palette.primary.main : theme.palette.secondary.main,
                     fontWeight: 700,
                   },
                 }}
@@ -360,7 +340,7 @@ const GuestAuthPage: React.FC = () => {
             )}
 
             {/* Login Tab */}
-            <TabPanel value={tabValue} index={0}>
+            <TabPanel value={tabValue} index={0} idPrefix="auth" contentSx={{ pt: 3 }}>
               <Box component="form" onSubmit={handleLogin}>
                 <PremiumTextField
                   fullWidth
@@ -398,77 +378,35 @@ const GuestAuthPage: React.FC = () => {
                     ),
                   }}
                 />
-                <Button
+                <StandardButton
                   type="submit"
                   fullWidth
                   variant="contained"
-                  sx={{ 
-                    mt: 3, 
-                    mb: 1,
-                    py: 1.5,
-                    fontSize: '1.1rem',
-                    fontWeight: 600,
-                    textTransform: 'none',
-                    borderRadius: 2,
-                    backgroundColor: COLORS.PRIMARY,
-                    color: COLORS.WHITE,
-                    '&:hover': {
-                      backgroundColor: COLORS.PRIMARY_HOVER,
-                      transform: 'translateY(-1px)',
-                    },
-                    '&:active': {
-                      transform: 'translateY(0)',
-                      transition: 'transform 0.1s ease',
-                    },
-                    '&:disabled': {
-                      background: theme.palette.action.disabledBackground,
-                      color: theme.palette.action.disabled,
-                    },
-                    transition: 'all 0.2s ease',
-                  }}
-                  disabled={loading}
+                  buttonSize="large"
+                  loading={loading}
+                  loadingText={t('auth.login.signingIn')}
+                  sx={{ mt: 3, mb: 1 }}
                 >
-                  {loading ? t('auth.login.signingIn') : t('auth.login.signInButton')}
-                </Button>
+                  {t('auth.login.signInButton')}
+                </StandardButton>
                 
                 {/* Mobile-friendly fallback button */}
-                <Button
+                <StandardButton
                   fullWidth
                   variant="outlined"
-                  sx={{ 
-                    mb: 2,
-                    py: 1.5,
-                    fontSize: '1rem',
-                    fontWeight: 500,
-                    textTransform: 'none',
-                    borderRadius: 2,
-                    border: 'none',
-                    backgroundColor: addAlpha(COLORS.SECONDARY, 0.08),
-                    color: COLORS.PRIMARY,
-                    '&:hover': {
-                      backgroundColor: addAlpha(COLORS.SECONDARY, 0.14),
-                      transform: 'translateY(-1px)',
-                    },
-                    '&:active': {
-                      transform: 'translateY(0)',
-                      transition: 'transform 0.1s ease',
-                    },
-                    '&:disabled': {
-                      backgroundColor: theme.palette.action.disabledBackground,
-                      color: theme.palette.action.disabled,
-                    },
-                    transition: 'all 0.2s ease',
-                  }}
+                  color="secondary"
+                  buttonSize="large"
                   disabled={loading}
+                  sx={{ mb: 2 }}
                   onClick={handleMobileLogin}
                 >
                   {loading ? t('auth.login.signingIn') : t('auth.login.mobileSignInButton')}
-                </Button>
+                </StandardButton>
               </Box>
             </TabPanel>
 
             {/* Registration Tab */}
-            <TabPanel value={tabValue} index={1}>
+            <TabPanel value={tabValue} index={1} idPrefix="auth" contentSx={{ pt: 3 }}>
               <Box component="form" onSubmit={handleRegister}>
                 <PremiumTextField
                   fullWidth
@@ -555,38 +493,18 @@ const GuestAuthPage: React.FC = () => {
                     ),
                   }}
                 />
-                <Button
+                <StandardButton
                   type="submit"
                   fullWidth
                   variant="contained"
-                  sx={{ 
-                    mt: 3, 
-                    mb: 2,
-                    py: 1.5,
-                    fontSize: '1.1rem',
-                    fontWeight: 600,
-                    textTransform: 'none',
-                    borderRadius: 2,
-                    backgroundColor: COLORS.PRIMARY,
-                    color: COLORS.WHITE,
-                    '&:hover': {
-                      backgroundColor: COLORS.PRIMARY_HOVER,
-                      transform: 'translateY(-1px)',
-                    },
-                    '&:active': {
-                      transform: 'translateY(0)',
-                      transition: 'transform 0.1s ease',
-                    },
-                    '&:disabled': {
-                      background: theme.palette.action.disabledBackground,
-                      color: theme.palette.action.disabled,
-                    },
-                    transition: 'all 0.2s ease',
-                  }}
-                  disabled={loading}
+                  color="secondary"
+                  buttonSize="large"
+                  loading={loading}
+                  loadingText={t('auth.login.creating')}
+                  sx={{ mt: 3, mb: 2 }}
                 >
-                  {loading ? t('auth.login.creating') : t('auth.login.createAccountButton')}
-                </Button>
+                  {t('auth.login.createAccountButton')}
+                </StandardButton>
               </Box>
             </TabPanel>
 
@@ -597,14 +515,14 @@ const GuestAuthPage: React.FC = () => {
                   component="button" 
                   onClick={() => setTabValue(1)}
                   sx={{
-                    color: COLORS.PRIMARY,
+                    color: 'primary.main',
                     fontWeight: 600,
                     textDecoration: 'underline',
-                    textDecorationColor: COLORS.SECONDARY,
+                    textDecorationColor: 'secondary.main',
                     transition: 'all 0.2s ease',
                     '&:hover': {
-                      textDecorationColor: COLORS.SECONDARY_HOVER,
-                      color: COLORS.PRIMARY_HOVER,
+                      textDecorationColor: 'secondary.dark',
+                      color: 'primary.dark',
                     },
                   }}
                 >
@@ -615,14 +533,14 @@ const GuestAuthPage: React.FC = () => {
                   component="button" 
                   onClick={() => setTabValue(0)}
                   sx={{
-                    color: COLORS.PRIMARY,
+                    color: 'primary.main',
                     fontWeight: 600,
                     textDecoration: 'underline',
-                    textDecorationColor: COLORS.SECONDARY,
+                    textDecorationColor: 'secondary.main',
                     transition: 'all 0.2s ease',
                     '&:hover': {
-                      textDecorationColor: COLORS.SECONDARY_HOVER,
-                      color: COLORS.PRIMARY_HOVER,
+                      textDecorationColor: 'secondary.dark',
+                      color: 'primary.dark',
                     },
                   }}
                 >
@@ -631,10 +549,9 @@ const GuestAuthPage: React.FC = () => {
               )}{' '}
               {t('auth.login.manageReservationsSuffix')}
             </Typography>
-          </CardContent>
-        </Card>
+        </SurfaceCard>
       </Box>
-    </Container>
+    </PageContainer>
   );
 };
 

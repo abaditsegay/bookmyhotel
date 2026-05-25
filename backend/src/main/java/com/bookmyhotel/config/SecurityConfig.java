@@ -36,6 +36,11 @@ public class SecurityConfig {
         }
 
         @Bean
+        public RequestCorrelationFilter requestCorrelationFilter() {
+                return new RequestCorrelationFilter();
+        }
+
+        @Bean
         public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
                 http
                                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
@@ -92,7 +97,6 @@ public class SecurityConfig {
                                                                 "/api/bookings",
                                                                 "/api/bookings/room-type",
                                                                 "/api/bookings/search",
-                                                                "/api/bookings/search/**",
                                                                 "/api/bookings/authenticate",
                                                                 "/api/bookings/cancel",
                                                                 "/api/bookings/modify",
@@ -100,7 +104,6 @@ public class SecurityConfig {
                                                                 "/api/bookings/{id}/pdf",
                                                                 "/api/booking/guest/**",
                                                                 "/api/booking-management/**",
-                                                                "/api/front-desk/bookings/search/**",
                                                                 "/actuator/health",
                                                                 "/actuator/metrics",
                                                                 "/actuator/**",
@@ -140,6 +143,7 @@ public class SecurityConfig {
                                                 .anyRequest().authenticated())
 
                                 // JWT Authentication Filter
+                                                .addFilterBefore(requestCorrelationFilter(), UsernamePasswordAuthenticationFilter.class)
                                 .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 
                 return http.build();

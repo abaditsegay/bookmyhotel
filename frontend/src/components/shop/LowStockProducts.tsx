@@ -16,7 +16,8 @@ import {
   TablePagination,
   IconButton,
   Tooltip,
-  CircularProgress
+  CircularProgress,
+  useTheme
 } from '@mui/material';
 import {
   Warning as WarningIcon,
@@ -25,19 +26,26 @@ import {
 } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
+import { useDebounce } from '../../hooks/useDebounce';
 import { shopApiService } from '../../services/shopApi';
 import { Product } from '../../types/shop';
 import { translateProducts } from '../../utils/productTranslation';
+import { getEffectiveSearchTerm } from '../../utils/search';
 import { getPremiumTableHeadSx } from './premiumStyles';
+import { getReadableAccentTextColor } from '../../theme/surfaces';
 
 const LowStockProducts: React.FC = () => {
   const { t } = useTranslation();
+  const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
   const { user, token } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, searchTerm.trim() ? 300 : 0);
+  const effectiveSearchTerm = getEffectiveSearchTerm(debouncedSearchTerm);
   
   // Pagination state
   const [page, setPage] = useState(0);
@@ -90,11 +98,11 @@ const LowStockProducts: React.FC = () => {
 
   // Filter products based on search term
   const filteredProducts = products.filter(product => {
-    if (!searchTerm) return true;
+    if (!effectiveSearchTerm) return true;
     return (
-      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.sku?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.category.toLowerCase().includes(searchTerm.toLowerCase())
+      product.name.toLowerCase().includes(effectiveSearchTerm.toLowerCase()) ||
+      product.sku?.toLowerCase().includes(effectiveSearchTerm.toLowerCase()) ||
+      product.category.toLowerCase().includes(effectiveSearchTerm.toLowerCase())
     );
   });
 
@@ -250,7 +258,7 @@ const LowStockProducts: React.FC = () => {
                     <TableCell align="center">
                       <Typography 
                         variant="body2" 
-                        color="primary"
+                        sx={{ color: readableAccentColor }}
                         fontWeight="medium"
                       >
                         {reorderQuantity}

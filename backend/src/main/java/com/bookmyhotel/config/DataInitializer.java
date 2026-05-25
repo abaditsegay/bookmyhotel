@@ -9,7 +9,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.SpringApplication;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.ApplicationContext;
+import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -28,6 +31,7 @@ import com.bookmyhotel.repository.ProductRepository;
 import com.bookmyhotel.repository.RoomRepository;
 import com.bookmyhotel.repository.TenantRepository;
 import com.bookmyhotel.repository.UserRepository;
+import com.bookmyhotel.service.EthiopianDemoDatasetSeeder;
 import com.bookmyhotel.tenant.TenantContext;
 
 /**
@@ -35,15 +39,16 @@ import com.bookmyhotel.tenant.TenantContext;
  * This runs after the application starts and the database schema is created
  */
 @Component
+@Order(10)
 public class DataInitializer implements CommandLineRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(DataInitializer.class);
 
-    // Flag to disable data initialization completely
-    private static final boolean ENABLE_DATA_INITIALIZATION = false;
-
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private ApplicationContext applicationContext;
 
     @Autowired
     private Environment environment;
@@ -63,31 +68,63 @@ public class DataInitializer implements CommandLineRunner {
     @Autowired
     private ProductRepository productRepository;
 
+    @Autowired
+    private EthiopianDemoDatasetSeeder ethiopianDemoDatasetSeeder;
+
+    @Value("${app.bootstrap.super-admin.email:samuelweld2018@gmail.com}")
+    private String superAdminEmail;
+
+    @Value("${app.bootstrap.sample-data.enabled:false}")
+    private boolean sampleDataBootstrapEnabled;
+
+    @Value("${app.bootstrap.ethiopian-demo.enabled:false}")
+    private boolean ethiopianDemoBootstrapEnabled;
+
+    @Value("${app.bootstrap.ethiopian-demo.report-only:false}")
+    private boolean ethiopianDemoReportOnly;
+
+    @Value("${app.bootstrap.exit-after-run:false}")
+    private boolean exitAfterRun;
+
     @Override
     public void run(String... args) throws Exception {
-        if (!ENABLE_DATA_INITIALIZATION) {
-            logger.info("Data initialization is disabled - skipping all initialization");
+        boolean executed = false;
+
+        if (sampleDataBootstrapEnabled) {
+            executed = true;
+
+            if (isDevOrTestProfile()) {
+                logger.info("Development/Test profile detected - creating sample data");
+                createDevelopmentTenant();
+                createSampleHotelWithRooms();
+                createHotelStaffUsers();
+                createEthiopianProducts();
+            } else {
+                logger.warn("Sample data bootstrap is enabled outside development/test; skipping sample data creation");
+            }
+        }
+
+        if (ethiopianDemoBootstrapEnabled) {
+            if (ethiopianDemoReportOnly) {
+                ethiopianDemoDatasetSeeder.logPlannedReport();
+            } else {
+                ethiopianDemoDatasetSeeder.resetAndSeed(superAdminEmail);
+            }
+            executed = true;
+        }
+
+        if (!executed) {
+            logger.info("Startup bootstrap is disabled - skipping initialization");
             return;
         }
 
-        logger.info("Starting data initialization...");
+        logger.info("Startup bootstrap completed successfully.");
 
-        // Always create system admin user for administrative access
-        createSystemAdminUser();
-
-        // Only create sample data in development/test profiles
-        if (isDevOrTestProfile()) {
-            logger.info("Development/Test profile detected - creating sample data");
-            createDevelopmentTenant();
-            createSampleHotelWithRooms();
-            createHotelStaffUsers();
-            createEthiopianProducts();
-        } else {
-            logger.info("Production profile detected - skipping sample data creation");
-            logger.info("Only system admin user will be created for initial setup");
+        if (exitAfterRun) {
+            logger.info("Bootstrap requested one-off exit after completion");
+            int exitCode = SpringApplication.exit(applicationContext, () -> 0);
+            System.exit(exitCode);
         }
-
-        logger.info("Data initialization completed successfully.");
     }
 
     /**
@@ -143,47 +180,6 @@ public class DataInitializer implements CommandLineRunner {
                     savedTenant.getId(), savedTenant.getName());
         } catch (Exception e) {
             logger.error("Failed to create development tenant: {}", e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Create the system admin user if it doesn't exist
-     */
-    private void createSystemAdminUser() {
-        // TODO: Get admin credentials from environment variables or secure
-        // configuration
-        String adminEmail = System.getenv("SYSTEM_ADMIN_EMAIL") != null ? System.getenv("SYSTEM_ADMIN_EMAIL")
-                : "admin@bookmyhotel.com";
-        String adminPassword = System.getenv("SYSTEM_ADMIN_PASSWORD") != null ? System.getenv("SYSTEM_ADMIN_PASSWORD")
-                : "admin123";
-
-        logger.info("Checking for system admin user with email: {}", adminEmail);
-
-        Optional<User> existingAdmin = userRepository.findByEmail(adminEmail);
-
-        if (existingAdmin.isPresent()) {
-            logger.info("System admin user already exists: {}", adminEmail);
-            return;
-        }
-
-        logger.info("Creating system admin user...");
-
-        User systemAdmin = new User();
-        systemAdmin.setEmail(adminEmail);
-        systemAdmin.setPassword(passwordEncoder.encode(adminPassword));
-        systemAdmin.setFirstName("System");
-        systemAdmin.setLastName("Administrator");
-        systemAdmin.setIsActive(true);
-        systemAdmin.setRoles(Set.of(UserRole.SUPER_ADMIN));
-        // Leave hotel as null for system-wide admin
-
-        try {
-            User savedAdmin = userRepository.save(systemAdmin);
-            logger.info("System admin user created successfully with ID: {} and email: {}",
-                    savedAdmin.getId(), savedAdmin.getEmail());
-            logger.info("System admin credentials - Email: {} | Password: {}", adminEmail, adminPassword);
-        } catch (Exception e) {
-            logger.error("Failed to create system admin user: {}", e.getMessage(), e);
         }
     }
 

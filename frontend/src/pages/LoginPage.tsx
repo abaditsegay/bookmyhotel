@@ -1,11 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { COLORS, addAlpha, getGradient } from '../theme/themeColors';
 import { 
   Box, 
-  Button, 
-  Card, 
-  CardContent, 
-  Container, 
   Typography, 
   Alert, 
   useTheme,
@@ -18,12 +13,27 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, useLocation, Link as RouterLink } from 'react-router-dom';
 import { API_CONFIG } from '../config/apiConfig';
+import { PageContainer, SurfaceCard } from '../components/common';
 import PremiumTextField from '../components/common/PremiumTextField';
+import StandardButton from '../components/common/StandardButton';
+import { getPageShellBackground } from '../theme/surfaces';
+import { tintedPanelSx } from '../theme/sxHelpers';
+import { extractAuthErrorMessage } from '../utils/authErrorMessage';
 
 const LoginPage: React.FC = () => {
   const { t } = useTranslation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const authLinkButtonSx = {
+    px: 0,
+    minWidth: 'auto',
+    color: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.92)' : theme.palette.primary.main,
+    fontWeight: 700,
+    '&:hover': {
+      backgroundColor: 'transparent',
+      color: theme.palette.mode === 'dark' ? theme.palette.common.white : theme.palette.primary.dark,
+    },
+  };
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -47,6 +57,25 @@ const LoginPage: React.FC = () => {
   // Get redirect info from location state
   const redirectTo = location.state?.redirectTo;
   const bookingData = location.state?.bookingData;
+
+  useEffect(() => {
+    const verificationStatus = new URLSearchParams(location.search).get('verified');
+
+    if (verificationStatus === 'success') {
+      setSuccess(t('auth.login.emailVerificationSuccess'));
+      setError('');
+      setShowSignUp(false);
+      clearError();
+      return;
+    }
+
+    if (verificationStatus === 'invalid') {
+      setError(t('auth.login.emailVerificationFailed'));
+      setSuccess('');
+      setShowSignUp(false);
+      clearError();
+    }
+  }, [location.search, t, clearError]);
 
   // Redirect already authenticated users to their appropriate dashboard
   useEffect(() => {
@@ -129,42 +158,21 @@ const LoginPage: React.FC = () => {
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || 'Registration failed');
+        const errorMessage = await extractAuthErrorMessage(response, t('auth.login.registrationFailed'));
+        throw new Error(errorMessage);
       }
 
       const registrationData = await response.json();
-      
-      // Store authentication data (same format as login)
-      const user = {
-        id: registrationData.id.toString(),
-        email: registrationData.email,
-        firstName: registrationData.firstName || '',
-        lastName: registrationData.lastName || '',
-        phone: '',
-        role: Array.isArray(registrationData.roles) ? registrationData.roles[0] : registrationData.roles,
-        roles: Array.isArray(registrationData.roles) ? registrationData.roles : [registrationData.roles],
-        hotelId: undefined,
-        hotelName: undefined,
-        createdAt: new Date().toISOString(),
-        lastLogin: new Date().toISOString(),
-        isActive: true,
-      };
 
-      // Store in localStorage (mimicking the login process)
-      localStorage.setItem('auth_token', registrationData.token);
-      localStorage.setItem('auth_user', JSON.stringify(user));
-
-      setSuccess(t('auth.login.registrationSuccess'));
-
-      // Small delay to show success message
-      setTimeout(() => {
-        if (redirectTo && bookingData) {
-          navigate(redirectTo, { state: bookingData });
-        } else {
-          navigate('/');
-        }
-      }, 1500);
+      setSuccess(registrationData.message || t('auth.login.registrationSuccess'));
+      setError('');
+      setShowSignUp(false);
+      setRegisterEmail('');
+      setRegisterPassword('');
+      setConfirmPassword('');
+      setFirstName('');
+      setLastName('');
+      setPhone('');
     } catch (err) {
       setError(err instanceof Error ? err.message : t('auth.login.registrationFailed'));
     } finally {
@@ -179,10 +187,18 @@ const LoginPage: React.FC = () => {
   // Show loading state while checking authentication from localStorage
   if (isInitializing) {
     return (
-      <Container maxWidth="lg">
+      <PageContainer
+        maxWidth="sm"
+        sx={{
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: getPageShellBackground(theme),
+        }}
+      >
         <Box
           sx={{
-            minHeight: '100vh',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
@@ -192,50 +208,65 @@ const LoginPage: React.FC = () => {
         >
           <Typography variant="h6">{t('errors.loading')}</Typography>
         </Box>
-      </Container>
+      </PageContainer>
     );
   }
 
   return (
-    <Box
+    <PageContainer
+      maxWidth="sm"
       sx={{
         minHeight: '100vh',
-        background: theme.palette.mode === 'dark' 
-          ? `linear-gradient(135deg, ${theme.palette.background.default} 0%, ${theme.palette.grey[900]} 100%)`
-          : getGradient('white'),
         display: 'flex',
-        flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
+        backgroundColor: getPageShellBackground(theme),
         py: 4,
       }}
     >
-      <Container maxWidth="lg">
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: { xs: 'column', md: 'row' },
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: isMobile ? 3 : 6,
-            minHeight: '90vh',
-          }}
-        >
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: { xs: 'column', md: 'row' },
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: isMobile ? 3 : 6,
+          width: '100%',
+        }}
+      >
         {/* Main Login Form */}
-        <Card 
-          elevation={8}
+        <SurfaceCard
+          elevation={0}
           sx={{ 
             maxWidth: 500, 
             width: '100%', 
             height: 'fit-content',
-            background: theme.palette.background.paper,
-            border: `1px solid ${theme.palette.divider}`,
-            borderRadius: 4,
-            boxShadow: theme.shadows[8],
           }}
+          contentSx={{ p: isMobile ? 3 : 5 }}
         >
-          <CardContent sx={{ p: isMobile ? 3 : 5 }}>
-
+            <Box
+              sx={{
+                width: 'min(220px, 68%)',
+                mx: 'auto',
+                mb: 2,
+                overflow: 'hidden',
+              }}
+            >
+              <Box
+                component="img"
+                src="/logos/logo.png"
+                alt="BookMyHotel logo"
+                sx={{
+                  display: 'block',
+                  width: '112%',
+                  maxWidth: 'none',
+                  height: 'auto',
+                  ml: '-5%',
+                  mt: '-4%',
+                  mb: '-6%',
+                }}
+              />
+            </Box>
             
             {bookingData && (
               <Alert severity="info" sx={{ mb: 3 }}>
@@ -246,13 +277,13 @@ const LoginPage: React.FC = () => {
             )}
 
             {/* Sign In/Up Header */}
-            <Box sx={{ mb: 3, textAlign: 'center' }}>
+            <Box sx={{ ...tintedPanelSx(showSignUp ? 'secondary' : 'primary'), mb: 3, textAlign: 'center' }}>
               <Typography 
                 variant="h5" 
                 component="h2" 
                 sx={{ 
-                  fontWeight: 'bold',
-                  color: 'primary.main',
+                  fontWeight: 700,
+                  color: 'text.primary',
                   mb: 1,
                 }}
               >
@@ -267,7 +298,18 @@ const LoginPage: React.FC = () => {
             </Box>
 
             {displayError && (
-              <Alert severity="error" sx={{ mb: 2 }}>
+              <Alert
+                severity="error"
+                sx={{
+                  mb: 2,
+                  alignItems: 'flex-start',
+                  '& .MuiAlert-message': {
+                    width: '100%',
+                    overflowWrap: 'anywhere',
+                    lineHeight: 1.55,
+                  },
+                }}
+              >
                 {displayError}
               </Alert>
             )}
@@ -280,7 +322,7 @@ const LoginPage: React.FC = () => {
 
             {!showSignUp ? (
               // Sign In Form
-              <Box component="form" onSubmit={handleSubmit} data-testid="login-form">
+              <form onSubmit={handleSubmit} data-testid="login-form">
                 <PremiumTextField
                   fullWidth
                   label={t('auth.login.emailLabel')}
@@ -305,54 +347,32 @@ const LoginPage: React.FC = () => {
                   inputProps={{ 'data-testid': 'password-input' }}
                 />
                 <Box sx={{ textAlign: 'right', mt: 0.5 }}>
-                  <Button
+                  <StandardButton
                     component={RouterLink}
                     to="/forgot-password"
                     variant="text"
-                    size="small"
-                    sx={{ 
-                      color: COLORS.PRIMARY,
-                      textTransform: 'none',
-                      fontWeight: 500,
-                      p: 0,
-                      minWidth: 'auto',
-                      '&:hover': { textDecoration: 'underline', background: 'transparent' },
-                    }}
+                    buttonSize="small"
+                    sx={authLinkButtonSx}
                   >
                     {t('auth.login.forgotPassword')}
-                  </Button>
+                  </StandardButton>
                 </Box>
-                <Button
+                <StandardButton
                   type="submit"
                   fullWidth
                   variant="contained"
-                  disabled={loading}
+                  loading={loading}
+                  loadingText={t('auth.login.signingIn')}
+                  buttonSize="large"
                   data-testid="login-button"
-                  sx={{ 
-                    mt: 4, 
-                    mb: 2,
-                    py: 1.5,
-                    borderRadius: 0,
-                    fontSize: '1.1rem',
-                    fontWeight: 'bold',
-                    background: 'primary.main',
-                    boxShadow: `0 4px 15px ${addAlpha(COLORS.PRIMARY, 0.3)}`,
-                    '&:hover': {
-                      background: 'primary.dark',
-                      boxShadow: `0 6px 20px ${addAlpha(COLORS.PRIMARY, 0.4)}`,
-                      transform: 'translateY(-1px)',
-                    },
-                    '&:active': {
-                      transform: 'translateY(0)',
-                    },
-                  }}
+                  sx={{ mt: 4, mb: 2 }}
                 >
-                  {loading ? t('auth.login.signingIn') : t('auth.login.signInButton')}
-                </Button>
-              </Box>
+                  {t('auth.login.signInButton')}
+                </StandardButton>
+              </form>
             ) : (
               // Sign Up Form
-              <Box component="form" onSubmit={handleRegister}>
+              <form onSubmit={handleRegister}>
                 <Stack direction="row" spacing={2}>
                   <PremiumTextField
                     fullWidth
@@ -408,67 +428,53 @@ const LoginPage: React.FC = () => {
                   required
                   autoComplete="new-password"
                 />
-                <Button
+                <StandardButton
                   type="submit"
                   fullWidth
                   variant="contained"
-                  disabled={loading}
-                  sx={{ 
-                    mt: 4, 
-                    mb: 2,
-                    py: 1.5,
-                    borderRadius: 0,
-                    fontSize: '1.1rem',
-                    fontWeight: 'bold',
-                    background: 'secondary.main',
-                    boxShadow: `0 4px 15px ${addAlpha(COLORS.SECONDARY, 0.3)}`,
-                    '&:hover': {
-                      background: 'secondary.dark',
-                      boxShadow: `0 6px 20px ${addAlpha(COLORS.SECONDARY, 0.4)}`,
-                      transform: 'translateY(-1px)',
-                    },
-                    '&:active': {
-                      transform: 'translateY(0)',
-                    },
-                  }}
+                  loading={loading}
+                  loadingText={t('auth.login.creating')}
+                  buttonSize="large"
+                  color="secondary"
+                  sx={{ mt: 4, mb: 2 }}
                 >
-                  {loading ? t('auth.login.creating') : t('auth.login.createAccountButton')}
-                </Button>
-              </Box>
+                  {t('auth.login.createAccountButton')}
+                </StandardButton>
+              </form>
             )}
 
-            <Typography variant="body2" color="textSecondary" align="center" sx={{ mt: 2 }}>
+            <Typography variant="body2" color="text.secondary" align="center" sx={{ mt: 2 }}>
               {!showSignUp ? (
                 <>
                   {t('auth.login.needAccount')}{' '}
-                  <Button 
+                  <StandardButton 
                     variant="text" 
                     onClick={() => setShowSignUp(true)}
-                    sx={{ textTransform: 'none', p: 0, minWidth: 'auto' }}
+                    buttonSize="small"
+                    sx={authLinkButtonSx}
                   >
                     {t('auth.login.createAccount')}
-                  </Button>
+                  </StandardButton>
                 </>
               ) : (
                 <>
                   {t('auth.login.alreadyHaveAccount')}{' '}
-                  <Button 
+                  <StandardButton 
                     variant="text" 
                     onClick={() => setShowSignUp(false)}
-                    sx={{ textTransform: 'none', p: 0, minWidth: 'auto' }}
+                    buttonSize="small"
+                    sx={authLinkButtonSx}
                   >
                     {t('auth.login.signIn')}
-                  </Button>
+                  </StandardButton>
                 </>
               )}
             </Typography>
 
-          </CardContent>
-        </Card>
+        </SurfaceCard>
 
-        </Box>
-      </Container>
-    </Box>
+      </Box>
+    </PageContainer>
   );
 };
 

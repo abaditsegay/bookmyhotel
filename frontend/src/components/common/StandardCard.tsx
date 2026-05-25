@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardProps, useTheme } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import { designSystem } from '../../theme/designSystem';
-import { COLORS, addAlpha } from '../../theme/themeColors';
 
 interface StandardCardProps extends Omit<CardProps, 'variant'> {
   cardVariant?: 'default' | 'outlined' | 'elevated' | 'gradient' | 'glass';
@@ -39,54 +39,64 @@ const StandardCard: React.FC<StandardCardProps> = ({
   ...props 
 }) => {
   const theme = useTheme();
+  const sharedSurfaceRadius = 4;
+  const sharedSurfaceBackground = alpha(theme.palette.background.paper, theme.palette.mode === 'dark' ? 0.82 : 0.93);
 
   const getCardStyles = () => {
     switch (cardVariant) {
       case 'outlined':
         return {
-          boxShadow: designSystem.shadows.sm,
-          transition: 'box-shadow 0.2s ease, transform 0.2s ease',
+          border: `1px solid ${theme.palette.divider}`,
+          boxShadow: 'none',
+          backgroundColor: sharedSurfaceBackground,
+          transition: 'box-shadow 0.2s ease, border-color 0.2s ease, transform 0.2s ease',
           '&:hover': {
-            boxShadow: designSystem.shadows.md,
+            borderColor: theme.palette.primary.main,
+            boxShadow: 'none',
             transform: 'translateY(-1px)',
           },
         };
       case 'elevated':
         return {
-          boxShadow: designSystem.shadows.card,
+          backgroundColor: sharedSurfaceBackground,
+          boxShadow: theme.palette.mode === 'dark' ? '0 10px 24px rgba(2, 6, 23, 0.24)' : designSystem.shadows.xs,
           transition: 'box-shadow 0.2s ease, transform 0.2s ease',
           '&:hover': {
-            boxShadow: designSystem.shadows.cardHover,
+            boxShadow: theme.palette.mode === 'dark' ? '0 14px 28px rgba(2, 6, 23, 0.28)' : designSystem.shadows.sm,
             transform: 'translateY(-2px)',
           },
         };
       case 'gradient':
         return {
-          background: `linear-gradient(135deg, ${theme.palette.primary.main}08 0%, ${theme.palette.secondary.main}08 100%)`,
-          boxShadow: designSystem.shadows.sm,
+          backgroundColor: sharedSurfaceBackground,
+          border: `1px solid ${theme.palette.divider}`,
+          boxShadow: 'none',
           transition: 'all 0.2s ease',
           '&:hover': {
-            background: `linear-gradient(135deg, ${theme.palette.primary.main}15 0%, ${theme.palette.secondary.main}15 100%)`,
-            boxShadow: designSystem.shadows.md,
+            borderColor: theme.palette.primary.main,
+            boxShadow: theme.palette.mode === 'dark' ? '0 12px 24px rgba(2, 6, 23, 0.22)' : designSystem.shadows.xs,
           },
         };
       case 'glass':
         return {
-          background: addAlpha(COLORS.WHITE, 0.85),
-          backdropFilter: 'blur(10px)',
-          boxShadow: designSystem.shadows.md,
+          backgroundColor: alpha(theme.palette.background.paper, theme.palette.mode === 'dark' ? 0.76 : 0.9),
+          border: `1px solid ${theme.palette.divider}`,
+          boxShadow: 'none',
           transition: 'all 0.2s ease',
           '&:hover': {
-            background: addAlpha(COLORS.WHITE, 0.95),
-            boxShadow: designSystem.shadows.lg,
+            backgroundColor: sharedSurfaceBackground,
+            boxShadow: theme.palette.mode === 'dark' ? '0 12px 24px rgba(2, 6, 23, 0.2)' : designSystem.shadows.xs,
           },
         };
       default:
         return {
-          boxShadow: designSystem.shadows.sm,
-          transition: 'box-shadow 0.2s ease',
+          backgroundColor: sharedSurfaceBackground,
+          border: `1px solid ${alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.14 : 0.08)}`,
+          boxShadow: 'none',
+          transition: 'box-shadow 0.2s ease, border-color 0.2s ease',
           '&:hover': {
-            boxShadow: designSystem.shadows.md,
+            borderColor: alpha(theme.palette.primary.main, 0.14),
+            boxShadow: theme.palette.mode === 'dark' ? '0 12px 24px rgba(2, 6, 23, 0.18)' : designSystem.shadows.xs,
           },
         };
     }
@@ -95,7 +105,7 @@ const StandardCard: React.FC<StandardCardProps> = ({
   return (
     <Card
       sx={{
-        borderRadius: designSystem.borderRadius.md,
+        borderRadius: sharedSurfaceRadius,
         overflow: 'hidden',
         ...getCardStyles(),
         ...sx,

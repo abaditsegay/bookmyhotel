@@ -30,23 +30,26 @@ import {
   Notifications as NotificationsIcon,
   FactCheck as FactCheckIcon,
 } from '@mui/icons-material';
+import { alpha } from '@mui/material/styles';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../hooks/useNotifications';
+import { getReadableAccentTextColor } from '../../theme/surfaces';
 import NetworkStatusIndicator from '../NetworkStatusIndicator';
 import LanguageSelector from '../common/LanguageSelector';
-
-import { COLORS, addAlpha } from '../../theme/themeColors';
+import ThemeToggle from '../common/ThemeToggle';
 
 const Navbar: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   
   const { user, logout } = useAuth();
-  const { stats } = useNotifications();
+  const shouldLoadNotifications = user?.role === 'HOTEL_ADMIN' || user?.role === 'FRONTDESK';
+  const { stats } = useNotifications(shouldLoadNotifications);
   
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
@@ -233,7 +236,7 @@ const Navbar: React.FC = () => {
             fontSize: '0.8rem', // Smaller font size
             fontWeight: item.label === 'Shop' ? 700 : user ? 'bold' : 'normal', // Bold for Shop and authenticated users
             textTransform: 'none', // Disable all caps
-            color: item.label === 'Shop' ? COLORS.WHITE : getTextColor(),
+            color: item.label === 'Shop' ? 'common.white' : getTextColor(),
             backgroundColor: item.label === 'Shop' 
               ? theme.palette.success.main
               : item.path && isActivePath(item.path) 
@@ -243,7 +246,7 @@ const Navbar: React.FC = () => {
               backgroundColor: item.label === 'Shop' 
                 ? theme.palette.success.dark
                 : getHoverBackground(),
-              color: item.label === 'Shop' ? COLORS.WHITE : getTextColor(),
+              color: item.label === 'Shop' ? 'common.white' : getTextColor(),
             },
             // Ensure proper stacking and boundaries
             position: 'relative',
@@ -271,7 +274,7 @@ const Navbar: React.FC = () => {
       }}
     >
       <Box sx={{ p: 2 }}>
-        <Typography variant="h6" sx={{ color: theme.palette.primary.main, fontWeight: 'bold' }}>
+        <Typography variant="h6" sx={{ color: readableAccentColor, fontWeight: 'bold' }}>
           🏨 BookMyHotel
         </Typography>
         {user && user.hotelName && shouldShowHotelName() && (
@@ -294,6 +297,10 @@ const Navbar: React.FC = () => {
       </Box>
       <Divider />
       <List>
+        <ListItem sx={{ justifyContent: 'center', py: 1.5 }}>
+          <ThemeToggle variant="button" size="small" showLabel />
+        </ListItem>
+        <Divider />
         {navigationItems.map((item, index) => (
           <ListItem
             key={item.path || index}
@@ -314,8 +321,8 @@ const Navbar: React.FC = () => {
           >
             <ListItemIcon sx={{ 
               color: item.label === 'Shop' 
-                ? COLORS.WHITE
-                : item.path && isActivePath(item.path) ? theme.palette.primary.main : 'inherit' 
+                ? theme.palette.common.white
+                : item.path && isActivePath(item.path) ? readableAccentColor : 'inherit' 
             }}>
               {item.icon}
             </ListItemIcon>
@@ -325,8 +332,8 @@ const Navbar: React.FC = () => {
                 '& .MuiListItemText-primary': {
                   fontWeight: item.label === 'Shop' ? 700 : item.path && isActivePath(item.path) ? 600 : 400,
                   color: item.label === 'Shop' 
-                    ? COLORS.WHITE
-                    : item.path && isActivePath(item.path) ? theme.palette.primary.main : 'inherit',
+                    ? theme.palette.common.white
+                    : item.path && isActivePath(item.path) ? readableAccentColor : 'inherit',
                 }
               }}
             />
@@ -416,23 +423,23 @@ const Navbar: React.FC = () => {
   // Helper function to get hover background based on authentication state
   const getHoverBackground = () => {
     // Use white overlay for all users with the blue background
-    return addAlpha(COLORS.WHITE, 0.1);
+    return alpha(theme.palette.common.white, 0.1);
   };
 
   // Helper function to get active background based on authentication state
   const getActiveBackground = () => {
     // Use white overlay for all users with the blue background
-    return addAlpha(COLORS.WHITE, 0.2);
+    return alpha(theme.palette.common.white, 0.2);
   };
 
   // Helper function to get text color based on authentication state
   const getTextColor = () => {
     // For both authenticated users and guests with dark backgrounds, use white text
     if (user) {
-      return COLORS.WHITE; // White text on navy blue background
+      return theme.palette.common.white; // White text on navy blue background
     }
     // For guest booking with blue background, use white text
-    return COLORS.WHITE;
+    return theme.palette.common.white;
   };
 
   // Helper function to get navbar background based on authentication state
@@ -517,7 +524,7 @@ const Navbar: React.FC = () => {
                   variant="h6"
                   sx={{
                     fontWeight: 600,
-                    color: COLORS.WHITE,
+                    color: 'common.white',
                     fontSize: { xs: '1.1rem', md: '1.25rem' },
                     letterSpacing: '0.02em',
                   }}
@@ -542,10 +549,10 @@ const Navbar: React.FC = () => {
                   fontWeight: 900,
                   fontFamily: '"Pacifico", "Lobster", cursive',
                   fontStyle: 'italic',
-                  color: COLORS.GOLD,
+                  color: 'secondary.light',
                   textAlign: 'center',
                   fontSize: { md: '2rem', lg: '2.5rem' },
-                  textShadow: `3px 3px 6px ${addAlpha(COLORS.BLACK, 0.4)}`,
+                  textShadow: `3px 3px 6px ${alpha(theme.palette.common.black, 0.4)}`,
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
@@ -568,6 +575,8 @@ const Navbar: React.FC = () => {
 
           {/* Right Section: User Actions */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1, justifyContent: 'flex-end' }}>
+            <ThemeToggle variant="menu" size="small" />
+
             {/* Show navigation on right for users with hotel name displayed */}
             {user && user.hotelName && shouldShowHotelName() && !isMobile && (
               <DesktopNavigation />
@@ -583,8 +592,8 @@ const Navbar: React.FC = () => {
                   variant="outlined"
                   data-testid="user-role"
                   sx={{ 
-                    color: COLORS.WHITE, 
-                    borderColor: user ? addAlpha(COLORS.WHITE, 0.7) : addAlpha(COLORS.WHITE, 0.5),
+                    color: 'common.white', 
+                    borderColor: user ? alpha(theme.palette.common.white, 0.7) : alpha(theme.palette.common.white, 0.5),
                     fontSize: '0.75rem',
                     fontWeight: 500,
                     display: { xs: 'none', sm: 'flex' }, // Hide on mobile to save space

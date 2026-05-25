@@ -34,6 +34,7 @@ import { Booking } from '../../types/booking-shared';
 import { formatDateForDisplay } from '../../utils/dateUtils';
 import BookingNotificationEvents from '../../utils/bookingNotificationEvents';
 import { designSystem } from '../../theme/designSystem';
+import { composeSx, surfaceCardSx } from '../../theme/sxHelpers';
 
 interface EnhancedBookingManagementTableProps {
   mode: 'hotel-admin' | 'front-desk' | 'system-admin';
@@ -400,7 +401,7 @@ const EnhancedBookingManagementTable: React.FC<EnhancedBookingManagementTablePro
       </Box>
 
       {/* Enhanced Table */}
-      <Paper sx={{ borderRadius: designSystem.borderRadius.lg, overflow: 'hidden', height: height }}>
+      <Paper sx={composeSx(surfaceCardSx('default'), { overflow: 'hidden', height: height })}>
         <AdvancedTable
           data={bookings.filter(booking => booking && booking.status)} // Filter out undefined/null entries
           columns={columns}
@@ -470,7 +471,7 @@ const EnhancedBookingManagementTable: React.FC<EnhancedBookingManagementTablePro
 
       {/* Remove bulk actions since selection is disabled */}
       {false && selectedBookings.length > 0 && (
-        <Paper sx={{ p: 2, mt: 2, borderRadius: designSystem.borderRadius.md }}>
+        <Paper sx={composeSx(surfaceCardSx('subtle'), { p: 2, mt: 2 })}>
           <Typography variant="body2" color="primary" sx={{ fontWeight: 'bold' }}>
             {selectedBookings.length} booking(s) selected. 
             Available actions: Export to Excel, Send Confirmation Emails, Generate Report
@@ -479,7 +480,11 @@ const EnhancedBookingManagementTable: React.FC<EnhancedBookingManagementTablePro
       )}
 
       {/* Dialogs */}
-      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        PaperProps={{ sx: composeSx(surfaceCardSx('default'), { boxShadow: theme => theme.shadows[10] }) }}
+      >
         <DialogTitle>Cancel Booking</DialogTitle>
         <DialogContent>
           <Typography>

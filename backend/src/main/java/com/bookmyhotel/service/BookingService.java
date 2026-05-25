@@ -47,6 +47,7 @@ import com.bookmyhotel.entity.PaymentStatus;
 import com.bookmyhotel.entity.Reservation;
 import com.bookmyhotel.entity.ReservationStatus;
 import com.bookmyhotel.entity.Room;
+import com.bookmyhotel.entity.RoomStatus;
 import com.bookmyhotel.entity.RoomType;
 import com.bookmyhotel.entity.User;
 import com.bookmyhotel.exception.BookingException;
@@ -141,6 +142,8 @@ public class BookingService {
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public BookingResponse createBookingByRoomType(BookingRequest request, String userEmail) {
         try {
+            boolean immediateCheckIn = request.getRoomId() != null;
+
             // Validate booking request for room type booking
             validateBookingRequestForRoomType(request, userEmail == null);
 
@@ -191,12 +194,12 @@ public class BookingService {
             if (request.getPaymentMethodId() != null) {
                 if ("pay_at_frontdesk".equals(request.getPaymentMethodId())) {
                     // For pay at front desk, mark reservation as booked with payment pending
-                    reservation.setStatus(ReservationStatus.BOOKED);
+                    reservation.setStatus(immediateCheckIn ? ReservationStatus.CHECKED_IN : ReservationStatus.BOOKED);
                     reservation.setPaymentStatus(PaymentStatus.PENDING);
                     // No payment intent ID set, so payment status will be "PENDING"
                 } else if ("mock_payment_processed".equals(request.getPaymentMethodId())) {
                     // For mock payments already processed by frontend
-                    reservation.setStatus(ReservationStatus.BOOKED);
+                    reservation.setStatus(immediateCheckIn ? ReservationStatus.CHECKED_IN : ReservationStatus.BOOKED);
                     reservation.setPaymentStatus(PaymentStatus.COMPLETED);
                     // Use the transaction ID from the mock payment gateway
                     if (request.getTransactionId() != null) {
@@ -230,7 +233,7 @@ public class BookingService {
                     try {
                         String paymentIntentId = processPayment(totalAmount, request.getPaymentMethodId());
                         reservation.setPaymentIntentId(paymentIntentId);
-                        reservation.setStatus(ReservationStatus.BOOKED);
+                        reservation.setStatus(immediateCheckIn ? ReservationStatus.CHECKED_IN : ReservationStatus.BOOKED);
                         reservation.setPaymentStatus(PaymentStatus.COMPLETED);
                     } catch (StripeException e) {
                         reservation.setStatus(ReservationStatus.PENDING);
@@ -241,9 +244,11 @@ public class BookingService {
                 }
             } else {
                 // No payment method provided - still confirm the booking
-                reservation.setStatus(ReservationStatus.BOOKED);
+                reservation.setStatus(immediateCheckIn ? ReservationStatus.CHECKED_IN : ReservationStatus.BOOKED);
                 reservation.setPaymentStatus(PaymentStatus.PENDING);
             }
+
+            alignAssignedRoomStatusWithReservation(reservation);
 
             // Generate a temporary confirmation number before first save
             // We'll update it with the actual ID-based number after save
@@ -523,7 +528,10 @@ public class BookingService {
             cancellationReason = "Cancelled by system";
         }
 
+        BigDecimal refundAmount = calculateCancellationRefund(reservation);
+
         reservation.setStatus(ReservationStatus.CANCELLED);
+        applyCancellationPaymentStatus(reservation, refundAmount);
         reservation.setCancelledAt(LocalDateTime.now());
         reservation.setCancellationReason(cancellationReason);
         reservation = reservationRepository.save(reservation);
@@ -535,14 +543,13 @@ public class BookingService {
             AuditTaxonomy.Action.BOOKING_CANCELLED,
             oldSnapshot,
             convertReservationToMap(reservation),
-            List.of("status", "cancelledAt", "cancellationReason"),
+            List.of("status", "paymentStatus", "cancelledAt", "cancellationReason"),
             cancellationReason,
             true,
             AuditTaxonomy.ComplianceCategory.FINANCIAL);
 
         // Create booking change notification for hotel admin/front desk
         try {
-            BigDecimal refundAmount = calculateCancellationRefund(reservation);
             logger.info("📧 Creating cancellation notification with cancelledBy: '{}', reason: '{}', refundAmount: {}",
                     cancelledBy, cancellationReason, refundAmount);
             bookingChangeNotificationService.createCancellationNotification(
@@ -619,8 +626,8 @@ public class BookingService {
      * Validate booking request for room type booking
      */
     private void validateBookingRequestForRoomType(BookingRequest request, boolean isAnonymousBooking) {
-        if (request.getCheckInDate().isAfter(request.getCheckOutDate())) {
-            throw new BookingException("Check-in date must be before check-out date");
+        if (!request.getCheckOutDate().isAfter(request.getCheckInDate())) {
+            throw new BookingException("Check-out date must be after check-in date");
         }
 
         if (request.getCheckInDate().isBefore(todayInEthiopia())) {
@@ -1021,6 +1028,21 @@ public class BookingService {
         return reservation;
     }
 
+    private void alignAssignedRoomStatusWithReservation(Reservation reservation) {
+        Room assignedRoom = reservation.getRoom();
+        if (assignedRoom == null) {
+            return;
+        }
+
+        if (reservation.getStatus() == ReservationStatus.CHECKED_IN) {
+            assignedRoom.setStatus(RoomStatus.OCCUPIED);
+        } else {
+            assignedRoom.setStatus(RoomStatus.AVAILABLE);
+        }
+
+        roomRepository.save(assignedRoom);
+    }
+
     /**
      * Create reservation entity from room type booking using room type pricing
      */
@@ -1406,6 +1428,17 @@ public class BookingService {
             throw new ResourceNotFoundException(
                     "The email address does not match the booking with confirmation number: " + confirmationNumber);
         }
+
+        return convertToBookingResponse(reservation);
+    }
+
+    /**
+     * Find booking by payment reference within the current tenant context.
+     */
+    public BookingResponse findByPaymentReference(String paymentReference) {
+        Reservation reservation = reservationRepository.findByPaymentReference(paymentReference)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Booking not found with payment reference: " + paymentReference));
 
         return convertToBookingResponse(reservation);
     }
@@ -1849,6 +1882,7 @@ public class BookingService {
 
             // Update reservation status
             reservation.setStatus(ReservationStatus.CANCELLED);
+            applyCancellationPaymentStatus(reservation, refundAmount);
             reservation.setUpdatedAt(LocalDateTime.now());
 
             // Save cancellation reason if provided
@@ -1868,7 +1902,7 @@ public class BookingService {
                     AuditTaxonomy.Action.BOOKING_CANCELLED,
                         convertBookingResponseToMap(existingBooking),
                     convertReservationToMap(reservation),
-                    List.of("status", "specialRequests"),
+                    List.of("status", "paymentStatus", "specialRequests"),
                     request.getCancellationReason() != null && !request.getCancellationReason().isBlank()
                         ? request.getCancellationReason().trim()
                         : "Guest cancelled booking",
@@ -2219,6 +2253,7 @@ public class BookingService {
 
             // Update reservation status
             reservation.setStatus(ReservationStatus.CANCELLED);
+            applyCancellationPaymentStatus(reservation, refundAmount);
             reservation.setUpdatedAt(LocalDateTime.now());
 
             // Save cancellation reason if provided
@@ -2501,6 +2536,28 @@ public class BookingService {
             return new BigDecimal("0.25"); // 25% refund
         } else {
             return BigDecimal.ZERO; // No refund for same day or past
+        }
+    }
+
+    private void applyCancellationPaymentStatus(Reservation reservation, BigDecimal refundAmount) {
+        if (reservation == null || reservation.getPaymentStatus() == null) {
+            return;
+        }
+
+        PaymentStatus currentStatus = reservation.getPaymentStatus();
+        BigDecimal normalizedRefund = refundAmount != null ? refundAmount : BigDecimal.ZERO;
+
+        if (currentStatus == PaymentStatus.COMPLETED || currentStatus == PaymentStatus.PARTIALLY_REFUNDED) {
+            if (normalizedRefund.compareTo(BigDecimal.ZERO) > 0) {
+                reservation.setPaymentStatus(PaymentStatus.REFUND_PENDING);
+            } else {
+                reservation.setPaymentStatus(PaymentStatus.FORFEITED);
+            }
+            return;
+        }
+
+        if (currentStatus == PaymentStatus.PENDING || currentStatus == PaymentStatus.PROCESSING) {
+            reservation.setPaymentStatus(PaymentStatus.CANCELLED);
         }
     }
 

@@ -51,11 +51,14 @@ public class UserManagementService {
     @Qualifier("emailTemplateEngine")
     private TemplateEngine templateEngine;
 
-    @Value("${app.email.from:noreply@shegersolutions.com}")
+    @Value("${app.email.from:noreply@bakaroo.com}")
     private String fromEmail;
 
     @Value("${app.name:BookMyHotel}")
     private String appName;
+
+    @Value("${app.email.support:support@bakaroo.com}")
+    private String supportEmail;
 
     @Value("${app.url:http://localhost:3000}")
     private String appUrl;
@@ -404,6 +407,7 @@ public class UserManagementService {
             templateData.put("newPassword", newPassword);
             templateData.put("appName", appName);
             templateData.put("loginUrl", appUrl + "/login");
+            templateData.put("supportEmail", supportEmail);
 
             Context context = new Context();
             context.setVariables(templateData);
@@ -498,6 +502,10 @@ public class UserManagementService {
         response.setIsActive(user.getIsActive());
         response.setRoles(user.getRoles());
         response.setTenantId(user.getTenantId());
+        if (user.getHotel() != null) {
+            response.setHotelId(user.getHotel().getId());
+            response.setHotelName(user.getHotel().getName());
+        }
         response.setCreatedAt(user.getCreatedAt());
         response.setUpdatedAt(user.getUpdatedAt());
         return response;

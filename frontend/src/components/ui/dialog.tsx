@@ -94,11 +94,13 @@ const DialogHeader = React.forwardRef<
 DialogHeader.displayName = 'DialogHeader';
 
 const DialogTitle = React.forwardRef<
-  HTMLHeadingElement,
-  React.HTMLAttributes<HTMLHeadingElement>
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <h2
+  <div
     ref={ref}
+    role="heading"
+    aria-level={2}
     className={cn('text-lg font-semibold text-foreground', className)}
     {...props}
   />

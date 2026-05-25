@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { buildApiUrl } from '../config/apiConfig';
+import { alpha } from '@mui/material/styles';
 import {
   Paper,
   Typography,
@@ -29,14 +30,15 @@ import {
 import {
   Edit as EditIcon,
   FilterList as FilterIcon,
-  Cancel as CancelIcon,
   Schedule as ScheduleIcon,
   Upload as UploadIcon,
   Clear as ClearIcon,
   Add as AddIcon,
 } from '@mui/icons-material';
+import { composeSx, infoPanelSx, surfaceCardSx, tableHeadRowSx } from '../theme/sxHelpers';
+import { getReadableAccentTextColor } from '../theme/surfaces';
 import { useAuth } from '../contexts/AuthContext';
-import { COLORS, addAlpha } from '../theme/themeColors';
+import { useSubmissionError } from '../contexts/SubmissionErrorContext';
 import PremiumTextField from './common/PremiumTextField';
 import PremiumSelect from './common/PremiumSelect';
 import PremiumDatePicker from './common/PremiumDatePicker';
@@ -99,8 +101,12 @@ interface User {
 
 const StaffScheduleManagement: React.FC = () => {
   const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
+  const readableAccentBorder = alpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.36 : 0.22);
+  const readableAccentHover = alpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.16 : 0.08);
   const { token, user } = useAuth();
   const { t } = useTranslation();
+  const { showSubmissionError } = useSubmissionError();
   const [schedules, setSchedules] = useState<StaffSchedule[]>([]);
   const [hotels, setHotels] = useState<Hotel[]>([]);
   const [staff, setStaff] = useState<User[]>([]);
@@ -373,7 +379,9 @@ const StaffScheduleManagement: React.FC = () => {
       await fetchSchedules();
     } catch (error) {
       // console.error('Error updating status:', error);
-      setError('Failed to update schedule status');
+      showSubmissionError(error, {
+        fallbackMessage: 'Failed to update schedule status',
+      });
     }
   };
 
@@ -419,12 +427,12 @@ const StaffScheduleManagement: React.FC = () => {
 
   const handleFileUpload = async () => {
     if (!uploadFile) {
-      setError('Please select a file to upload');
+      showSubmissionError('Please select a file to upload');
       return;
     }
 
     if (!token) {
-      setError('Authentication token not available');
+      showSubmissionError('Authentication token not available');
       return;
     }
 
@@ -516,15 +524,14 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
 
       {/* Filters Section */}
       <Paper elevation={0} sx={{ 
-        p: 3, 
+        ...surfaceCardSx('default'),
+        p: 3,
         mb: 3,
-        borderRadius: 3,
-        boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.08)}`
       }}>
-        <Box display="flex" alignItems="center" justifyContent="space-between" mb={3} pb={2} borderBottom={`2px solid ${COLORS.PRIMARY}`}>
+        <Box display="flex" alignItems="center" justifyContent="space-between" mb={3} pb={2} borderBottom={`2px solid ${readableAccentBorder}`}>
           <Box display="flex" alignItems="center">
-            <ScheduleIcon sx={{ mr: 1.5, color: COLORS.PRIMARY, fontSize: 28 }} />
-            <Typography variant="h5" component="h2" sx={{ fontWeight: 700, color: COLORS.TEXT_PRIMARY }}>
+            <ScheduleIcon sx={{ mr: 1.5, color: readableAccentColor, fontSize: 28 }} />
+            <Typography variant="h5" component="h2" sx={{ fontWeight: 700, color: 'text.primary' }}>
               Staff Schedules
             </Typography>
           </Box>
@@ -538,11 +545,11 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
               }}
               startIcon={<AddIcon />}
               sx={{
-                backgroundColor: COLORS.PRIMARY,
+                backgroundColor: 'primary.main',
                 color: 'white',
                 fontWeight: 600,
                 '&:hover': {
-                  backgroundColor: COLORS.PRIMARY_HOVER
+                  backgroundColor: 'primary.dark'
                 }
               }}
             >
@@ -553,12 +560,12 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
               onClick={() => setShowUploadModal(true)}
               startIcon={<UploadIcon />}
               sx={{
-                borderColor: COLORS.PRIMARY,
-                color: COLORS.PRIMARY,
+                borderColor: readableAccentBorder,
+                color: readableAccentColor,
                 fontWeight: 600,
                 '&:hover': {
-                  borderColor: COLORS.PRIMARY_HOVER,
-                  backgroundColor: addAlpha(COLORS.PRIMARY, 0.08)
+                  borderColor: readableAccentColor,
+                  backgroundColor: readableAccentHover,
                 }
               }}
             >
@@ -567,13 +574,11 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
           </Box>
         </Box>
         
-        <Box sx={{ 
+        <Box sx={composeSx(infoPanelSx, {
           p: 2.5,
-          backgroundColor: COLORS.BG_LIGHT,
-          borderRadius: 2,
           mb: 2,
-          boxShadow: `0 6px 16px ${addAlpha(COLORS.BLACK, 0.05)}`,
-        }}>
+          boxShadow: 'none',
+        })}>
           <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.secondary', mb: 2.5, display: 'flex', alignItems: 'center', gap: 1 }}>
             <FilterIcon fontSize="small" />
             Filters
@@ -653,13 +658,13 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
                 fullWidth
                 startIcon={<ClearIcon />}
                 sx={{
-                  borderColor: COLORS.BORDER_LIGHT,
-                  color: COLORS.TEXT_SECONDARY,
+                  borderColor: theme.palette.divider,
+                  color: 'text.secondary',
                   fontWeight: 600,
                   '&:hover': {
-                    borderColor: COLORS.PRIMARY,
-                    backgroundColor: addAlpha(COLORS.PRIMARY, 0.08),
-                    color: COLORS.PRIMARY
+                    borderColor: readableAccentBorder,
+                    backgroundColor: readableAccentHover,
+                    color: readableAccentColor,
                   }
                 }}
               >
@@ -672,10 +677,9 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
 
       {/* Schedules Table */}
       <Paper 
-        elevation={1}
+        elevation={0}
         sx={{
-          borderRadius: 3,
-          boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.08)}`,
+          ...surfaceCardSx('default'),
           overflow: 'hidden'
         }}
       >
@@ -683,19 +687,7 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
           <Table>
             <TableHead>
               <TableRow
-                sx={{
-                    background: `linear-gradient(135deg, ${COLORS.BG_DEFAULT} 0%, ${COLORS.BG_LIGHT} 50%, ${COLORS.BG_DEFAULT} 100%)`,
-                  borderBottom: `2px solid ${COLORS.PRIMARY}`,
-                  '& .MuiTableCell-head': {
-                    color: COLORS.PRIMARY,
-                    fontWeight: 700,
-                    fontSize: '0.75rem',
-                    letterSpacing: '0.5px',
-                    textTransform: 'uppercase',
-                    border: 'none',
-                    padding: '16px',
-                  }
-                }}
+                sx={tableHeadRowSx({ compact: true })}
               >
                 <TableCell><strong>Staff Member</strong></TableCell>
                 <TableCell><strong>Hotel</strong></TableCell>
@@ -772,10 +764,10 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
                           size="small"
                           onClick={() => handleEdit(schedule)}
                           sx={{
-                            color: COLORS.PRIMARY,
+                            color: readableAccentColor,
                             '&:hover': {
-                              backgroundColor: addAlpha(COLORS.PRIMARY, 0.08),
-                              color: COLORS.PRIMARY_HOVER
+                              backgroundColor: readableAccentHover,
+                              color: readableAccentColor,
                             }
                           }}
                         >
@@ -801,11 +793,11 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
             <Button 
               variant="contained"
               sx={{ 
-                backgroundColor: COLORS.PRIMARY,
+                backgroundColor: 'primary.main',
                 color: 'white',
                 fontWeight: 600,
                 '&:hover': { 
-                  backgroundColor: COLORS.PRIMARY_HOVER,
+                  backgroundColor: 'primary.dark',
                 },
               }}
               onClick={() => {
@@ -829,18 +821,18 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
             onPageChange={handleChangePage}
             onRowsPerPageChange={handleChangeRowsPerPage}
             sx={{
-              borderTop: `1px solid ${COLORS.BORDER_LIGHT}`,
+              borderTop: `1px solid ${theme.palette.divider}`,
               '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
-                color: COLORS.TEXT_SECONDARY,
+                color: 'text.secondary',
                 fontWeight: 500,
               },
               '& .MuiIconButton-root': {
-                  color: COLORS.PRIMARY,
+                  color: readableAccentColor,
                 '&:hover': {
-                    backgroundColor: addAlpha(COLORS.PRIMARY, 0.08),
+                    backgroundColor: readableAccentHover,
                 },
                 '&.Mui-disabled': {
-                  color: COLORS.TEXT_DISABLED,
+                  color: 'text.disabled',
                 }
               }
             }}
@@ -857,21 +849,21 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
         PaperProps={{
           elevation: 0,
           sx: { 
-            borderRadius: 3,
-            boxShadow: `0 8px 32px ${addAlpha(COLORS.BLACK, 0.12)}`,
+            ...surfaceCardSx('default'),
+            boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.12)}`,
           }
         }}
       >
         <DialogTitle 
           sx={{ 
             pb: 2,
-            borderBottom: `2px solid ${COLORS.PRIMARY}`,
-            background: `linear-gradient(135deg, ${addAlpha(COLORS.PRIMARY, 0.08)} 0%, ${addAlpha(COLORS.WHITE, 0.95)} 100%)`,
+            borderBottom: `2px solid ${readableAccentBorder}`,
+            backgroundColor: alpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.08 : 0.04),
           }}
         >
           <Box display="flex" alignItems="center" gap={1.5}>
-            <ScheduleIcon sx={{ fontSize: 28, color: COLORS.PRIMARY }} />
-            <Typography variant="h5" fontWeight={700} color={COLORS.TEXT_PRIMARY}>
+            <ScheduleIcon sx={{ fontSize: 28, color: readableAccentColor }} />
+            <Typography variant="h5" fontWeight={700} color="text.primary">
               {editingSchedule ? 'Edit Schedule' : 'Create New Schedule'}
             </Typography>
           </Box>
@@ -1063,13 +1055,13 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
               onClick={() => setShowModal(false)}
               variant="outlined"
               sx={{
-                borderColor: COLORS.BORDER_LIGHT,
-                color: COLORS.TEXT_SECONDARY,
+                borderColor: theme.palette.divider,
+                color: 'text.secondary',
                 fontWeight: 600,
                 '&:hover': {
-                  borderColor: COLORS.PRIMARY,
-                  backgroundColor: addAlpha(COLORS.PRIMARY, 0.08),
-                  color: COLORS.PRIMARY
+                  borderColor: readableAccentBorder,
+                  backgroundColor: readableAccentHover,
+                  color: readableAccentColor,
                 }
               }}
             >
@@ -1080,11 +1072,11 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
               variant="contained"
               startIcon={editingSchedule ? <EditIcon /> : <AddIcon />}
               sx={{
-                backgroundColor: COLORS.PRIMARY,
+                backgroundColor: 'primary.main',
                 color: 'white',
                 fontWeight: 600,
                 '&:hover': {
-                  backgroundColor: COLORS.PRIMARY_HOVER,
+                  backgroundColor: 'primary.dark',
                 }
               }}
             >
@@ -1103,21 +1095,21 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
         PaperProps={{
           elevation: 0,
           sx: { 
-            borderRadius: 3,
-            boxShadow: `0 8px 32px ${addAlpha(COLORS.BLACK, 0.12)}`,
+            ...surfaceCardSx('default'),
+            boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.12)}`,
           }
         }}
       >
         <DialogTitle 
           sx={{ 
             pb: 2,
-            borderBottom: `2px solid ${COLORS.PRIMARY}`,
-            background: `linear-gradient(135deg, ${addAlpha(COLORS.PRIMARY, 0.08)} 0%, ${addAlpha(COLORS.WHITE, 0.95)} 100%)`,
+            borderBottom: `2px solid ${readableAccentBorder}`,
+            backgroundColor: alpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.08 : 0.04),
           }}
         >
           <Box display="flex" alignItems="center" gap={1.5}>
-            <UploadIcon sx={{ fontSize: 28, color: COLORS.PRIMARY }} />
-            <Typography variant="h5" fontWeight={700} color={COLORS.TEXT_PRIMARY}>
+            <UploadIcon sx={{ fontSize: 28, color: readableAccentColor }} />
+            <Typography variant="h5" fontWeight={700} color="text.primary">
               Upload Schedule File
             </Typography>
           </Box>
@@ -1138,7 +1130,7 @@ jane.smith@example.com,Grand Hotel,2024-08-25,17:00,01:00,EVENING,HOUSEKEEPING,E
                 border: 2, 
                 borderStyle: 'dashed',
                 borderColor: 'divider', 
-                borderRadius: 2, 
+                borderRadius: 4, 
                 p: 3, 
                 mb: 3,
                 backgroundColor: theme.palette.background.paper,

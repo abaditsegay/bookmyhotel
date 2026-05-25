@@ -247,6 +247,10 @@ function getLang(): 'en' | 'am' | 'om' {
   return 'en';
 }
 
+function getActiveCalendarType() {
+  return getCalendarType(i18n.language);
+}
+
 /**
  * Format a date/time value. Uses Ethiopian or Gregorian based on user preference.
  * Language auto-detected from i18n.
@@ -256,7 +260,7 @@ export function formatEthiopianDateTime(value: any, lang?: 'en' | 'am' | 'om'): 
   const date = parseDateValue(value);
   if (!date) return '-';
 
-  if (getCalendarType() === 'gregorian') {
+  if (getActiveCalendarType() === 'gregorian') {
     return formatGregDateTime(date, l);
   }
 
@@ -288,7 +292,7 @@ export function formatEthiopianDate(value: any, lang?: 'en' | 'am' | 'om'): stri
   const date = parseDateValue(value);
   if (!date) return '-';
 
-  if (getCalendarType() === 'gregorian') {
+  if (getActiveCalendarType() === 'gregorian') {
     return formatGregDate(date, l);
   }
 
@@ -312,7 +316,7 @@ export function formatEthiopianTime(value: any, lang?: 'en' | 'am' | 'om'): stri
   const date = parseDateValue(value);
   if (!date) return '-';
 
-  if (getCalendarType() === 'gregorian') {
+  if (getActiveCalendarType() === 'gregorian') {
     return formatGregTime(date, l);
   }
 
@@ -339,7 +343,7 @@ export function formatEthiopianDateLong(value: any, lang?: 'en' | 'am' | 'om'): 
   const date = parseDateValue(value);
   if (!date) return '-';
 
-  if (getCalendarType() === 'gregorian') {
+  if (getActiveCalendarType() === 'gregorian') {
     return formatGregDateLong(date, l);
   }
 

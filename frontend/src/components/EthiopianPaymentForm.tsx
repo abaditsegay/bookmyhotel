@@ -25,12 +25,13 @@ import {
   AccessTime as TimeIcon
 } from '@mui/icons-material';
 import TokenManager from '../utils/tokenManager';
-import { COLORS } from '../theme/themeColors';
+import { useThemeColors } from '../theme/useThemeColors';
 import { buildApiUrl } from '../config/apiConfig';
 
 interface EthiopianPaymentFormProps {
   amount: number;
   bookingReference: string;
+  hotelId: number;
   customerName?: string;
   customerEmail?: string;
   instructions?: string;
@@ -54,11 +55,13 @@ export const EthiopianPaymentForm: React.FC<EthiopianPaymentFormProps> = ({
   onPaymentInitiated,
   onError,
   bookingReference,
+  hotelId,
   customerName,
   customerEmail,
   instructions,
   errorMessage
 }) => {
+  const { COLORS } = useThemeColors();
   const [selectedProvider, setSelectedProvider] = useState<'MBIRR' | 'TELEBIRR'>('TELEBIRR');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [loading, setLoading] = useState(false);
@@ -121,6 +124,7 @@ export const EthiopianPaymentForm: React.FC<EthiopianPaymentFormProps> = ({
         amount: amount,
         phoneNumber: phoneNumber.replace(/\s/g, ''), // Remove spaces
         bookingReference,
+        hotelId,
         paymentProvider: selectedProvider,
         customerName: customerName || '',
         customerEmail: customerEmail || '',
@@ -344,7 +348,7 @@ export const EthiopianPaymentForm: React.FC<EthiopianPaymentFormProps> = ({
 
           {/* Provider Information */}
           <Grid item xs={12}>
-            <Card variant="outlined" sx={{ bgcolor: 'grey.50' }}>
+            <Card variant="outlined" sx={{ bgcolor: 'action.hover' }}>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                   {providerInfo.icon}

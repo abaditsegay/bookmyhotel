@@ -1,7 +1,6 @@
 import React from 'react';
-import { Box, CircularProgress, Typography, Fade } from '@mui/material';
+import { Box, CircularProgress, Typography, Fade, alpha, useTheme } from '@mui/material';
 import { designSystem } from '../../theme/designSystem';
-import { COLORS, addAlpha } from '../../theme/themeColors';
 
 interface StandardLoadingProps {
   /**
@@ -66,6 +65,7 @@ const StandardLoading: React.FC<StandardLoadingProps> = ({
   children,
   minHeight,
 }) => {
+  const theme = useTheme();
   const sizeMap = {
     small: 24,
     medium: 40,
@@ -87,7 +87,7 @@ const StandardLoading: React.FC<StandardLoadingProps> = ({
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundColor: addAlpha(COLORS.WHITE, 0.9),
+          backgroundColor: alpha(theme.palette.common.white, 0.9),
           zIndex: 1000,
           backdropFilter: 'blur(2px)',
         }),

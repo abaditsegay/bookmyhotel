@@ -14,6 +14,7 @@ import {
   Alert,
   CircularProgress
 } from '@mui/material';
+import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
 import { operationsSupervisorApi } from '../../services/operationsSupervisorApi';
 import { HousekeepingStaff, HousekeepingTask, MaintenanceRequest } from '../../types/operations';
 
@@ -32,6 +33,7 @@ const TaskAssignmentDialog: React.FC<TaskAssignmentDialogProps> = ({
   maintenanceRequest,
   onAssigned
 }) => {
+  const { showSubmissionError } = useSubmissionError();
   const [selectedStaffId, setSelectedStaffId] = useState<number | ''>('');
   const [staff, setStaff] = useState<HousekeepingStaff[]>([]);
   const [loading, setLoading] = useState(false);
@@ -81,7 +83,9 @@ const TaskAssignmentDialog: React.FC<TaskAssignmentDialogProps> = ({
       onClose();
       setSelectedStaffId('');
     } catch (err) {
-      setError('Failed to assign task');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to assign task',
+      });
       // console.error('Assign error:', err);
     } finally {
       setLoading(false);

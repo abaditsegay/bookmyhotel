@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { alpha } from '@mui/material/styles';
 import {
   Dialog,
   DialogTitle,
@@ -14,12 +15,14 @@ import {
   FormHelperText,
   Typography,
   Divider,
+  useTheme,
 } from '@mui/material';
 import { Hotel } from '../../types/hotel';
 import { adminApiService, TenantDTO } from '../../services/adminApi';
 import { useAuth } from '../../contexts/AuthContext';
 import PremiumTextField from '../common/PremiumTextField';
 import PremiumSelect from '../common/PremiumSelect';
+import { getReadableAccentTextColor } from '../../theme/surfaces';
 
 interface HotelEditDialogProps {
   open: boolean;
@@ -38,6 +41,9 @@ const HotelEditDialog: React.FC<HotelEditDialogProps> = ({
   loading = false,
   error,
 }) => {
+  const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
+  const readableAccentHover = alpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.14 : 0.08);
   const [formData, setFormData] = useState<Partial<Hotel>>({
     name: '',
     description: '',
@@ -487,9 +493,16 @@ const HotelEditDialog: React.FC<HotelEditDialogProps> = ({
         )}
       </DialogContent>
       <DialogActions>
-        <Button 
-          onClick={handleClose} 
+        <Button
+          onClick={handleClose}
           disabled={saving}
+          sx={{
+            color: readableAccentColor,
+            '&:hover': {
+              backgroundColor: readableAccentHover,
+              color: readableAccentColor,
+            },
+          }}
         >
           Cancel
         </Button>

@@ -2,7 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Box, CircularProgress, LinearProgress, Skeleton, Typography } from '@mui/material';
 import { styled, keyframes } from '@mui/material/styles';
-import { COLORS, addAlpha } from '../../theme/themeColors';
+import { useThemeColors } from '../../theme/useThemeColors';
 
 // Styled components for custom loading animations
 const pulseAnimation = keyframes`
@@ -259,6 +259,7 @@ export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
   backdrop = true,
 }) => {
   const { t } = useTranslation();
+  const { COLORS, addAlpha } = useThemeColors();
 
   if (!open) return null;
 

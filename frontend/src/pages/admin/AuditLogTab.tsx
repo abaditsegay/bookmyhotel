@@ -21,7 +21,9 @@ import {
   Divider,
   Paper,
   Grid,
+  useTheme,
 } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import {
   Visibility as ViewIcon,
   CheckCircle as SuccessIcon,
@@ -32,6 +34,7 @@ import { adminApiService, SystemAuditLogDto, AuditLogParams } from '../../servic
 import { useAuthenticatedApi } from '../../hooks/useAuthenticatedApi';
 import PremiumTextField from '../../components/common/PremiumTextField';
 import PremiumSelect from '../../components/common/PremiumSelect';
+import { dialogSecondaryActionSx } from '../../theme/sxHelpers';
 import { formatDateTimeForDisplay } from '../../utils/dateUtils';
 
 const ENTITY_TYPES = ['SYSTEM', 'USER', 'HOTEL', 'ROOM', 'TENANT', 'HOTEL_REGISTRATION'];
@@ -43,6 +46,7 @@ const ACTIONS = [
 
 const AuditLogTab: React.FC = () => {
   useAuthenticatedApi();
+  const theme = useTheme();
 
   const [logs, setLogs] = useState<SystemAuditLogDto[]>([]);
   const [totalElements, setTotalElements] = useState(0);
@@ -148,7 +152,7 @@ const AuditLogTab: React.FC = () => {
         <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
           <Box sx={{
             px: 3, py: 1.5, borderRadius: 1,
-            background: 'rgba(25, 118, 210, 0.08)',
+            backgroundColor: alpha(theme.palette.info.main, theme.palette.mode === 'dark' ? 0.18 : 0.08),
             display: 'flex', alignItems: 'center', gap: 1,
           }}>
             <Typography variant="body2" color="text.secondary">Actions today:</Typography>
@@ -156,7 +160,10 @@ const AuditLogTab: React.FC = () => {
           </Box>
           <Box sx={{
             px: 3, py: 1.5, borderRadius: 1,
-            background: statsFailed && statsFailed > 0 ? 'rgba(211, 47, 47, 0.08)' : 'rgba(46, 125, 50, 0.08)',
+            backgroundColor: alpha(
+              statsFailed && statsFailed > 0 ? theme.palette.error.main : theme.palette.success.main,
+              theme.palette.mode === 'dark' ? 0.18 : 0.08,
+            ),
             display: 'flex', alignItems: 'center', gap: 1,
           }}>
             <Typography variant="body2" color="text.secondary">Failed today:</Typography>
@@ -443,6 +450,7 @@ const AuditLogTab: React.FC = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDetail}>Close</Button>
+          <Button variant="outlined" sx={dialogSecondaryActionSx} onClick={handleCloseDetail}>Close</Button>
         </DialogActions>
       </Dialog>
     </Box>

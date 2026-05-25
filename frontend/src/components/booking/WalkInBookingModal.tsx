@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { formatEthiopianPhone, normalizeEthiopianPhone } from '../../utils/phoneUtils';
+import { formatEthiopianPhone } from '../../utils/phoneUtils';
 import {
   Dialog,
   DialogTitle,
@@ -27,14 +27,16 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useTenant } from '../../contexts/TenantContext';
 import { hotelApiService } from '../../services/hotelApi';
 import { hotelAdminApi } from '../../services/hotelAdminApi';
-import { frontDeskApiService } from '../../services/frontDeskApi';
+import { buildWalkInBookingRequest, frontDeskApiService } from '../../services/frontDeskApi';
 import { formatCurrency, formatCurrencyWithDecimals } from '../../utils/currencyUtils';
 import { API_CONFIG, buildApiUrl } from '../../config/apiConfig';
 import PremiumTextField from '../common/PremiumTextField';
 import PremiumDatePicker from '../common/PremiumDatePicker';
 import NumberStepper from '../common/NumberStepper';
-import { COLORS, addAlpha } from '../../theme/themeColors';
+import { useThemeColors } from '../../theme/useThemeColors';
 import { extractBookingErrorMessage } from '../../utils/errorHandling';
+import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
+import { getReadableAccentTextColor } from '../../theme/surfaces';
 
 // API base URL for backend calls
 const API_BASE_URL = API_CONFIG.SERVER_URL;
@@ -73,7 +75,10 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
   const { t } = useTranslation();
   const { token, user } = useAuth();
   const { tenantId } = useTenant();
+  const { showSubmissionError } = useSubmissionError();
+  const { COLORS, addAlpha } = useThemeColors();
   const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
   
   // Get translated steps
   const steps = [
@@ -369,17 +374,17 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
     if (activeStep === 0) {
       // Validate guest information
       if (!guestInfo.firstName || !guestInfo.lastName || !guestInfo.email || !guestInfo.phone) {
-        setError(t('walkInBooking.validationErrors.fillAllFields'));
+        showSubmissionError(t('walkInBooking.validationErrors.fillAllFields'));
         return;
       }
       if (!guestInfo.email.includes('@')) {
-        setError(t('walkInBooking.validationErrors.invalidEmail'));
+        showSubmissionError(t('walkInBooking.validationErrors.invalidEmail'));
         return;
       }
     } else if (activeStep === 1) {
       // Validate room selection
       if (!selectedRoom) {
-        setError(t('walkInBooking.validationErrors.selectRoom'));
+        showSubmissionError(t('walkInBooking.validationErrors.selectRoom'));
         return;
       }
     }
@@ -400,19 +405,18 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
     setError(null);
     
     try {
-      const bookingRequest = {
+      const bookingRequest = buildWalkInBookingRequest({
         hotelId: hotelId,
         roomType: selectedRoom.roomType,
         roomId: selectedRoom.id, // Add specific room ID for immediate assignment
         checkInDate: format(checkInDate, 'yyyy-MM-dd'),
         checkOutDate: format(checkOutDate, 'yyyy-MM-dd'),
         guests: guests,
-        specialRequests: specialRequests || undefined,
-        paymentMethodId: 'pay_at_frontdesk', // Special indicator for front desk payments
+        specialRequests,
         guestName: `${guestInfo.firstName} ${guestInfo.lastName}`,
         guestEmail: guestInfo.email,
         guestPhone: guestInfo.phone,
-      };
+      });
 
       let response;
       
@@ -450,7 +454,9 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
       
       // Use the centralized error handling utility
       const errorMessage = extractBookingErrorMessage(error);
-      setError(errorMessage);
+      showSubmissionError(errorMessage, {
+        fallbackMessage: 'Failed to create booking. Please try again.',
+      });
     } finally {
       setLoading(false);
     }
@@ -504,7 +510,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                   <Box>
                     <Typography variant="h6" sx={{ 
                       fontWeight: 700,
-                      color: COLORS.PRIMARY,
+                      color: COLORS.PRIMARY_TEXT,
                       mb: 0.5,
                     }}>
                       {t('walkInBooking.guestInformation.title')}
@@ -576,7 +582,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                   <Box>
                     <Typography variant="h6" sx={{ 
                       fontWeight: 700,
-                      color: COLORS.PRIMARY,
+                      color: COLORS.PRIMARY_TEXT,
                       mb: 0.5,
                     }}>
                       {t('walkInBooking.stayDetails.title')}
@@ -691,7 +697,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
       case 1:
         return (
           <Box>
-            <Typography variant="h6" gutterBottom sx={{ fontWeight: 700, color: COLORS.PRIMARY }}>
+            <Typography variant="h6" gutterBottom sx={{ fontWeight: 700, color: readableAccentColor }}>
               {t('walkInBooking.roomSelection.title')}
             </Typography>
             <Typography variant="body2" sx={{ color: theme.palette.text.secondary }} gutterBottom>
@@ -1066,7 +1072,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
                     <Box sx={{
                       p: 2,
                       bgcolor: addAlpha(COLORS.SECONDARY, 0.1),
-                      color: COLORS.PRIMARY,
+                      color: readableAccentColor,
                       borderRadius: 2,
                       textAlign: 'center',
                       border: '1px solid',
@@ -1119,7 +1125,7 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
               variant="h5" 
               sx={{ 
                 fontWeight: 700,
-                color: COLORS.PRIMARY,
+                color: readableAccentColor,
               }}
             >
               {t('walkInBooking.title')}
@@ -1135,10 +1141,10 @@ const WalkInBookingModal: React.FC<WalkInBookingModalProps> = ({
           alternativeLabel
           sx={{
             '& .MuiStepLabel-root .Mui-completed': {
-              color: COLORS.PRIMARY,
+              color: readableAccentColor,
             },
             '& .MuiStepLabel-root .Mui-active': {
-              color: COLORS.PRIMARY,
+              color: readableAccentColor,
             },
           }}
         >

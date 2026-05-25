@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { 
   Box, 
-  Container, 
   useTheme, 
   useMediaQuery,
   IconButton,
@@ -19,6 +18,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useTenant } from '../../contexts/TenantContext';
 import CalendarWidget from '../common/CalendarWidget';
 import TodosWidget from '../common/TodosWidget';
+import { PageContainer } from '../common';
 
 interface EnhancedLayoutProps {
   children: React.ReactNode;
@@ -34,7 +34,7 @@ const EnhancedLayout: React.FC<EnhancedLayoutProps> = ({
   hideSidebar = false
 }) => {
   const theme = useTheme();
-  const { user, isAuthenticated } = useAuth();
+  const { user } = useAuth();
   const { isSystemWideContext } = useTenant();
   
   // Responsive breakpoints
@@ -64,7 +64,7 @@ const EnhancedLayout: React.FC<EnhancedLayoutProps> = ({
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
-        bgcolor: 'grey.50',
+        bgcolor: 'action.hover',
         borderLeft: isDesktop ? `1px solid ${theme.palette.divider}` : 'none',
       }}
     >
@@ -120,25 +120,12 @@ const EnhancedLayout: React.FC<EnhancedLayoutProps> = ({
             minWidth: 0, // Prevent flex item from overflowing
           }}
         >
-          <Container
+          <PageContainer
             maxWidth={maxWidth}
-            disableGutters={maxWidth === false ? true : disableGutters} // Force no gutters when maxWidth is false
-            sx={{
-              flexGrow: 1,
-              py: { xs: 2, md: 3 },
-              pb: { xs: 10, md: 12 }, // Add bottom padding for fixed footer
-              display: 'flex',
-              flexDirection: 'column',
-              // When maxWidth is false, expand to full width minus sidebar
-              ...(maxWidth === false && {
-                maxWidth: 'none',
-                width: '100%',
-                px: { xs: 2, md: 3 }, // Add some padding when full width
-              }),
-            }}
+            disableGutters={disableGutters}
           >
             {children}
-          </Container>
+          </PageContainer>
         </Box>
         
         {/* Desktop Sidebar - hidden, widgets disabled */}

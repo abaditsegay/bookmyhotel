@@ -1,22 +1,29 @@
 import React from 'react';
-import { FormControl, InputLabel, Select, FormControlProps, SelectChangeEvent, SxProps, Theme } from '@mui/material';
-import { COLORS } from '../../theme/themeColors';
+import {
+  alpha,
+  FormControl,
+  FormControlProps,
+  FormHelperText,
+  InputLabel,
+  Select,
+  SelectProps,
+  SxProps,
+  Theme,
+  useTheme,
+} from '@mui/material';
+import { getColorScheme } from '../../theme/designSystem';
 
-interface PremiumSelectProps {
+interface PremiumSelectProps extends Omit<SelectProps<any>, 'label' | 'children' | 'sx'> {
   label: string;
   formControlProps?: Omit<FormControlProps, 'children'>;
   children: React.ReactNode;
-  fullWidth?: boolean;
-  required?: boolean;
-  value?: any;
-  onChange?: (event: SelectChangeEvent<any>) => void;
-  disabled?: boolean;
+  helperText?: React.ReactNode;
   sx?: SxProps<Theme>;
 }
 
 /**
- * Premium styled Select component for forms
- * Features gold border, cream background, and uppercase labels to match PremiumTextField
+ * Premium styled Select component for forms.
+ * Mirrors PremiumTextField so select inputs participate in the same central form language.
  */
 const PremiumSelect: React.FC<PremiumSelectProps> = ({ 
   label, 
@@ -27,52 +34,66 @@ const PremiumSelect: React.FC<PremiumSelectProps> = ({
   value,
   onChange,
   disabled,
+  helperText,
+  error = false,
+  size = 'medium',
+  variant = 'outlined',
   sx,
   ...otherProps
 }) => {
+  const theme = useTheme();
+  const scheme = getColorScheme(theme.palette.mode === 'dark' ? 'dark' : 'light');
+  const borderColor = theme.palette.mode === 'dark' ? scheme.border.strong : scheme.border.input;
+  const hoverBorderColor = theme.palette.mode === 'dark' ? alpha(scheme.border.strong, 1) : scheme.border.strong;
+
   const baseSx: SxProps<Theme> = {
     '& .MuiInputLabel-root': {
-      textTransform: 'uppercase',
-      fontSize: '0.7rem',
-      fontWeight: 600,
-      letterSpacing: '0.5px',
-      color: COLORS.PRIMARY,
+      fontSize: '0.82rem',
+      fontWeight: 500,
+      color: theme.palette.text.secondary,
       '&.Mui-focused': {
-        color: `${COLORS.PRIMARY} !important`, // Keep consistent dark focus
+        color: `${theme.palette.primary.main} !important`,
+        fontWeight: 600,
       },
     },
     '& .MuiOutlinedInput-root': {
-      backgroundColor: '#fafafa', // Light gray background to match reference
-      borderRadius: '4px',
+      backgroundColor: scheme.background.input,
+      borderRadius: `${theme.shape.borderRadius}px`,
       '& fieldset': {
-        borderColor: '#e0e0e0', // Light gray border
-        borderWidth: '1px',
-        borderLeftWidth: '2px', // Gold left border
-        borderLeftColor: '#E8B86D', // Gold left accent
+        borderColor,
+        borderWidth: theme.palette.mode === 'dark' ? '1.5px' : '1px',
       },
       '&:hover fieldset': {
-        borderColor: '#d0d0d0',
-        borderLeftWidth: '2px',
-        borderLeftColor: '#E8B86D',
+        borderColor: hoverBorderColor,
       },
-      '&.Mui-focused fieldset': {
-        borderColor: '#E8B86D',
-        borderWidth: '1px',
-        borderLeftWidth: '2px',
-        borderLeftColor: '#E8B86D',
+      '&.Mui-focused': {
+        backgroundColor: scheme.background.input,
+        boxShadow: `0 0 0 4px ${alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.18 : 0.08)}`,
+        '& fieldset': {
+          borderColor: theme.palette.primary.main,
+          borderWidth: theme.palette.mode === 'dark' ? '1.5px' : '1px',
+        },
       },
       '&.Mui-disabled': {
-        backgroundColor: '#e8e8e8', // Darker gray to show disabled state
+        backgroundColor: theme.palette.action.disabledBackground,
         '& fieldset': {
-          borderColor: '#d0d0d0', // Darker border
+          borderColor: scheme.border.default,
           borderWidth: '1px',
-          borderLeftWidth: '2px',
-          borderLeftColor: '#E8B86D', // Gold accent
         },
         '& .MuiSelect-select': {
-          color: '#666', // Gray text to show disabled
-          WebkitTextFillColor: '#666',
+          color: theme.palette.text.disabled,
+          WebkitTextFillColor: theme.palette.text.disabled,
         },
+      },
+      '& .MuiSelect-select': {
+        color: theme.palette.text.primary,
+        WebkitTextFillColor: theme.palette.text.primary,
+      },
+      '& .MuiSelect-icon': {
+        color: theme.palette.text.secondary,
+      },
+      '&.Mui-error fieldset': {
+        borderColor: theme.palette.error.main,
       },
     },
   };
@@ -85,20 +106,13 @@ const PremiumSelect: React.FC<PremiumSelectProps> = ({
       fullWidth={fullWidth}
       required={required}
       disabled={disabled}
+      error={error}
+      size={size}
+      variant={variant}
+      {...formControlProps}
       sx={combinedSx}
     >
-      <InputLabel
-        sx={{
-          textTransform: 'uppercase',
-          fontSize: '0.7rem',
-          fontWeight: 600,
-          letterSpacing: '0.5px',
-          color: COLORS.PRIMARY,
-          '&.Mui-focused': {
-            color: `${COLORS.PRIMARY} !important`, // Keep dark on focus, not gold
-          },
-        }}
-      >
+      <InputLabel>
         {label}
       </InputLabel>
       <Select 
@@ -106,10 +120,14 @@ const PremiumSelect: React.FC<PremiumSelectProps> = ({
         onChange={onChange}
         label={label}
         disabled={disabled}
+        error={error}
+        size={size}
+        variant={variant}
         {...otherProps}
       >
         {children}
       </Select>
+      {helperText ? <FormHelperText>{helperText}</FormHelperText> : null}
     </FormControl>
   );
 };

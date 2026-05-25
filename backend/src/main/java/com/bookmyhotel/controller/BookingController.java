@@ -30,6 +30,7 @@ import com.bookmyhotel.dto.BookingResponse;
 import com.bookmyhotel.entity.User;
 import com.bookmyhotel.exception.ResourceNotFoundException;
 import com.bookmyhotel.repository.UserRepository;
+import com.bookmyhotel.security.BookingSecurity;
 import com.bookmyhotel.service.BookingService;
 
 import jakarta.validation.Valid;
@@ -48,6 +49,9 @@ public class BookingController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private BookingSecurity bookingSecurity;
 
     /**
      * Create a new booking by room type (the only booking method)
@@ -94,6 +98,10 @@ public class BookingController {
      */
     @GetMapping("/{reservationId}")
     public ResponseEntity<BookingResponse> getBooking(@PathVariable Long reservationId) {
+        if (!bookingSecurity.canAccessReservation(reservationId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         BookingResponse response = bookingService.getBooking(reservationId);
         return ResponseEntity.ok(response);
     }
@@ -103,6 +111,10 @@ public class BookingController {
      */
     @DeleteMapping("/{reservationId}")
     public ResponseEntity<BookingResponse> cancelBooking(@PathVariable Long reservationId) {
+        if (!bookingSecurity.canAccessReservation(reservationId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         BookingResponse response = bookingService.cancelBooking(reservationId);
         return ResponseEntity.ok(response);
     }
@@ -175,6 +187,10 @@ public class BookingController {
             @PathVariable Long reservationId,
             @RequestBody Map<String, Object> emailRequest) {
 
+        if (!bookingSecurity.canAccessReservation(reservationId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         String emailAddress = (String) emailRequest.get("emailAddress");
         Boolean includeItinerary = (Boolean) emailRequest.getOrDefault("includeItinerary", true);
 
@@ -204,6 +220,10 @@ public class BookingController {
      */
     @GetMapping("/{reservationId}/pdf")
     public ResponseEntity<?> downloadBookingPdf(@PathVariable Long reservationId) {
+        if (!bookingSecurity.canAccessReservation(reservationId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         try {
             byte[] pdfContent = bookingService.generateBookingConfirmationPdf(reservationId);
 
@@ -307,6 +327,11 @@ public class BookingController {
     public ResponseEntity<BookingResponse> findByPaymentReference(@PathVariable String paymentReference) {
         try {
             BookingResponse booking = bookingService.findByPaymentReferencePublic(paymentReference);
+
+            if (booking.getReservationId() == null || !bookingSecurity.canAccessReservation(booking.getReservationId())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+
             return ResponseEntity.ok(booking);
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.notFound().build();

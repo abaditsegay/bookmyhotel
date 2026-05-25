@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { alpha } from '@mui/material/styles';
 import {
   Box,
   Grid,
@@ -22,19 +23,19 @@ import {
   TextField,
   Alert,
   CircularProgress,
-  Select,
-  MenuItem,
   FormControl,
   InputLabel,
-  useMediaQuery,
-  useTheme,
+  Select,
+  MenuItem,
   List,
   ListItem,
   ListItemText,
   ListItemIcon,
   Divider,
   Fab,
-  TablePagination
+  TablePagination,
+  useMediaQuery,
+  useTheme
 } from '@mui/material';
 import {
   CheckCircle as CheckCircleIcon,
@@ -48,12 +49,14 @@ import {
   Flag as FlagIcon,
   Refresh as RefreshIcon
 } from '@mui/icons-material';
-import { COLORS, addAlpha } from '../../theme/themeColors';
 import { staffApi } from '../../services/staffApi';
 import { HousekeepingTask } from '../../types/operations';
+import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
+import { composeSx, refreshActionButtonSx, surfaceCardSx } from '../../theme/sxHelpers';
 
 const HousekeepingStaffDashboard: React.FC = () => {
   const theme = useTheme();
+  const { showSubmissionError } = useSubmissionError();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
   
@@ -115,7 +118,9 @@ const HousekeepingStaffDashboard: React.FC = () => {
       await loadMyTasks();
       await loadStats();
     } catch (err) {
-      setError('Failed to update task status');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to update task status',
+      });
       // console.error('Error updating task:', err);
     }
   };
@@ -126,7 +131,9 @@ const HousekeepingStaffDashboard: React.FC = () => {
       await loadMyTasks();
       await loadStats();
     } catch (err) {
-      setError('Failed to start task');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to start task',
+      });
       // console.error('Error starting task:', err);
     }
   };
@@ -137,7 +144,9 @@ const HousekeepingStaffDashboard: React.FC = () => {
       await loadMyTasks();
       await loadStats();
     } catch (err) {
-      setError('Failed to complete task');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to complete task',
+      });
       // console.error('Error completing task:', err);
     }
   };
@@ -157,16 +166,16 @@ const HousekeepingStaffDashboard: React.FC = () => {
   // Elegant Mobile-optimized task card component
   const TaskCard: React.FC<{ task: HousekeepingTask }> = ({ task }) => (
     <Card 
-      sx={{ 
-        mb: 2, 
+      sx={composeSx(surfaceCardSx('subtle'), {
+        mb: 2,
         cursor: 'pointer',
-        boxShadow: `0 1px 4px ${addAlpha(COLORS.BLACK, 0.05)}`,
-        borderRadius: 2,
-        transition: 'all 0.2s ease',
-        '&:hover': { 
-          boxShadow: `0 4px 12px ${addAlpha(COLORS.BLACK, 0.08)}`,
+        transition: 'background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease',
+        '&:hover': {
+          backgroundColor: alpha(theme.palette.background.paper, theme.palette.mode === 'dark' ? 0.82 : 0.97),
+          borderColor: alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.28 : 0.12),
+          transform: 'translateY(-1px)',
         }
-      }}
+      })}
       onClick={() => openTaskDetails(task)}
     >
       <CardContent sx={{ pb: 1 }}>
@@ -191,7 +200,7 @@ const HousekeepingStaffDashboard: React.FC = () => {
             size="small"
             sx={{
               fontWeight: 600,
-              boxShadow: `0 2px 6px ${addAlpha(COLORS.BLACK, 0.1)}`
+              boxShadow: `0 2px 6px ${alpha(theme.palette.common.black, 0.1)}`
             }}
           />
         </Box>
@@ -216,7 +225,7 @@ const HousekeepingStaffDashboard: React.FC = () => {
               size="small"
               sx={{
                 fontWeight: 600,
-                boxShadow: `0 2px 6px ${addAlpha(COLORS.BLACK, 0.1)}`
+                boxShadow: `0 2px 6px ${alpha(theme.palette.common.black, 0.1)}`
               }}
             />
             <Chip
@@ -226,7 +235,7 @@ const HousekeepingStaffDashboard: React.FC = () => {
               icon={<FlagIcon />}
               sx={{
                 fontWeight: 600,
-                boxShadow: `0 2px 6px ${addAlpha(COLORS.BLACK, 0.1)}`
+                boxShadow: `0 2px 6px ${alpha(theme.palette.common.black, 0.1)}`
               }}
             />
           </Box>
@@ -402,10 +411,10 @@ const HousekeepingStaffDashboard: React.FC = () => {
                 sx={{ 
                   height: '100%',
                   backgroundColor: 'background.paper',
-                  boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.04)}`,
+                  boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.04)}`,
                   transition: 'all 0.2s ease-in-out',
                   '&:hover': {
-                    boxShadow: `0 4px 16px ${addAlpha(COLORS.BLACK, 0.08)}`,
+                    boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.08)}`,
                   }
                 }}
               >
@@ -454,10 +463,10 @@ const HousekeepingStaffDashboard: React.FC = () => {
                 sx={{ 
                   height: '100%',
                   backgroundColor: 'background.paper',
-                  boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.04)}`,
+                  boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.04)}`,
                   transition: 'all 0.2s ease-in-out',
                   '&:hover': {
-                    boxShadow: `0 4px 16px ${addAlpha(COLORS.BLACK, 0.08)}`,
+                    boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.08)}`,
                   }
                 }}
               >
@@ -506,10 +515,10 @@ const HousekeepingStaffDashboard: React.FC = () => {
                 sx={{ 
                   height: '100%',
                   backgroundColor: 'background.paper',
-                  boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.04)}`,
+                  boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.04)}`,
                   transition: 'all 0.2s ease-in-out',
                   '&:hover': {
-                    boxShadow: `0 4px 16px ${addAlpha(COLORS.BLACK, 0.08)}`,
+                    boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.08)}`,
                   }
                 }}
               >
@@ -558,10 +567,10 @@ const HousekeepingStaffDashboard: React.FC = () => {
                 sx={{ 
                   height: '100%',
                   backgroundColor: 'background.paper',
-                  boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.04)}`,
+                  boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.04)}`,
                   transition: 'all 0.2s ease-in-out',
                   '&:hover': {
-                    boxShadow: `0 4px 16px ${addAlpha(COLORS.BLACK, 0.08)}`,
+                    boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.08)}`,
                   }
                 }}
               >
@@ -611,11 +620,7 @@ const HousekeepingStaffDashboard: React.FC = () => {
         {error && (
           <Alert 
             severity="error" 
-            sx={{ 
-              mb: 3,
-              boxShadow: `0 4px 12px ${addAlpha(COLORS.ERROR, 0.15)}`,
-              borderRadius: 2
-            }} 
+            sx={{ mb: 3 }} 
             onClose={() => setError(null)}
           >
             {error}
@@ -624,11 +629,9 @@ const HousekeepingStaffDashboard: React.FC = () => {
 
         {/* Elegant Tasks Section */}
         <Card 
-          sx={{ 
-            boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.04)}`,
-            borderRadius: 2,
+          sx={composeSx(surfaceCardSx('default'), {
             overflow: 'hidden',
-          }}
+          })}
         >
           <CardContent sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
             <Box sx={{ 
@@ -655,14 +658,7 @@ const HousekeepingStaffDashboard: React.FC = () => {
                 size={isMobile ? "medium" : "large"}
                 startIcon={<RefreshIcon />}
                 variant="outlined"
-                sx={{
-                  borderWidth: 1.5,
-                  fontWeight: 500,
-                  '&:hover': {
-                    borderWidth: 1.5,
-                    backgroundColor: 'action.hover',
-                  }
-                }}
+                sx={refreshActionButtonSx}
               >
                 Refresh
               </Button>
@@ -714,7 +710,7 @@ const HousekeepingStaffDashboard: React.FC = () => {
                             borderBottom: '1px solid',
                             borderColor: 'divider',
                             '& .MuiTableCell-head': {
-                              color: COLORS.SLATE_800,
+                              color: 'text.primary',
                               fontWeight: 700,
                               fontSize: '0.6875rem',
                               letterSpacing: '0.5px',
@@ -920,9 +916,9 @@ const HousekeepingStaffDashboard: React.FC = () => {
               bottom: 16, 
               right: 16,
               zIndex: 1000,
-              boxShadow: `0 4px 12px ${addAlpha(COLORS.BLACK, 0.15)}`,
+              boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.15)}`,
               '&:hover': {
-                boxShadow: `0 6px 20px ${addAlpha(COLORS.BLACK, 0.2)}`,
+                boxShadow: `0 6px 20px ${alpha(theme.palette.common.black, 0.2)}`,
               }
             }}
             onClick={loadMyTasks}

@@ -11,4 +11,6 @@ import com.bookmyhotel.entity.UatDefect;
 public interface UatDefectRepository extends JpaRepository<UatDefect, Long> {
 
     List<UatDefect> findByHotelIdOrderByUpdatedAtDescCreatedAtDesc(Long hotelId);
+
+    List<UatDefect> findByWorkspaceKeyOrderByUpdatedAtDescCreatedAtDesc(String workspaceKey);
 }

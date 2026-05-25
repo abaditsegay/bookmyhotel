@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { formatEthiopianPhone, normalizeEthiopianPhone } from '../utils/phoneUtils';
+import { alpha } from '@mui/material/styles';
+import { normalizeEthiopianPhone } from '../utils/phoneUtils';
 import {
   Box,
   CardContent,
@@ -12,6 +13,7 @@ import {
   Alert,
   IconButton,
   InputAdornment,
+  useTheme,
 } from '@mui/material';
 import {
   Edit as EditIcon,
@@ -27,14 +29,20 @@ import StandardCard from '../components/common/StandardCard';
 import StandardButton from '../components/common/StandardButton';
 import PremiumTextField from '../components/common/PremiumTextField';
 import { formatDateForDisplay, formatDateTimeForDisplay } from '../utils/dateUtils';
-import { COLORS, addAlpha } from '../theme/themeColors';
+import { useSubmissionError } from '../contexts/SubmissionErrorContext';
+import { getInsetSurfaceBackground, getReadableAccentTextColor, getSectionTint } from '../theme/surfaces';
 
 const ProfilePage: React.FC = () => {
+  const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
+  const accentBorder = alpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.3 : 0.14);
+  const accentHover = alpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.14 : 0.08);
+  const heroSurface = getInsetSurfaceBackground(theme, 'primary');
   const { user, updateProfile, changePassword } = useAuth();
+  const { showSubmissionError } = useSubmissionError();
   const [isEditing, setIsEditing] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
 
   // Form state
   const [formData, setFormData] = useState({
@@ -72,7 +80,6 @@ const ProfilePage: React.FC = () => {
   const handleEdit = () => {
     setIsEditing(true);
     setSuccessMessage('');
-    setErrorMessage('');
   };
 
   const handleCancel = () => {
@@ -87,28 +94,27 @@ const ProfilePage: React.FC = () => {
       confirmPassword: '',
     });
     setSuccessMessage('');
-    setErrorMessage('');
   };
 
   const handleSave = async () => {
     try {
       // Validate form
       if (!formData.firstName.trim() || !formData.lastName.trim()) {
-        setErrorMessage('First name and last name are required');
+        showSubmissionError('First name and last name are required');
         return;
       }
 
       if (formData.newPassword) {
         if (formData.newPassword !== formData.confirmPassword) {
-          setErrorMessage('New passwords do not match');
+          showSubmissionError('New passwords do not match');
           return;
         }
         if (formData.newPassword.length < 6) {
-          setErrorMessage('New password must be at least 6 characters long');
+          showSubmissionError('New password must be at least 6 characters long');
           return;
         }
         if (!formData.currentPassword) {
-          setErrorMessage('Current password is required to change password');
+          showSubmissionError('Current password is required to change password');
           return;
         }
       }
@@ -125,7 +131,9 @@ const ProfilePage: React.FC = () => {
       const profileSuccess = await updateProfile(profileUpdates);
       
       if (!profileSuccess) {
-        setErrorMessage('Failed to update profile. Please try again.');
+        showSubmissionError('Failed to update profile. Please try again.', {
+          fallbackMessage: 'Failed to update profile. Please try again.',
+        });
         return;
       }
 
@@ -134,7 +142,9 @@ const ProfilePage: React.FC = () => {
         const passwordSuccess = await changePassword(formData.currentPassword, formData.newPassword);
         
         if (!passwordSuccess) {
-          setErrorMessage('Profile updated, but failed to change password. Please try again.');
+          showSubmissionError('Profile updated, but failed to change password. Please try again.', {
+            fallbackMessage: 'Profile updated, but failed to change password. Please try again.',
+          });
           return;
         }
       }
@@ -146,7 +156,6 @@ const ProfilePage: React.FC = () => {
           : 'Profile updated successfully!'
       );
       setIsEditing(false);
-      setErrorMessage('');
       
       // Clear password fields
       setFormData(prev => ({
@@ -157,7 +166,9 @@ const ProfilePage: React.FC = () => {
       }));
 
     } catch (error) {
-      setErrorMessage('Failed to update profile. Please try again.');
+      showSubmissionError(error, {
+        fallbackMessage: 'Failed to update profile. Please try again.',
+      });
     }
   };
 
@@ -165,126 +176,111 @@ const ProfilePage: React.FC = () => {
     setShowPassword(!showPassword);
   };
 
+  const roleLabel =
+    user?.role === 'SUPER_ADMIN' ? 'Super Administrator' :
+    user?.role === 'ADMIN' ? 'Administrator' :
+    user?.role === 'HOTEL_ADMIN' ? 'Hotel Administrator' :
+    user?.role === 'OPERATIONAL_ADMIN' ? 'Operational Administrator' :
+    user?.role === 'FRONTDESK' ? 'Front Desk' :
+    user?.role === 'HOUSEKEEPING' ? 'Housekeeping' :
+    user?.role === 'MAINTENANCE' ? 'Maintenance' :
+    user?.role === 'CUSTOMER' ? 'Customer' :
+    'Guest';
+
+  const profileInitials = `${user?.firstName?.[0] ?? ''}${user?.lastName?.[0] ?? ''}`.trim() || user?.email?.[0]?.toUpperCase() || '';
+
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Typography 
-        variant="h4" 
-        component="h1" 
-        gutterBottom 
-        sx={{ 
-          fontWeight: 'bold', 
-          mb: 3,
-          color: COLORS.PRIMARY,
-          textAlign: 'center'
-        }}
-      >
-        My Profile
-      </Typography>
-
       {successMessage && (
         <Alert severity="success" sx={{ mb: 3 }} onClose={() => setSuccessMessage('')}>
           {successMessage}
         </Alert>
       )}
 
-      {errorMessage && (
-        <Alert severity="error" sx={{ mb: 3 }} onClose={() => setErrorMessage('')}>
-          {errorMessage}
-        </Alert>
-      )}
-
-      <Grid container spacing={3}>
-        {/* Profile Overview Card */}
-        <Grid item xs={12} md={4}>
-          <StandardCard cardVariant="elevated" sx={{ textAlign: 'center', p: 3, height: 'fit-content' }}>
-            <Avatar
-              sx={{
-                width: 120,
-                height: 120,
-                mx: 'auto',
-                mb: 2,
-                backgroundColor: COLORS.PRIMARY,
-                fontSize: '2.5rem',
-                fontWeight: 'bold',
-              }}
-            >
-              {user?.firstName?.[0] || user?.email?.[0] || <PersonIcon />}
-            </Avatar>
-            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', mt: 1 }}>
-              {user?.firstName} {user?.lastName}
-            </Typography>
-            <Typography variant="body1" color="text.secondary" gutterBottom sx={{ mb: 1 }}>
-              {user?.email}
-            </Typography>
-            <Chip
-              size="small"
-              variant="outlined"
-              label={
-                user?.role === 'SUPER_ADMIN' ? 'Super Administrator' :
-                user?.role === 'ADMIN' ? 'Administrator' : 
-                user?.role === 'HOTEL_ADMIN' ? 'Hotel Administrator' :
-                user?.role === 'OPERATIONAL_ADMIN' ? 'Operational Administrator' : 
-                user?.role === 'FRONTDESK' ? 'Front Desk' :
-                user?.role === 'HOUSEKEEPING' ? 'Housekeeping' :
-                user?.role === 'MAINTENANCE' ? 'Maintenance' :
-                user?.role === 'CUSTOMER' ? 'Customer' : 'Guest'
-              }
-              sx={{ mb: 1 }}
-            />
-            {!isEditing && (
-              <StandardButton
-                variant="contained"
-                startIcon={<EditIcon />}
-                onClick={handleEdit}
-                sx={{ 
-                  mt: 2, 
-                  backgroundColor: COLORS.PRIMARY,
-                  '&:hover': {
-                    backgroundColor: COLORS.PRIMARY,
-                    filter: 'brightness(0.9)'
-                  }
+      <StandardCard
+        cardVariant="elevated"
+        sx={{
+          mb: 3,
+          overflow: 'hidden',
+        }}
+      >
+        <CardContent sx={{ p: { xs: 3, md: 4 }, backgroundColor: heroSurface }}>
+          <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3, alignItems: { xs: 'flex-start', md: 'center' }, justifyContent: 'space-between' }}>
+            <Box sx={{ display: 'flex', gap: 2.5, alignItems: { xs: 'flex-start', sm: 'center' }, flexDirection: { xs: 'column', sm: 'row' } }}>
+              <Avatar
+                sx={{
+                  width: 88,
+                  height: 88,
+                  backgroundColor: readableAccentColor,
+                  color: theme.palette.getContrastText(readableAccentColor),
+                  fontSize: '2rem',
+                  fontWeight: 700,
                 }}
               >
-                Edit Profile
-              </StandardButton>
-            )}
-          </StandardCard>
-        </Grid>
-
-        {/* Profile Details Card */}
-        <Grid item xs={12} md={8}>
-          <StandardCard cardVariant="elevated">
-            <CardContent sx={{ p: 3 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                <Typography variant="h6" sx={{ fontWeight: 'bold', color: COLORS.PRIMARY }}>
-                  Profile Information
+                {profileInitials || <PersonIcon />}
+              </Avatar>
+              <Box>
+                <Typography variant="overline" sx={{ color: 'text.secondary', letterSpacing: '0.08em' }}>
+                  Profile
                 </Typography>
-                {isEditing && (
-                  <Box>
-                    <StandardButton
-                      variant="outlined"
-                      startIcon={<CancelIcon />}
-                      onClick={handleCancel}
-                      sx={{ mr: 1 }}
-                    >
-                      Cancel
-                    </StandardButton>
-                    <StandardButton
-                      variant="contained"
-                      startIcon={<SaveIcon />}
-                      onClick={handleSave}
-                      sx={{
-                        backgroundColor: COLORS.PRIMARY,
-                        '&:hover': {
-                          backgroundColor: COLORS.PRIMARY,
-                          filter: 'brightness(0.9)'
-                        }
-                      }}
-                    >
-                      Save Changes
-                    </StandardButton>
-                  </Box>
-                )}
+                <Typography variant="h4" component="h1" sx={{ fontWeight: 700, mb: 0.75 }}>
+                  {user?.firstName} {user?.lastName}
+                </Typography>
+                <Typography variant="body1" color="text.secondary" sx={{ mb: 1.5 }}>
+                  {user?.email}
+                </Typography>
+                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                  <Chip label={roleLabel} variant="outlined" sx={{ borderColor: accentBorder, color: readableAccentColor, backgroundColor: accentHover }} />
+                  <Chip label="Active account" size="small" sx={{ backgroundColor: getSectionTint(theme, 'success'), color: theme.palette.success.main, fontWeight: 600 }} />
+                </Box>
+              </Box>
+            </Box>
+
+            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap', justifyContent: { xs: 'flex-start', md: 'flex-end' } }}>
+              {!isEditing ? (
+                <StandardButton
+                  variant="contained"
+                  startIcon={<EditIcon />}
+                  onClick={handleEdit}
+                  sx={{ px: 2.5 }}
+                >
+                  Edit Profile
+                </StandardButton>
+              ) : (
+                <>
+                  <StandardButton
+                    variant="outlined"
+                    startIcon={<CancelIcon />}
+                    onClick={handleCancel}
+                    sx={{ color: readableAccentColor, borderColor: accentBorder, '&:hover': { borderColor: readableAccentColor, backgroundColor: accentHover } }}
+                  >
+                    Cancel
+                  </StandardButton>
+                  <StandardButton
+                    variant="contained"
+                    startIcon={<SaveIcon />}
+                    onClick={handleSave}
+                  >
+                    Save Changes
+                  </StandardButton>
+                </>
+              )}
+            </Box>
+          </Box>
+        </CardContent>
+      </StandardCard>
+
+      <Grid container spacing={3}>
+        <Grid item xs={12} lg={8}>
+          <StandardCard cardVariant="outlined">
+            <CardContent sx={{ p: { xs: 3, md: 4 } }}>
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="h6" sx={{ fontWeight: 700, color: readableAccentColor, mb: 0.5 }}>
+                  Personal information
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Keep your identity and contact details current so the rest of the platform stays in sync.
+                </Typography>
               </Box>
 
               <Grid container spacing={3}>
@@ -333,16 +329,18 @@ const ProfilePage: React.FC = () => {
 
               {isEditing && (
                 <>
-                  <Divider sx={{ my: 3 }} />
-                  <Typography variant="h6" gutterBottom sx={{ 
-                    fontWeight: 'bold', 
-                    color: COLORS.PRIMARY,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1
-                  }}>
+                  <Divider sx={{ my: 4 }} />
+                  <Box sx={{ mb: 3 }}>
+                    <Typography variant="h6" gutterBottom sx={{ 
+                      fontWeight: 700,
+                      color: readableAccentColor,
+                    }}>
                     Change Password (Optional)
-                  </Typography>
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Only fill these fields if you want to update your password.
+                    </Typography>
+                  </Box>
                   <Grid container spacing={3}>
                     <Grid item xs={12}>
                       <PremiumTextField
@@ -387,93 +385,57 @@ const ProfilePage: React.FC = () => {
             </CardContent>
           </StandardCard>
         </Grid>
-      </Grid>
 
-      {/* Account Information Card */}
-      <StandardCard cardVariant="outlined" sx={{ mt: 3 }}>
-        <CardContent sx={{ p: 3 }}>
-          <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', color: COLORS.PRIMARY }}>
-            Account Information
-          </Typography>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={6}>
-              <Typography variant="body2" color="text.secondary">
-                Account Type
+        <Grid item xs={12} lg={4}>
+          <StandardCard cardVariant="outlined">
+            <CardContent sx={{ p: { xs: 3, md: 4 } }}>
+              <Typography variant="h6" sx={{ fontWeight: 700, color: readableAccentColor, mb: 2.5 }}>
+                Account overview
               </Typography>
-              <Typography variant="body1" sx={{ 
-                backgroundColor: addAlpha(COLORS.PRIMARY, 0.15), 
-                color: COLORS.PRIMARY,
-                px: 2, 
-                py: 0.5, 
-                borderRadius: 1,
-                display: 'inline-block',
-                fontWeight: 'medium'
-              }}>
-                {user?.role === 'SUPER_ADMIN' ? 'Super Administrator' :
-                 user?.role === 'ADMIN' ? 'Administrator' : 
-                 user?.role === 'HOTEL_ADMIN' ? 'Hotel Administrator' :
-                 user?.role === 'OPERATIONAL_ADMIN' ? 'Operational Administrator' : 
-                 user?.role === 'FRONTDESK' ? 'Front Desk' :
-                 user?.role === 'HOUSEKEEPING' ? 'Housekeeping' :
-                 user?.role === 'MAINTENANCE' ? 'Maintenance' :
-                 user?.role === 'CUSTOMER' ? 'Customer' : 'Guest'}
-              </Typography>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <Typography variant="body2" color="text.secondary">
-                Member Since
-              </Typography>
-              <Typography variant="body1">
-                {user?.createdAt ? formatDateForDisplay(user.createdAt) : 'N/A'}
-              </Typography>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <Typography variant="body2" color="text.secondary">
-                Last Login
-              </Typography>
-              <Typography variant="body1">
-                {user?.lastLogin ? formatDateTimeForDisplay(user.lastLogin) : 'N/A'}
-              </Typography>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <Typography variant="body2" color="text.secondary">
-                Account Status
-              </Typography>
-              <Typography variant="body1" sx={{ 
-                color: COLORS.PRIMARY,
-                fontWeight: 'bold',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 0.5
-              }}>
-                ● Active
-              </Typography>
-            </Grid>
-          </Grid>
-        </CardContent>
-      </StandardCard>
 
-      {/* Preferences Card */}
-      <StandardCard cardVariant="outlined" sx={{ mt: 3 }}>
-        <CardContent sx={{ p: 3 }}>
-          <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', color: COLORS.PRIMARY }}>
-            Preferences
-          </Typography>
-          <Grid container spacing={3}>
-            <Grid item xs={12} sm={6}>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
-                Theme Mode
-              </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <ThemeToggle variant="menu" size="medium" />
-                <Typography variant="body2" color="text.secondary">
-                  Choose between light and dark themes
-                </Typography>
+              <Box sx={{ display: 'grid', gap: 2 }}>
+                <Box sx={{ pb: 2, borderBottom: `1px solid ${theme.palette.divider}` }}>
+                  <Typography variant="caption" color="text.secondary">Account Type</Typography>
+                  <Typography variant="body1" sx={{ mt: 0.5, fontWeight: 600 }}>{roleLabel}</Typography>
+                </Box>
+                <Box sx={{ pb: 2, borderBottom: `1px solid ${theme.palette.divider}` }}>
+                  <Typography variant="caption" color="text.secondary">Member Since</Typography>
+                  <Typography variant="body1" sx={{ mt: 0.5 }}>{user?.createdAt ? formatDateForDisplay(user.createdAt) : 'N/A'}</Typography>
+                </Box>
+                <Box sx={{ pb: 2, borderBottom: `1px solid ${theme.palette.divider}` }}>
+                  <Typography variant="caption" color="text.secondary">Last Login</Typography>
+                  <Typography variant="body1" sx={{ mt: 0.5 }}>{user?.lastLogin ? formatDateTimeForDisplay(user.lastLogin) : 'N/A'}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="caption" color="text.secondary">Account Status</Typography>
+                  <Typography variant="body1" sx={{ mt: 0.5, color: readableAccentColor, fontWeight: 600 }}>
+                    Active
+                  </Typography>
+                </Box>
               </Box>
-            </Grid>
-          </Grid>
-        </CardContent>
-      </StandardCard>
+
+              <Divider sx={{ my: 3 }} />
+
+              <Box>
+                <Typography variant="h6" sx={{ fontWeight: 700, color: readableAccentColor, mb: 1.5 }}>
+                  Preferences
+                </Typography>
+                <Box sx={{ p: 2, borderRadius: 2, backgroundColor: getSectionTint(theme, 'primary') }}>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                    Theme Mode
+                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
+                    <Typography variant="body2">
+                      Choose between light and dark themes
+                    </Typography>
+                    <ThemeToggle variant="menu" size="medium" />
+                  </Box>
+                </Box>
+              </Box>
+            </CardContent>
+          </StandardCard>
+        </Grid>
+      </Grid>
     </Container>
   );
 };

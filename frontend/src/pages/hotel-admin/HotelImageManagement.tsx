@@ -15,6 +15,7 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  useTheme,
 } from '@mui/material';
 import {
   CloudUpload as UploadIcon,
@@ -22,9 +23,11 @@ import {
   Image as ImageIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
-import { COLORS, addAlpha } from '../../theme/themeColors';
+import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
+import { useThemeColors } from '../../theme/useThemeColors';
 import { hotelAdminApi, HotelImageUploadRequest, HotelImageResponse } from '../../services/hotelAdminApi';
 import { ROOM_TYPE_VALUES } from '../../constants/roomTypes';
+import { getReadableAccentTextColor, getSectionTint } from '../../theme/surfaces';
 
 interface RoomTypeImageState {
   roomType: string;
@@ -40,7 +43,24 @@ interface HotelGeneralImageState {
 }
 
 const HotelImageManagement: React.FC = () => {
+  const { COLORS, addAlpha } = useThemeColors();
+  const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
+  const neutralAccordionSurface = theme.palette.mode === 'dark'
+    ? addAlpha(theme.palette.common.white, 0.04)
+    : theme.palette.background.paper;
+  const neutralAccordionHover = theme.palette.mode === 'dark'
+    ? addAlpha(theme.palette.common.white, 0.08)
+    : addAlpha(theme.palette.text.primary, 0.04);
+  const neutralAccordionBorder = addAlpha(theme.palette.text.primary, theme.palette.mode === 'dark' ? 0.16 : 0.1);
+  const primaryAccordionSurface = theme.palette.mode === 'dark'
+    ? addAlpha(readableAccentColor, 0.2)
+    : theme.palette.primary.main;
+  const primaryAccordionHover = theme.palette.mode === 'dark'
+    ? addAlpha(readableAccentColor, 0.28)
+    : theme.palette.primary.dark;
   const { token } = useAuth();
+  const { showSubmissionError } = useSubmissionError();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -131,7 +151,7 @@ const HotelImageManagement: React.FC = () => {
     
     const state = roomTypeStates[roomType];
     if (!state.heroImage) {
-      setError('Please select an image to upload');
+      showSubmissionError('Please select an image to upload');
       return;
     }
 
@@ -165,10 +185,14 @@ const HotelImageManagement: React.FC = () => {
         
         setSuccess(`Successfully uploaded image for ${roomType} rooms!`);
       } else {
-        setError(response.message || 'Failed to upload image');
+        showSubmissionError(response.message || 'Failed to upload image', {
+          fallbackMessage: 'Failed to upload image',
+        });
       }
     } catch (err) {
-      setError('Failed to upload image');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to upload image',
+      });
     } finally {
       updateRoomTypeState(roomType, { uploading: false });
     }
@@ -178,7 +202,7 @@ const HotelImageManagement: React.FC = () => {
     if (!token) return;
     
     if (!hotelGeneralState.heroImage) {
-      setError('Please select a hotel image to upload');
+      showSubmissionError('Please select a hotel image to upload');
       return;
     }
 
@@ -214,10 +238,14 @@ const HotelImageManagement: React.FC = () => {
         
         setSuccess('Successfully uploaded hotel image!');
       } else {
-        setError(response.message || 'Failed to upload hotel image');
+        showSubmissionError(response.message || 'Failed to upload hotel image', {
+          fallbackMessage: 'Failed to upload hotel image',
+        });
       }
     } catch (err) {
-      setError('Failed to upload hotel image');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to upload hotel image',
+      });
     } finally {
       setHotelGeneralState(prev => ({ ...prev, uploading: false }));
     }
@@ -246,7 +274,7 @@ const HotelImageManagement: React.FC = () => {
           variant="h4" 
           sx={{ 
             fontWeight: 700,
-            color: 'primary.main',
+            color: readableAccentColor,
             mb: 1,
           }}
         >
@@ -277,7 +305,7 @@ const HotelImageManagement: React.FC = () => {
         sx={{ 
           mb: 3,
           border: '1px solid',
-          borderColor: 'divider',
+          borderColor: neutralAccordionBorder,
           borderRadius: 2,
           '&:before': { display: 'none' },
           boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.08)}`,
@@ -286,14 +314,14 @@ const HotelImageManagement: React.FC = () => {
         <AccordionSummary 
           expandIcon={<ExpandMoreIcon />}
           sx={{
-            bgcolor: 'primary.main',
+            bgcolor: primaryAccordionSurface,
             color: 'white',
             borderRadius: '8px 8px 0 0',
             '& .MuiAccordionSummary-expandIconWrapper': {
               color: 'white',
             },
             '&:hover': {
-              bgcolor: 'primary.dark',
+              bgcolor: primaryAccordionHover,
             },
           }}
         >
@@ -304,7 +332,7 @@ const HotelImageManagement: React.FC = () => {
             </Typography>
           </Box>
         </AccordionSummary>
-        <AccordionDetails sx={{ p: 3, bgcolor: 'grey.50' }}>
+        <AccordionDetails sx={{ p: 3, bgcolor: getSectionTint(theme, 'primary') }}>
           <Grid container spacing={3}>
             {/* Upload Section */}
             <Grid item xs={12} md={6}>
@@ -443,7 +471,7 @@ const HotelImageManagement: React.FC = () => {
                       sx={{ 
                         textAlign: 'center', 
                         py: 6,
-                        bgcolor: 'grey.50',
+                        bgcolor: getSectionTint(theme, 'primary'),
                         borderRadius: 2,
                       }}
                     >
@@ -512,7 +540,7 @@ const HotelImageManagement: React.FC = () => {
             sx={{ 
               mb: 3,
               border: '1px solid',
-              borderColor: 'divider',
+              borderColor: neutralAccordionBorder,
               borderRadius: 2,
               '&:before': { display: 'none' },
               boxShadow: `0 2px 8px ${addAlpha(COLORS.BLACK, 0.08)}`,
@@ -521,24 +549,31 @@ const HotelImageManagement: React.FC = () => {
             <AccordionSummary 
               expandIcon={<ExpandMoreIcon />}
               sx={{
-                bgcolor: 'grey.100',
+                bgcolor: neutralAccordionSurface,
                 color: 'text.primary',
                 borderRadius: '8px 8px 0 0',
                 borderBottom: '1px solid',
-                borderColor: 'divider',
+                borderColor: neutralAccordionBorder,
                 '& .MuiAccordionSummary-expandIconWrapper': {
-                  color: 'text.secondary',
+                  color: readableAccentColor,
                 },
                 '&:hover': {
-                  bgcolor: 'grey.200',
+                  bgcolor: neutralAccordionHover,
                 },
               }}
             >
-              <Typography variant="h6" sx={{ fontWeight: 500, textTransform: 'capitalize' }}>
+              <Typography
+                variant="h6"
+                sx={{
+                  fontWeight: 500,
+                  textTransform: 'capitalize',
+                  color: theme.palette.text.primary,
+                }}
+              >
                 {roomType.toLowerCase().replace('_', ' ')} Rooms
               </Typography>
             </AccordionSummary>
-            <AccordionDetails sx={{ p: 3, bgcolor: 'grey.50' }}>
+            <AccordionDetails sx={{ p: 3, bgcolor: getSectionTint(theme, 'primary') }}>
               <Grid container spacing={3}>
                 {/* Upload Section */}
                 <Grid item xs={12} md={6}>
@@ -677,7 +712,7 @@ const HotelImageManagement: React.FC = () => {
                           sx={{ 
                             textAlign: 'center', 
                             py: 6,
-                            bgcolor: 'grey.50',
+                            bgcolor: getSectionTint(theme, 'primary'),
                             borderRadius: 2,
                           }}
                         >

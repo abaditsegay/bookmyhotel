@@ -9,6 +9,8 @@ export { default as StatusChip } from './StatusChip';
 export { default as InfoField } from './InfoField';
 export { default as PageHeader } from './PageHeader';
 export { default as SurfaceCard } from './SurfaceCard';
+export { default as DataTableCard } from './DataTableCard';
+export { default as StandardDialog } from './StandardDialog';
 
 export {
   LoadingSpinner,

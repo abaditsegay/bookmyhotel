@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { COLORS } from '../../theme/themeColors';
+import { alpha } from '@mui/material/styles';
 import {
   Paper,
   Table,
@@ -27,6 +27,7 @@ import {
   FormControlLabel,
   Checkbox,
   FormGroup,
+  useTheme,
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -36,9 +37,12 @@ import {
 } from '@mui/icons-material';
 import { hotelAdminApi, StaffResponse, StaffCreateRequest } from '../../services/hotelAdminApi';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
+import { tableHeadRowSx } from '../../theme/sxHelpers';
 import PremiumTextField from '../../components/common/PremiumTextField';
 import PremiumSelect from '../../components/common/PremiumSelect';
 import { useNavigate } from 'react-router-dom';
+import { getReadableAccentTextColor } from '../../theme/surfaces';
 
 interface StaffFilters {
   search: string;
@@ -52,7 +56,12 @@ interface StaffManagementProps {
 
 const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) => {
   const { token } = useAuth();
+  const theme = useTheme();
+  const { showSubmissionError } = useSubmissionError();
   const navigate = useNavigate();
+  const readableAccentColor = getReadableAccentTextColor(theme);
+  const readableAccentBorder = alpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.34 : 0.18);
+  const readableAccentHover = alpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.14 : 0.08);
   const [staff, setStaff] = useState<StaffResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -165,17 +174,17 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
     
     // Validate form data before submitting
     if (!staffForm.email || !staffForm.password || !staffForm.firstName || !staffForm.lastName) {
-      setError('Please fill in all required fields.');
+      showSubmissionError('Please fill in all required fields.');
       return;
     }
     
     if (staffForm.password.length < 8) {
-      setError('Password must be at least 8 characters long.');
+      showSubmissionError('Password must be at least 8 characters long.');
       return;
     }
     
     if (staffForm.roles.length === 0) {
-      setError('Please select at least one role.');
+      showSubmissionError('Please select at least one role.');
       return;
     }
     
@@ -195,11 +204,15 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
         await loadStaff();
         setError(null);
       } else {
-        setError(response.message || 'Failed to create staff member. Please check the email is unique.');
+        showSubmissionError(response.message || 'Failed to create staff member. Please check the email is unique.', {
+          fallbackMessage: 'Failed to create staff member. Please check the email is unique.',
+        });
       }
     } catch (err) {
       // console.error('Error creating staff:', err);
-      setError('Failed to create staff member. Please check the email is unique.');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to create staff member. Please check the email is unique.',
+      });
     } finally {
       setLoading(false);
     }
@@ -218,11 +231,15 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
         await loadStaff();
         setError(null);
       } else {
-        setError(response.message || 'Failed to update staff status');
+        showSubmissionError(response.message || 'Failed to update staff status', {
+          fallbackMessage: 'Failed to update staff status',
+        });
       }
     } catch (err) {
       // console.error('Error toggling staff status:', err);
-      setError('Failed to update staff status.');
+      showSubmissionError(err, {
+        fallbackMessage: 'Failed to update staff status.',
+      });
     } finally {
       setLoading(false);
     }
@@ -328,6 +345,14 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
                   variant="outlined"
                   onClick={resetFilters}
                   size="small"
+                  sx={{
+                    borderColor: readableAccentBorder,
+                    color: readableAccentColor,
+                    '&:hover': {
+                      borderColor: readableAccentColor,
+                      backgroundColor: readableAccentHover,
+                    },
+                  }}
                 >
                   Clear
                 </Button>
@@ -348,15 +373,7 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
             <Table>
               <TableHead>
                 <TableRow
-                  sx={{
-                    background: `linear-gradient(135deg, ${COLORS.BG_DEFAULT} 0%, ${COLORS.BG_LIGHT} 50%, ${COLORS.BG_DEFAULT} 100%)`,
-                    borderBottom: `2px solid ${COLORS.SECONDARY}`,
-                    '& .MuiTableCell-head': {
-                      color: COLORS.PRIMARY,
-                      fontWeight: 700,
-                      textTransform: 'uppercase',
-                    }
-                  }}
+                  sx={tableHeadRowSx()}
                 >
                   <TableCell>Name</TableCell>
                   <TableCell>Email</TableCell>
@@ -531,7 +548,18 @@ const StaffManagement: React.FC<StaffManagementProps> = ({ onNavigateToStaff }) 
             </Grid>
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setCreateDialogOpen(false)}>Cancel</Button>
+            <Button
+              onClick={() => setCreateDialogOpen(false)}
+              sx={{
+                color: readableAccentColor,
+                '&:hover': {
+                  backgroundColor: readableAccentHover,
+                  color: readableAccentColor,
+                },
+              }}
+            >
+              Cancel
+            </Button>
             <Button 
               onClick={handleCreateStaff}
               variant="contained"

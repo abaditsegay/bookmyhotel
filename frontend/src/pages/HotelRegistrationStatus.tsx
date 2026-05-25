@@ -6,7 +6,6 @@ import {
   Box,
   TextField,
   Button,
-  Alert,
   Card,
   CardContent,
   Chip,
@@ -25,6 +24,9 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import PremiumDisplayField from '../components/common/PremiumDisplayField';
+import { useSubmissionError } from '../contexts/SubmissionErrorContext';
+import { useTheme } from '@mui/material/styles';
+import { getReadableAccentTextColor, getSectionTint } from '../theme/surfaces';
 
 interface RegistrationStatus {
   id: number;
@@ -39,19 +41,20 @@ interface RegistrationStatus {
 
 const HotelRegistrationStatus: React.FC = () => {
   const { t, i18n } = useTranslation();
+  const theme = useTheme();
+  const readableAccentColor = getReadableAccentTextColor(theme);
   const navigate = useNavigate();
+  const { showSubmissionError } = useSubmissionError();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   const [registration, setRegistration] = useState<RegistrationStatus | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
     setRegistration(null);
     
     if (!email.trim()) {
-      setError(t('hotelRegistrationStatus.errors.enterEmail'));
+      showSubmissionError(t('hotelRegistrationStatus.errors.enterEmail'));
       return;
     }
 
@@ -61,7 +64,7 @@ const HotelRegistrationStatus: React.FC = () => {
       const response = await fetch(`/api/public/hotel-registration/status?email=${encodeURIComponent(email.trim())}`);
       
       if (response.status === 404) {
-        setError(t('hotelRegistrationStatus.errors.notFound'));
+        showSubmissionError(t('hotelRegistrationStatus.errors.notFound'));
         return;
       }
       
@@ -75,7 +78,9 @@ const HotelRegistrationStatus: React.FC = () => {
       
     } catch (err: any) {
       // console.error('Error checking registration status:', err);
-      setError(err.message || t('hotelRegistrationStatus.errors.checkFailedRetry'));
+      showSubmissionError(err, {
+        fallbackMessage: t('hotelRegistrationStatus.errors.checkFailedRetry'),
+      });
     } finally {
       setLoading(false);
     }
@@ -161,12 +166,6 @@ const HotelRegistrationStatus: React.FC = () => {
               {loading ? t('booking.find.buttons.searching') : t('hotelRegistrationStatus.actions.search')}
             </Button>
           </Box>
-
-          {error && (
-            <Alert severity="error" sx={{ mb: 3 }}>
-              {error}
-            </Alert>
-          )}
         </form>
       </Paper>
 
@@ -175,7 +174,7 @@ const HotelRegistrationStatus: React.FC = () => {
         <Card>
           <CardContent>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-              <Hotel sx={{ mr: 2, fontSize: 40, color: 'primary.main' }} />
+              <Hotel sx={{ mr: 2, fontSize: 40, color: readableAccentColor }} />
               <Box sx={{ flexGrow: 1 }}>
                 <Typography variant="h5" gutterBottom>
                   {registration.hotelName}
@@ -274,7 +273,7 @@ const HotelRegistrationStatus: React.FC = () => {
       )}
 
       {/* Help Information */}
-      <Card sx={{ mt: 3, bgcolor: 'grey.50' }}>
+      <Card sx={{ mt: 3, bgcolor: getSectionTint(theme, 'primary') }}>
         <CardContent>
           <Typography variant="h6" gutterBottom>
             {t('hotelRegistrationStatus.help.title')}
