@@ -321,6 +321,12 @@ const FrontDeskDashboard: React.FC = () => {
               border: `1px solid ${theme.palette.divider}`,
               borderRadius: '8px 8px 0 0',
               marginRight: '4px',
+              '&.Mui-disabled': {
+                backgroundColor: theme.palette.action.disabledBackground,
+                color: theme.palette.text.disabled,
+                borderColor: theme.palette.action.disabledBackground,
+                opacity: 1,
+              },
               '&:hover': {
                 backgroundColor: theme.palette.action.hover,
                 color: theme.palette.text.primary,

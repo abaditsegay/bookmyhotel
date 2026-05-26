@@ -472,6 +472,11 @@ const HotelAdminDashboard: React.FC = () => {
               '& .MuiTab-root': {
                 color: theme.palette.text.secondary,
                 minHeight: 48,
+                '&.Mui-disabled': {
+                  color: theme.palette.text.disabled,
+                  backgroundColor: theme.palette.action.disabledBackground,
+                  opacity: 1,
+                },
                 '&:hover': {
                   color: theme.palette.text.primary,
                 },
