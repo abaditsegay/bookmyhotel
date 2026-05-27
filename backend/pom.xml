@@ -22,7 +22,7 @@
         <stripe.version>26.7.0</stripe.version>
         <testcontainers.version>1.20.1</testcontainers.version>
         <aws.sdk.version>2.27.21</aws.sdk.version>
-        <jacoco.version>0.8.12</jacoco.version>
+        <jacoco.version>0.8.14</jacoco.version>
         <skipITs>false</skipITs>
     </properties>
     
