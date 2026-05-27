@@ -3,8 +3,10 @@ package com.bookmyhotel.service;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +44,7 @@ import com.bookmyhotel.dto.RoomDTO;
 import com.bookmyhotel.dto.UserDTO;
 import com.bookmyhotel.entity.Hotel;
 import com.bookmyhotel.entity.HotelImage;
+import com.bookmyhotel.entity.PaymentStatus;
 import com.bookmyhotel.entity.Reservation;
 import com.bookmyhotel.entity.ReservationStatus;
 import com.bookmyhotel.entity.Room;
@@ -68,6 +71,22 @@ import jakarta.persistence.Query;
 public class HotelAdminService {
 
     private static final Logger logger = LoggerFactory.getLogger(HotelAdminService.class);
+    private static final ZoneId ETHIOPIA_ZONE = ZoneId.of("Africa/Addis_Ababa");
+    private static final List<UserRole> HOTEL_STAFF_ROLES = List.of(
+        UserRole.FRONTDESK,
+        UserRole.HOUSEKEEPING,
+        UserRole.HOTEL_ADMIN,
+        UserRole.ADMIN,
+        UserRole.OPERATIONAL_ADMIN,
+        UserRole.MAINTENANCE,
+        UserRole.TESTER);
+    private static final Set<ReservationStatus> ACTIVE_DASHBOARD_BOOKING_STATUSES = EnumSet.of(
+        ReservationStatus.BOOKED,
+        ReservationStatus.CHECKED_IN);
+    private static final Set<ReservationStatus> REPORTABLE_BOOKING_STATUSES = EnumSet.of(
+        ReservationStatus.BOOKED,
+        ReservationStatus.CHECKED_IN,
+        ReservationStatus.CHECKED_OUT);
 
     @Autowired
     private UserRepository userRepository;
@@ -1024,7 +1043,7 @@ public class HotelAdminService {
 
         // Get all reservations for the hotel to calculate proper statistics
         List<Reservation> allReservations = reservationRepository.findByHotelId(hotel.getId());
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(ETHIOPIA_ZONE);
 
         // Debug logging
         // System.out.println("🔍 Hotel Statistics Debug - Hotel ID: " + hotel.getId());
@@ -1041,34 +1060,7 @@ public class HotelAdminService {
         // We want to count all BOOKED bookings that haven't checked out yet,
         // and all CHECKED_IN bookings regardless of dates
         long bookedBookings = allReservations.stream()
-                .filter(r -> {
-                    // System.out.println("🔍 Processing reservation " + r.getId() + " - Status: " +
-                    // r.getStatus() +
-                    // ", Check-in: " + r.getCheckInDate() + ", Check-out: " + r.getCheckOutDate());
-
-                    // Count CHECKED_IN bookings regardless of dates (current guests)
-                    if (r.getStatus() == ReservationStatus.CHECKED_IN) {
-                        // System.out.println("🔍 Reservation " + r.getId() + " included - CHECKED_IN
-                        // guest");
-                        return true;
-                    }
-
-                    // Count BOOKED bookings that haven't passed their checkout date
-                    if (r.getStatus() == ReservationStatus.BOOKED) {
-                        // Use isAfter instead of !isBefore to be more explicit
-                        // A booking is still valid if checkout date is today or in the future
-                        boolean isValidBooking = r.getCheckOutDate().isAfter(today)
-                                || r.getCheckOutDate().isEqual(today);
-                        System.out
-                                .println("🔍 Reservation " + r.getId() + " - BOOKED booking, checkout date check: " +
-                                        r.getCheckOutDate() + " >= " + today + " = " + isValidBooking);
-                        return isValidBooking;
-                    }
-
-                    // System.out.println("🔍 Reservation " + r.getId() + " excluded - status: " +
-                    // r.getStatus());
-                    return false;
-                })
+            .filter(r -> isActiveDashboardBooking(r, today))
                 .count();
 
         // System.out.println("🔍 Booked bookings calculated: " + bookedBookings);
@@ -1076,19 +1068,7 @@ public class HotelAdminService {
 
         // Booked rooms: rooms with active reservations that have assigned rooms
         Set<Long> bookedRoomIds = allReservations.stream()
-                .filter(r -> {
-                    // Count CHECKED_IN bookings regardless of dates (current guests)
-                    if (r.getStatus() == ReservationStatus.CHECKED_IN) {
-                        return true;
-                    }
-
-                    // Count BOOKED bookings that haven't passed their checkout date
-                    if (r.getStatus() == ReservationStatus.BOOKED) {
-                        return r.getCheckOutDate().isAfter(today) || r.getCheckOutDate().isEqual(today);
-                    }
-
-                    return false;
-                })
+                .filter(r -> isActiveDashboardBooking(r, today))
                 .filter(r -> r.getRoom() != null) // Filter out reservations without assigned rooms
                 .map(r -> r.getRoom().getId())
                 .collect(Collectors.toSet());
@@ -1107,10 +1087,7 @@ public class HotelAdminService {
         stats.put("availableRooms", availableRooms);
 
         // Staff statistics - include all staff roles (excluding customers and guests)
-        List<User> staff = userRepository.findByHotelAndRolesContaining(hotel,
-                Arrays.asList(UserRole.FRONTDESK, UserRole.HOUSEKEEPING, UserRole.HOTEL_ADMIN,
-                UserRole.HOTEL_ADMIN, UserRole.ADMIN, UserRole.OPERATIONAL_ADMIN,
-                UserRole.MAINTENANCE, UserRole.TESTER));
+        List<User> staff = userRepository.findByHotelAndRolesContaining(hotel, HOTEL_STAFF_ROLES);
         stats.put("totalStaff", staff.size());
         stats.put("activeStaff", staff.stream().mapToInt(s -> s.getIsActive() ? 1 : 0).sum());
 
@@ -1451,6 +1428,10 @@ public class HotelAdminService {
         List<Reservation> allReservations = reservationRepository.findByHotelId(hotelId);
 
         Map<String, Object> stats = new HashMap<>();
+        LocalDate today = LocalDate.now(ETHIOPIA_ZONE);
+        LocalDate startOfYear = today.withDayOfYear(1);
+        LocalDate startOfMonth = today.withDayOfMonth(1);
+        LocalDate nextWeek = today.plusDays(7);
 
         // Overall stats
         stats.put("totalBookings", allReservations.size());
@@ -1462,27 +1443,25 @@ public class HotelAdminService {
                         Collectors.counting()));
         stats.put("statusBreakdown", statusBreakdown);
 
-        // Monthly revenue (current year)
-        LocalDate startOfYear = LocalDate.now().withDayOfYear(1);
+        // Current-year recognized revenue from completed payments created this year.
         BigDecimal currentYearRevenue = allReservations.stream()
-                .filter(r -> r.getCheckInDate().isAfter(startOfYear.minusDays(1)))
-                .filter(r -> r.getStatus() == ReservationStatus.BOOKED
-                        || r.getStatus() == ReservationStatus.CHECKED_IN
-                        || r.getStatus() == ReservationStatus.CHECKED_OUT)
+            .filter(r -> r.getCreatedAt() != null)
+            .filter(r -> !r.getCreatedAt().toLocalDate().isBefore(startOfYear))
+            .filter(r -> r.getPaymentStatus() == PaymentStatus.COMPLETED)
                 .map(Reservation::getTotalAmount)
+            .filter(amount -> amount != null)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         stats.put("currentYearRevenue", currentYearRevenue);
 
         // This month's bookings
-        LocalDate startOfMonth = LocalDate.now().withDayOfMonth(1);
         long thisMonthBookings = allReservations.stream()
-                .filter(r -> r.getCheckInDate().isAfter(startOfMonth.minusDays(1)))
+            .filter(r -> r.getCreatedAt() != null)
+            .filter(r -> !r.getCreatedAt().toLocalDate().isBefore(startOfMonth))
+            .filter(r -> REPORTABLE_BOOKING_STATUSES.contains(r.getStatus()))
                 .count();
         stats.put("thisMonthBookings", thisMonthBookings);
 
         // Upcoming check-ins (next 7 days)
-        LocalDate today = LocalDate.now();
-        LocalDate nextWeek = today.plusDays(7);
         long upcomingCheckIns = allReservations.stream()
                 .filter(r -> r.getCheckInDate().isAfter(today.minusDays(1))
                         && r.getCheckInDate().isBefore(nextWeek.plusDays(1)))
@@ -1499,6 +1478,19 @@ public class HotelAdminService {
         stats.put("upcomingCheckOuts", upcomingCheckOuts);
 
         return stats;
+    }
+
+    private boolean isActiveDashboardBooking(Reservation reservation, LocalDate today) {
+        if (!ACTIVE_DASHBOARD_BOOKING_STATUSES.contains(reservation.getStatus())) {
+            return false;
+        }
+
+        if (reservation.getStatus() == ReservationStatus.CHECKED_IN) {
+            return true;
+        }
+
+        return reservation.getCheckOutDate() != null
+                && (!reservation.getCheckOutDate().isBefore(today));
     }
 
     /**

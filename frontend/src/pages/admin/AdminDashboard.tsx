@@ -28,6 +28,7 @@ import {
   Search as SearchIcon,
 } from '@mui/icons-material';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 import { PageContainer } from '../../components/common/PageShell';
 import PremiumSelect from '../../components/common/PremiumSelect';
@@ -43,6 +44,7 @@ import AuditLogTab from './AuditLogTab';
 
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { token, user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -242,17 +244,17 @@ const AdminDashboard: React.FC = () => {
   return (
     <PageContainer maxWidth={false}>
       <PageHeader
-        eyebrow="Platform Operations"
-        title="System Administration"
-        description="Manage platform hotels, user accounts, and audit activity from a consistent administrative workspace."
-        actions={<Chip color="primary" label="Platform Console" />}
+        eyebrow={t('admin.dashboard.eyebrow')}
+        title={t('admin.dashboard.title')}
+        description={t('admin.dashboard.description')}
+        actions={<Chip color="primary" label={t('admin.dashboard.consoleChip')} />}
       />
 
       <SurfaceCard variantStyle="elevated" contentSx={{ p: 0 }}>
         <Tabs
           value={currentTab}
           onChange={handleTabChange}
-          aria-label="admin management tabs"
+          aria-label={t('admin.dashboard.tabsAriaLabel')}
           variant="scrollable"
           scrollButtons="auto"
           allowScrollButtonsMobile
@@ -264,30 +266,30 @@ const AdminDashboard: React.FC = () => {
             },
           }}
         >
-          <Tab icon={<Hotel />} label="Hotel Management" id="tab-0" aria-controls="tabpanel-0" />
-          <Tab icon={<People />} label="User Management" id="tab-1" aria-controls="tabpanel-1" />
-          <Tab icon={<History />} label="Audit Log" id="tab-2" aria-controls="tabpanel-2" />
+          <Tab icon={<Hotel />} label={t('admin.hotel.title')} id="tab-0" aria-controls="tabpanel-0" />
+          <Tab icon={<People />} label={t('admin.user.title')} id="tab-1" aria-controls="tabpanel-1" />
+          <Tab icon={<History />} label={t('dashboard.system.auditLogTab')} id="tab-2" aria-controls="tabpanel-2" />
         </Tabs>
       </SurfaceCard>
 
       {currentTab === 0 && (
         <DataTableCard
-          title="Hotel Management"
-          description="Review hotels registered on the platform and jump into detailed administration for individual properties."
+          title={t('admin.hotel.title')}
+          description={t('admin.dashboard.hotelSectionDescription')}
           actions={
             <StandardButton
               variant="contained"
               startIcon={<AddIcon />}
               onClick={() => navigate(`/admin/register-hotel?returnTab=${currentTab}`)}
             >
-              Register Hotel
+              {t('admin.hotel.addHotel')}
             </StandardButton>
           }
           filters={
             <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
               <PremiumTextField
                 size="small"
-                placeholder="Search hotels..."
+                placeholder={t('admin.dashboard.hotelSearchPlaceholder')}
                 value={hotelSearchTerm}
                 onChange={(event) => setHotelSearchTerm(event.target.value)}
                 InputProps={{
@@ -300,16 +302,16 @@ const AdminDashboard: React.FC = () => {
                 sx={{ minWidth: 250 }}
               />
               <PremiumSelect
-                label="Status"
+                label={t('admin.dashboard.statusLabel')}
                 value={hotelStatusFilter}
                 onChange={(event) => setHotelStatusFilter(event.target.value)}
                 fullWidth={false}
                 sx={{ minWidth: 150 }}
               >
-                <MenuItem value="">All Status</MenuItem>
-                <MenuItem value="Active">Active</MenuItem>
-                <MenuItem value="Pending">Pending</MenuItem>
-                <MenuItem value="Inactive">Inactive</MenuItem>
+                <MenuItem value="">{t('admin.dashboard.allStatuses')}</MenuItem>
+                <MenuItem value="Active">{t('admin.dashboard.status.active')}</MenuItem>
+                <MenuItem value="Pending">{t('admin.dashboard.status.pending')}</MenuItem>
+                <MenuItem value="Inactive">{t('admin.dashboard.status.inactive')}</MenuItem>
               </PremiumSelect>
             </Box>
           }
@@ -322,20 +324,20 @@ const AdminDashboard: React.FC = () => {
               page={hotelPage}
               onPageChange={handleHotelChangePage}
               onRowsPerPageChange={handleHotelChangeRowsPerPage}
-              labelRowsPerPage="Hotels per page:"
+              labelRowsPerPage={t('admin.dashboard.hotelsPerPage')}
             />
           }
         >
-          <Table aria-label="hotels table">
+          <Table aria-label={t('admin.dashboard.hotelsTableAriaLabel')}>
             <TableHead>
               <TableRow>
-                <TableCell>Hotel Name</TableCell>
-                <TableCell>Location</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell>Rooms</TableCell>
-                <TableCell>Rating</TableCell>
-                <TableCell>Registered</TableCell>
-                <TableCell>Actions</TableCell>
+                <TableCell>{t('admin.dashboard.hotelTable.hotelName')}</TableCell>
+                <TableCell>{t('admin.dashboard.hotelTable.location')}</TableCell>
+                <TableCell>{t('admin.dashboard.hotelTable.status')}</TableCell>
+                <TableCell>{t('admin.dashboard.hotelTable.rooms')}</TableCell>
+                <TableCell>{t('admin.dashboard.hotelTable.rating')}</TableCell>
+                <TableCell>{t('admin.dashboard.hotelTable.registered')}</TableCell>
+                <TableCell>{t('admin.dashboard.hotelTable.actions')}</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -343,7 +345,7 @@ const AdminDashboard: React.FC = () => {
                 <TableRow>
                   <TableCell colSpan={7} align="center" sx={{ py: 6 }}>
                     <CircularProgress size={36} />
-                    <Typography variant="body2" sx={{ mt: 2 }}>Loading hotels...</Typography>
+                    <Typography variant="body2" sx={{ mt: 2 }}>{t('admin.dashboard.loadingHotels')}</Typography>
                   </TableCell>
                 </TableRow>
               ) : hotelError ? (
@@ -355,7 +357,7 @@ const AdminDashboard: React.FC = () => {
               ) : paginatedHotels.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} align="center" sx={{ py: 6 }}>
-                    <Typography variant="body2" color="text.secondary">No hotels found</Typography>
+                    <Typography variant="body2" color="text.secondary">{t('admin.dashboard.noHotelsFound')}</Typography>
                   </TableCell>
                 </TableRow>
               ) : (
@@ -378,22 +380,22 @@ const AdminDashboard: React.FC = () => {
                       </Box>
                     </TableCell>
                     <TableCell>
-                      <Chip label="Active" size="small" color="success" variant="outlined" />
+                      <Chip label={t('admin.dashboard.status.active')} size="small" color="success" variant="outlined" />
                     </TableCell>
                     <TableCell>
-                      <Typography variant="body2">{hotel.totalRooms || 'N/A'}</Typography>
+                      <Typography variant="body2">{hotel.totalRooms || t('common.notAvailable')}</Typography>
                     </TableCell>
                     <TableCell>
-                      <Typography variant="body2">N/A</Typography>
+                      <Typography variant="body2">{t('common.notAvailable')}</Typography>
                     </TableCell>
                     <TableCell>
                       <Typography variant="body2" color="text.secondary">
-                        {hotel.createdAt ? formatDateForDisplay(hotel.createdAt) : 'N/A'}
+                        {hotel.createdAt ? formatDateForDisplay(hotel.createdAt) : t('common.notAvailable')}
                       </Typography>
                     </TableCell>
                     <TableCell>
                       <Box sx={{ display: 'flex', gap: 1 }}>
-                        <Tooltip title="View Details">
+                        <Tooltip title={t('admin.dashboard.viewDetails')}>
                           <IconButton size="small" onClick={() => navigate(`/admin/hotels/${hotel.id}?returnTab=${currentTab}`)}>
                             <ViewIcon fontSize="small" />
                           </IconButton>
@@ -410,22 +412,22 @@ const AdminDashboard: React.FC = () => {
 
       {currentTab === 1 && (
         <DataTableCard
-          title="User Management"
-          description="Search platform users, review their assigned hotel context, and open the detailed user administration flow."
+          title={t('admin.user.title')}
+          description={t('admin.dashboard.userSectionDescription')}
           actions={
             <StandardButton
               variant="contained"
               startIcon={<PersonAddIcon />}
               onClick={() => navigate(`/admin/add-user?returnTab=${currentTab}`)}
             >
-              Add User
+              {t('admin.user.addUser')}
             </StandardButton>
           }
           filters={
             <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
               <PremiumTextField
                 size="small"
-                placeholder="Search users..."
+                placeholder={t('admin.dashboard.userSearchPlaceholder')}
                 value={userSearchTerm}
                 onChange={(event) => setUserSearchTerm(event.target.value)}
                 InputProps={{
@@ -438,29 +440,29 @@ const AdminDashboard: React.FC = () => {
                 sx={{ minWidth: 250 }}
               />
               <PremiumSelect
-                label="Role"
+                label={t('admin.user.role')}
                 value={userRoleFilter}
                 onChange={(event) => setUserRoleFilter(event.target.value)}
                 fullWidth={false}
                 sx={{ minWidth: 150 }}
               >
-                <MenuItem value="">All Roles</MenuItem>
-                <MenuItem value="ADMIN">Admin</MenuItem>
-                <MenuItem value="HOTEL_ADMIN">Hotel Admin</MenuItem>
-                <MenuItem value="HOTEL_STAFF">Hotel Staff</MenuItem>
-                <MenuItem value="GUEST">Guest</MenuItem>
+                <MenuItem value="">{t('admin.dashboard.allRoles')}</MenuItem>
+                <MenuItem value="ADMIN">{t('admin.dashboard.roles.ADMIN')}</MenuItem>
+                <MenuItem value="HOTEL_ADMIN">{t('admin.dashboard.roles.HOTEL_ADMIN')}</MenuItem>
+                <MenuItem value="HOTEL_STAFF">{t('admin.dashboard.roles.HOTEL_STAFF')}</MenuItem>
+                <MenuItem value="GUEST">{t('admin.dashboard.roles.GUEST')}</MenuItem>
               </PremiumSelect>
               <PremiumSelect
-                label="Status"
+                label={t('admin.dashboard.statusLabel')}
                 value={userStatusFilter}
                 onChange={(event) => setUserStatusFilter(event.target.value)}
                 fullWidth={false}
                 sx={{ minWidth: 150 }}
               >
-                <MenuItem value="">All Status</MenuItem>
-                <MenuItem value="Active">Active</MenuItem>
-                <MenuItem value="Pending">Pending</MenuItem>
-                <MenuItem value="Inactive">Inactive</MenuItem>
+                <MenuItem value="">{t('admin.dashboard.allStatuses')}</MenuItem>
+                <MenuItem value="Active">{t('admin.dashboard.status.active')}</MenuItem>
+                <MenuItem value="Pending">{t('admin.dashboard.status.pending')}</MenuItem>
+                <MenuItem value="Inactive">{t('admin.dashboard.status.inactive')}</MenuItem>
               </PremiumSelect>
             </Box>
           }
@@ -473,21 +475,21 @@ const AdminDashboard: React.FC = () => {
               page={userPage}
               onPageChange={handleUserChangePage}
               onRowsPerPageChange={handleUserChangeRowsPerPage}
-              labelRowsPerPage="Users per page:"
+              labelRowsPerPage={t('admin.dashboard.usersPerPage')}
             />
           }
         >
-          <Table aria-label="users table">
+          <Table aria-label={t('admin.dashboard.usersTableAriaLabel')}>
             <TableHead>
               <TableRow>
-                <TableCell>User Name</TableCell>
-                <TableCell>Email</TableCell>
-                {canViewUserHotelColumn && <TableCell>Hotel</TableCell>}
-                <TableCell>Role</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell>Last Login</TableCell>
-                <TableCell>Created</TableCell>
-                <TableCell>Actions</TableCell>
+                <TableCell>{t('admin.dashboard.userTable.userName')}</TableCell>
+                <TableCell>{t('admin.dashboard.userTable.email')}</TableCell>
+                {canViewUserHotelColumn && <TableCell>{t('admin.dashboard.userTable.hotel')}</TableCell>}
+                <TableCell>{t('admin.dashboard.userTable.role')}</TableCell>
+                <TableCell>{t('admin.dashboard.userTable.status')}</TableCell>
+                <TableCell>{t('admin.dashboard.userTable.lastLogin')}</TableCell>
+                <TableCell>{t('admin.dashboard.userTable.created')}</TableCell>
+                <TableCell>{t('admin.dashboard.userTable.actions')}</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -495,7 +497,7 @@ const AdminDashboard: React.FC = () => {
                 <TableRow>
                   <TableCell colSpan={canViewUserHotelColumn ? 8 : 7} align="center" sx={{ py: 6 }}>
                     <CircularProgress size={36} />
-                    <Typography variant="body2" sx={{ mt: 2 }}>Loading users...</Typography>
+                    <Typography variant="body2" sx={{ mt: 2 }}>{t('admin.dashboard.loadingUsers')}</Typography>
                   </TableCell>
                 </TableRow>
               ) : userError ? (
@@ -507,7 +509,7 @@ const AdminDashboard: React.FC = () => {
               ) : paginatedUsers.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={canViewUserHotelColumn ? 8 : 7} align="center" sx={{ py: 6 }}>
-                    <Typography variant="body2" color="text.secondary">No users found</Typography>
+                    <Typography variant="body2" color="text.secondary">{t('admin.dashboard.noUsersFound')}</Typography>
                   </TableCell>
                 </TableRow>
               ) : (
@@ -527,13 +529,13 @@ const AdminDashboard: React.FC = () => {
                     {canViewUserHotelColumn && (
                       <TableCell>
                         <Typography variant="body2" color="text.secondary">
-                          {appUser.hotelName || 'System-wide'}
+                          {appUser.hotelName || t('admin.dashboard.systemWide')}
                         </Typography>
                       </TableCell>
                     )}
                     <TableCell>
                       <Chip
-                        label={appUser.roles.length > 0 ? appUser.roles[0] : 'NO_ROLE'}
+                        label={appUser.roles.length > 0 ? t(`admin.dashboard.roles.${appUser.roles[0]}`, appUser.roles[0]) : t('admin.dashboard.roles.NO_ROLE')}
                         size="small"
                         color={
                           appUser.roles.includes('ADMIN')
@@ -547,23 +549,23 @@ const AdminDashboard: React.FC = () => {
                     </TableCell>
                     <TableCell>
                       <Chip
-                        label={appUser.isActive ? 'Active' : 'Inactive'}
+                        label={appUser.isActive ? t('admin.dashboard.status.active') : t('admin.dashboard.status.inactive')}
                         size="small"
                         color={appUser.isActive ? 'success' : 'default'}
                         variant={appUser.isActive ? 'filled' : 'outlined'}
                       />
                     </TableCell>
                     <TableCell>
-                      <Typography variant="body2" color="text.secondary">N/A</Typography>
+                      <Typography variant="body2" color="text.secondary">{t('common.notAvailable')}</Typography>
                     </TableCell>
                     <TableCell>
                       <Typography variant="body2" color="text.secondary">
-                        {appUser.createdAt ? formatDateForDisplay(appUser.createdAt) : 'N/A'}
+                        {appUser.createdAt ? formatDateForDisplay(appUser.createdAt) : t('common.notAvailable')}
                       </Typography>
                     </TableCell>
                     <TableCell>
                       <Box sx={{ display: 'flex', gap: 1 }}>
-                        <Tooltip title="View Details">
+                        <Tooltip title={t('admin.dashboard.viewDetails')}>
                           <IconButton size="small" onClick={() => navigate(`/admin/users/${appUser.id}?returnTab=${currentTab}`)}>
                             <ViewIcon fontSize="small" />
                           </IconButton>
@@ -586,10 +588,10 @@ const AdminDashboard: React.FC = () => {
 
       <Box sx={{ mt: 6, pt: 4, borderTop: 1, borderColor: 'divider', textAlign: 'center' }}>
         <Typography variant="body2" color="text.secondary">
-          BookMyHotel Admin Dashboard - Platform Version 1.0.0
+          {t('admin.dashboard.footer.version')}
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          Secure administration interface for platform management
+          {t('admin.dashboard.footer.secureInterface')}
         </Typography>
       </Box>
     </PageContainer>

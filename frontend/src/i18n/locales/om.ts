@@ -81,8 +81,15 @@ export const omTranslations = {
       analyticsTitle: "Xiinxala Qabatamaa",
       analyticsVisualization: "Xiinxalaa fi Mul'isa Daataa Sirnaa",
       totalBookings: "Kutaalee Waligalaa",
+      totalBookingsSubtitle: "Ji'a kana keessa kuusaan {{count}} uumameera",
       activeHotels: "Hoteelota Ka'aa",
+      activeBookings: "Kuusaa Hojii Irratti",
+      activeBookingsSubtitle: "Turtiiwwan qabaman yookaan galmaa'an",
       monthlyRevenue: "Galii Ji'aa",
+      currentMonthRevenue: "Galii Ji'a Amma",
+      currentMonthRevenueSubtitle: "Walumaagalatti kaffaltiiwwan xumuraman {{count}}",
+      currentYearRevenue: "Galii Bara Amma",
+      currentYearRevenueSubtitle: "Galii kaffaltiiwwan xumuraman irraa",
       systemUsers: "Fayyadamtoota Sirnaa",
       recentActivity: "Sochiilee Dhiyeenyaa",
       performanceMetrics: "Safartuu Raawwii",
@@ -91,6 +98,36 @@ export const omTranslations = {
       systemOverview: "Mul'ata Sirnaa",
       monthlyRevenueChart: "Adeemsa Galii Ji'aa (Birrii)",
       bookingStatusChart: "Raabsa Haala Kutaa",
+      monthlyBookingVolumeChart: "Baay'ina Kuusaa Ji'aa",
+      paymentStatusChart: "Raabsa Haala Kaffaltii",
+      totalBookingsCenterSubtext: "Kutaalee Waligalaa",
+      completedPaymentsCenterSubtext: "Kaffaltiiwwan Xumuraman",
+      demoBookingsCenterSubtext: "Kuusaa Agarsiisaa",
+      auditLogTab: "Galmee Odiitii",
+      businessOnboarding: {
+        title: "URL Eegumsa Daldalaa",
+        shareChip: "Daldaltoota Haaraaf Qoodi",
+        description: "Liinkii kana daldala tokkoof qoodi akka isaanii galmee hoteelaaf iyyata dhiheessan. Fuulichi navigeeshinii uummataa irraa hin hidhanne.",
+        copied: "Garagalchameera!",
+        copyUrl: "URL Koori",
+        openInNewTab: "Tab Haaraatti Bani"
+      },
+      apiDocs: {
+        tabLabel: "Dokumantii API",
+        searchPlaceholder: "Dhuma Bu'aa API Barbaadi...",
+        categoryLabel: "Ramaddii",
+        allCategories: "Hunda",
+        showingCount: "Dhama bu'oota {{filtered}} keessaa {{total}} agarsiisaa jira",
+        requestSection: "Gaaffii",
+        responseSection: "Deebii",
+        headersLabel: "Mata-Duree:",
+        pathParametersLabel: "Paaraameetaroota Karaa:",
+        queryParametersLabel: "Paaraameetaroota Gaaffii:",
+        requestBodyLabel: "Qaama Gaaffii:",
+        successResponseLabel: "Deebii Milkaa'aa (200):",
+        errorResponseLabel: "Deebii Dogoggoraa (4xx/5xx):",
+        noExamples: "Dhama bu'aa kanaaf fakkeenyonni gaaffii/deebii hin jiran."
+      },
       
       // Gochaalee Bulchiinsaa
       manageTenants: "Dhaabbilee qabatamaa uumuu fi bulchuu",
@@ -1764,6 +1801,65 @@ export const omTranslations = {
 
   // Interfeesii Bulchiinsaa
   admin: {
+    dashboard: {
+      eyebrow: "Hojiiwwan Waltajjii",
+      title: "Bulchiinsa Sirnaa",
+      description: "Hoteelota waltajjii, akkaawuntota fayyadamtootaa, fi sochiiwwan odiitii iddoo bulchiinsa tokkichaa irraa bulchi.",
+      consoleChip: "Konsolii Waltajjii",
+      tabsAriaLabel: "Taboota bulchiinsaa",
+      hotelSectionDescription: "Hoteelota waltajjii irratti galmaa'an ilaali fi gara bulchiinsa bal'aa qabeessaatti seeni.",
+      userSectionDescription: "Fayyadamtoota waltajjii barbaadi, haala hoteela isaanii ilaali, fi gara bulchiinsa fayyadamaa bal'aa seeni.",
+      hotelSearchPlaceholder: "Hoteelota barbaadi...",
+      userSearchPlaceholder: "Fayyadamtoota barbaadi...",
+      statusLabel: "Haala",
+      allStatuses: "Haala Hunda",
+      allRoles: "Gahee Hunda",
+      hotelsPerPage: "Hoteelota fuula tokko keessatti:",
+      usersPerPage: "Fayyadamtoota fuula tokko keessatti:",
+      hotelsTableAriaLabel: "Gabatee hoteelotaa",
+      usersTableAriaLabel: "Gabatee fayyadamtootaa",
+      loadingHotels: "Hoteelota fe'aa jira...",
+      loadingUsers: "Fayyadamtoota fe'aa jira...",
+      noHotelsFound: "Hoteelonni hin argamne",
+      noUsersFound: "Fayyadamtoonni hin argamne",
+      viewDetails: "Bal'ina Ilaali",
+      systemWide: "Sirna guutuu",
+      status: {
+        active: "Ka'aa",
+        pending: "Eegamaa",
+        inactive: "Ka'aa Miti"
+      },
+      roles: {
+        ADMIN: "Bulchaa",
+        HOTEL_ADMIN: "Bulchaa Hotelaa",
+        HOTEL_STAFF: "Hojjetaa Hotelaa",
+        GUEST: "Keessummaa",
+        NO_ROLE: "Gaheen Hin Jiru"
+      },
+      hotelTable: {
+        hotelName: "Maqaa Hotelaa",
+        location: "Bakka",
+        status: "Haala",
+        rooms: "Kutaalee",
+        rating: "Sadarkaa",
+        registered: "Kan Galmaa'e",
+        actions: "Gochaalee"
+      },
+      userTable: {
+        userName: "Maqaa Fayyadamaa",
+        email: "Imeelii",
+        hotel: "Hotela",
+        role: "Gahee",
+        status: "Haala",
+        lastLogin: "Seensa Dhumaa",
+        created: "Kan Uumame",
+        actions: "Gochaalee"
+      },
+      footer: {
+        version: "Dashboordii Bulchiinsa BookMyHotel - Vershinii Waltajjii 1.0.0",
+        secureInterface: "Walqunnamtii bulchiinsa waltajjiif nageenya qabu"
+      }
+    },
     tenant: {
       title: "Bulchiinsa Qabatamaa",
       addTenant: "Qabatamaa Dabaluu",
@@ -1804,6 +1900,633 @@ export const omTranslations = {
       totalRooms: "Kuteewwan Hundaa",
       activateHotel: "Hotela Ka'umsuu",
       deactivateHotel: "Hotela Cufuu"
+    },
+    auditLog: {
+      stats: {
+        actionsToday: "Gochaalee har'aa:",
+        failedToday: "Kan har'a kufan:",
+      },
+      filters: {
+        action: "Gochaa",
+        entityType: "Akaakuu Qaamaa",
+        allActions: "Gochaalee Hunda",
+        allTypes: "Akaakuuwwan Hunda",
+        emailPlaceholder: "Imeeliidhaan calali",
+        fromDate: "Guyyaa irraa",
+        toDate: "Guyyaa hanga",
+        clear: "Calaloota Haqi"
+      },
+      table: {
+        timestamp: "Yeroo",
+        actor: "Raawwataa",
+        role: "Gahee",
+        action: "Gochaa",
+        entityType: "Akaakuu Qaamaa",
+        entityId: "ID Qaamaa",
+        description: "Ibsa",
+        status: "Haala",
+        details: "Bal'ina",
+        viewFullDetails: "Bal'ina guutuu ilaali",
+        rowsPerPage: "Dhimmoota fuula tokko keessatti:"
+      },
+      status: {
+        failed: "Kufe"
+      },
+      emptyState: "Dhimmoonni odiitii hin argamne",
+      errors: {
+        loadFailed: "Galmeewwan odiitii fe'uun dadhabe"
+      },
+      detail: {
+        title: "Bal'ina Dhimma Odiitii",
+        timestamp: "Yeroo",
+        action: "Gochaa",
+        entityType: "Akaakuu Qaamaa",
+        entityId: "ID Qaamaa",
+        description: "Ibsa",
+        performedBy: "Kan Raawwate",
+        email: "Imeelii",
+        role: "Gahee",
+        ipAddress: "Teessoo IP",
+        request: "Gaaffii",
+        responseStatus: "Haala Deebii",
+        oldValues: "Gatiiwwan Durii",
+        newValues: "Gatiiwwan Haaraa",
+        userAgent: "User Agent"
+      },
+      actions: {
+        CREATE: "Uumi",
+        UPDATE: "Fooyyessi",
+        DELETE: "Balleessi",
+        TOGGLE_STATUS: "Haala Jijjiiri",
+        ASSIGN_ADMIN: "Bulchaa Ramadi",
+        ADD_ROLE: "Gahee Dabaluu",
+        REMOVE_ROLE: "Gahee Haquu",
+        RESET_PASSWORD: "Jecha Iccitii Haaromsii",
+        APPROVE: "Mirkaneessi",
+        REJECT: "Didi",
+        UNDER_REVIEW: "Gamaaggamaa jira",
+        ACTION: "Gochaa"
+      },
+      entityTypes: {
+        SYSTEM: "Sirna",
+        USER: "Fayyadamaa",
+        HOTEL: "Hotela",
+        ROOM: "Kutaa",
+        TENANT: "Qabatamaa",
+        HOTEL_REGISTRATION: "Galmee Hotelaa"
+      }
+    },
+    hotelDetail: {
+      title: "Bal'ina Hotelaa",
+      actions: {
+        editHotel: "Hotela Gulaali",
+        saveChanges: "Jijjiirama Olkaa'i",
+        saving: "Olkaa'aa jira..."
+      },
+      hero: {
+        totalRooms: "Kutaalee Hundaa",
+        averageRating: "Sadarkaa Giddugaleessaa",
+        daysActive: "Guyyoota Ka'aa",
+        currency: "Maallaqa"
+      },
+      sections: {
+        basicInformation: "Odeeffannoo Bu'uuraa",
+        locationAddress: "Bakkaa fi Teessoo",
+        operationsSettings: "Hojii fi Qindaa'inoota",
+        statusManagement: "Bulchiinsa Haalaa",
+        performanceMetrics: "Safartuu Raawwii",
+        occupancyRate: "Sadarkaa Guutuu",
+        systemInformation: "Odeeffannoo Sirnaa"
+      },
+      fields: {
+        hotelName: "Maqaa Hotelaa",
+        description: "Ibsa",
+        phoneNumber: "Lakkoofsa Bilbilaa",
+        emailAddress: "Teessoo Imeelii",
+        websiteUrl: "URL Marsariitii",
+        streetAddress: "Teessoo Daandii",
+        city: "Magaalaa",
+        stateProvince: "Naannoo/Godina",
+        zipPostalCode: "ZIP/Koodii Poostaa",
+        country: "Biyya",
+        checkInTime: "Sa'aatii Seensaa",
+        checkOutTime: "Sa'aatii Baasii",
+        currency: "Maallaqa",
+        timeZone: "Godina Yeroo",
+        hotelStatus: "Haala Hotelaa",
+        createdDate: "Guyyaa Uumamaa",
+        lastUpdated: "Yeroo Dhumaa Fooyya'e",
+        hotelId: "ID Hotelaa",
+        activeStatus: "Haala Ka'umsaa"
+      },
+      status: {
+        ACTIVE: "Ka'aa",
+        PENDING: "Eegamaa",
+        INACTIVE: "Ka'aa Miti",
+        SUSPENDED: "Dhoorkame"
+      },
+      dialog: {
+        discardTitle: "Jijjiirama Dhiisuu?",
+        discardMessage: "Jijjiiramoonni hin olkaa'amne jiru. Isaan dhiisuuf mirkanaa'aa?",
+        keepEditing: "Gulaaluu Itti Fufi",
+        discardChanges: "Jijjiirama Dhiisi"
+      },
+      messages: {
+        updateSuccess: "Hotelli milkaa'inaan fooyya'eera",
+        updateFailed: "Hotela fooyyessuun dadhabe"
+      },
+      errors: {
+        notFound: "Hotelli hin argamne",
+        loadFailed: "Bal'ina hotelaa fe'uun dadhabe"
+      },
+      footer: {
+        version: "Dashboordii Bulchiinsa Sirnaa BookMyHotel - Vershinii 2.0.0",
+        subtitle: "Waltajjii bulchiinsa hotelaa ogummaa qabu fi xiinxala olaanaa"
+      }
+    },
+    userDetail: {
+      title: "Bal'ina Fayyadamaa",
+      superAdminInfo: "Akkaawuntiin SUPER_ADMIN jijjiiramuu hin danda'u.",
+      actions: {
+        editUser: "Fayyadamaa Gulaali",
+        saveChanges: "Jijjiirama Olkaa'i",
+        saving: "Olkaa'aa jira..."
+      },
+      sections: {
+        personalInformation: "Odeeffannoo Dhuunfaa",
+        rolesPermissions: "Gahee fi Heyyamoota",
+        accountStatus: "Haala Akaawuntii",
+        accountInformation: "Odeeffannoo Akaawuntii"
+      },
+      fields: {
+        firstName: "Maqaa Duraa",
+        lastName: "Maqaa Boodaa",
+        email: "Imeelii",
+        phone: "Bilbila",
+        roles: "Gahee",
+        activeAccount: "Akaawuntii Ka'aa",
+        accountId: "ID: {{id}}",
+        created: "Kan Uumame",
+        lastLogin: "Seensa Dhumaa"
+      },
+      roles: {
+        ADMIN: "Bulchaa Sirnaa",
+        HOTEL_ADMIN: "Bulchaa Hotelaa",
+        OPERATIONAL_ADMIN: "Bulchaa Opeereshinii",
+        CUSTOMER: "Maamila"
+      },
+      status: {
+        active: "Ka'aa",
+        inactive: "Ka'aa Miti"
+      },
+      dialog: {
+        discardTitle: "Jijjiirama Dhiisuu?",
+        discardMessage: "Jijjiiramoonni hin olkaa'amne jiru. Isaan dhiisuuf mirkanaa'aa?",
+        keepEditing: "Gulaaluu Itti Fufi",
+        discardChanges: "Jijjiirama Dhiisi"
+      },
+      messages: {
+        updateSuccess: "Fayyadamaan milkaa'inaan fooyya'eera",
+        updateFailed: "Fayyadamaa fooyyessuun dadhabe"
+      },
+      errors: {
+        notFound: "Fayyadamaan hin argamne",
+        loadFailed: "Bal'ina fayyadamaa fe'uun dadhabe"
+      }
+    },
+    hotelRegistrationForm: {
+      title: "Register New Hotel",
+      description: "Add a new hotel to the platform",
+      steps: {
+        basicInformation: "Basic Information",
+        locationDetails: "Location Details",
+        contactInformation: "Contact Information",
+        businessDetails: "Business Details"
+      },
+      categories: {
+        luxury: "Luxury",
+        business: "Business",
+        budget: "Budget",
+        boutique: "Boutique",
+        resort: "Resort"
+      },
+      fields: {
+        hotelName: "Hotel Name",
+        description: "Description",
+        category: "Hotel Category",
+        address: "Address",
+        city: "City",
+        stateProvince: "State/Province",
+        country: "Country",
+        zipPostalCode: "ZIP/Postal Code",
+        phoneNumber: "Phone Number",
+        emailAddress: "Email Address",
+        website: "Website",
+        contactPerson: "Contact Person",
+        businessLicenseNumber: "Business License Number",
+        taxId: "Tax ID"
+      },
+      placeholders: {
+        hotelName: "Enter hotel name",
+        description: "Enter hotel description",
+        address: "Enter street address",
+        city: "Enter city",
+        stateProvince: "Enter state or province",
+        country: "Enter country",
+        zipPostalCode: "Enter ZIP code",
+        phoneNumber: "Enter phone number",
+        emailAddress: "Enter email address",
+        website: "Enter website URL",
+        contactPerson: "Enter contact person name",
+        businessLicenseNumber: "Enter license number",
+        taxId: "Enter tax identification number"
+      },
+      actions: {
+        registering: "Registering...",
+        registerHotel: "Register Hotel"
+      },
+      summary: {
+        title: "Registration Summary",
+        hotelName: "Hotel Name:",
+        category: "Category:",
+        location: "Location:",
+        contact: "Contact:"
+      },
+      messages: {
+        registerFailed: "Failed to register hotel. Please try again.",
+        unknownStep: "Unknown step",
+        registerSuccessTitle: "Hotel Registered Successfully!",
+        registerSuccessBody: "The hotel \"{{hotelName}}\" has been registered and is now pending review."
+      }
+    },
+    userRegistrationForm: {
+      title: "Add New User",
+      description: "Create a new user account",
+      steps: {
+        basicInformation: "Basic Information",
+        accountSetup: "Account Setup",
+        profileDetails: "Profile Details",
+        accountSettings: "Account Settings"
+      },
+      roles: {
+        ADMIN: "Administrator",
+        HOTEL_ADMIN: "Hotel Administrator",
+        OPERATIONAL_ADMIN: "Operational Administrator",
+        FRONTDESK: "Front Desk Agent",
+        HOUSEKEEPING: "Housekeeping",
+        MAINTENANCE: "Maintenance",
+        TESTER: "Tester",
+        CUSTOMER: "Customer"
+      },
+      fields: {
+        firstName: "First Name",
+        lastName: "Last Name",
+        emailAddress: "Email Address",
+        username: "Username",
+        password: "Password",
+        confirmPassword: "Confirm Password",
+        userRole: "User Role",
+        tenant: "Tenant",
+        hotelAssignment: "Hotel Assignment",
+        phoneNumber: "Phone Number",
+        address: "Address",
+        city: "City",
+        stateProvince: "State/Province",
+        country: "Country",
+        zipPostalCode: "ZIP/Postal Code",
+        accountActive: "Account Active",
+        emailVerified: "Email Verified"
+      },
+      placeholders: {
+        firstName: "Enter first name",
+        lastName: "Enter last name",
+        emailAddress: "Enter email address",
+        username: "Enter username",
+        password: "Enter password",
+        confirmPassword: "Confirm password",
+        phoneNumber: "Enter phone number",
+        address: "Enter street address",
+        city: "Enter city",
+        stateProvince: "Enter state or province",
+        country: "Enter country",
+        zipPostalCode: "Enter ZIP code"
+      },
+      actions: {
+        creatingUser: "Creating User...",
+        createUser: "Create User"
+      },
+      summary: {
+        title: "User Summary",
+        name: "Name:",
+        username: "Username:",
+        email: "Email:",
+        role: "Role:",
+        tenant: "Tenant:",
+        hotelAssignment: "Hotel Assignment:",
+        status: "Status:",
+        emailVerified: "Email Verified:"
+      },
+      status: {
+        active: "Active",
+        inactive: "Inactive"
+      },
+      messages: {
+        loadTenantsFailed: "Failed to load tenants",
+        loadHotelsFailed: "Failed to load hotels for selected tenant",
+        authenticationRequired: "Authentication required",
+        createFailed: "Failed to create user. Please try again.",
+        noHotelsAvailable: "No hotels available for the selected tenant",
+        unknownStep: "Unknown step",
+        createSuccessTitle: "User Created Successfully!",
+        createSuccessBody: "{{fullName}} has been successfully registered as {{role}}."
+      }
+    },
+    userManagement: {
+      eyebrow: "Identity & Access",
+      title: "User Management",
+      description: "Manage platform users, review hotel associations, and handle activation, password resets, and profile updates from a consistent admin workflow.",
+      directory: {
+        title: "Users Directory",
+        description: "Filter by role, status, or text search, then open the relevant action for each user account."
+      },
+      filters: {
+        searchPlaceholder: "Search by name or email...",
+        role: "Role",
+        allRoles: "All Roles",
+        status: "Status",
+        allStatuses: "All Statuses"
+      },
+      table: {
+        name: "Name",
+        email: "Email",
+        phone: "Phone",
+        hotel: "Hotel",
+        role: "Role",
+        status: "Status",
+        created: "Created",
+        lastLogin: "Last Login",
+        actions: "Actions",
+        rowsPerPage: "Users per page:"
+      },
+      emptyState: "No users found for the selected filters.",
+      systemWide: "System-wide",
+      roles: {
+        ADMIN: "Administrator",
+        HOTEL_ADMIN: "Hotel Administrator",
+        OPERATIONAL_ADMIN: "Operational Administrator",
+        FRONTDESK: "Front Desk Agent",
+        HOUSEKEEPING: "Housekeeping",
+        MAINTENANCE: "Maintenance",
+        TESTER: "Tester",
+        CUSTOMER: "Customer",
+        SUPER_ADMIN: "Super Admin",
+        NO_ROLE: "No Role"
+      },
+      status: {
+        active: "Active",
+        inactive: "Inactive"
+      },
+      actions: {
+        addUser: "Add User",
+        viewDetails: "View Details",
+        deactivateUser: "Deactivate User",
+        activateUser: "Activate User",
+        resetPassword: "Reset Password",
+        createUser: "Create User",
+        updateUser: "Update User",
+        deactivate: "Deactivate",
+        activate: "Activate",
+        deactivating: "Deactivating...",
+        activating: "Activating...",
+        sending: "Sending...",
+        resetAndSendEmail: "Reset & Send Email"
+      },
+      dialogs: {
+        create: {
+          title: "Add New User",
+          description: "Create a new platform or hotel-bound account and assign the appropriate role and tenancy scope."
+        },
+        edit: {
+          title: "Edit User",
+          description: "Update the selected account's profile and role assignment."
+        },
+        toggleStatus: {
+          deactivateTitle: "Deactivate User",
+          activateTitle: "Activate User",
+          confirmation: "Are you sure you want to {{action}} user \"{{name}}\" ({{email}})?"
+        },
+        resetPassword: {
+          title: "Reset Password",
+          body: "A new random password will be generated and sent to {{email}} via email.",
+          note: "The new password will not be visible to you."
+        },
+        details: {
+          title: "User Details"
+        }
+      },
+      fields: {
+        firstName: "First Name",
+        lastName: "Last Name",
+        email: "Email",
+        password: "Password",
+        phone: "Phone",
+        role: "Role",
+        tenant: "Tenant",
+        hotel: "Hotel",
+        reason: "Reason",
+        status: "Status",
+        createdAt: "Created At",
+        lastLogin: "Last Login",
+        userId: "User ID"
+      },
+      placeholders: {
+        deactivationReason: "Enter reason for deactivation...",
+        activationReason: "Enter reason for activation..."
+      }
+    },
+    hotelRegistrationAdmin: {
+      title: "Hotel Registration Management",
+      stats: {
+        total: "Total",
+        pending: "Pending",
+        underReview: "Under Review",
+        approved: "Approved",
+        rejected: "Rejected"
+      },
+      table: {
+        hotelName: "Hotel Name",
+        contactPerson: "Contact Person",
+        email: "Email",
+        city: "City",
+        status: "Status",
+        submitted: "Submitted",
+        actions: "Actions"
+      },
+      actions: {
+        approve: "Approve",
+        reject: "Reject"
+      },
+      dialogs: {
+        viewTitle: "Hotel Registration Details",
+        approveTitle: "Approve Registration",
+        rejectTitle: "Reject Registration"
+      },
+      steps: {
+        hotelAndAdminInfo: "Hotel & Admin Info",
+        additionalDetails: "Additional Details"
+      },
+      sections: {
+        hotelInformation: "Hotel Information",
+        registeredHotelAdmin: "Registered Hotel Admin",
+        businessDetails: "Business Details",
+        paymentInformation: "Payment Information",
+        taxAndLicense: "Tax & License",
+        facilityInformation: "Facility Information"
+      },
+      fields: {
+        hotelName: "Hotel Name",
+        status: "Status",
+        address: "Address",
+        city: "City",
+        country: "Country",
+        submittedAt: "Submitted At",
+        reviewedAt: "Reviewed At",
+        contactPerson: "Contact Person",
+        contactEmail: "Contact Email",
+        description: "Description",
+        phone: "Phone",
+        website: "Website",
+        mobilePaymentPhone: "Mobile Payment Phone",
+        mobilePaymentPhone2: "Mobile Payment Phone 2",
+        licenseNumber: "License Number",
+        taxId: "Tax ID",
+        facilityAmenities: "Facility Amenities",
+        numberOfRooms: "Number of Rooms",
+        checkInTime: "Check-in Time",
+        checkOutTime: "Check-out Time",
+        reviewComments: "Review Comments",
+        approvalComments: "Approval Comments",
+        rejectionReason: "Rejection Reason"
+      }
+    },
+    hotelManagement: {
+      eyebrow: "Platform Operations",
+      title: "Hotel Management",
+      description: "Manage existing hotels, review inbound registrations, and control platform visibility from one administrative workspace.",
+      tabs: {
+        existingHotels: "Existing Hotels",
+        hotelRegistrations: "Hotel Registrations"
+      },
+      actions: {
+        registerHotel: "Register Hotel",
+        deactivate: "Deactivate",
+        activate: "Activate",
+        unpublishFromSearch: "Unpublish from public search",
+        publishToSearch: "Publish to public search",
+        review: "Review",
+        submitRegistration: "Submit Registration",
+        viewDetails: "View Details"
+      },
+      steps: {
+        hotelAndAdminInfo: "Hotel & Admin Info",
+        additionalDetails: "Additional Details"
+      },
+      filters: {
+        search: "Search hotels...",
+        searchPlaceholder: "Search by name, city, or email",
+        status: "Status",
+        allHotels: "All Hotels",
+        activeOnly: "Active Only",
+        inactiveOnly: "Inactive Only"
+      },
+      existingHotels: {
+        title: "Existing Hotels",
+        description: "Review hotel status, tenant assignments, and public listing state for all configured properties.",
+        rowsPerPage: "Hotels per page:",
+        emptyState: "No hotels found",
+        table: {
+          hotelName: "Hotel Name",
+          location: "Location",
+          tenant: "Tenant",
+          contact: "Contact",
+          rooms: "Rooms",
+          rating: "Rating",
+          status: "Status",
+          publicListing: "Public Listing",
+          actions: "Actions"
+        }
+      },
+      status: {
+        active: "Active",
+        inactive: "Inactive"
+      },
+      publicListing: {
+        published: "Published",
+        unlisted: "Unlisted"
+      },
+      registrationStats: {
+        total: "Total",
+        pending: "Pending",
+        approved: "Approved",
+        rejected: "Rejected"
+      },
+      registrations: {
+        title: "Hotel Registrations",
+        description: "Review pending hotel onboarding submissions, inspect application details, and approve or reject registrations.",
+        emptyState: "No hotel registrations found.",
+        table: {
+          hotelName: "Hotel Name",
+          contactPerson: "Contact Person",
+          email: "Email",
+          city: "City",
+          status: "Status",
+          submitted: "Submitted",
+          actions: "Actions"
+        }
+      },
+      registrationStatus: {
+        PENDING: "Pending",
+        UNDER_REVIEW: "Under Review",
+        APPROVED: "Approved",
+        REJECTED: "Rejected",
+        CANCELLED: "Cancelled"
+      },
+      dialogs: {
+        register: {
+          title: "Register New Hotel"
+        }
+      },
+      sections: {
+        phoneNumbers: "Phone Numbers"
+      },
+      fields: {
+        hotelName: "Hotel Name",
+        contactPerson: "Contact Person",
+        description: "Description",
+        address: "Address",
+        city: "City",
+        country: "Country",
+        contactEmail: "Contact Email",
+        communicationPhone: "Phone (Communication)",
+        mobilePaymentPhone: "Mobile Payment Phone",
+        mobilePaymentPhone2: "Mobile Payment Phone 2 (Optional)",
+        licenseNumber: "License Number",
+        taxId: "Tax ID",
+        websiteUrl: "Website URL",
+        facilityAmenities: "Facility Amenities",
+        numberOfRooms: "Number of Rooms",
+        checkInTime: "Check-in Time",
+        checkOutTime: "Check-out Time"
+      },
+      helpers: {
+        communicationPhone: "Primary phone for general communication",
+        mobilePaymentPhone: "Primary mobile money account for payments",
+        mobilePaymentPhone2: "Optional secondary mobile money account"
+      },
+      placeholders: {
+        facilityAmenities: "WiFi, Pool, Spa, Restaurant, etc.",
+        numberOfRooms: "Enter number of rooms"
+      }
     }
   },
 

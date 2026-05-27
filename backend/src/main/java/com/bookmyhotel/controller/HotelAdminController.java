@@ -48,6 +48,13 @@ import com.bookmyhotel.service.HotelImageService;
 import com.bookmyhotel.service.RoomTypePricingService;
 import com.bookmyhotel.tenant.TenantContext;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,6 +65,8 @@ import org.slf4j.LoggerFactory;
 @RestController
 @RequestMapping("/api/hotel-admin")
 @PreAuthorize("hasRole('HOTEL_ADMIN')")
+@Tag(name = "Hotel Admin", description = "Hotel-scoped operational and dashboard management endpoints")
+@SecurityRequirement(name = "bearerAuth")
 public class HotelAdminController {
 
     private static final Logger logger = LoggerFactory.getLogger(HotelAdminController.class);
@@ -268,6 +277,12 @@ public class HotelAdminController {
 
     // Statistics for hotel admin dashboard
     @GetMapping("/statistics")
+    @Operation(summary = "Get hotel dashboard room and staff metrics", description = "Returns hotel-scoped summary metrics for the authenticated hotel admin. Values are calculated from database state using the hotel operational timezone and preserve legitimate zero counts.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Hotel dashboard metrics returned", content = @Content(mediaType = "application/json", schema = @Schema(type = "object", example = "{\"totalRooms\":120,\"availableRooms\":34,\"bookedRooms\":56,\"bookedBookings\":58,\"totalStaff\":43,\"activeStaff\":39}"))),
+            @ApiResponse(responseCode = "403", description = "Access denied for non hotel-admin users"),
+            @ApiResponse(responseCode = "404", description = "Authenticated user is not bound to a hotel")
+    })
     public ResponseEntity<?> getHotelStatistics(Authentication auth) {
         return ResponseEntity.ok(hotelAdminService.getHotelStatistics(auth.getName()));
     }
@@ -310,6 +325,12 @@ public class HotelAdminController {
      * Get booking statistics for the hotel
      */
     @GetMapping("/bookings/statistics")
+    @Operation(summary = "Get hotel booking and revenue metrics", description = "Returns hotel-scoped booking metrics for the authenticated hotel. Revenue is summed from reservations created in the current operational year where payment status is COMPLETED. Monthly booking counts include reportable reservation statuses only.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Hotel booking metrics returned", content = @Content(mediaType = "application/json", schema = @Schema(type = "object", example = "{\"totalBookings\":412,\"currentYearRevenue\":1254300.00,\"thisMonthBookings\":31,\"upcomingCheckIns\":7,\"upcomingCheckOuts\":5,\"statusBreakdown\":{\"BOOKED\":18,\"CHECKED_IN\":12,\"CHECKED_OUT\":350,\"CANCELLED\":32}}"))),
+            @ApiResponse(responseCode = "403", description = "Access denied for non hotel-admin users"),
+            @ApiResponse(responseCode = "404", description = "Authenticated user is not bound to a hotel")
+    })
     public ResponseEntity<Map<String, Object>> getHotelBookingStats(Authentication auth) {
         HotelDTO hotel = hotelAdminService.getMyHotel(auth.getName());
         Map<String, Object> stats = hotelAdminService.getHotelBookingStats(hotel.getId());

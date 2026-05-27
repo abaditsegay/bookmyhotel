@@ -45,6 +45,7 @@ import PremiumTextField from '../../components/common/PremiumTextField';
 import PremiumSelect from '../../components/common/PremiumSelect';
 import StandardButton from '../../components/common/StandardButton';
 import { DataTableCard, PageHeader, StandardDialog } from '../../components/ui';
+import { useTranslation } from 'react-i18next';
 
 interface UserFilters {
   search: string;
@@ -56,6 +57,7 @@ const UserManagementAdmin: React.FC = () => {
   const { token, user: currentUser } = useAuth();
   const { showSubmissionError } = useSubmissionError();
   const theme = useTheme();
+  const { t } = useTranslation();
   const [users, setUsers] = useState<UserManagementResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -143,10 +145,14 @@ const UserManagementAdmin: React.FC = () => {
     return roleOptions;
   })();
   const statusOptions = [
-    { value: '', label: 'All Status' },
-    { value: 'ACTIVE', label: 'Active' },
-    { value: 'INACTIVE', label: 'Inactive' }
+    { value: '', label: t('admin.userManagement.filters.allStatuses') },
+    { value: 'ACTIVE', label: t('admin.userManagement.status.active') },
+    { value: 'INACTIVE', label: t('admin.userManagement.status.inactive') }
   ];  // Set token in API service when component mounts
+
+  const translateRole = (role: string) => t(`admin.userManagement.roles.${role}`, {
+    defaultValue: role.replace(/_/g, ' '),
+  });
   useEffect(() => {
     if (token) {
       adminApiService.setToken(token);
@@ -454,12 +460,12 @@ const UserManagementAdmin: React.FC = () => {
   return (
     <PageContainer maxWidth={false}>
       <PageHeader
-        eyebrow="Identity & Access"
-        title="User Management"
-        description="Manage platform users, review hotel associations, and handle activation, password resets, and profile updates from a consistent admin workflow."
+        eyebrow={t('admin.userManagement.eyebrow')}
+        title={t('admin.userManagement.title')}
+        description={t('admin.userManagement.description')}
         actions={
           <StandardButton variant="contained" startIcon={<AddIcon />} onClick={() => setCreateDialogOpen(true)}>
-            Add User
+            {t('admin.userManagement.actions.addUser')}
           </StandardButton>
         }
       />
@@ -471,30 +477,30 @@ const UserManagementAdmin: React.FC = () => {
       )}
 
       <DataTableCard
-        title="Users Directory"
-        description="Filter by role, status, or text search, then open the relevant action for each user account."
+        title={t('admin.userManagement.directory.title')}
+        description={t('admin.userManagement.directory.description')}
         filters={
           <Grid container spacing={2}>
             <Grid item xs={12} md={4}>
               <PremiumTextField
                 fullWidth
-                label="Search"
+                label={t('common.search')}
                 value={filters.search}
                 onChange={(e) => handleFilterChange('search', e.target.value)}
-                placeholder="Search by name or email..."
+                placeholder={t('admin.userManagement.filters.searchPlaceholder')}
               />
             </Grid>
             <Grid item xs={12} md={4}>
               <PremiumSelect
                 fullWidth
-                label="Role"
+                label={t('admin.userManagement.filters.role')}
                 value={filters.role}
                 onChange={(e) => handleFilterChange('role', e.target.value)}
               >
-                <MenuItem value="">All Roles</MenuItem>
+                <MenuItem value="">{t('admin.userManagement.filters.allRoles')}</MenuItem>
                 {roleOptions.map((role) => (
                   <MenuItem key={role} value={role}>
-                    {role.replace('_', ' ')}
+                    {translateRole(role)}
                   </MenuItem>
                 ))}
               </PremiumSelect>
@@ -502,7 +508,7 @@ const UserManagementAdmin: React.FC = () => {
             <Grid item xs={12} md={4}>
               <PremiumSelect
                 fullWidth
-                label="Status"
+                label={t('admin.userManagement.filters.status')}
                 value={filters.status}
                 onChange={(e) => handleFilterChange('status', e.target.value)}
               >
@@ -524,6 +530,7 @@ const UserManagementAdmin: React.FC = () => {
             page={page}
             onPageChange={handleChangePage}
             onRowsPerPageChange={handleChangeRowsPerPage}
+            labelRowsPerPage={t('admin.userManagement.table.rowsPerPage')}
           />
         }
       >
@@ -531,15 +538,15 @@ const UserManagementAdmin: React.FC = () => {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Name</TableCell>
-                <TableCell>Email</TableCell>
-                <TableCell>Phone</TableCell>
-                {canViewHotelColumn && <TableCell>Hotel</TableCell>}
-                <TableCell>Role</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell>Created</TableCell>
-                <TableCell>Last Login</TableCell>
-                <TableCell align="center">Actions</TableCell>
+                <TableCell>{t('admin.userManagement.table.name')}</TableCell>
+                <TableCell>{t('admin.userManagement.table.email')}</TableCell>
+                <TableCell>{t('admin.userManagement.table.phone')}</TableCell>
+                {canViewHotelColumn && <TableCell>{t('admin.userManagement.table.hotel')}</TableCell>}
+                <TableCell>{t('admin.userManagement.table.role')}</TableCell>
+                <TableCell>{t('admin.userManagement.table.status')}</TableCell>
+                <TableCell>{t('admin.userManagement.table.created')}</TableCell>
+                <TableCell>{t('admin.userManagement.table.lastLogin')}</TableCell>
+                <TableCell align="center">{t('admin.userManagement.table.actions')}</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -547,7 +554,7 @@ const UserManagementAdmin: React.FC = () => {
                 <TableRow>
                   <TableCell colSpan={canViewHotelColumn ? 9 : 8} align="center" sx={{ py: 6 }}>
                     <Typography variant="body2" color="text.secondary">
-                      No users found for the selected filters.
+                      {t('admin.userManagement.emptyState')}
                     </Typography>
                   </TableCell>
                 </TableRow>
@@ -560,11 +567,11 @@ const UserManagementAdmin: React.FC = () => {
                     <TableCell>{user.email}</TableCell>
                     <TableCell>{user.phone ? formatEthiopianPhone(user.phone) : ''}</TableCell>
                     {canViewHotelColumn && (
-                      <TableCell>{user.hotelName || 'System-wide'}</TableCell>
+                      <TableCell>{user.hotelName || t('admin.userManagement.systemWide')}</TableCell>
                     )}
                     <TableCell>
                       <Chip
-                        label={user.roles.length > 0 ? user.roles[0].replace('_', ' ') : 'No Role'}
+                        label={user.roles.length > 0 ? translateRole(user.roles[0]) : t('admin.userManagement.roles.NO_ROLE')}
                         size="small"
                         variant="outlined"
                         sx={getRoleChipSx(user.roles.length > 0 ? user.roles[0] : '')}
@@ -572,25 +579,25 @@ const UserManagementAdmin: React.FC = () => {
                     </TableCell>
                     <TableCell>
                       <Chip
-                        label={user.isActive ? 'Active' : 'Inactive'}
+                        label={user.isActive ? t('admin.userManagement.status.active') : t('admin.userManagement.status.inactive')}
                         color={getStatusColor(user.isActive) as any}
                         size="small"
                         variant={user.isActive ? 'filled' : 'outlined'}
                       />
                     </TableCell>
                     <TableCell>{new Date(user.createdAt).toLocaleDateString()}</TableCell>
-                    <TableCell>N/A</TableCell>
+                    <TableCell>{t('common.notAvailable')}</TableCell>
                     <TableCell align="center">
                       <Box sx={{ display: 'flex', gap: 1 }}>
                         {!user.roles.includes('SUPER_ADMIN') && (
-                          <Tooltip title="View Details">
+                          <Tooltip title={t('admin.userManagement.actions.viewDetails')}>
                             <IconButton size="small" onClick={() => openDetailsDialog(user)}>
                               <VisibilityIcon />
                             </IconButton>
                           </Tooltip>
                         )}
                         {!user.roles.includes('SUPER_ADMIN') && (
-                          <Tooltip title={user.isActive ? 'Deactivate User' : 'Activate User'}>
+                          <Tooltip title={user.isActive ? t('admin.userManagement.actions.deactivateUser') : t('admin.userManagement.actions.activateUser')}>
                             <IconButton
                               size="small"
                               onClick={() => {
@@ -605,7 +612,7 @@ const UserManagementAdmin: React.FC = () => {
                           </Tooltip>
                         )}
                         {!user.roles.includes('SUPER_ADMIN') && (
-                          <Tooltip title="Reset Password">
+                          <Tooltip title={t('admin.userManagement.actions.resetPassword')}>
                             <IconButton size="small" onClick={() => openPasswordResetDialog(user)}>
                               <LockResetIcon />
                             </IconButton>
@@ -626,12 +633,12 @@ const UserManagementAdmin: React.FC = () => {
         onClose={closeCreateDialog}
         maxWidth="md" 
         fullWidth
-        title="Add New User"
-        description="Create a new platform or hotel-bound account and assign the appropriate role and tenancy scope."
+        title={t('admin.userManagement.dialogs.create.title')}
+        description={t('admin.userManagement.dialogs.create.description')}
         actions={
           <>
-            <StandardButton variant="outlined" onClick={closeCreateDialog} sx={dialogSecondaryActionSx}>Cancel</StandardButton>
-            <StandardButton onClick={handleCreateUser} variant="contained">Create User</StandardButton>
+            <StandardButton variant="outlined" onClick={closeCreateDialog} sx={dialogSecondaryActionSx}>{t('common.cancel')}</StandardButton>
+            <StandardButton onClick={handleCreateUser} variant="contained">{t('admin.userManagement.actions.createUser')}</StandardButton>
           </>
         }
       >
@@ -644,7 +651,7 @@ const UserManagementAdmin: React.FC = () => {
             <Grid item xs={12} md={6}>
               <PremiumTextField
                 fullWidth
-                label="First Name"
+                label={t('admin.userManagement.fields.firstName')}
                 value={userForm.firstName || ''}
                 onChange={(e) => setUserForm({ ...userForm, firstName: e.target.value })}
                 required
@@ -653,7 +660,7 @@ const UserManagementAdmin: React.FC = () => {
             <Grid item xs={12} md={6}>
               <PremiumTextField
                 fullWidth
-                label="Last Name"
+                label={t('admin.userManagement.fields.lastName')}
                 value={userForm.lastName || ''}
                 onChange={(e) => setUserForm({ ...userForm, lastName: e.target.value })}
                 required
@@ -662,7 +669,7 @@ const UserManagementAdmin: React.FC = () => {
             <Grid item xs={12}>
               <PremiumTextField
                 fullWidth
-                label="Email"
+                label={t('admin.userManagement.fields.email')}
                 type="email"
                 value={userForm.email || ''}
                 onChange={(e) => setUserForm({ ...userForm, email: e.target.value })}
@@ -672,7 +679,7 @@ const UserManagementAdmin: React.FC = () => {
             <Grid item xs={12}>
               <PremiumTextField
                 fullWidth
-                label="Password"
+                label={t('admin.userManagement.fields.password')}
                 type="password"
                 value={userForm.password || ''}
                 onChange={(e) => setUserForm({ ...userForm, password: e.target.value })}
@@ -682,7 +689,7 @@ const UserManagementAdmin: React.FC = () => {
             <Grid item xs={12} md={6}>
               <PremiumTextField
                 fullWidth
-                label="Phone"
+                label={t('admin.userManagement.fields.phone')}
                 value={userForm.phone || ''}
                 onChange={(e) => setUserForm({ ...userForm, phone: e.target.value })}
                 required
@@ -692,7 +699,7 @@ const UserManagementAdmin: React.FC = () => {
               <PremiumSelect
                 fullWidth
                 required
-                label="Role"
+                label={t('admin.userManagement.fields.role')}
                 value={userForm.roles.length > 0 ? userForm.roles[0] : ''}
                 onChange={(e) => {
                   const selectedRole = e.target.value as string;
@@ -707,7 +714,7 @@ const UserManagementAdmin: React.FC = () => {
               >
                 {creatableRoleOptions.map((role) => (
                   <MenuItem key={role} value={role}>
-                    {role.replace('_', ' ')}
+                    {translateRole(role)}
                   </MenuItem>
                 ))}
               </PremiumSelect>
@@ -722,7 +729,7 @@ const UserManagementAdmin: React.FC = () => {
                 <PremiumSelect
                   fullWidth
                   required
-                  label="Tenant"
+                  label={t('admin.userManagement.fields.tenant')}
                   value={userForm.tenantId || ''}
                   disabled={loadingTenants}
                   onChange={(e) => {
@@ -749,7 +756,7 @@ const UserManagementAdmin: React.FC = () => {
                 <PremiumSelect
                   fullWidth
                   required
-                  label="Hotel"
+                  label={t('admin.userManagement.fields.hotel')}
                   value={userForm.hotelId || ''}
                   disabled={loadingHotels}
                   onChange={(e) => setUserForm({ ...userForm, hotelId: e.target.value as number })}
@@ -770,12 +777,12 @@ const UserManagementAdmin: React.FC = () => {
         onClose={() => setEditDialogOpen(false)}
         maxWidth="md"
         fullWidth
-        title="Edit User"
-        description="Update the selected account's profile and role assignment."
+        title={t('admin.userManagement.dialogs.edit.title')}
+        description={t('admin.userManagement.dialogs.edit.description')}
         actions={
           <>
-            <StandardButton variant="outlined" onClick={() => setEditDialogOpen(false)} sx={dialogSecondaryActionSx}>Cancel</StandardButton>
-            <StandardButton onClick={handleEditUser} variant="contained">Update User</StandardButton>
+            <StandardButton variant="outlined" onClick={() => setEditDialogOpen(false)} sx={dialogSecondaryActionSx}>{t('common.cancel')}</StandardButton>
+            <StandardButton onClick={handleEditUser} variant="contained">{t('admin.userManagement.actions.updateUser')}</StandardButton>
           </>
         }
       >
@@ -783,7 +790,7 @@ const UserManagementAdmin: React.FC = () => {
             <Grid item xs={12} md={6}>
               <PremiumTextField
                 fullWidth
-                label="First Name"
+                label={t('admin.userManagement.fields.firstName')}
                 value={editForm.firstName || ''}
                 onChange={(e) => setEditForm({ ...editForm, firstName: e.target.value })}
                 required
@@ -792,7 +799,7 @@ const UserManagementAdmin: React.FC = () => {
             <Grid item xs={12} md={6}>
               <PremiumTextField
                 fullWidth
-                label="Last Name"
+                label={t('admin.userManagement.fields.lastName')}
                 value={editForm.lastName || ''}
                 onChange={(e) => setEditForm({ ...editForm, lastName: e.target.value })}
                 required
@@ -801,7 +808,7 @@ const UserManagementAdmin: React.FC = () => {
             <Grid item xs={12}>
               <PremiumTextField
                 fullWidth
-                label="Email"
+                label={t('admin.userManagement.fields.email')}
                 type="email"
                 value={editForm.email || ''}
                 onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
@@ -811,7 +818,7 @@ const UserManagementAdmin: React.FC = () => {
             <Grid item xs={12} md={6}>
               <PremiumTextField
                 fullWidth
-                label="Phone"
+                label={t('admin.userManagement.fields.phone')}
                 value={editForm.phone || ''}
                 onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
                 required
@@ -821,13 +828,13 @@ const UserManagementAdmin: React.FC = () => {
               <PremiumSelect
                 fullWidth
                 required
-                label="Role"
+                label={t('admin.userManagement.fields.role')}
                 value={editForm.roles.length > 0 ? editForm.roles[0] : ''}
                 onChange={(e) => setEditForm({ ...editForm, roles: [e.target.value as string] })}
               >
                 {creatableRoleOptions.map((role) => (
                   <MenuItem key={role} value={role}>
-                    {role.replace('_', ' ')}
+                    {translateRole(role)}
                   </MenuItem>
                 ))}
               </PremiumSelect>
@@ -840,35 +847,39 @@ const UserManagementAdmin: React.FC = () => {
         onClose={closeToggleStatusDialog}
         maxWidth="sm"
         fullWidth
-        title={toggleUser?.isActive ? 'Deactivate User' : 'Activate User'}
+        title={toggleUser?.isActive ? t('admin.userManagement.dialogs.toggleStatus.deactivateTitle') : t('admin.userManagement.dialogs.toggleStatus.activateTitle')}
         actions={
           <>
-            <StandardButton variant="outlined" onClick={closeToggleStatusDialog} sx={dialogSecondaryActionSx}>Cancel</StandardButton>
+            <StandardButton variant="outlined" onClick={closeToggleStatusDialog} sx={dialogSecondaryActionSx}>{t('common.cancel')}</StandardButton>
             <StandardButton
               onClick={handleToggleUserStatus}
               variant="contained"
               color={toggleUser?.isActive ? 'error' : 'success'}
               disabled={!toggleStatusReason.trim() || loading}
               loading={loading}
-              loadingText={toggleUser?.isActive ? 'Deactivating...' : 'Activating...'}
+              loadingText={toggleUser?.isActive ? t('admin.userManagement.actions.deactivating') : t('admin.userManagement.actions.activating')}
             >
-              {toggleUser?.isActive ? 'Deactivate' : 'Activate'}
+              {toggleUser?.isActive ? t('admin.userManagement.actions.deactivate') : t('admin.userManagement.actions.activate')}
             </StandardButton>
           </>
         }
       >
         <Typography sx={{ mb: 2 }}>
-          Are you sure you want to {toggleUser?.isActive ? 'deactivate' : 'activate'} user "{toggleUser?.firstName} {toggleUser?.lastName}" ({toggleUser?.email})?
+          {t('admin.userManagement.dialogs.toggleStatus.confirmation', {
+            action: toggleUser?.isActive ? t('admin.userManagement.actions.deactivate').toLowerCase() : t('admin.userManagement.actions.activate').toLowerCase(),
+            name: `${toggleUser?.firstName ?? ''} ${toggleUser?.lastName ?? ''}`.trim(),
+            email: toggleUser?.email ?? '',
+          })}
         </Typography>
         <PremiumTextField
-          label="Reason"
+          label={t('admin.userManagement.fields.reason')}
           fullWidth
           required
           multiline
           rows={3}
           value={toggleStatusReason}
           onChange={(e) => setToggleStatusReason(e.target.value)}
-          placeholder={`Enter reason for ${toggleUser?.isActive ? 'deactivation' : 'activation'}...`}
+          placeholder={toggleUser?.isActive ? t('admin.userManagement.placeholders.deactivationReason') : t('admin.userManagement.placeholders.activationReason')}
         />
       </StandardDialog>
 
@@ -877,21 +888,21 @@ const UserManagementAdmin: React.FC = () => {
         onClose={() => setPasswordResetDialogOpen(false)}
         maxWidth="sm"
         fullWidth
-        title="Reset Password"
+        title={t('admin.userManagement.dialogs.resetPassword.title')}
         actions={
           <>
-            <StandardButton variant="outlined" onClick={() => setPasswordResetDialogOpen(false)} sx={dialogSecondaryActionSx}>Cancel</StandardButton>
-            <StandardButton onClick={handlePasswordReset} variant="contained" disabled={loading} loading={loading} loadingText="Sending...">
-              Reset & Send Email
+            <StandardButton variant="outlined" onClick={() => setPasswordResetDialogOpen(false)} sx={dialogSecondaryActionSx}>{t('common.cancel')}</StandardButton>
+            <StandardButton onClick={handlePasswordReset} variant="contained" disabled={loading} loading={loading} loadingText={t('admin.userManagement.actions.sending')}>
+              {t('admin.userManagement.actions.resetAndSendEmail')}
             </StandardButton>
           </>
         }
       >
         <Typography sx={{ mb: 2 }}>
-          A new random password will be generated and sent to <strong>{selectedUser?.email}</strong> via email.
+          {t('admin.userManagement.dialogs.resetPassword.body', { email: selectedUser?.email ?? '' })}
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          The new password will not be visible to you.
+          {t('admin.userManagement.dialogs.resetPassword.note')}
         </Typography>
       </StandardDialog>
 
@@ -900,10 +911,10 @@ const UserManagementAdmin: React.FC = () => {
         onClose={() => setDetailsDialogOpen(false)} 
         maxWidth="md" 
         fullWidth
-        title="User Details"
+        title={t('admin.userManagement.dialogs.details.title')}
         actions={
           <>
-            <StandardButton variant="outlined" onClick={() => setDetailsDialogOpen(false)} sx={dialogSecondaryActionSx}>Close</StandardButton>
+            <StandardButton variant="outlined" onClick={() => setDetailsDialogOpen(false)} sx={dialogSecondaryActionSx}>{t('common.close')}</StandardButton>
             <StandardButton
               variant="contained"
               startIcon={<EditIcon />}
@@ -914,7 +925,7 @@ const UserManagementAdmin: React.FC = () => {
                 }
               }}
             >
-              Edit
+              {t('common.edit')}
             </StandardButton>
           </>
         }
@@ -924,7 +935,7 @@ const UserManagementAdmin: React.FC = () => {
               <Grid item xs={12} sm={6}>
                 <PremiumTextField
                   fullWidth
-                  label="First Name"
+                  label={t('admin.userManagement.fields.firstName')}
                   value={selectedUser.firstName || ''}
                   disabled
                 />
@@ -933,7 +944,7 @@ const UserManagementAdmin: React.FC = () => {
               <Grid item xs={12} sm={6}>
                 <PremiumTextField
                   fullWidth
-                  label="Last Name"
+                  label={t('admin.userManagement.fields.lastName')}
                   value={selectedUser.lastName || ''}
                   disabled
                 />
@@ -942,7 +953,7 @@ const UserManagementAdmin: React.FC = () => {
               <Grid item xs={12}>
                 <PremiumTextField
                   fullWidth
-                  label="Email"
+                  label={t('admin.userManagement.fields.email')}
                   type="email"
                   value={selectedUser.email || ''}
                   disabled
@@ -952,7 +963,7 @@ const UserManagementAdmin: React.FC = () => {
               <Grid item xs={12} sm={6}>
                 <PremiumTextField
                   fullWidth
-                  label="Phone"
+                  label={t('admin.userManagement.fields.phone')}
                   value={selectedUser.phone ? formatEthiopianPhone(selectedUser.phone) : ''}
                   disabled
                 />
@@ -961,8 +972,8 @@ const UserManagementAdmin: React.FC = () => {
               <Grid item xs={12} sm={6}>
                 <PremiumTextField
                   fullWidth
-                  label="Role"
-                  value={selectedUser.roles.length > 0 ? selectedUser.roles[0].replace('_', ' ') : 'No Role'}
+                  label={t('admin.userManagement.fields.role')}
+                  value={selectedUser.roles.length > 0 ? translateRole(selectedUser.roles[0]) : t('admin.userManagement.roles.NO_ROLE')}
                   disabled
                 />
               </Grid>
@@ -970,8 +981,8 @@ const UserManagementAdmin: React.FC = () => {
               <Grid item xs={12} sm={6}>
                 <PremiumTextField
                   fullWidth
-                  label="Status"
-                  value={selectedUser.isActive ? 'Active' : 'Inactive'}
+                  label={t('admin.userManagement.fields.status')}
+                  value={selectedUser.isActive ? t('admin.userManagement.status.active') : t('admin.userManagement.status.inactive')}
                   disabled
                 />
               </Grid>
@@ -979,7 +990,7 @@ const UserManagementAdmin: React.FC = () => {
               <Grid item xs={12} sm={6}>
                 <PremiumTextField
                   fullWidth
-                  label="Created At"
+                  label={t('admin.userManagement.fields.createdAt')}
                   value={selectedUser.createdAt ? new Date(selectedUser.createdAt).toLocaleString() : ''}
                   disabled
                 />
@@ -988,8 +999,8 @@ const UserManagementAdmin: React.FC = () => {
               <Grid item xs={12} sm={6}>
                 <PremiumTextField
                   fullWidth
-                  label="Last Login"
-                  value="N/A"
+                  label={t('admin.userManagement.fields.lastLogin')}
+                  value={t('common.notAvailable')}
                   disabled
                 />
               </Grid>
@@ -997,7 +1008,7 @@ const UserManagementAdmin: React.FC = () => {
               <Grid item xs={12} sm={6}>
                 <PremiumTextField
                   fullWidth
-                  label="User ID"
+                  label={t('admin.userManagement.fields.userId')}
                   value={selectedUser.id?.toString() || ''}
                   disabled
                 />

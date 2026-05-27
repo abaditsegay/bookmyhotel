@@ -180,9 +180,23 @@ backend/
 ## Multi-Tenancy Architecture
 
 The application uses a **shared database, shared schema** multi-tenancy model:
-
+| GET | `/api/hotel-admin/statistics` | Hotel dashboard room/staff summary metrics |
+| GET | `/api/hotel-admin/bookings/statistics` | Hotel booking and revenue summary metrics |
 1. **TenantFilter** extracts tenant ID from the `X-Tenant-ID` request header.
 2. **TenantContext** stores the tenant ID in a ThreadLocal for the request lifecycle.
+| PUT | `/api/hotel-admin/staff/{staffId}` | Update staff member |
+| PUT | `/api/hotel-admin/staff/{staffId}/activate` | Activate staff member |
+| PUT | `/api/hotel-admin/staff/{staffId}/deactivate` | Deactivate staff member |
+| GET | `/api/hotel-admin/rooms` | Room list |
+| PUT | `/api/hotel-admin/rooms/{roomId}` | Update room |
+| PUT | `/api/hotel-admin/rooms/{roomId}/availability` | Toggle room availability |
+| PUT | `/api/hotel-admin/rooms/{roomId}/status` | Update room status |
+| DELETE | `/api/hotel-admin/rooms/{roomId}` | Delete room |
+| GET | `/api/hotel-admin/bookings` | Hotel booking list |
+| PUT | `/api/hotel-admin/bookings/{reservationId}/status` | Update booking status |
+| PUT | `/api/hotel-admin/bookings/{reservationId}/payment-status` | Update booking payment status |
+| PUT | `/api/hotel-admin/bookings/{reservationId}/payment-type` | Update booking payment method |
+| DELETE | `/api/hotel-admin/bookings/{reservationId}` | Delete booking |
 3. **TenantEntity** base class adds a `tenantId` column; repositories automatically filter by tenant.
 4. **HotelScopedEntity** further scopes data to a specific hotel within a tenant.
 5. **SystemEntity** has no tenant scoping for system-wide data.
@@ -191,6 +205,9 @@ The application uses a **shared database, shared schema** multi-tenancy model:
 ```
 System Admin (no tenant)
   └── Tenant (hotel group)
+| GET | `/api/admin/audit/logs` | Paginated system audit log with filters |
+| GET | `/api/admin/audit/logs/{id}` | Get a single system audit record |
+| GET | `/api/admin/audit/stats` | Audit headline stats for today |
        └── Hotel
             ├── Rooms
             ├── Staff
@@ -239,7 +256,7 @@ Security is enforced at the controller level with `@PreAuthorize` annotations an
 ### Hotels
 | Method | Path | Description |
 |---|---|---|
-| GET | `/api/hotels` | List hotels |
+| SMTP | Deprecated fallback email delivery |
 | GET | `/api/hotels/{id}` | Hotel details |
 | GET | `/api/hotels/search` | Search hotels |
 | POST | `/api/hotel-registrations` | Public hotel registration |

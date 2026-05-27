@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   Container,
   Typography,
@@ -52,6 +53,7 @@ interface UserData {
 
 const UserViewEdit: React.FC = () => {
   const theme = useTheme();
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -85,15 +87,15 @@ const UserViewEdit: React.FC = () => {
         setUser(foundUser);
         setEditedUser({ ...foundUser });
       } else {
-        setError('User not found');
+        setError(t('admin.userDetail.errors.notFound'));
       }
     } catch (error) {
       // console.error('Error fetching user:', error);
-      setError('Failed to load user details');
+      setError(t('admin.userDetail.errors.loadFailed'));
     } finally {
       setLoading(false);
     }
-  }, [adminApiService, id]);
+  }, [adminApiService, id, t]);
 
   useEffect(() => {
     if (id && adminApiService) {
@@ -147,17 +149,19 @@ const UserViewEdit: React.FC = () => {
       await adminApiService.updateUser(editedUser.id, updateRequest);
       setUser({ ...editedUser });
       setIsEditing(false);
-      setSuccessMessage('User updated successfully');
+      setSuccessMessage(t('admin.userDetail.messages.updateSuccess'));
       navigate(`/admin/users/${id}`);
     } catch (error) {
       // console.error('Error updating user:', error);
       showSubmissionError(error, {
-        fallbackMessage: 'Failed to update user',
+        fallbackMessage: t('admin.userDetail.messages.updateFailed'),
       });
     } finally {
       setSaving(false);
     }
   };
+
+  const translateRole = (role: string) => t(`admin.userDetail.roles.${role}`, role);
 
   const handleBackToAdmin = () => {
     const returnTab = searchParams.get('returnTab');
@@ -214,7 +218,7 @@ const UserViewEdit: React.FC = () => {
     <Container maxWidth="lg" sx={{ py: 4 }}>
       {isSuperAdmin && (
         <Alert severity="info" sx={{ mb: 2 }}>
-          SUPER_ADMIN accounts cannot be modified.
+          {t('admin.userDetail.superAdminInfo')}
         </Alert>
       )}
       {/* Header */}
@@ -231,7 +235,7 @@ const UserViewEdit: React.FC = () => {
               color: theme.palette.primary.main
             }}>
               <PersonIcon sx={{ mr: 1 }} />
-              {isEditing ? 'Edit User' : 'User Details'}
+              {isEditing ? t('admin.userDetail.actions.editUser') : t('admin.userDetail.title')}
             </Typography>
             <Typography variant="body2" color="text.secondary">
               {currentUser?.firstName} {currentUser?.lastName}
@@ -248,7 +252,7 @@ const UserViewEdit: React.FC = () => {
                 onClick={handleCancelEdit}
                 disabled={saving}
               >
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button
                 variant="contained"
@@ -256,7 +260,7 @@ const UserViewEdit: React.FC = () => {
                 onClick={handleSave}
                 disabled={saving}
               >
-                {saving ? 'Saving...' : 'Save Changes'}
+                {saving ? t('admin.userDetail.actions.saving') : t('admin.userDetail.actions.saveChanges')}
               </Button>
             </>
           ) : (
@@ -266,7 +270,7 @@ const UserViewEdit: React.FC = () => {
                 startIcon={<EditIcon />}
                 onClick={handleEdit}
               >
-                Edit User
+                {t('admin.userDetail.actions.editUser')}
               </Button>
             )
           )}
@@ -279,37 +283,40 @@ const UserViewEdit: React.FC = () => {
           <Grid item xs={12} md={8}>
             <Paper sx={{ p: 3, mb: 3 }}>
               <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold' }}>
-                Personal Information
+                {t('admin.userDetail.sections.personalInformation')}
               </Typography>
               <Divider sx={{ mb: 3 }} />
               
               <Grid container spacing={3}>
                 <Grid item xs={12} sm={6}>
                   <PremiumDisplayField
-                    label="First Name"
+                    label={t('admin.userDetail.fields.firstName')}
                     value={currentUser.firstName}
                     isEditMode={isEditing}
                     onChange={(value) => handleInputChange('firstName', value)}
+                    placeholder={t('common.notAvailable')}
                     required
                   />
                 </Grid>
                 
                 <Grid item xs={12} sm={6}>
                   <PremiumDisplayField
-                    label="Last Name"
+                    label={t('admin.userDetail.fields.lastName')}
                     value={currentUser.lastName}
                     isEditMode={isEditing}
                     onChange={(value) => handleInputChange('lastName', value)}
+                    placeholder={t('common.notAvailable')}
                     required
                   />
                 </Grid>
 
                 <Grid item xs={12}>
                   <PremiumDisplayField
-                    label="Email"
+                    label={t('admin.userDetail.fields.email')}
                     value={currentUser.email}
                     isEditMode={isEditing}
                     onChange={(value) => handleInputChange('email', value)}
+                    placeholder={t('common.notAvailable')}
                     type="email"
                     required
                   />
@@ -317,10 +324,11 @@ const UserViewEdit: React.FC = () => {
 
                 <Grid item xs={12}>
                   <PremiumDisplayField
-                    label="Phone"
+                    label={t('admin.userDetail.fields.phone')}
                     value={currentUser.phone}
                     isEditMode={isEditing}
                     onChange={(value) => handleInputChange('phone', value)}
+                    placeholder={t('common.notAvailable')}
                     type="tel"
                   />
                 </Grid>
@@ -330,31 +338,31 @@ const UserViewEdit: React.FC = () => {
             {/* Roles and Permissions */}
             <Paper sx={{ p: 3 }}>
               <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold' }}>
-                Roles and Permissions
+                {t('admin.userDetail.sections.rolesPermissions')}
               </Typography>
               <Divider sx={{ mb: 3 }} />
               
               <Grid container spacing={3}>
                 <Grid item xs={12}>
                   <FormControl fullWidth disabled={!isEditing} variant={isEditing ? 'outlined' : 'filled'}>
-                    <InputLabel>Roles</InputLabel>
+                    <InputLabel>{t('admin.userDetail.fields.roles')}</InputLabel>
                     <Select
                       multiple
                       value={currentUser.roles || []}
                       onChange={(e) => handleRoleChange(e.target.value as string[])}
-                      label="Roles"
+                      label={t('admin.userDetail.fields.roles')}
                       renderValue={(selected) => (
                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                           {(selected as string[]).map((value) => (
-                            <Chip key={value} label={value} size="small" />
+                            <Chip key={value} label={translateRole(value)} size="small" />
                           ))}
                         </Box>
                       )}
                     >
-                      <MenuItem value="ADMIN">System Admin</MenuItem>
-                      <MenuItem value="HOTEL_ADMIN">Hotel Admin</MenuItem>
-                      <MenuItem value="OPERATIONAL_ADMIN">Operational Admin</MenuItem>
-                      <MenuItem value="CUSTOMER">Customer</MenuItem>
+                      <MenuItem value="ADMIN">{t('admin.userDetail.roles.ADMIN')}</MenuItem>
+                      <MenuItem value="HOTEL_ADMIN">{t('admin.userDetail.roles.HOTEL_ADMIN')}</MenuItem>
+                      <MenuItem value="OPERATIONAL_ADMIN">{t('admin.userDetail.roles.OPERATIONAL_ADMIN')}</MenuItem>
+                      <MenuItem value="CUSTOMER">{t('admin.userDetail.roles.CUSTOMER')}</MenuItem>
                     </Select>
                   </FormControl>
                 </Grid>
@@ -366,7 +374,7 @@ const UserViewEdit: React.FC = () => {
           <Grid item xs={12} md={4}>
             <Paper sx={{ p: 3, mb: 3 }}>
               <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold' }}>
-                Account Status
+                {t('admin.userDetail.sections.accountStatus')}
               </Typography>
               <Divider sx={{ mb: 3 }} />
               
@@ -379,13 +387,13 @@ const UserViewEdit: React.FC = () => {
                       disabled={!isEditing || isSuperAdmin}
                     />
                   }
-                  label="Active Account"
+                  label={t('admin.userDetail.fields.activeAccount')}
                 />
               </Box>
 
               <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
                 <Chip
-                  label={currentUser.isActive ? 'Active' : 'Inactive'}
+                  label={currentUser.isActive ? t('admin.userDetail.status.active') : t('admin.userDetail.status.inactive')}
                   color={currentUser.isActive ? 'success' : 'default'}
                   variant={currentUser.isActive ? 'filled' : 'outlined'}
                 />
@@ -394,7 +402,7 @@ const UserViewEdit: React.FC = () => {
 
             <Paper sx={{ p: 3 }}>
               <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold' }}>
-                Account Information
+                {t('admin.userDetail.sections.accountInformation')}
               </Typography>
               <Divider sx={{ mb: 3 }} />
               
@@ -402,14 +410,14 @@ const UserViewEdit: React.FC = () => {
                 <Box sx={{ mb: 2 }}>
                   <BadgeIcon sx={{ color: 'primary.main', mr: 0.5 }} />
                   <Typography variant="h6" component="span" sx={{ fontWeight: 'bold' }}>
-                    ID: {currentUser.id}
+                    {t('admin.userDetail.fields.accountId', { id: currentUser.id })}
                   </Typography>
                 </Box>
 
                 {currentUser.createdAt && (
                   <Box sx={{ mb: 2 }}>
                     <Typography variant="body2" color="text.secondary">
-                      Created: {new Date(currentUser.createdAt).toLocaleDateString()}
+                      {t('admin.userDetail.fields.created')}: {new Date(currentUser.createdAt).toLocaleDateString()}
                     </Typography>
                   </Box>
                 )}
@@ -417,7 +425,7 @@ const UserViewEdit: React.FC = () => {
                 {currentUser.lastLoginAt && (
                   <Box>
                     <Typography variant="body2" color="text.secondary">
-                      Last Login: {new Date(currentUser.lastLoginAt).toLocaleDateString()}
+                      {t('admin.userDetail.fields.lastLogin')}: {new Date(currentUser.lastLoginAt).toLocaleDateString()}
                     </Typography>
                   </Box>
                 )}
@@ -429,16 +437,16 @@ const UserViewEdit: React.FC = () => {
 
       {/* Cancel Confirmation Dialog */}
       <Dialog open={showCancelDialog} onClose={() => setShowCancelDialog(false)}>
-        <DialogTitle>Discard Changes?</DialogTitle>
+        <DialogTitle>{t('admin.userDetail.dialog.discardTitle')}</DialogTitle>
         <DialogContent>
           <Typography>
-            You have unsaved changes. Are you sure you want to discard them?
+            {t('admin.userDetail.dialog.discardMessage')}
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setShowCancelDialog(false)}>Keep Editing</Button>
+          <Button onClick={() => setShowCancelDialog(false)}>{t('admin.userDetail.dialog.keepEditing')}</Button>
           <Button onClick={cancelEdit} color="error">
-            Discard Changes
+            {t('admin.userDetail.dialog.discardChanges')}
           </Button>
         </DialogActions>
       </Dialog>

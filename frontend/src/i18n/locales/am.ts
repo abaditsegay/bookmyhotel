@@ -78,13 +78,56 @@ export const amTranslations = {
       title: "የስርዓት መቆጣጠሪያ ገፅ",
       overview: "አጠቃላይ እይታ",
       analytics: "ትንታኔ",
+      analyticsTitle: "የተከራይ ትንታኔ",
+      analyticsVisualization: "የስርዓት ትንታኔ እና የውሂብ ማሳያ",
       totalBookings: "ጠቅላላ ቦታ ማስያዞች",
+      totalBookingsSubtitle: "በዚህ ወር {{count}} ቦታ ማስያዞች ተፈጥረዋል",
       activeHotels: "ንቁ ሆቴሎች",
+      activeBookings: "ንቁ ቦታ ማስያዞች",
+      activeBookingsSubtitle: "የተያዙ ወይም የገቡ ቆይታዎች",
       monthlyRevenue: "ወርሃዊ ገቢ",
+      currentMonthRevenue: "የአሁኑ ወር ገቢ",
+      currentMonthRevenueSubtitle: "በአጠቃላይ {{count}} የተጠናቀቁ ክፍያዎች",
+      currentYearRevenue: "የአሁኑ ዓመት ገቢ",
+      currentYearRevenueSubtitle: "ከተጠናቀቁ ክፍያዎች የተገኘ ገቢ",
       systemUsers: "የስርዓት ተጠቃሚዎች",
       recentActivity: "የቅርብ ጊዜ እንቅስቃሴ",
       performanceMetrics: "የአፈጻጸም መለኪያዎች",
-      quickActions: "ፈጣን እርምጃዎች"
+      quickActions: "ፈጣን እርምጃዎች",
+      loadingStats: "ስታቲስቲክስ በመጫን ላይ...",
+      systemOverview: "የስርዓት አጠቃላይ እይታ",
+      monthlyRevenueChart: "የወርሃዊ ገቢ አዝማሚያ (ብር)",
+      monthlyBookingVolumeChart: "የወርሃዊ ቦታ ማስያዝ መጠን",
+      bookingStatusChart: "የቦታ ማስያዝ ሁኔታ ስርጭት",
+      paymentStatusChart: "የክፍያ ሁኔታ ስርጭት",
+      totalBookingsCenterSubtext: "ጠቅላላ ቦታ ማስያዞች",
+      completedPaymentsCenterSubtext: "የተጠናቀቁ ክፍያዎች",
+      demoBookingsCenterSubtext: "የማሳያ ቦታ ማስያዞች",
+      auditLogTab: "የኦዲት መዝገብ",
+      businessOnboarding: {
+        title: "የንግድ መመዝገቢያ አገናኝ",
+        shareChip: "ለአዲስ ንግዶች አጋራ",
+        description: "ይህን አገናኝ ከንግድ ተቋም ጋር በመጋራት የሆቴል ምዝገባ ማመልከቻቸውን እንዲያስገቡ ያድርጉ። ገፁ በህዝብ አሰሳ ውስጥ አይገናኝም።",
+        copied: "ተቀድቷል!",
+        copyUrl: "URL ቅዳ",
+        openInNewTab: "በአዲስ ታብ ክፈት"
+      },
+      apiDocs: {
+        tabLabel: "የAPI ሰነዶች",
+        searchPlaceholder: "የAPI መጨረሻ ነጥቦችን ፈልግ...",
+        categoryLabel: "ምድብ",
+        allCategories: "ሁሉም",
+        showingCount: "{{filtered}} ከ{{total}} መጨረሻ ነጥቦች እየታዩ ናቸው",
+        requestSection: "ጥያቄ",
+        responseSection: "ምላሽ",
+        headersLabel: "ራሶች:",
+        pathParametersLabel: "የመንገድ መለኪያዎች:",
+        queryParametersLabel: "የጥያቄ መለኪያዎች:",
+        requestBodyLabel: "የጥያቄ አካል:",
+        successResponseLabel: "የተሳካ ምላሽ (200):",
+        errorResponseLabel: "የስህተት ምላሽ (4xx/5xx):",
+        noExamples: "ለዚህ መጨረሻ ነጥብ የጥያቄ/ምላሽ ምሳሌዎች የሉም።"
+      }
     },
     hotel: {
       title: "የሆቴል መቆጣጠሪያ ገፅ",
@@ -1680,6 +1723,65 @@ export const amTranslations = {
 
   // Admin Interfaces
   admin: {
+    dashboard: {
+      eyebrow: "የመድረክ ስራዎች",
+      title: "የስርዓት አስተዳደር",
+      description: "የመድረኩን ሆቴሎች፣ የተጠቃሚ መለያዎች እና የኦዲት እንቅስቃሴዎች ከአንድ ወጥ የአስተዳደር ስፍራ ያስተዳድሩ።",
+      consoleChip: "የመድረክ ኮንሶል",
+      tabsAriaLabel: "የአስተዳደር ትሮች",
+      hotelSectionDescription: "በመድረኩ ላይ የተመዘገቡ ሆቴሎችን ይገምግሙ እና ወደ ዝርዝር አስተዳደር ይግቡ።",
+      userSectionDescription: "የመድረኩን ተጠቃሚዎች ይፈልጉ፣ የተመደበላቸውን የሆቴል አውድ ይመልከቱ እና ወደ ዝርዝር የተጠቃሚ አስተዳደር ይግቡ።",
+      hotelSearchPlaceholder: "ሆቴሎችን ፈልግ...",
+      userSearchPlaceholder: "ተጠቃሚዎችን ፈልግ...",
+      statusLabel: "ሁኔታ",
+      allStatuses: "ሁሉም ሁኔታዎች",
+      allRoles: "ሁሉም ሚናዎች",
+      hotelsPerPage: "በገጽ ያሉ ሆቴሎች:",
+      usersPerPage: "በገጽ ያሉ ተጠቃሚዎች:",
+      hotelsTableAriaLabel: "የሆቴሎች ሰንጠረዥ",
+      usersTableAriaLabel: "የተጠቃሚዎች ሰንጠረዥ",
+      loadingHotels: "ሆቴሎች በመጫን ላይ...",
+      loadingUsers: "ተጠቃሚዎች በመጫን ላይ...",
+      noHotelsFound: "ሆቴሎች አልተገኙም",
+      noUsersFound: "ተጠቃሚዎች አልተገኙም",
+      viewDetails: "ዝርዝሮችን ይመልከቱ",
+      systemWide: "ስርዓት አቀፍ",
+      status: {
+        active: "ንቁ",
+        pending: "በመጠባበቅ ላይ",
+        inactive: "ንቁ ያልሆነ"
+      },
+      roles: {
+        ADMIN: "አስተዳዳሪ",
+        HOTEL_ADMIN: "የሆቴል አስተዳዳሪ",
+        HOTEL_STAFF: "የሆቴል ሰራተኛ",
+        GUEST: "እንግዳ",
+        NO_ROLE: "ሚና የለም"
+      },
+      hotelTable: {
+        hotelName: "የሆቴል ስም",
+        location: "አካባቢ",
+        status: "ሁኔታ",
+        rooms: "ክፍሎች",
+        rating: "ደረጃ",
+        registered: "የተመዘገበበት",
+        actions: "እርምጃዎች"
+      },
+      userTable: {
+        userName: "የተጠቃሚ ስም",
+        email: "ኢሜይል",
+        hotel: "ሆቴል",
+        role: "ሚና",
+        status: "ሁኔታ",
+        lastLogin: "የመጨረሻ መግቢያ",
+        created: "የተፈጠረበት",
+        actions: "እርምጃዎች"
+      },
+      footer: {
+        version: "የBookMyHotel አስተዳደር ዳሽቦርድ - የመድረክ ስሪት 1.0.0",
+        secureInterface: "ለመድረክ አስተዳደር የተዘጋጀ ደህንነቱ የተጠበቀ በይነገጽ"
+      }
+    },
     tenant: {
       title: "የተከራይ አስተዳደር",
       addTenant: "ተከራይ ጨምር",
@@ -1717,6 +1819,633 @@ export const amTranslations = {
       totalRooms: "ጠቅላላ ክፍሎች",
       activateHotel: "ሆቴል አንቃ",
       deactivateHotel: "ሆቴል አቦዝ"
+    },
+    auditLog: {
+      stats: {
+        actionsToday: "የዛሬ እርምጃዎች:",
+        failedToday: "የዛሬ ያልተሳኩ:",
+      },
+      filters: {
+        action: "እርምጃ",
+        entityType: "የአካል አይነት",
+        allActions: "ሁሉም እርምጃዎች",
+        allTypes: "ሁሉም አይነቶች",
+        emailPlaceholder: "በኢሜይል አጣራ",
+        fromDate: "ከቀን",
+        toDate: "እስከ ቀን",
+        clear: "ማጣሪያዎችን አጽዳ"
+      },
+      table: {
+        timestamp: "የጊዜ ማህተም",
+        actor: "ፈጻሚ",
+        role: "ሚና",
+        action: "እርምጃ",
+        entityType: "የአካል አይነት",
+        entityId: "የአካል መለያ",
+        description: "መግለጫ",
+        status: "ሁኔታ",
+        details: "ዝርዝሮች",
+        viewFullDetails: "ሙሉ ዝርዝሮችን ይመልከቱ",
+        rowsPerPage: "በገጽ የሚታዩ ክስተቶች:"
+      },
+      status: {
+        failed: "አልተሳካም"
+      },
+      emptyState: "የኦዲት ክስተቶች አልተገኙም",
+      errors: {
+        loadFailed: "የኦዲት መዝገቦችን መጫን አልተሳካም"
+      },
+      detail: {
+        title: "የኦዲት ክስተት ዝርዝር",
+        timestamp: "የጊዜ ማህተም",
+        action: "እርምጃ",
+        entityType: "የአካል አይነት",
+        entityId: "የአካል መለያ",
+        description: "መግለጫ",
+        performedBy: "የፈጸመው",
+        email: "ኢሜይል",
+        role: "ሚና",
+        ipAddress: "IP አድራሻ",
+        request: "ጥያቄ",
+        responseStatus: "የምላሽ ሁኔታ",
+        oldValues: "የቀድሞ እሴቶች",
+        newValues: "አዲስ እሴቶች",
+        userAgent: "የተጠቃሚ ወኪል"
+      },
+      actions: {
+        CREATE: "ፍጠር",
+        UPDATE: "አዘምን",
+        DELETE: "ሰርዝ",
+        TOGGLE_STATUS: "ሁኔታን ቀይር",
+        ASSIGN_ADMIN: "አስተዳዳሪ መድብ",
+        ADD_ROLE: "ሚና ጨምር",
+        REMOVE_ROLE: "ሚና አስወግድ",
+        RESET_PASSWORD: "የይለፍ ቃል ዳግም አስጀምር",
+        APPROVE: "አጽድቅ",
+        REJECT: "አትቀበል",
+        UNDER_REVIEW: "በግምገማ ላይ",
+        ACTION: "እርምጃ"
+      },
+      entityTypes: {
+        SYSTEM: "ስርዓት",
+        USER: "ተጠቃሚ",
+        HOTEL: "ሆቴል",
+        ROOM: "ክፍል",
+        TENANT: "ተከራይ",
+        HOTEL_REGISTRATION: "የሆቴል ምዝገባ"
+      }
+    },
+    hotelDetail: {
+      title: "የሆቴል ዝርዝሮች",
+      actions: {
+        editHotel: "ሆቴል ያርሙ",
+        saveChanges: "ለውጦችን አስቀምጥ",
+        saving: "በማስቀመጥ ላይ..."
+      },
+      hero: {
+        totalRooms: "ጠቅላላ ክፍሎች",
+        averageRating: "አማካይ ደረጃ",
+        daysActive: "ንቁ ቀናት",
+        currency: "ምንዛሬ"
+      },
+      sections: {
+        basicInformation: "መሰረታዊ መረጃ",
+        locationAddress: "አካባቢ እና አድራሻ",
+        operationsSettings: "ኦፕሬሽን እና ቅንብሮች",
+        statusManagement: "የሁኔታ አስተዳደር",
+        performanceMetrics: "የአፈጻጸም መለኪያዎች",
+        occupancyRate: "የመኖሪያ መጠን",
+        systemInformation: "የስርዓት መረጃ"
+      },
+      fields: {
+        hotelName: "የሆቴል ስም",
+        description: "መግለጫ",
+        phoneNumber: "ስልክ ቁጥር",
+        emailAddress: "ኢሜይል አድራሻ",
+        websiteUrl: "የድህረ ገጽ URL",
+        streetAddress: "የመንገድ አድራሻ",
+        city: "ከተማ",
+        stateProvince: "ክልል/ግዛት",
+        zipPostalCode: "ZIP/ፖስታ ኮድ",
+        country: "ሀገር",
+        checkInTime: "የመግቢያ ሰዓት",
+        checkOutTime: "የመውጫ ሰዓት",
+        currency: "ምንዛሬ",
+        timeZone: "የሰዓት ክልል",
+        hotelStatus: "የሆቴል ሁኔታ",
+        createdDate: "የተፈጠረበት ቀን",
+        lastUpdated: "የተዘመነበት ቀን",
+        hotelId: "የሆቴል መለያ",
+        activeStatus: "የንቁነት ሁኔታ"
+      },
+      status: {
+        ACTIVE: "ንቁ",
+        PENDING: "በመጠባበቅ ላይ",
+        INACTIVE: "ንቁ ያልሆነ",
+        SUSPENDED: "ታግዷል"
+      },
+      dialog: {
+        discardTitle: "ለውጦችን ልታስወግድ?",
+        discardMessage: "ያልተቀመጡ ለውጦች አሉዎት። እርግጠኛ ነዎት እነሱን ማስወገድ እንደሚፈልጉ?",
+        keepEditing: "ማርትዕን ቀጥል",
+        discardChanges: "ለውጦችን አስወግድ"
+      },
+      messages: {
+        updateSuccess: "ሆቴሉ በተሳካ ሁኔታ ተዘምኗል",
+        updateFailed: "ሆቴሉን ማዘመን አልተሳካም"
+      },
+      errors: {
+        notFound: "ሆቴሉ አልተገኘም",
+        loadFailed: "የሆቴል ዝርዝሮችን መጫን አልተሳካም"
+      },
+      footer: {
+        version: "የBookMyHotel የስርዓት አስተዳደር ዳሽቦርድ - ስሪት 2.0.0",
+        subtitle: "የላቀ ትንታኔ ያለው ሙያዊ የሆቴል አስተዳደር መድረክ"
+      }
+    },
+    userDetail: {
+      title: "የተጠቃሚ ዝርዝሮች",
+      superAdminInfo: "የSUPER_ADMIN መለያዎችን ማሻሻል አይቻልም።",
+      actions: {
+        editUser: "ተጠቃሚ ያርሙ",
+        saveChanges: "ለውጦችን አስቀምጥ",
+        saving: "በማስቀመጥ ላይ..."
+      },
+      sections: {
+        personalInformation: "የግል መረጃ",
+        rolesPermissions: "ሚናዎች እና ፈቃዶች",
+        accountStatus: "የመለያ ሁኔታ",
+        accountInformation: "የመለያ መረጃ"
+      },
+      fields: {
+        firstName: "የመጀመሪያ ስም",
+        lastName: "የአባት ስም",
+        email: "ኢሜይል",
+        phone: "ስልክ",
+        roles: "ሚናዎች",
+        activeAccount: "ንቁ መለያ",
+        accountId: "መለያ: {{id}}",
+        created: "የተፈጠረ",
+        lastLogin: "የመጨረሻ መግቢያ"
+      },
+      roles: {
+        ADMIN: "የስርዓት አስተዳዳሪ",
+        HOTEL_ADMIN: "የሆቴል አስተዳዳሪ",
+        OPERATIONAL_ADMIN: "የኦፕሬሽን አስተዳዳሪ",
+        CUSTOMER: "ደንበኛ"
+      },
+      status: {
+        active: "ንቁ",
+        inactive: "ንቁ ያልሆነ"
+      },
+      dialog: {
+        discardTitle: "ለውጦችን ልታስወግድ?",
+        discardMessage: "ያልተቀመጡ ለውጦች አሉዎት። እርግጠኛ ነዎት እነሱን ማስወገድ እንደሚፈልጉ?",
+        keepEditing: "ማርትዕን ቀጥል",
+        discardChanges: "ለውጦችን አስወግድ"
+      },
+      messages: {
+        updateSuccess: "ተጠቃሚው በተሳካ ሁኔታ ተዘምኗል",
+        updateFailed: "ተጠቃሚውን ማዘመን አልተሳካም"
+      },
+      errors: {
+        notFound: "ተጠቃሚው አልተገኘም",
+        loadFailed: "የተጠቃሚ ዝርዝሮችን መጫን አልተሳካም"
+      }
+    },
+    hotelRegistrationForm: {
+      title: "Register New Hotel",
+      description: "Add a new hotel to the platform",
+      steps: {
+        basicInformation: "Basic Information",
+        locationDetails: "Location Details",
+        contactInformation: "Contact Information",
+        businessDetails: "Business Details"
+      },
+      categories: {
+        luxury: "Luxury",
+        business: "Business",
+        budget: "Budget",
+        boutique: "Boutique",
+        resort: "Resort"
+      },
+      fields: {
+        hotelName: "Hotel Name",
+        description: "Description",
+        category: "Hotel Category",
+        address: "Address",
+        city: "City",
+        stateProvince: "State/Province",
+        country: "Country",
+        zipPostalCode: "ZIP/Postal Code",
+        phoneNumber: "Phone Number",
+        emailAddress: "Email Address",
+        website: "Website",
+        contactPerson: "Contact Person",
+        businessLicenseNumber: "Business License Number",
+        taxId: "Tax ID"
+      },
+      placeholders: {
+        hotelName: "Enter hotel name",
+        description: "Enter hotel description",
+        address: "Enter street address",
+        city: "Enter city",
+        stateProvince: "Enter state or province",
+        country: "Enter country",
+        zipPostalCode: "Enter ZIP code",
+        phoneNumber: "Enter phone number",
+        emailAddress: "Enter email address",
+        website: "Enter website URL",
+        contactPerson: "Enter contact person name",
+        businessLicenseNumber: "Enter license number",
+        taxId: "Enter tax identification number"
+      },
+      actions: {
+        registering: "Registering...",
+        registerHotel: "Register Hotel"
+      },
+      summary: {
+        title: "Registration Summary",
+        hotelName: "Hotel Name:",
+        category: "Category:",
+        location: "Location:",
+        contact: "Contact:"
+      },
+      messages: {
+        registerFailed: "Failed to register hotel. Please try again.",
+        unknownStep: "Unknown step",
+        registerSuccessTitle: "Hotel Registered Successfully!",
+        registerSuccessBody: "The hotel \"{{hotelName}}\" has been registered and is now pending review."
+      }
+    },
+    userRegistrationForm: {
+      title: "Add New User",
+      description: "Create a new user account",
+      steps: {
+        basicInformation: "Basic Information",
+        accountSetup: "Account Setup",
+        profileDetails: "Profile Details",
+        accountSettings: "Account Settings"
+      },
+      roles: {
+        ADMIN: "Administrator",
+        HOTEL_ADMIN: "Hotel Administrator",
+        OPERATIONAL_ADMIN: "Operational Administrator",
+        FRONTDESK: "Front Desk Agent",
+        HOUSEKEEPING: "Housekeeping",
+        MAINTENANCE: "Maintenance",
+        TESTER: "Tester",
+        CUSTOMER: "Customer"
+      },
+      fields: {
+        firstName: "First Name",
+        lastName: "Last Name",
+        emailAddress: "Email Address",
+        username: "Username",
+        password: "Password",
+        confirmPassword: "Confirm Password",
+        userRole: "User Role",
+        tenant: "Tenant",
+        hotelAssignment: "Hotel Assignment",
+        phoneNumber: "Phone Number",
+        address: "Address",
+        city: "City",
+        stateProvince: "State/Province",
+        country: "Country",
+        zipPostalCode: "ZIP/Postal Code",
+        accountActive: "Account Active",
+        emailVerified: "Email Verified"
+      },
+      placeholders: {
+        firstName: "Enter first name",
+        lastName: "Enter last name",
+        emailAddress: "Enter email address",
+        username: "Enter username",
+        password: "Enter password",
+        confirmPassword: "Confirm password",
+        phoneNumber: "Enter phone number",
+        address: "Enter street address",
+        city: "Enter city",
+        stateProvince: "Enter state or province",
+        country: "Enter country",
+        zipPostalCode: "Enter ZIP code"
+      },
+      actions: {
+        creatingUser: "Creating User...",
+        createUser: "Create User"
+      },
+      summary: {
+        title: "User Summary",
+        name: "Name:",
+        username: "Username:",
+        email: "Email:",
+        role: "Role:",
+        tenant: "Tenant:",
+        hotelAssignment: "Hotel Assignment:",
+        status: "Status:",
+        emailVerified: "Email Verified:"
+      },
+      status: {
+        active: "Active",
+        inactive: "Inactive"
+      },
+      messages: {
+        loadTenantsFailed: "Failed to load tenants",
+        loadHotelsFailed: "Failed to load hotels for selected tenant",
+        authenticationRequired: "Authentication required",
+        createFailed: "Failed to create user. Please try again.",
+        noHotelsAvailable: "No hotels available for the selected tenant",
+        unknownStep: "Unknown step",
+        createSuccessTitle: "User Created Successfully!",
+        createSuccessBody: "{{fullName}} has been successfully registered as {{role}}."
+      }
+    },
+    userManagement: {
+      eyebrow: "Identity & Access",
+      title: "User Management",
+      description: "Manage platform users, review hotel associations, and handle activation, password resets, and profile updates from a consistent admin workflow.",
+      directory: {
+        title: "Users Directory",
+        description: "Filter by role, status, or text search, then open the relevant action for each user account."
+      },
+      filters: {
+        searchPlaceholder: "Search by name or email...",
+        role: "Role",
+        allRoles: "All Roles",
+        status: "Status",
+        allStatuses: "All Statuses"
+      },
+      table: {
+        name: "Name",
+        email: "Email",
+        phone: "Phone",
+        hotel: "Hotel",
+        role: "Role",
+        status: "Status",
+        created: "Created",
+        lastLogin: "Last Login",
+        actions: "Actions",
+        rowsPerPage: "Users per page:"
+      },
+      emptyState: "No users found for the selected filters.",
+      systemWide: "System-wide",
+      roles: {
+        ADMIN: "Administrator",
+        HOTEL_ADMIN: "Hotel Administrator",
+        OPERATIONAL_ADMIN: "Operational Administrator",
+        FRONTDESK: "Front Desk Agent",
+        HOUSEKEEPING: "Housekeeping",
+        MAINTENANCE: "Maintenance",
+        TESTER: "Tester",
+        CUSTOMER: "Customer",
+        SUPER_ADMIN: "Super Admin",
+        NO_ROLE: "No Role"
+      },
+      status: {
+        active: "Active",
+        inactive: "Inactive"
+      },
+      actions: {
+        addUser: "Add User",
+        viewDetails: "View Details",
+        deactivateUser: "Deactivate User",
+        activateUser: "Activate User",
+        resetPassword: "Reset Password",
+        createUser: "Create User",
+        updateUser: "Update User",
+        deactivate: "Deactivate",
+        activate: "Activate",
+        deactivating: "Deactivating...",
+        activating: "Activating...",
+        sending: "Sending...",
+        resetAndSendEmail: "Reset & Send Email"
+      },
+      dialogs: {
+        create: {
+          title: "Add New User",
+          description: "Create a new platform or hotel-bound account and assign the appropriate role and tenancy scope."
+        },
+        edit: {
+          title: "Edit User",
+          description: "Update the selected account's profile and role assignment."
+        },
+        toggleStatus: {
+          deactivateTitle: "Deactivate User",
+          activateTitle: "Activate User",
+          confirmation: "Are you sure you want to {{action}} user \"{{name}}\" ({{email}})?"
+        },
+        resetPassword: {
+          title: "Reset Password",
+          body: "A new random password will be generated and sent to {{email}} via email.",
+          note: "The new password will not be visible to you."
+        },
+        details: {
+          title: "User Details"
+        }
+      },
+      fields: {
+        firstName: "First Name",
+        lastName: "Last Name",
+        email: "Email",
+        password: "Password",
+        phone: "Phone",
+        role: "Role",
+        tenant: "Tenant",
+        hotel: "Hotel",
+        reason: "Reason",
+        status: "Status",
+        createdAt: "Created At",
+        lastLogin: "Last Login",
+        userId: "User ID"
+      },
+      placeholders: {
+        deactivationReason: "Enter reason for deactivation...",
+        activationReason: "Enter reason for activation..."
+      }
+    },
+    hotelRegistrationAdmin: {
+      title: "Hotel Registration Management",
+      stats: {
+        total: "Total",
+        pending: "Pending",
+        underReview: "Under Review",
+        approved: "Approved",
+        rejected: "Rejected"
+      },
+      table: {
+        hotelName: "Hotel Name",
+        contactPerson: "Contact Person",
+        email: "Email",
+        city: "City",
+        status: "Status",
+        submitted: "Submitted",
+        actions: "Actions"
+      },
+      actions: {
+        approve: "Approve",
+        reject: "Reject"
+      },
+      dialogs: {
+        viewTitle: "Hotel Registration Details",
+        approveTitle: "Approve Registration",
+        rejectTitle: "Reject Registration"
+      },
+      steps: {
+        hotelAndAdminInfo: "Hotel & Admin Info",
+        additionalDetails: "Additional Details"
+      },
+      sections: {
+        hotelInformation: "Hotel Information",
+        registeredHotelAdmin: "Registered Hotel Admin",
+        businessDetails: "Business Details",
+        paymentInformation: "Payment Information",
+        taxAndLicense: "Tax & License",
+        facilityInformation: "Facility Information"
+      },
+      fields: {
+        hotelName: "Hotel Name",
+        status: "Status",
+        address: "Address",
+        city: "City",
+        country: "Country",
+        submittedAt: "Submitted At",
+        reviewedAt: "Reviewed At",
+        contactPerson: "Contact Person",
+        contactEmail: "Contact Email",
+        description: "Description",
+        phone: "Phone",
+        website: "Website",
+        mobilePaymentPhone: "Mobile Payment Phone",
+        mobilePaymentPhone2: "Mobile Payment Phone 2",
+        licenseNumber: "License Number",
+        taxId: "Tax ID",
+        facilityAmenities: "Facility Amenities",
+        numberOfRooms: "Number of Rooms",
+        checkInTime: "Check-in Time",
+        checkOutTime: "Check-out Time",
+        reviewComments: "Review Comments",
+        approvalComments: "Approval Comments",
+        rejectionReason: "Rejection Reason"
+      }
+    },
+    hotelManagement: {
+      eyebrow: "Platform Operations",
+      title: "Hotel Management",
+      description: "Manage existing hotels, review inbound registrations, and control platform visibility from one administrative workspace.",
+      tabs: {
+        existingHotels: "Existing Hotels",
+        hotelRegistrations: "Hotel Registrations"
+      },
+      actions: {
+        registerHotel: "Register Hotel",
+        deactivate: "Deactivate",
+        activate: "Activate",
+        unpublishFromSearch: "Unpublish from public search",
+        publishToSearch: "Publish to public search",
+        review: "Review",
+        submitRegistration: "Submit Registration",
+        viewDetails: "View Details"
+      },
+      steps: {
+        hotelAndAdminInfo: "Hotel & Admin Info",
+        additionalDetails: "Additional Details"
+      },
+      filters: {
+        search: "Search hotels...",
+        searchPlaceholder: "Search by name, city, or email",
+        status: "Status",
+        allHotels: "All Hotels",
+        activeOnly: "Active Only",
+        inactiveOnly: "Inactive Only"
+      },
+      existingHotels: {
+        title: "Existing Hotels",
+        description: "Review hotel status, tenant assignments, and public listing state for all configured properties.",
+        rowsPerPage: "Hotels per page:",
+        emptyState: "No hotels found",
+        table: {
+          hotelName: "Hotel Name",
+          location: "Location",
+          tenant: "Tenant",
+          contact: "Contact",
+          rooms: "Rooms",
+          rating: "Rating",
+          status: "Status",
+          publicListing: "Public Listing",
+          actions: "Actions"
+        }
+      },
+      status: {
+        active: "Active",
+        inactive: "Inactive"
+      },
+      publicListing: {
+        published: "Published",
+        unlisted: "Unlisted"
+      },
+      registrationStats: {
+        total: "Total",
+        pending: "Pending",
+        approved: "Approved",
+        rejected: "Rejected"
+      },
+      registrations: {
+        title: "Hotel Registrations",
+        description: "Review pending hotel onboarding submissions, inspect application details, and approve or reject registrations.",
+        emptyState: "No hotel registrations found.",
+        table: {
+          hotelName: "Hotel Name",
+          contactPerson: "Contact Person",
+          email: "Email",
+          city: "City",
+          status: "Status",
+          submitted: "Submitted",
+          actions: "Actions"
+        }
+      },
+      registrationStatus: {
+        PENDING: "Pending",
+        UNDER_REVIEW: "Under Review",
+        APPROVED: "Approved",
+        REJECTED: "Rejected",
+        CANCELLED: "Cancelled"
+      },
+      dialogs: {
+        register: {
+          title: "Register New Hotel"
+        }
+      },
+      sections: {
+        phoneNumbers: "Phone Numbers"
+      },
+      fields: {
+        hotelName: "Hotel Name",
+        contactPerson: "Contact Person",
+        description: "Description",
+        address: "Address",
+        city: "City",
+        country: "Country",
+        contactEmail: "Contact Email",
+        communicationPhone: "Phone (Communication)",
+        mobilePaymentPhone: "Mobile Payment Phone",
+        mobilePaymentPhone2: "Mobile Payment Phone 2 (Optional)",
+        licenseNumber: "License Number",
+        taxId: "Tax ID",
+        websiteUrl: "Website URL",
+        facilityAmenities: "Facility Amenities",
+        numberOfRooms: "Number of Rooms",
+        checkInTime: "Check-in Time",
+        checkOutTime: "Check-out Time"
+      },
+      helpers: {
+        communicationPhone: "Primary phone for general communication",
+        mobilePaymentPhone: "Primary mobile money account for payments",
+        mobilePaymentPhone2: "Optional secondary mobile money account"
+      },
+      placeholders: {
+        facilityAmenities: "WiFi, Pool, Spa, Restaurant, etc.",
+        numberOfRooms: "Enter number of rooms"
+      }
     }
   },
 

@@ -54,8 +54,6 @@ import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import TokenManager from '../utils/tokenManager';
-import { apiClient } from '../utils/apiClient';
-import { API_ENDPOINTS } from '../config/apiConfig';
 import { 
   getAllEndpoints
 } from '../data/apiDocumentation';
@@ -63,6 +61,7 @@ import AuditLogTab from './admin/AuditLogTab';
 import TabPanel from '../components/common/TabPanel';
 import { getReadableAccentTextColor, getSectionTint } from '../theme/surfaces';
 import { composeSx, infoPanelSx, surfaceCardSx } from '../theme/sxHelpers';
+import { adminApiService, HotelStatistics, SystemAnalyticsOverview, TenantStatistics, UserStatistics } from '../services/adminApi';
 
 /**
  * Dashboard page for system-wide users (ADMIN and CUSTOMER roles)
@@ -73,83 +72,63 @@ export const SystemDashboardPage: React.FC = () => {
   const theme = useTheme();
   const readableAccentColor = getReadableAccentTextColor(theme);
   const { t } = useTranslation();
+  const allCategoryValue = '__ALL__';
   const { user } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(0);
   const [apiSearchQuery, setApiSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedCategory, setSelectedCategory] = useState(allCategoryValue);
   const [onboardingUrlCopied, setOnboardingUrlCopied] = useState(false);
 
   // Get all API endpoints from our organized documentation
   const allEndpoints = getAllEndpoints();
 
   // Get unique categories for the dropdown
-  const categories = ['All', ...Array.from(new Set(allEndpoints.map(endpoint => endpoint.category))).sort()];
+  const categories = [
+    { value: allCategoryValue, label: t('dashboard.system.apiDocs.allCategories') },
+    ...Array.from(new Set(allEndpoints.map(endpoint => endpoint.category))).sort().map((category) => ({
+      value: category,
+      label: category,
+    })),
+  ];
 
 
-  // State for dashboard statistics
-  const [stats, setStats] = useState({
-    totalHotels: 0,
-    totalUsers: 0,
-    totalBookings: 1247,
-    revenue: 'ETB 124,750',
-    loading: true
+  const [stats, setStats] = useState<{
+    hotelStats: HotelStatistics | null;
+    userStats: UserStatistics | null;
+    tenantStats: TenantStatistics | null;
+    systemAnalytics: SystemAnalyticsOverview | null;
+    loading: boolean;
+  }>({
+    hotelStats: null,
+    userStats: null,
+    tenantStats: null,
+    systemAnalytics: null,
+    loading: true,
   });
-
-  // Sample data for visualizations
-  const revenueData = [
-    { label: t('common.months.jan'), value: 85000 },
-    { label: t('common.months.feb'), value: 92000 },
-    { label: t('common.months.mar'), value: 98000 },
-    { label: t('common.months.apr'), value: 89000 },
-    { label: t('common.months.may'), value: 115000 },
-    { label: t('common.months.jun'), value: 124750 },
-  ];
-
-  const bookingStatusData = [
-    { label: t('booking.details.confirmed'), value: 68, color: COLORS.SUCCESS },
-    { label: t('booking.details.pending'), value: 22, color: COLORS.WARNING },
-    { label: t('booking.details.cancelled'), value: 10, color: COLORS.ERROR },
-  ];
 
   // Fetch dashboard statistics
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        // Set the token for API client
         const token = TokenManager.getToken();
-        if (token) {
-          apiClient.setToken(token);
-        }
+        adminApiService.setToken(token);
 
-        // Fetch hotels count
-        const hotelsResponse = await apiClient.get(API_ENDPOINTS.SYSTEM.HOTELS);
-        
-        // Fetch users count  
-        const usersResponse = await apiClient.get(API_ENDPOINTS.SYSTEM.USERS);
-
-        let hotelsCount = 0;
-        let usersCount = 0;
-
-        if (hotelsResponse.success && hotelsResponse.data) {
-          const hotelsData = hotelsResponse.data;
-          hotelsCount = Array.isArray(hotelsData) ? hotelsData.length : (hotelsData.totalElements || hotelsData.content?.length || 0);
-        }
-
-        if (usersResponse.success && usersResponse.data) {
-          const usersData = usersResponse.data;
-          usersCount = Array.isArray(usersData) ? usersData.length : (usersData.totalElements || usersData.content?.length || 0);
-        }
+        const [hotelStats, userStats, tenantStats, systemAnalytics] = await Promise.all([
+          adminApiService.getHotelStatistics(),
+          adminApiService.getUserStatistics(),
+          adminApiService.getTenantStatistics(),
+          adminApiService.getSystemAnalyticsOverview(),
+        ]);
 
         setStats({
-          totalHotels: hotelsCount,
-          totalUsers: usersCount,
-          totalBookings: 1247, // Enhanced with sample data
-          revenue: 'ETB 124,750', // Enhanced with sample data
-          loading: false
+          hotelStats,
+          userStats,
+          tenantStats,
+          systemAnalytics,
+          loading: false,
         });
       } catch (error) {
-        // console.error('Failed to fetch dashboard statistics:', error);
         setStats(prev => ({ ...prev, loading: false }));
       }
     };
@@ -165,42 +144,28 @@ export const SystemDashboardPage: React.FC = () => {
 
   // Handle refresh without full page reload to preserve language selection
   const handleRefresh = () => {
-    // Reset loading state
     setStats(prev => ({ ...prev, loading: true }));
-    
-    // Re-fetch data
+
     const fetchStats = async () => {
       try {
         const token = TokenManager.getToken();
-        if (token) {
-          apiClient.setToken(token);
-        }
+        adminApiService.setToken(token);
 
-        const hotelsResponse = await apiClient.get(API_ENDPOINTS.SYSTEM.HOTELS);
-        const usersResponse = await apiClient.get(API_ENDPOINTS.SYSTEM.USERS);
-
-        let hotelsCount = 0;
-        let usersCount = 0;
-
-        if (hotelsResponse.success && hotelsResponse.data) {
-          const hotelsData = hotelsResponse.data;
-          hotelsCount = Array.isArray(hotelsData) ? hotelsData.length : (hotelsData.totalElements || hotelsData.content?.length || 0);
-        }
-
-        if (usersResponse.success && usersResponse.data) {
-          const usersData = usersResponse.data;
-          usersCount = Array.isArray(usersData) ? usersData.length : (usersData.totalElements || usersData.content?.length || 0);
-        }
+        const [hotelStats, userStats, tenantStats, systemAnalytics] = await Promise.all([
+          adminApiService.getHotelStatistics(),
+          adminApiService.getUserStatistics(),
+          adminApiService.getTenantStatistics(),
+          adminApiService.getSystemAnalyticsOverview(),
+        ]);
 
         setStats({
-          totalHotels: hotelsCount,
-          totalUsers: usersCount,
-          totalBookings: 1247,
-          revenue: 'ETB 124,750',
-          loading: false
+          hotelStats,
+          userStats,
+          tenantStats,
+          systemAnalytics,
+          loading: false,
         });
       } catch (error) {
-        // console.error('Failed to refresh dashboard statistics:', error);
         setStats(prev => ({ ...prev, loading: false }));
       }
     };
@@ -218,6 +183,64 @@ export const SystemDashboardPage: React.FC = () => {
 
   const isSystemAdmin = user.roles.includes('SUPER_ADMIN') || user.roles.includes('ADMIN') || user.role === 'SUPER_ADMIN' || user.role === 'ADMIN';
   const isSystemCustomer = user.roles.includes('CUSTOMER');
+  const totalHotels = stats.hotelStats?.totalHotels ?? 0;
+  const totalUsers = stats.userStats?.total ?? stats.tenantStats?.totalUsers ?? 0;
+  const activeTenants = stats.tenantStats?.activeTenants ?? 0;
+  const totalBookings = stats.systemAnalytics?.totalBookings ?? 0;
+  const activeBookings = stats.systemAnalytics?.activeBookings ?? 0;
+  const completedPayments = stats.systemAnalytics?.completedPayments ?? 0;
+  const currentMonthBookings = stats.systemAnalytics?.currentMonthBookings ?? 0;
+  const currentMonthRevenue = stats.systemAnalytics?.currentMonthRevenue ?? 0;
+  const currentYearRevenue = stats.systemAnalytics?.currentYearRevenue ?? 0;
+
+  const revenueTrendData = stats.systemAnalytics?.monthlyTrends.map((trend) => ({
+    label: trend.label,
+    value: trend.revenue,
+    color: COLORS.PRIMARY,
+  })) ?? [];
+
+  const bookingTrendData = stats.systemAnalytics?.monthlyTrends.map((trend) => ({
+    label: trend.label,
+    value: trend.bookings,
+    color: COLORS.INFO,
+  })) ?? [];
+
+  const bookingStatusPalette: Record<string, string> = {
+    BOOKED: COLORS.PRIMARY,
+    CHECKED_IN: COLORS.SUCCESS,
+    CHECKED_OUT: COLORS.INFO,
+    CANCELLED: COLORS.ERROR,
+    PENDING: COLORS.WARNING,
+    NO_SHOW: COLORS.ERROR,
+  };
+
+  const reservationStatusData = Object.entries(stats.systemAnalytics?.reservationStatusBreakdown ?? {})
+    .map(([label, value]) => ({
+      label: label.replace(/_/g, ' '),
+      value,
+      color: bookingStatusPalette[label] ?? readableAccentColor,
+    }))
+    .filter((item) => item.value > 0);
+
+  const paymentStatusPalette: Record<string, string> = {
+    COMPLETED: COLORS.SUCCESS,
+    PENDING: COLORS.WARNING,
+    PROCESSING: COLORS.INFO,
+    FAILED: COLORS.ERROR,
+    CANCELLED: COLORS.ERROR,
+    REFUNDED: COLORS.SECONDARY,
+    REFUND_PENDING: COLORS.WARNING,
+    PARTIALLY_REFUNDED: COLORS.INFO,
+    FORFEITED: readableAccentColor,
+  };
+
+  const paymentStatusData = Object.entries(stats.systemAnalytics?.paymentStatusBreakdown ?? {})
+    .map(([label, value]) => ({
+      label: label.replace(/_/g, ' '),
+      value,
+      color: paymentStatusPalette[label] ?? readableAccentColor,
+    }))
+    .filter((item) => item.value > 0);
 
   // If statistics are still loading, show loading indicator
   if (stats.loading) {
@@ -291,7 +314,7 @@ export const SystemDashboardPage: React.FC = () => {
           {isSystemAdmin && (
             <Tab 
               icon={<ApiIcon />} 
-              label="API Documentation" 
+              label={t('dashboard.system.apiDocs.tabLabel')} 
               iconPosition="start"
               sx={{ gap: 1 }}
             />
@@ -299,7 +322,7 @@ export const SystemDashboardPage: React.FC = () => {
           {isSystemAdmin && (
             <Tab 
               icon={<History />} 
-              label="Audit Log" 
+              label={t('dashboard.system.auditLogTab')} 
               iconPosition="start"
               sx={{ gap: 1 }}
             />
@@ -322,17 +345,16 @@ export const SystemDashboardPage: React.FC = () => {
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
             <LinkIcon sx={{ mr: 1, color: readableAccentColor }} />
             <Typography variant="h6" fontWeight="bold" sx={{ color: readableAccentColor }}>
-              Business Onboarding URL
+              {t('dashboard.system.businessOnboarding.title')}
             </Typography>
             <Chip
-              label="Share with new businesses"
+              label={t('dashboard.system.businessOnboarding.shareChip')}
               size="small"
               sx={{ ml: 1.5, bgcolor: COLORS.PRIMARY, color: '#fff', fontSize: '0.7rem' }}
             />
           </Box>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Share this link with a business to let them submit their hotel registration application.
-            The page is not linked from public navigation.
+            {t('dashboard.system.businessOnboarding.description')}
           </Typography>
           <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
             <Box
@@ -353,7 +375,7 @@ export const SystemDashboardPage: React.FC = () => {
                 cursor: 'text',
               }}
             />
-            <Tooltip title={onboardingUrlCopied ? 'Copied!' : 'Copy URL'}>
+            <Tooltip title={onboardingUrlCopied ? t('dashboard.system.businessOnboarding.copied') : t('dashboard.system.businessOnboarding.copyUrl')}>
               <IconButton
                 onClick={() => {
                   navigator.clipboard.writeText(`${window.location.origin}/business-onboarding`);
@@ -366,7 +388,7 @@ export const SystemDashboardPage: React.FC = () => {
                 <ContentCopy />
               </IconButton>
             </Tooltip>
-            <Tooltip title="Open in new tab">
+            <Tooltip title={t('dashboard.system.businessOnboarding.openInNewTab')}>
               <IconButton
                 onClick={() => window.open(`${window.location.origin}/business-onboarding`, '_blank')}
                 sx={{ flexShrink: 0, color: readableAccentColor }}
@@ -383,7 +405,7 @@ export const SystemDashboardPage: React.FC = () => {
             <Grid item xs={12} sm={6} md={4}>
               <MetricCard
                 title={t('dashboard.system.totalHotels', 'Total Hotels')}
-                value={stats.totalHotels}
+                value={totalHotels}
                 icon={<Hotel />}
                 color="primary"
                 data-testid="total-hotels"
@@ -392,7 +414,7 @@ export const SystemDashboardPage: React.FC = () => {
             <Grid item xs={12} sm={6} md={4}>
               <MetricCard
                 title={t('dashboard.system.totalUsers', 'Total Users')}
-                value={stats.totalUsers}
+                value={totalUsers}
                 icon={<People />}
                 color="secondary"
                 data-testid="total-users"
@@ -400,8 +422,8 @@ export const SystemDashboardPage: React.FC = () => {
             </Grid>
             <Grid item xs={12} sm={6} md={4}>
               <MetricCard
-                title={t('dashboard.system.totalBookings', 'Total Bookings')}
-                value={stats.totalBookings}
+                title={t('dashboard.system.activeTenants', 'Active Tenants')}
+                value={activeTenants}
                 icon={<BookIcon />}
                 color="success"
               />
@@ -519,70 +541,97 @@ export const SystemDashboardPage: React.FC = () => {
             <Grid item xs={12} sm={6} lg={3}>
               <MetricCard
                 title={t('dashboard.system.totalBookings')}
-                value={stats.totalBookings}
-                trend="up"
-                trendValue={12}
+                value={totalBookings}
                 icon={<BookIcon />}
                 color="primary"
+                subtitle={t('dashboard.system.totalBookingsSubtitle', { count: currentMonthBookings })}
               />
             </Grid>
             <Grid item xs={12} sm={6} lg={3}>
               <MetricCard
-                title={t('dashboard.system.activeHotels')}
-                value={stats.totalHotels}
-                trend="up"
-                trendValue={8}
+                title={t('dashboard.system.activeBookings')}
+                value={activeBookings}
                 icon={<Hotel />}
                 color="success"
+                subtitle={t('dashboard.system.activeBookingsSubtitle')}
               />
             </Grid>
             <Grid item xs={12} sm={6} lg={3}>
               <MetricCard
-                title={t('dashboard.system.monthlyRevenue')}
-                value={124750}
+                title={t('dashboard.system.currentMonthRevenue')}
+                value={currentMonthRevenue}
                 format="currency"
-                trend="up"
-                trendValue={15}
                 icon={<AttachMoneyIcon />}
                 color="warning"
+                subtitle={t('dashboard.system.currentMonthRevenueSubtitle', { count: completedPayments })}
               />
             </Grid>
             <Grid item xs={12} sm={6} lg={3}>
               <MetricCard
-                title={t('dashboard.system.systemUsers')}
-                value={stats.totalUsers}
-                trend="up"
-                trendValue={5}
-                icon={<People />}
+                title={t('dashboard.system.currentYearRevenue')}
+                value={currentYearRevenue}
+                format="currency"
+                icon={<TrendingUp />}
                 color="info"
+                subtitle={t('dashboard.system.currentYearRevenueSubtitle')}
               />
             </Grid>
           </Grid>
 
           {/* Charts */}
           <Grid container spacing={3}>
-            <Grid item xs={12} lg={8}>
+            <Grid item xs={12} lg={6}>
               <Paper elevation={0} sx={composeSx(surfaceCardSx('default'), { p: 3 })}>
                 <Typography variant="h6" sx={{ mb: 3, fontWeight: 'bold' }}>
                   {t('dashboard.system.monthlyRevenueChart')}
                 </Typography>
                 <BarChart
-                  data={revenueData}
+                  data={revenueTrendData}
                   height={350}
                   animated
                 />
               </Paper>
             </Grid>
             
-            <Grid item xs={12} lg={4}>
+            <Grid item xs={12} lg={6}>
+              <Paper elevation={0} sx={composeSx(surfaceCardSx('default'), { p: 3 })}>
+                <Typography variant="h6" sx={{ mb: 3, fontWeight: 'bold' }}>
+                  {t('dashboard.system.monthlyBookingVolumeChart')}
+                </Typography>
+                <BarChart
+                  data={bookingTrendData}
+                  height={350}
+                  animated
+                />
+              </Paper>
+            </Grid>
+
+            <Grid item xs={12} lg={6}>
               <Paper elevation={0} sx={composeSx(surfaceCardSx('default'), { p: 3, height: '100%' })}>
                 <Typography variant="h6" sx={{ mb: 3, fontWeight: 'bold' }}>
                   {t('dashboard.system.bookingStatusChart')}
                 </Typography>
                 <DonutChart
-                  data={bookingStatusData}
+                  data={reservationStatusData}
                   size={220}
                   thickness={40}
+                  centerText={String(totalBookings)}
+                  centerSubtext={t('dashboard.system.totalBookingsCenterSubtext')}
+                />
+              </Paper>
+            </Grid>
+
+            <Grid item xs={12} lg={6}>
+              <Paper elevation={0} sx={composeSx(surfaceCardSx('default'), { p: 3, height: '100%' })}>
+                <Typography variant="h6" sx={{ mb: 3, fontWeight: 'bold' }}>
+                  {t('dashboard.system.paymentStatusChart')}
+                </Typography>
+                <DonutChart
+                  data={paymentStatusData}
+                  size={220}
+                  thickness={40}
+                  centerText={String(completedPayments)}
+                  centerSubtext={t('dashboard.system.completedPaymentsCenterSubtext')}
                 />
               </Paper>
             </Grid>
@@ -610,7 +659,7 @@ export const SystemDashboardPage: React.FC = () => {
                     {/* Search Field */}
                     <PremiumTextField
                       fullWidth
-                      placeholder="Search API endpoints..."
+                      placeholder={t('dashboard.system.apiDocs.searchPlaceholder')}
                       value={apiSearchQuery}
                       onChange={(e) => setApiSearchQuery(e.target.value)}
                       InputProps={{
@@ -624,15 +673,15 @@ export const SystemDashboardPage: React.FC = () => {
                     
                     {/* Category Filter */}
                     <FormControl sx={{ minWidth: 200 }}>
-                      <InputLabel>Category</InputLabel>
+                      <InputLabel>{t('dashboard.system.apiDocs.categoryLabel')}</InputLabel>
                       <Select
                         value={selectedCategory}
-                        label="Category"
+                        label={t('dashboard.system.apiDocs.categoryLabel')}
                         onChange={(e) => setSelectedCategory(e.target.value)}
                       >
                         {categories.map((category) => (
-                          <MenuItem key={category} value={category}>
-                            {category}
+                          <MenuItem key={category.value} value={category.value}>
+                            {category.label}
                           </MenuItem>
                         ))}
                       </Select>
@@ -647,10 +696,13 @@ export const SystemDashboardPage: React.FC = () => {
                         endpoint.path.toLowerCase().includes(apiSearchQuery.toLowerCase()) ||
                         endpoint.description.toLowerCase().includes(apiSearchQuery.toLowerCase()) ||
                         endpoint.method.toLowerCase().includes(apiSearchQuery.toLowerCase())) &&
-                        (selectedCategory === 'All' || endpoint.category === selectedCategory)
+                        (selectedCategory === allCategoryValue || endpoint.category === selectedCategory)
                       ).length;
                       
-                      return `Showing ${filteredCount} of ${allEndpoints.length} endpoints`;
+                      return t('dashboard.system.apiDocs.showingCount', {
+                        filtered: filteredCount,
+                        total: allEndpoints.length,
+                      });
                     })()}
                   </Typography>
 
@@ -661,7 +713,7 @@ export const SystemDashboardPage: React.FC = () => {
                         endpoint.path.toLowerCase().includes(apiSearchQuery.toLowerCase()) ||
                         endpoint.description.toLowerCase().includes(apiSearchQuery.toLowerCase()) ||
                         endpoint.method.toLowerCase().includes(apiSearchQuery.toLowerCase())) &&
-                        (selectedCategory === 'All' || endpoint.category === selectedCategory)
+                        (selectedCategory === allCategoryValue || endpoint.category === selectedCategory)
                       )
                       .map((endpoint, index) => (
                         <Accordion key={index} sx={{ mb: 1, '&:before': { display: 'none' } }}>
@@ -704,12 +756,12 @@ export const SystemDashboardPage: React.FC = () => {
                               {endpoint.request && (
                                 <Box sx={{ mb: 3 }}>
                                   <Typography variant="h6" sx={{ mb: 1, color: readableAccentColor }}>
-                                    Request
+                                    {t('dashboard.system.apiDocs.requestSection')}
                                   </Typography>
                                   
                                   {endpoint.request.headers && (
                                     <Box sx={{ mb: 2 }}>
-                                      <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Headers:</Typography>
+                                      <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>{t('dashboard.system.apiDocs.headersLabel')}</Typography>
                                       <Box component="pre" sx={{ 
                                         bgcolor: getSectionTint(theme, 'primary'),
                                         p: 1, 
@@ -725,7 +777,7 @@ export const SystemDashboardPage: React.FC = () => {
                                   
                                   {endpoint.request.params && (
                                     <Box sx={{ mb: 2 }}>
-                                      <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Path Parameters:</Typography>
+                                      <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>{t('dashboard.system.apiDocs.pathParametersLabel')}</Typography>
                                       <Box component="pre" sx={{ 
                                         bgcolor: getSectionTint(theme, 'primary'),
                                         p: 1, 
@@ -741,7 +793,7 @@ export const SystemDashboardPage: React.FC = () => {
                                   
                                   {endpoint.request.query && (
                                     <Box sx={{ mb: 2 }}>
-                                      <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Query Parameters:</Typography>
+                                      <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>{t('dashboard.system.apiDocs.queryParametersLabel')}</Typography>
                                       <Box component="pre" sx={{ 
                                         bgcolor: getSectionTint(theme, 'primary'),
                                         p: 1, 
@@ -757,7 +809,7 @@ export const SystemDashboardPage: React.FC = () => {
                                   
                                   {endpoint.request.body && (
                                     <Box sx={{ mb: 2 }}>
-                                      <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Request Body:</Typography>
+                                      <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>{t('dashboard.system.apiDocs.requestBodyLabel')}</Typography>
                                       <Box component="pre" sx={{ 
                                         bgcolor: getSectionTint(theme, 'primary'),
                                         p: 1, 
@@ -777,13 +829,13 @@ export const SystemDashboardPage: React.FC = () => {
                               {endpoint.response && (
                                 <Box>
                                   <Typography variant="h6" sx={{ mb: 1, color: 'success.main' }}>
-                                    Response
+                                    {t('dashboard.system.apiDocs.responseSection')}
                                   </Typography>
                                   
                                   {endpoint.response.success && (
                                     <Box sx={{ mb: 2 }}>
                                       <Typography variant="subtitle2" sx={{ fontWeight: 'bold', color: 'success.main' }}>
-                                        Success Response (200):
+                                        {t('dashboard.system.apiDocs.successResponseLabel')}
                                       </Typography>
                                       <Box component="pre" sx={{ 
                                         bgcolor: 'success.lighter', 
@@ -803,7 +855,7 @@ export const SystemDashboardPage: React.FC = () => {
                                   {endpoint.response.error && (
                                     <Box sx={{ mb: 2 }}>
                                       <Typography variant="subtitle2" sx={{ fontWeight: 'bold', color: 'error.main' }}>
-                                        Error Response (4xx/5xx):
+                                        {t('dashboard.system.apiDocs.errorResponseLabel')}
                                       </Typography>
                                       <Box component="pre" sx={{ 
                                         bgcolor: 'error.lighter', 
@@ -824,7 +876,7 @@ export const SystemDashboardPage: React.FC = () => {
                               
                               {!endpoint.request && !endpoint.response && (
                                 <Typography variant="body2" color="textSecondary" sx={{ fontStyle: 'italic' }}>
-                                  No request/response examples available for this endpoint.
+                                  {t('dashboard.system.apiDocs.noExamples')}
                                 </Typography>
                               )}
                             </Box>

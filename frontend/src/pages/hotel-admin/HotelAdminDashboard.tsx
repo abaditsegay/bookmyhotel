@@ -162,12 +162,13 @@ const HotelAdminDashboard: React.FC = () => {
   const [hotelEditDialogOpen, setHotelEditDialogOpen] = useState(false);
 
   // All useEffect hooks must be defined before any conditional returns
-  // Load initial data on component mount
+  // Load dashboard metrics on auth changes and after booking-affecting mutations.
   React.useEffect(() => {
-    // Load essential data including statistics for dashboard cards
-    loadReportsData(); // Load hotel statistics for dashboard cards
+    if (token) {
+      loadReportsData();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [token, bookingRefreshTrigger]);
 
   // Load hotel data on initial mount
   useEffect(() => {
@@ -383,6 +384,7 @@ const HotelAdminDashboard: React.FC = () => {
     const result = await hotelAdminApi.updateMyHotel(token, hotelData);
     if (result.success && result.data) {
       setHotel(result.data);
+      await loadReportsData();
     } else {
       throw new Error(result.message || 'Failed to update hotel');
     }
@@ -396,20 +398,20 @@ const HotelAdminDashboard: React.FC = () => {
   // Use statistics data from API instead of basic hotel data
   const hotelData = hotel ? {
     name: hotel.name || user?.hotelName || 'Loading...',
-    totalRooms: reportsData.hotelStats?.totalRooms || hotel.totalRooms || 0,
-    availableRooms: reportsData.hotelStats?.availableRooms || hotel.availableRooms || 0,
-    bookedBookings: reportsData.hotelStats?.bookedBookings || 0,
-    bookedRooms: reportsData.hotelStats?.bookedRooms || hotel.bookedRooms || 0,
-    totalStaff: reportsData.hotelStats?.totalStaff || hotel.totalStaff || 0,
-    activeStaff: reportsData.hotelStats?.activeStaff || hotel.totalStaff || 0,
+    totalRooms: reportsData.hotelStats?.totalRooms ?? hotel.totalRooms ?? 0,
+    availableRooms: reportsData.hotelStats?.availableRooms ?? hotel.availableRooms ?? 0,
+    bookedBookings: reportsData.hotelStats?.bookedBookings ?? 0,
+    bookedRooms: reportsData.hotelStats?.bookedRooms ?? hotel.bookedRooms ?? 0,
+    totalStaff: reportsData.hotelStats?.totalStaff ?? hotel.totalStaff ?? 0,
+    activeStaff: reportsData.hotelStats?.activeStaff ?? 0,
   } : {
     name: user?.hotelName || (hotelLoading ? t('dashboard.hotelAdmin.loadingHotel') : t('dashboard.hotelAdmin.hotelInfoNotAvailable')),
-    totalRooms: reportsData.hotelStats?.totalRooms || 0,
-    availableRooms: reportsData.hotelStats?.availableRooms || 0,
-    bookedBookings: reportsData.hotelStats?.bookedBookings || 0,
-    bookedRooms: reportsData.hotelStats?.bookedRooms || 0,
-    totalStaff: reportsData.hotelStats?.totalStaff || 0,
-    activeStaff: reportsData.hotelStats?.activeStaff || 0,
+    totalRooms: reportsData.hotelStats?.totalRooms ?? 0,
+    availableRooms: reportsData.hotelStats?.availableRooms ?? 0,
+    bookedBookings: reportsData.hotelStats?.bookedBookings ?? 0,
+    bookedRooms: reportsData.hotelStats?.bookedRooms ?? 0,
+    totalStaff: reportsData.hotelStats?.totalStaff ?? 0,
+    activeStaff: reportsData.hotelStats?.activeStaff ?? 0,
   };
 
   const stats = [

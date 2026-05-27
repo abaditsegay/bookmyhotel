@@ -7,6 +7,9 @@ import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -22,6 +25,7 @@ import com.bookmyhotel.dto.RoomDTO;
 import com.bookmyhotel.dto.UserDTO;
 import com.bookmyhotel.entity.GuestInfo;
 import com.bookmyhotel.entity.Hotel;
+import com.bookmyhotel.entity.PaymentStatus;
 import com.bookmyhotel.entity.Reservation;
 import com.bookmyhotel.entity.ReservationStatus;
 import com.bookmyhotel.entity.Room;
@@ -128,6 +132,76 @@ class HotelAdminServiceTest {
         verify(reservationRepository, never()).findById(41L);
     }
 
+    @Test
+    void getHotelStatisticsShouldUseDatabaseScopedCounts() {
+        Hotel hotel = hotel(14L);
+        User admin = user("admin@example.com", hotel, UserRole.HOTEL_ADMIN);
+
+        Room availableRoom = room(51L, hotel, "501");
+        Room bookedRoom = room(52L, hotel, "502");
+        User activeStaff = user("frontdesk@example.com", hotel, UserRole.FRONTDESK);
+        activeStaff.setIsActive(true);
+        User inactiveStaff = user("housekeeping@example.com", hotel, UserRole.HOUSEKEEPING);
+        inactiveStaff.setIsActive(false);
+
+        Reservation bookedReservation = reservation(61L, hotel, bookedRoom);
+        bookedReservation.setStatus(ReservationStatus.BOOKED);
+        bookedReservation.setCheckOutDate(LocalDate.now().plusDays(1));
+
+        when(userRepository.findByEmailWithHotel(admin.getEmail())).thenReturn(Optional.of(admin));
+        when(roomRepository.findByHotelId(hotel.getId())).thenReturn(List.of(availableRoom, bookedRoom));
+        when(reservationRepository.findByHotelId(hotel.getId())).thenReturn(List.of(bookedReservation));
+        when(userRepository.findByHotelAndRolesContaining(hotel, List.of(
+                UserRole.FRONTDESK,
+                UserRole.HOUSEKEEPING,
+                UserRole.HOTEL_ADMIN,
+                UserRole.ADMIN,
+                UserRole.OPERATIONAL_ADMIN,
+                UserRole.MAINTENANCE,
+                UserRole.TESTER))).thenReturn(List.of(activeStaff, inactiveStaff));
+
+        Map<String, Object> result = hotelAdminService.getHotelStatistics(admin.getEmail());
+
+        assertEquals(2, result.get("totalRooms"));
+        assertEquals(1L, result.get("availableRooms"));
+        assertEquals(1L, result.get("bookedRooms"));
+        assertEquals(1L, result.get("bookedBookings"));
+        assertEquals(2, result.get("totalStaff"));
+        assertEquals(1, result.get("activeStaff"));
+    }
+
+    @Test
+    void getHotelBookingStatsShouldCountCompletedRevenueAndReportableMonthlyBookings() {
+        Hotel hotel = hotel(15L);
+        Room hotelRoom = room(53L, hotel, "503");
+
+        Reservation paidThisMonth = reservation(71L, hotel, hotelRoom);
+        paidThisMonth.setCreatedAt(LocalDateTime.now().minusDays(2));
+        paidThisMonth.setPaymentStatus(PaymentStatus.COMPLETED);
+        paidThisMonth.setTotalAmount(new BigDecimal("4200.00"));
+        paidThisMonth.setStatus(ReservationStatus.BOOKED);
+
+        Reservation cancelledThisMonth = reservation(72L, hotel, hotelRoom);
+        cancelledThisMonth.setCreatedAt(LocalDateTime.now().minusDays(1));
+        cancelledThisMonth.setPaymentStatus(PaymentStatus.PENDING);
+        cancelledThisMonth.setStatus(ReservationStatus.CANCELLED);
+
+        Reservation oldCompletedBooking = reservation(73L, hotel, hotelRoom);
+        oldCompletedBooking.setCreatedAt(LocalDateTime.now().minusYears(1));
+        oldCompletedBooking.setPaymentStatus(PaymentStatus.COMPLETED);
+        oldCompletedBooking.setTotalAmount(new BigDecimal("9999.00"));
+        oldCompletedBooking.setStatus(ReservationStatus.CHECKED_OUT);
+
+        when(reservationRepository.findByHotelId(hotel.getId()))
+                .thenReturn(List.of(paidThisMonth, cancelledThisMonth, oldCompletedBooking));
+
+        Map<String, Object> result = hotelAdminService.getHotelBookingStats(hotel.getId());
+
+        assertEquals(new BigDecimal("4200.00"), result.get("currentYearRevenue"));
+        assertEquals(1L, result.get("thisMonthBookings"));
+        assertEquals(3, result.get("totalBookings"));
+    }
+
     private Hotel hotel(Long id) {
         Hotel hotel = new Hotel();
         hotel.setId(id);
@@ -169,10 +243,12 @@ class HotelAdminServiceTest {
         reservation.setCheckInDate(LocalDate.now());
         reservation.setCheckOutDate(LocalDate.now().plusDays(2));
         reservation.setStatus(ReservationStatus.BOOKED);
+        reservation.setPaymentStatus(PaymentStatus.PENDING);
         reservation.setTotalAmount(new BigDecimal("3000.00"));
         reservation.setPricePerNight(new BigDecimal("1500.00"));
         reservation.setGuestInfo(new GuestInfo("Hotel Admin Guest", "guest@example.com", "+251900000111"));
         reservation.setConfirmationNumber("BK-" + id);
+        reservation.setCreatedAt(LocalDateTime.now());
         return reservation;
     }
 }

@@ -11,6 +11,7 @@ import {
   Tabs,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import { useTranslation } from 'react-i18next';
 import SearchIcon from '@mui/icons-material/Search';
 import TableViewIcon from '@mui/icons-material/TableView';
 import BarChartIcon from '@mui/icons-material/BarChart';
@@ -138,6 +139,8 @@ const hotelOccupancyData = [
 
 export const Phase3Demo: React.FC = () => {
   const theme = useTheme();
+  const { t } = useTranslation();
+  const totalDemoBookings = bookingStatusData.reduce((sum, item) => sum + item.value, 0);
   const [activeTab, setActiveTab] = useState(0);
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [selectedRows, setSelectedRows] = useState<number[]>([]);
@@ -516,7 +519,7 @@ export const Phase3Demo: React.FC = () => {
           <Grid item xs={12} lg={8}>
             <Paper sx={{ p: 3, borderRadius: designSystem.borderRadius.lg }}>
               <Typography variant="h6" sx={{ mb: 3, fontWeight: 'bold' }}>
-                Monthly Revenue Trend
+                {t('dashboard.system.monthlyRevenueChart')}
               </Typography>
               <BarChart
                 data={revenueData}
@@ -529,12 +532,14 @@ export const Phase3Demo: React.FC = () => {
           <Grid item xs={12} lg={4}>
             <Paper sx={{ p: 3, borderRadius: designSystem.borderRadius.lg, height: '100%' }}>
               <Typography variant="h6" sx={{ mb: 3, fontWeight: 'bold' }}>
-                Booking Status Distribution
+                {t('dashboard.system.bookingStatusChart')}
               </Typography>
               <DonutChart
                 data={bookingStatusData}
                 size={200}
                 thickness={30}
+                centerText={String(totalDemoBookings)}
+                centerSubtext={t('dashboard.system.demoBookingsCenterSubtext')}
               />
             </Paper>
           </Grid>

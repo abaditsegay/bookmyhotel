@@ -334,6 +334,10 @@ class AdminApiService {
   async getAuditStats(): Promise<AuditStatsResponse> {
     return this.fetchApi<AuditStatsResponse>('/admin/audit/stats');
   }
+
+  async getSystemAnalyticsOverview(): Promise<SystemAnalyticsOverview> {
+    return this.fetchApi<SystemAnalyticsOverview>('/admin/analytics/overview');
+  }
 }
 
 // Type definitions for API responses
@@ -442,9 +446,9 @@ export interface UpdateHotelRequest {
 export interface HotelStatistics {
   totalHotels: number;
   activeHotels: number;
+  inactiveHotels: number;
   totalRooms: number;
-  availableRooms: number;
-  averageOccupancy: number;
+  activeRooms: number;
 }
 
 export interface RoomDTO {
@@ -589,6 +593,24 @@ export interface AuditLogParams {
 export interface AuditStatsResponse {
   totalToday: number;
   failedToday: number;
+}
+
+export interface SystemAnalyticsMonthlyTrend {
+  label: string;
+  bookings: number;
+  revenue: number;
+}
+
+export interface SystemAnalyticsOverview {
+  totalBookings: number;
+  activeBookings: number;
+  completedPayments: number;
+  currentMonthBookings: number;
+  currentMonthRevenue: number;
+  currentYearRevenue: number;
+  monthlyTrends: SystemAnalyticsMonthlyTrend[];
+  reservationStatusBreakdown: { [key: string]: number };
+  paymentStatusBreakdown: { [key: string]: number };
 }
 
 export const adminApiService = new AdminApiService();

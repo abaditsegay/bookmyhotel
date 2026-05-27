@@ -23,6 +23,7 @@ import {
   Send,
   PersonAdd,
 } from '@mui/icons-material';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { adminApiService, CreateUserRequest, TenantDTO, HotelDTO } from '../../services/adminApi';
 import { useAuth } from '../../contexts/AuthContext';
@@ -60,6 +61,7 @@ interface UserFormData {
 const UserRegistrationForm: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { t } = useTranslation();
   const [activeStep, setActiveStep] = useState(0);
   const [formData, setFormData] = useState<UserFormData>({
     firstName: '',
@@ -94,23 +96,23 @@ const UserRegistrationForm: React.FC = () => {
   const creatableRoles = (() => {
     const callerRole = currentUser?.role || (currentUser?.roles?.[0] ?? '');
     if (callerRole === 'SUPER_ADMIN') return [
-      { value: 'ADMIN', label: 'Administrator' },
-      { value: 'HOTEL_ADMIN', label: 'Hotel Administrator' },
-      { value: 'TESTER', label: 'Tester' },
+      { value: 'ADMIN', label: t('admin.userRegistrationForm.roles.ADMIN') },
+      { value: 'HOTEL_ADMIN', label: t('admin.userRegistrationForm.roles.HOTEL_ADMIN') },
+      { value: 'TESTER', label: t('admin.userRegistrationForm.roles.TESTER') },
     ];
     if (callerRole === 'ADMIN') return [
-      { value: 'HOTEL_ADMIN', label: 'Hotel Administrator' },
-      { value: 'TESTER', label: 'Tester' },
+      { value: 'HOTEL_ADMIN', label: t('admin.userRegistrationForm.roles.HOTEL_ADMIN') },
+      { value: 'TESTER', label: t('admin.userRegistrationForm.roles.TESTER') },
     ];
     return [
-      { value: 'ADMIN', label: 'Administrator' },
-      { value: 'HOTEL_ADMIN', label: 'Hotel Administrator' },
-      { value: 'OPERATIONAL_ADMIN', label: 'Operational Administrator' },
-      { value: 'FRONTDESK', label: 'Front Desk Agent' },
-      { value: 'HOUSEKEEPING', label: 'Housekeeping' },
-      { value: 'MAINTENANCE', label: 'Maintenance' },
-      { value: 'TESTER', label: 'Tester' },
-      { value: 'CUSTOMER', label: 'Customer' },
+      { value: 'ADMIN', label: t('admin.userRegistrationForm.roles.ADMIN') },
+      { value: 'HOTEL_ADMIN', label: t('admin.userRegistrationForm.roles.HOTEL_ADMIN') },
+      { value: 'OPERATIONAL_ADMIN', label: t('admin.userRegistrationForm.roles.OPERATIONAL_ADMIN') },
+      { value: 'FRONTDESK', label: t('admin.userRegistrationForm.roles.FRONTDESK') },
+      { value: 'HOUSEKEEPING', label: t('admin.userRegistrationForm.roles.HOUSEKEEPING') },
+      { value: 'MAINTENANCE', label: t('admin.userRegistrationForm.roles.MAINTENANCE') },
+      { value: 'TESTER', label: t('admin.userRegistrationForm.roles.TESTER') },
+      { value: 'CUSTOMER', label: t('admin.userRegistrationForm.roles.CUSTOMER') },
     ];
   })();
   
@@ -126,14 +128,14 @@ const UserRegistrationForm: React.FC = () => {
         }
       } catch (error) {
         // console.error('Failed to load tenants:', error);
-        setError('Failed to load tenants');
+        setError(t('admin.userRegistrationForm.messages.loadTenantsFailed'));
       } finally {
         setLoadingTenants(false);
       }
     };
     
     loadTenants();
-  }, [token]);
+  }, [token, t]);
   
   // Load hotels when tenant changes and role is hotel-scoped
   useEffect(() => {
@@ -148,7 +150,7 @@ const UserRegistrationForm: React.FC = () => {
           }
         } catch (error) {
           // console.error('Failed to load hotels:', error);
-          setError('Failed to load hotels for selected tenant');
+          setError(t('admin.userRegistrationForm.messages.loadHotelsFailed'));
         } finally {
           setLoadingHotels(false);
         }
@@ -159,7 +161,7 @@ const UserRegistrationForm: React.FC = () => {
     };
     
     loadHotels();
-  }, [formData.tenantId, formData.role, token]);
+  }, [formData.tenantId, formData.role, token, t]);
   
   // Helper function to handle back navigation
   const handleBackToAdmin = () => {
@@ -172,10 +174,10 @@ const UserRegistrationForm: React.FC = () => {
   };
 
   const steps = [
-    'Basic Information',
-    'Account Setup',
-    'Profile Details',
-    'Account Settings'
+    t('admin.userRegistrationForm.steps.basicInformation'),
+    t('admin.userRegistrationForm.steps.accountSetup'),
+    t('admin.userRegistrationForm.steps.profileDetails'),
+    t('admin.userRegistrationForm.steps.accountSettings')
   ];
 
   const handleInputChange = (field: keyof UserFormData) => (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -206,11 +208,11 @@ const UserRegistrationForm: React.FC = () => {
 
   const validatePasswords = () => {
     if (formData.password !== formData.confirmPassword) {
-      setPasswordError('Passwords do not match');
+      setPasswordError(t('errors.passwordsNoMatch'));
       return false;
     }
     if (formData.password.length < 6) {
-      setPasswordError('Password must be at least 6 characters');
+      setPasswordError(t('errors.passwordTooShort', { min: 6 }));
       return false;
     }
     return true;
@@ -237,7 +239,7 @@ const UserRegistrationForm: React.FC = () => {
     
     try {
       if (!token) {
-        setError('Authentication required');
+        setError(t('admin.userRegistrationForm.messages.authenticationRequired'));
         return;
       }
       
@@ -265,7 +267,7 @@ const UserRegistrationForm: React.FC = () => {
       
     } catch (err: any) {
       // console.error('User creation failed:', err);
-      setError(err.message || 'Failed to create user. Please try again.');
+      setError(err.message || t('admin.userRegistrationForm.messages.createFailed'));
     } finally {
       setLoading(false);
     }
@@ -279,42 +281,42 @@ const UserRegistrationForm: React.FC = () => {
             <Grid item xs={12} md={6}>
               <PremiumTextField
                 fullWidth
-                label="First Name"
+                label={t('admin.userRegistrationForm.fields.firstName')}
                 value={formData.firstName}
                 onChange={handleInputChange('firstName')}
                 required
-                placeholder="Enter first name"
+                placeholder={t('admin.userRegistrationForm.placeholders.firstName')}
               />
             </Grid>
             <Grid item xs={12} md={6}>
               <PremiumTextField
                 fullWidth
-                label="Last Name"
+                label={t('admin.userRegistrationForm.fields.lastName')}
                 value={formData.lastName}
                 onChange={handleInputChange('lastName')}
                 required
-                placeholder="Enter last name"
+                placeholder={t('admin.userRegistrationForm.placeholders.lastName')}
               />
             </Grid>
             <Grid item xs={12}>
               <PremiumTextField
                 fullWidth
-                label="Email Address"
+                label={t('admin.userRegistrationForm.fields.emailAddress')}
                 type="email"
                 value={formData.email}
                 onChange={handleInputChange('email')}
                 required
-                placeholder="Enter email address"
+                placeholder={t('admin.userRegistrationForm.placeholders.emailAddress')}
               />
             </Grid>
             <Grid item xs={12}>
               <PremiumTextField
                 fullWidth
-                label="Username"
+                label={t('admin.userRegistrationForm.fields.username')}
                 value={formData.username}
                 onChange={handleInputChange('username')}
                 required
-                placeholder="Enter username"
+                placeholder={t('admin.userRegistrationForm.placeholders.username')}
               />
             </Grid>
           </Grid>
@@ -326,35 +328,35 @@ const UserRegistrationForm: React.FC = () => {
             <Grid item xs={12} md={6}>
               <PremiumTextField
                 fullWidth
-                label="Password"
+                label={t('admin.userRegistrationForm.fields.password')}
                 type="password"
                 value={formData.password}
                 onChange={handleInputChange('password')}
                 required
-                placeholder="Enter password"
+                placeholder={t('admin.userRegistrationForm.placeholders.password')}
                 error={!!passwordError}
               />
             </Grid>
             <Grid item xs={12} md={6}>
               <PremiumTextField
                 fullWidth
-                label="Confirm Password"
+                label={t('admin.userRegistrationForm.fields.confirmPassword')}
                 type="password"
                 value={formData.confirmPassword}
                 onChange={handleInputChange('confirmPassword')}
                 required
-                placeholder="Confirm password"
+                placeholder={t('admin.userRegistrationForm.placeholders.confirmPassword')}
                 error={!!passwordError}
                 helperText={passwordError}
               />
             </Grid>
             <Grid item xs={12} md={6}>
               <FormControl fullWidth required>
-                <InputLabel>User Role</InputLabel>
+                <InputLabel>{t('admin.userRegistrationForm.fields.userRole')}</InputLabel>
                 <Select
                   value={formData.role}
                   onChange={handleSelectChange('role')}
-                  label="User Role"
+                  label={t('admin.userRegistrationForm.fields.userRole')}
                 >
                   {creatableRoles.map((r) => (
                     <MenuItem key={r.value} value={r.value}>{r.label}</MenuItem>
@@ -364,11 +366,11 @@ const UserRegistrationForm: React.FC = () => {
             </Grid>
             <Grid item xs={12} md={6}>
               <FormControl fullWidth required>
-                <InputLabel>Tenant</InputLabel>
+                <InputLabel>{t('admin.userRegistrationForm.fields.tenant')}</InputLabel>
                 <Select
                   value={formData.tenantId}
                   onChange={handleSelectChange('tenantId')}
-                  label="Tenant"
+                  label={t('admin.userRegistrationForm.fields.tenant')}
                   disabled={loadingTenants}
                 >
                   {tenants.map((tenant) => (
@@ -382,11 +384,11 @@ const UserRegistrationForm: React.FC = () => {
             {HOTEL_SCOPED_ROLES.includes(formData.role as any) && (
               <Grid item xs={12}>
                 <FormControl fullWidth required>
-                  <InputLabel>Hotel Assignment</InputLabel>
+                  <InputLabel>{t('admin.userRegistrationForm.fields.hotelAssignment')}</InputLabel>
                   <Select
                     value={formData.hotelId}
                     onChange={handleSelectChange('hotelId')}
-                    label="Hotel Assignment"
+                    label={t('admin.userRegistrationForm.fields.hotelAssignment')}
                     disabled={loadingHotels || !formData.tenantId}
                   >
                     {hotels.map((hotel) => (
@@ -397,7 +399,7 @@ const UserRegistrationForm: React.FC = () => {
                   </Select>
                   {formData.tenantId && hotels.length === 0 && !loadingHotels && (
                     <Typography variant="caption" color="text.secondary" sx={{ mt: 1 }}>
-                      No hotels available for the selected tenant
+                      {t('admin.userRegistrationForm.messages.noHotelsAvailable')}
                     </Typography>
                   )}
                 </FormControl>
@@ -412,55 +414,55 @@ const UserRegistrationForm: React.FC = () => {
             <Grid item xs={12} md={6}>
               <PremiumTextField
                 fullWidth
-                label="Phone Number"
+                label={t('admin.userRegistrationForm.fields.phoneNumber')}
                 value={formData.phone}
                 onChange={handleInputChange('phone')}
-                placeholder="Enter phone number"
+                placeholder={t('admin.userRegistrationForm.placeholders.phoneNumber')}
               />
             </Grid>
             <Grid item xs={12}>
               <PremiumTextField
                 fullWidth
-                label="Address"
+                label={t('admin.userRegistrationForm.fields.address')}
                 value={formData.address}
                 onChange={handleInputChange('address')}
-                placeholder="Enter street address"
+                placeholder={t('admin.userRegistrationForm.placeholders.address')}
               />
             </Grid>
             <Grid item xs={12} md={6}>
               <PremiumTextField
                 fullWidth
-                label="City"
+                label={t('admin.userRegistrationForm.fields.city')}
                 value={formData.city}
                 onChange={handleInputChange('city')}
-                placeholder="Enter city"
+                placeholder={t('admin.userRegistrationForm.placeholders.city')}
               />
             </Grid>
             <Grid item xs={12} md={6}>
               <PremiumTextField
                 fullWidth
-                label="State/Province"
+                label={t('admin.userRegistrationForm.fields.stateProvince')}
                 value={formData.state}
                 onChange={handleInputChange('state')}
-                placeholder="Enter state or province"
+                placeholder={t('admin.userRegistrationForm.placeholders.stateProvince')}
               />
             </Grid>
             <Grid item xs={12} md={6}>
               <PremiumTextField
                 fullWidth
-                label="Country"
+                label={t('admin.userRegistrationForm.fields.country')}
                 value={formData.country}
                 onChange={handleInputChange('country')}
-                placeholder="Enter country"
+                placeholder={t('admin.userRegistrationForm.placeholders.country')}
               />
             </Grid>
             <Grid item xs={12} md={6}>
               <PremiumTextField
                 fullWidth
-                label="ZIP/Postal Code"
+                label={t('admin.userRegistrationForm.fields.zipPostalCode')}
                 value={formData.zipCode}
                 onChange={handleInputChange('zipCode')}
-                placeholder="Enter ZIP code"
+                placeholder={t('admin.userRegistrationForm.placeholders.zipPostalCode')}
               />
             </Grid>
           </Grid>
@@ -478,7 +480,7 @@ const UserRegistrationForm: React.FC = () => {
                     color="primary"
                   />
                 }
-                label="Account Active"
+                label={t('admin.userRegistrationForm.fields.accountActive')}
               />
             </Grid>
             <Grid item xs={12}>
@@ -490,14 +492,14 @@ const UserRegistrationForm: React.FC = () => {
                     color="primary"
                   />
                 }
-                label="Email Verified"
+                label={t('admin.userRegistrationForm.fields.emailVerified')}
               />
             </Grid>
           </Grid>
         );
       
       default:
-        return 'Unknown step';
+        return t('admin.userRegistrationForm.messages.unknownStep');
     }
   };
 
@@ -507,10 +509,13 @@ const UserRegistrationForm: React.FC = () => {
         <Paper sx={{ p: 4, textAlign: 'center' }}>
           <PersonAdd sx={{ fontSize: 80, color: 'primary.main', mb: 2 }} />
           <Typography variant="h4" gutterBottom sx={{ color: 'primary.main' }}>
-            User Created Successfully!
+            {t('admin.userRegistrationForm.messages.createSuccessTitle')}
           </Typography>
           <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-            {formData.firstName} {formData.lastName} has been successfully registered as a {formData.role.toLowerCase()}.
+            {t('admin.userRegistrationForm.messages.createSuccessBody', {
+              fullName: `${formData.firstName} ${formData.lastName}`.trim(),
+              role: creatableRoles.find((role) => role.value === formData.role)?.label || formData.role,
+            })}
           </Typography>
           <IconButton onClick={handleBackToAdmin} sx={{ mr: 1 }}>
             <ArrowBack />
@@ -529,10 +534,10 @@ const UserRegistrationForm: React.FC = () => {
         </IconButton>
         <Box>
           <Typography variant="h4" component="h1" gutterBottom>
-            Add New User
+            {t('admin.userRegistrationForm.title')}
           </Typography>
           <Typography variant="body1" color="text.secondary">
-            Create a new user account
+            {t('admin.userRegistrationForm.description')}
           </Typography>
         </Box>
       </Box>
@@ -570,7 +575,7 @@ const UserRegistrationForm: React.FC = () => {
             variant="outlined"
             sx={dialogSecondaryActionSx}
           >
-            Back
+            {t('common.back')}
           </Button>
           
           <Box sx={{ display: 'flex', gap: 2 }}>
@@ -579,7 +584,7 @@ const UserRegistrationForm: React.FC = () => {
                 onClick={handleNext}
                 variant="contained"
               >
-                Next
+                {t('common.next')}
               </Button>
             ) : (
               <Button
@@ -588,7 +593,7 @@ const UserRegistrationForm: React.FC = () => {
                 startIcon={<Send />}
                 disabled={loading}
               >
-                {loading ? 'Creating User...' : 'Create User'}
+                {loading ? t('admin.userRegistrationForm.actions.creatingUser') : t('admin.userRegistrationForm.actions.createUser')}
               </Button>
             )}
           </Box>
@@ -599,46 +604,46 @@ const UserRegistrationForm: React.FC = () => {
       {activeStep === steps.length - 1 && (
         <Paper sx={{ p: 3, mt: 3 }}>
           <Typography variant="h6" gutterBottom>
-            User Summary
+            {t('admin.userRegistrationForm.summary.title')}
           </Typography>
           <Grid container spacing={2}>
             <Grid item xs={12} md={6}>
-              <Typography variant="body2" color="text.secondary">Name:</Typography>
+              <Typography variant="body2" color="text.secondary">{t('admin.userRegistrationForm.summary.name')}</Typography>
               <Typography variant="body1">{formData.firstName} {formData.lastName}</Typography>
             </Grid>
             <Grid item xs={12} md={6}>
-              <Typography variant="body2" color="text.secondary">Username:</Typography>
-              <Typography variant="body1">{formData.username || 'Not specified'}</Typography>
+              <Typography variant="body2" color="text.secondary">{t('admin.userRegistrationForm.summary.username')}</Typography>
+              <Typography variant="body1">{formData.username || t('common.notAvailable')}</Typography>
             </Grid>
             <Grid item xs={12} md={6}>
-              <Typography variant="body2" color="text.secondary">Email:</Typography>
-              <Typography variant="body1">{formData.email || 'Not specified'}</Typography>
+              <Typography variant="body2" color="text.secondary">{t('admin.userRegistrationForm.summary.email')}</Typography>
+              <Typography variant="body1">{formData.email || t('common.notAvailable')}</Typography>
             </Grid>
             <Grid item xs={12} md={6}>
-              <Typography variant="body2" color="text.secondary">Role:</Typography>
-              <Typography variant="body1">{formData.role || 'Not specified'}</Typography>
+              <Typography variant="body2" color="text.secondary">{t('admin.userRegistrationForm.summary.role')}</Typography>
+              <Typography variant="body1">{creatableRoles.find((role) => role.value === formData.role)?.label || t('common.notAvailable')}</Typography>
             </Grid>
             <Grid item xs={12} md={6}>
-              <Typography variant="body2" color="text.secondary">Tenant:</Typography>
+              <Typography variant="body2" color="text.secondary">{t('admin.userRegistrationForm.summary.tenant')}</Typography>
               <Typography variant="body1">
-                {formData.tenantId ? tenants.find(t => t.tenantId === formData.tenantId)?.name : 'Not specified'}
+                {formData.tenantId ? tenants.find(tenant => tenant.tenantId === formData.tenantId)?.name : t('common.notAvailable')}
               </Typography>
             </Grid>
             {HOTEL_SCOPED_ROLES.includes(formData.role as any) && formData.hotelId && (
               <Grid item xs={12} md={6}>
-                <Typography variant="body2" color="text.secondary">Hotel Assignment:</Typography>
+                <Typography variant="body2" color="text.secondary">{t('admin.userRegistrationForm.summary.hotelAssignment')}</Typography>
                 <Typography variant="body1">
-                  {hotels.find(h => h.id?.toString() === formData.hotelId)?.name || 'Not specified'}
+                  {hotels.find(hotel => hotel.id?.toString() === formData.hotelId)?.name || t('common.notAvailable')}
                 </Typography>
               </Grid>
             )}
             <Grid item xs={12} md={6}>
-              <Typography variant="body2" color="text.secondary">Status:</Typography>
-              <Typography variant="body1">{formData.isActive ? 'Active' : 'Inactive'}</Typography>
+              <Typography variant="body2" color="text.secondary">{t('admin.userRegistrationForm.summary.status')}</Typography>
+              <Typography variant="body1">{formData.isActive ? t('admin.userRegistrationForm.status.active') : t('admin.userRegistrationForm.status.inactive')}</Typography>
             </Grid>
             <Grid item xs={12} md={6}>
-              <Typography variant="body2" color="text.secondary">Email Verified:</Typography>
-              <Typography variant="body1">{formData.emailVerified ? 'Yes' : 'No'}</Typography>
+              <Typography variant="body2" color="text.secondary">{t('admin.userRegistrationForm.summary.emailVerified')}</Typography>
+              <Typography variant="body1">{formData.emailVerified ? t('common.yes') : t('common.no')}</Typography>
             </Grid>
           </Grid>
         </Paper>

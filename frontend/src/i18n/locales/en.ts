@@ -81,8 +81,15 @@ export const enTranslations = {
       analyticsTitle: "Tenant Analytics",
       analyticsVisualization: "System Analytics & Data Visualization",
       totalBookings: "Total Bookings",
+      totalBookingsSubtitle: "{{count}} bookings created this month",
       activeHotels: "Active Hotels",
+      activeBookings: "Active Bookings",
+      activeBookingsSubtitle: "Booked or Checked-In Stays",
       monthlyRevenue: "Monthly Revenue",
+      currentMonthRevenue: "Current Month Revenue",
+      currentMonthRevenueSubtitle: "{{count}} Completed Payments Overall",
+      currentYearRevenue: "Current Year Revenue",
+      currentYearRevenueSubtitle: "Revenue from Completed Payments",
       systemUsers: "System Users",
       recentActivity: "Recent Activity",
       performanceMetrics: "Performance Metrics",
@@ -90,7 +97,37 @@ export const enTranslations = {
       loadingStats: "Loading statistics...",
       systemOverview: "System Overview",
       monthlyRevenueChart: "Monthly Revenue Trend (ETB)",
+      monthlyBookingVolumeChart: "Monthly Booking Volume",
       bookingStatusChart: "Booking Status Distribution",
+      paymentStatusChart: "Payment Status Distribution",
+      totalBookingsCenterSubtext: "Total Bookings",
+      completedPaymentsCenterSubtext: "Completed Payments",
+      demoBookingsCenterSubtext: "Demo Bookings",
+      auditLogTab: "Audit Log",
+      businessOnboarding: {
+        title: "Business Onboarding URL",
+        shareChip: "Share with New Businesses",
+        description: "Share this link with a business so they can submit a hotel registration application. The page is not linked from public navigation.",
+        copied: "Copied!",
+        copyUrl: "Copy URL",
+        openInNewTab: "Open in New Tab"
+      },
+      apiDocs: {
+        tabLabel: "API Documentation",
+        searchPlaceholder: "Search API Endpoints...",
+        categoryLabel: "Category",
+        allCategories: "All",
+        showingCount: "Showing {{filtered}} of {{total}} endpoints",
+        requestSection: "Request",
+        responseSection: "Response",
+        headersLabel: "Headers:",
+        pathParametersLabel: "Path Parameters:",
+        queryParametersLabel: "Query Parameters:",
+        requestBodyLabel: "Request Body:",
+        successResponseLabel: "Success Response (200):",
+        errorResponseLabel: "Error Response (4xx/5xx):",
+        noExamples: "No request/response examples available for this endpoint."
+      },
       
       // Management Actions
       manageTenants: "Create and manage tenant organizations",
@@ -1784,6 +1821,65 @@ export const enTranslations = {
 
   // Admin Interfaces
   admin: {
+    dashboard: {
+      eyebrow: "Platform Operations",
+      title: "System Administration",
+      description: "Manage platform hotels, user accounts, and audit activity from a consistent administrative workspace.",
+      consoleChip: "Platform Console",
+      tabsAriaLabel: "Admin management tabs",
+      hotelSectionDescription: "Review hotels registered on the platform and jump into detailed administration for individual properties.",
+      userSectionDescription: "Search platform users, review their assigned hotel context, and open the detailed user administration flow.",
+      hotelSearchPlaceholder: "Search hotels...",
+      userSearchPlaceholder: "Search users...",
+      statusLabel: "Status",
+      allStatuses: "All Statuses",
+      allRoles: "All Roles",
+      hotelsPerPage: "Hotels per page:",
+      usersPerPage: "Users per page:",
+      hotelsTableAriaLabel: "Hotels table",
+      usersTableAriaLabel: "Users table",
+      loadingHotels: "Loading hotels...",
+      loadingUsers: "Loading users...",
+      noHotelsFound: "No hotels found",
+      noUsersFound: "No users found",
+      viewDetails: "View Details",
+      systemWide: "System-wide",
+      status: {
+        active: "Active",
+        pending: "Pending",
+        inactive: "Inactive"
+      },
+      roles: {
+        ADMIN: "Admin",
+        HOTEL_ADMIN: "Hotel Admin",
+        HOTEL_STAFF: "Hotel Staff",
+        GUEST: "Guest",
+        NO_ROLE: "No Role"
+      },
+      hotelTable: {
+        hotelName: "Hotel Name",
+        location: "Location",
+        status: "Status",
+        rooms: "Rooms",
+        rating: "Rating",
+        registered: "Registered",
+        actions: "Actions"
+      },
+      userTable: {
+        userName: "User Name",
+        email: "Email",
+        hotel: "Hotel",
+        role: "Role",
+        status: "Status",
+        lastLogin: "Last Login",
+        created: "Created",
+        actions: "Actions"
+      },
+      footer: {
+        version: "BookMyHotel Admin Dashboard - Platform Version 1.0.0",
+        secureInterface: "Secure administration interface for platform management"
+      }
+    },
     tenant: {
       title: "Tenant Management",
       addTenant: "Add Tenant",
@@ -1824,6 +1920,633 @@ export const enTranslations = {
       totalRooms: "Total Rooms",
       activateHotel: "Activate Hotel",
       deactivateHotel: "Deactivate Hotel"
+    },
+    auditLog: {
+      stats: {
+        actionsToday: "Actions Today:",
+        failedToday: "Failed Today:"
+      },
+      filters: {
+        action: "Action",
+        entityType: "Entity Type",
+        allActions: "All Actions",
+        allTypes: "All Types",
+        emailPlaceholder: "Filter by email",
+        fromDate: "From Date",
+        toDate: "To Date",
+        clear: "Clear Filters"
+      },
+      table: {
+        timestamp: "Timestamp",
+        actor: "Actor",
+        role: "Role",
+        action: "Action",
+        entityType: "Entity Type",
+        entityId: "Entity ID",
+        description: "Description",
+        status: "Status",
+        details: "Details",
+        viewFullDetails: "View Full Details",
+        rowsPerPage: "Events per page:"
+      },
+      status: {
+        failed: "Failed"
+      },
+      emptyState: "No audit events found",
+      errors: {
+        loadFailed: "Failed to load audit logs"
+      },
+      detail: {
+        title: "Audit Event Detail",
+        timestamp: "Timestamp",
+        action: "Action",
+        entityType: "Entity Type",
+        entityId: "Entity ID",
+        description: "Description",
+        performedBy: "Performed By",
+        email: "Email",
+        role: "Role",
+        ipAddress: "IP Address",
+        request: "Request",
+        responseStatus: "Response Status",
+        oldValues: "Old Values",
+        newValues: "New Values",
+        userAgent: "User Agent"
+      },
+      actions: {
+        CREATE: "Create",
+        UPDATE: "Update",
+        DELETE: "Delete",
+        TOGGLE_STATUS: "Toggle Status",
+        ASSIGN_ADMIN: "Assign Admin",
+        ADD_ROLE: "Add Role",
+        REMOVE_ROLE: "Remove Role",
+        RESET_PASSWORD: "Reset Password",
+        APPROVE: "Approve",
+        REJECT: "Reject",
+        UNDER_REVIEW: "Under Review",
+        ACTION: "Action"
+      },
+      entityTypes: {
+        SYSTEM: "System",
+        USER: "User",
+        HOTEL: "Hotel",
+        ROOM: "Room",
+        TENANT: "Tenant",
+        HOTEL_REGISTRATION: "Hotel Registration"
+      }
+    },
+    hotelDetail: {
+      title: "Hotel Details",
+      actions: {
+        editHotel: "Edit Hotel",
+        saveChanges: "Save Changes",
+        saving: "Saving..."
+      },
+      hero: {
+        totalRooms: "Total Rooms",
+        averageRating: "Average Rating",
+        daysActive: "Days Active",
+        currency: "Currency"
+      },
+      sections: {
+        basicInformation: "Basic Information",
+        locationAddress: "Location & Address",
+        operationsSettings: "Operations & Settings",
+        statusManagement: "Status Management",
+        performanceMetrics: "Performance Metrics",
+        occupancyRate: "Occupancy Rate",
+        systemInformation: "System Information"
+      },
+      fields: {
+        hotelName: "Hotel Name",
+        description: "Description",
+        phoneNumber: "Phone Number",
+        emailAddress: "Email Address",
+        websiteUrl: "Website URL",
+        streetAddress: "Street Address",
+        city: "City",
+        stateProvince: "State/Province",
+        zipPostalCode: "ZIP/Postal Code",
+        country: "Country",
+        checkInTime: "Check-in Time",
+        checkOutTime: "Check-out Time",
+        currency: "Currency",
+        timeZone: "Time Zone",
+        hotelStatus: "Hotel Status",
+        createdDate: "Created Date",
+        lastUpdated: "Last Updated",
+        hotelId: "Hotel ID",
+        activeStatus: "Active Status"
+      },
+      status: {
+        ACTIVE: "Active",
+        PENDING: "Pending",
+        INACTIVE: "Inactive",
+        SUSPENDED: "Suspended"
+      },
+      dialog: {
+        discardTitle: "Discard Changes?",
+        discardMessage: "You have unsaved changes. Are you sure you want to discard them?",
+        keepEditing: "Keep Editing",
+        discardChanges: "Discard Changes"
+      },
+      messages: {
+        updateSuccess: "Hotel updated successfully",
+        updateFailed: "Failed to update hotel"
+      },
+      errors: {
+        notFound: "Hotel not found",
+        loadFailed: "Failed to load hotel details"
+      },
+      footer: {
+        version: "BookMyHotel System Admin Dashboard - Version 2.0.0",
+        subtitle: "Professional hotel management platform with advanced analytics"
+      }
+    },
+    userDetail: {
+      title: "User Details",
+      superAdminInfo: "SUPER_ADMIN accounts cannot be modified.",
+      actions: {
+        editUser: "Edit User",
+        saveChanges: "Save Changes",
+        saving: "Saving..."
+      },
+      sections: {
+        personalInformation: "Personal Information",
+        rolesPermissions: "Roles and Permissions",
+        accountStatus: "Account Status",
+        accountInformation: "Account Information"
+      },
+      fields: {
+        firstName: "First Name",
+        lastName: "Last Name",
+        email: "Email",
+        phone: "Phone",
+        roles: "Roles",
+        activeAccount: "Active Account",
+        accountId: "ID: {{id}}",
+        created: "Created",
+        lastLogin: "Last Login"
+      },
+      roles: {
+        ADMIN: "System Admin",
+        HOTEL_ADMIN: "Hotel Admin",
+        OPERATIONAL_ADMIN: "Operational Admin",
+        CUSTOMER: "Customer"
+      },
+      status: {
+        active: "Active",
+        inactive: "Inactive"
+      },
+      dialog: {
+        discardTitle: "Discard Changes?",
+        discardMessage: "You have unsaved changes. Are you sure you want to discard them?",
+        keepEditing: "Keep Editing",
+        discardChanges: "Discard Changes"
+      },
+      messages: {
+        updateSuccess: "User updated successfully",
+        updateFailed: "Failed to update user"
+      },
+      errors: {
+        notFound: "User not found",
+        loadFailed: "Failed to load user details"
+      }
+    },
+    hotelRegistrationForm: {
+      title: "Register New Hotel",
+      description: "Add a new hotel to the platform",
+      steps: {
+        basicInformation: "Basic Information",
+        locationDetails: "Location Details",
+        contactInformation: "Contact Information",
+        businessDetails: "Business Details"
+      },
+      categories: {
+        luxury: "Luxury",
+        business: "Business",
+        budget: "Budget",
+        boutique: "Boutique",
+        resort: "Resort"
+      },
+      fields: {
+        hotelName: "Hotel Name",
+        description: "Description",
+        category: "Hotel Category",
+        address: "Address",
+        city: "City",
+        stateProvince: "State/Province",
+        country: "Country",
+        zipPostalCode: "ZIP/Postal Code",
+        phoneNumber: "Phone Number",
+        emailAddress: "Email Address",
+        website: "Website",
+        contactPerson: "Contact Person",
+        businessLicenseNumber: "Business License Number",
+        taxId: "Tax ID"
+      },
+      placeholders: {
+        hotelName: "Enter hotel name",
+        description: "Enter hotel description",
+        address: "Enter street address",
+        city: "Enter city",
+        stateProvince: "Enter state or province",
+        country: "Enter country",
+        zipPostalCode: "Enter ZIP code",
+        phoneNumber: "Enter phone number",
+        emailAddress: "Enter email address",
+        website: "Enter website URL",
+        contactPerson: "Enter contact person name",
+        businessLicenseNumber: "Enter license number",
+        taxId: "Enter tax identification number"
+      },
+      actions: {
+        registering: "Registering...",
+        registerHotel: "Register Hotel"
+      },
+      summary: {
+        title: "Registration Summary",
+        hotelName: "Hotel Name:",
+        category: "Category:",
+        location: "Location:",
+        contact: "Contact:"
+      },
+      messages: {
+        registerFailed: "Failed to register hotel. Please try again.",
+        unknownStep: "Unknown step",
+        registerSuccessTitle: "Hotel Registered Successfully!",
+        registerSuccessBody: "The hotel \"{{hotelName}}\" has been registered and is now pending review."
+      }
+    },
+    userRegistrationForm: {
+      title: "Add New User",
+      description: "Create a new user account",
+      steps: {
+        basicInformation: "Basic Information",
+        accountSetup: "Account Setup",
+        profileDetails: "Profile Details",
+        accountSettings: "Account Settings"
+      },
+      roles: {
+        ADMIN: "Administrator",
+        HOTEL_ADMIN: "Hotel Administrator",
+        OPERATIONAL_ADMIN: "Operational Administrator",
+        FRONTDESK: "Front Desk Agent",
+        HOUSEKEEPING: "Housekeeping",
+        MAINTENANCE: "Maintenance",
+        TESTER: "Tester",
+        CUSTOMER: "Customer"
+      },
+      fields: {
+        firstName: "First Name",
+        lastName: "Last Name",
+        emailAddress: "Email Address",
+        username: "Username",
+        password: "Password",
+        confirmPassword: "Confirm Password",
+        userRole: "User Role",
+        tenant: "Tenant",
+        hotelAssignment: "Hotel Assignment",
+        phoneNumber: "Phone Number",
+        address: "Address",
+        city: "City",
+        stateProvince: "State/Province",
+        country: "Country",
+        zipPostalCode: "ZIP/Postal Code",
+        accountActive: "Account Active",
+        emailVerified: "Email Verified"
+      },
+      placeholders: {
+        firstName: "Enter first name",
+        lastName: "Enter last name",
+        emailAddress: "Enter email address",
+        username: "Enter username",
+        password: "Enter password",
+        confirmPassword: "Confirm password",
+        phoneNumber: "Enter phone number",
+        address: "Enter street address",
+        city: "Enter city",
+        stateProvince: "Enter state or province",
+        country: "Enter country",
+        zipPostalCode: "Enter ZIP code"
+      },
+      actions: {
+        creatingUser: "Creating User...",
+        createUser: "Create User"
+      },
+      summary: {
+        title: "User Summary",
+        name: "Name:",
+        username: "Username:",
+        email: "Email:",
+        role: "Role:",
+        tenant: "Tenant:",
+        hotelAssignment: "Hotel Assignment:",
+        status: "Status:",
+        emailVerified: "Email Verified:"
+      },
+      status: {
+        active: "Active",
+        inactive: "Inactive"
+      },
+      messages: {
+        loadTenantsFailed: "Failed to load tenants",
+        loadHotelsFailed: "Failed to load hotels for selected tenant",
+        authenticationRequired: "Authentication required",
+        createFailed: "Failed to create user. Please try again.",
+        noHotelsAvailable: "No hotels available for the selected tenant",
+        unknownStep: "Unknown step",
+        createSuccessTitle: "User Created Successfully!",
+        createSuccessBody: "{{fullName}} has been successfully registered as {{role}}."
+      }
+    },
+    userManagement: {
+      eyebrow: "Identity & Access",
+      title: "User Management",
+      description: "Manage platform users, review hotel associations, and handle activation, password resets, and profile updates from a consistent admin workflow.",
+      directory: {
+        title: "Users Directory",
+        description: "Filter by role, status, or text search, then open the relevant action for each user account."
+      },
+      filters: {
+        searchPlaceholder: "Search by name or email...",
+        role: "Role",
+        allRoles: "All Roles",
+        status: "Status",
+        allStatuses: "All Statuses"
+      },
+      table: {
+        name: "Name",
+        email: "Email",
+        phone: "Phone",
+        hotel: "Hotel",
+        role: "Role",
+        status: "Status",
+        created: "Created",
+        lastLogin: "Last Login",
+        actions: "Actions",
+        rowsPerPage: "Users per page:"
+      },
+      emptyState: "No users found for the selected filters.",
+      systemWide: "System-wide",
+      roles: {
+        ADMIN: "Administrator",
+        HOTEL_ADMIN: "Hotel Administrator",
+        OPERATIONAL_ADMIN: "Operational Administrator",
+        FRONTDESK: "Front Desk Agent",
+        HOUSEKEEPING: "Housekeeping",
+        MAINTENANCE: "Maintenance",
+        TESTER: "Tester",
+        CUSTOMER: "Customer",
+        SUPER_ADMIN: "Super Admin",
+        NO_ROLE: "No Role"
+      },
+      status: {
+        active: "Active",
+        inactive: "Inactive"
+      },
+      actions: {
+        addUser: "Add User",
+        viewDetails: "View Details",
+        deactivateUser: "Deactivate User",
+        activateUser: "Activate User",
+        resetPassword: "Reset Password",
+        createUser: "Create User",
+        updateUser: "Update User",
+        deactivate: "Deactivate",
+        activate: "Activate",
+        deactivating: "Deactivating...",
+        activating: "Activating...",
+        sending: "Sending...",
+        resetAndSendEmail: "Reset & Send Email"
+      },
+      dialogs: {
+        create: {
+          title: "Add New User",
+          description: "Create a new platform or hotel-bound account and assign the appropriate role and tenancy scope."
+        },
+        edit: {
+          title: "Edit User",
+          description: "Update the selected account's profile and role assignment."
+        },
+        toggleStatus: {
+          deactivateTitle: "Deactivate User",
+          activateTitle: "Activate User",
+          confirmation: "Are you sure you want to {{action}} user \"{{name}}\" ({{email}})?"
+        },
+        resetPassword: {
+          title: "Reset Password",
+          body: "A new random password will be generated and sent to {{email}} via email.",
+          note: "The new password will not be visible to you."
+        },
+        details: {
+          title: "User Details"
+        }
+      },
+      fields: {
+        firstName: "First Name",
+        lastName: "Last Name",
+        email: "Email",
+        password: "Password",
+        phone: "Phone",
+        role: "Role",
+        tenant: "Tenant",
+        hotel: "Hotel",
+        reason: "Reason",
+        status: "Status",
+        createdAt: "Created At",
+        lastLogin: "Last Login",
+        userId: "User ID"
+      },
+      placeholders: {
+        deactivationReason: "Enter reason for deactivation...",
+        activationReason: "Enter reason for activation..."
+      }
+    },
+    hotelRegistrationAdmin: {
+      title: "Hotel Registration Management",
+      stats: {
+        total: "Total",
+        pending: "Pending",
+        underReview: "Under Review",
+        approved: "Approved",
+        rejected: "Rejected"
+      },
+      table: {
+        hotelName: "Hotel Name",
+        contactPerson: "Contact Person",
+        email: "Email",
+        city: "City",
+        status: "Status",
+        submitted: "Submitted",
+        actions: "Actions"
+      },
+      actions: {
+        approve: "Approve",
+        reject: "Reject"
+      },
+      dialogs: {
+        viewTitle: "Hotel Registration Details",
+        approveTitle: "Approve Registration",
+        rejectTitle: "Reject Registration"
+      },
+      steps: {
+        hotelAndAdminInfo: "Hotel & Admin Info",
+        additionalDetails: "Additional Details"
+      },
+      sections: {
+        hotelInformation: "Hotel Information",
+        registeredHotelAdmin: "Registered Hotel Admin",
+        businessDetails: "Business Details",
+        paymentInformation: "Payment Information",
+        taxAndLicense: "Tax & License",
+        facilityInformation: "Facility Information"
+      },
+      fields: {
+        hotelName: "Hotel Name",
+        status: "Status",
+        address: "Address",
+        city: "City",
+        country: "Country",
+        submittedAt: "Submitted At",
+        reviewedAt: "Reviewed At",
+        contactPerson: "Contact Person",
+        contactEmail: "Contact Email",
+        description: "Description",
+        phone: "Phone",
+        website: "Website",
+        mobilePaymentPhone: "Mobile Payment Phone",
+        mobilePaymentPhone2: "Mobile Payment Phone 2",
+        licenseNumber: "License Number",
+        taxId: "Tax ID",
+        facilityAmenities: "Facility Amenities",
+        numberOfRooms: "Number of Rooms",
+        checkInTime: "Check-in Time",
+        checkOutTime: "Check-out Time",
+        reviewComments: "Review Comments",
+        approvalComments: "Approval Comments",
+        rejectionReason: "Rejection Reason"
+      }
+    },
+    hotelManagement: {
+      eyebrow: "Platform Operations",
+      title: "Hotel Management",
+      description: "Manage existing hotels, review inbound registrations, and control platform visibility from one administrative workspace.",
+      tabs: {
+        existingHotels: "Existing Hotels",
+        hotelRegistrations: "Hotel Registrations"
+      },
+      actions: {
+        registerHotel: "Register Hotel",
+        deactivate: "Deactivate",
+        activate: "Activate",
+        unpublishFromSearch: "Unpublish from public search",
+        publishToSearch: "Publish to public search",
+        review: "Review",
+        submitRegistration: "Submit Registration",
+        viewDetails: "View Details"
+      },
+      steps: {
+        hotelAndAdminInfo: "Hotel & Admin Info",
+        additionalDetails: "Additional Details"
+      },
+      filters: {
+        search: "Search hotels...",
+        searchPlaceholder: "Search by name, city, or email",
+        status: "Status",
+        allHotels: "All Hotels",
+        activeOnly: "Active Only",
+        inactiveOnly: "Inactive Only"
+      },
+      existingHotels: {
+        title: "Existing Hotels",
+        description: "Review hotel status, tenant assignments, and public listing state for all configured properties.",
+        rowsPerPage: "Hotels per page:",
+        emptyState: "No hotels found",
+        table: {
+          hotelName: "Hotel Name",
+          location: "Location",
+          tenant: "Tenant",
+          contact: "Contact",
+          rooms: "Rooms",
+          rating: "Rating",
+          status: "Status",
+          publicListing: "Public Listing",
+          actions: "Actions"
+        }
+      },
+      status: {
+        active: "Active",
+        inactive: "Inactive"
+      },
+      publicListing: {
+        published: "Published",
+        unlisted: "Unlisted"
+      },
+      registrationStats: {
+        total: "Total",
+        pending: "Pending",
+        approved: "Approved",
+        rejected: "Rejected"
+      },
+      registrations: {
+        title: "Hotel Registrations",
+        description: "Review pending hotel onboarding submissions, inspect application details, and approve or reject registrations.",
+        emptyState: "No hotel registrations found.",
+        table: {
+          hotelName: "Hotel Name",
+          contactPerson: "Contact Person",
+          email: "Email",
+          city: "City",
+          status: "Status",
+          submitted: "Submitted",
+          actions: "Actions"
+        }
+      },
+      registrationStatus: {
+        PENDING: "Pending",
+        UNDER_REVIEW: "Under Review",
+        APPROVED: "Approved",
+        REJECTED: "Rejected",
+        CANCELLED: "Cancelled"
+      },
+      dialogs: {
+        register: {
+          title: "Register New Hotel"
+        }
+      },
+      sections: {
+        phoneNumbers: "Phone Numbers"
+      },
+      fields: {
+        hotelName: "Hotel Name",
+        contactPerson: "Contact Person",
+        description: "Description",
+        address: "Address",
+        city: "City",
+        country: "Country",
+        contactEmail: "Contact Email",
+        communicationPhone: "Phone (Communication)",
+        mobilePaymentPhone: "Mobile Payment Phone",
+        mobilePaymentPhone2: "Mobile Payment Phone 2 (Optional)",
+        licenseNumber: "License Number",
+        taxId: "Tax ID",
+        websiteUrl: "Website URL",
+        facilityAmenities: "Facility Amenities",
+        numberOfRooms: "Number of Rooms",
+        checkInTime: "Check-in Time",
+        checkOutTime: "Check-out Time"
+      },
+      helpers: {
+        communicationPhone: "Primary phone for general communication",
+        mobilePaymentPhone: "Primary mobile money account for payments",
+        mobilePaymentPhone2: "Optional secondary mobile money account"
+      },
+      placeholders: {
+        facilityAmenities: "WiFi, Pool, Spa, Restaurant, etc.",
+        numberOfRooms: "Enter number of rooms"
+      }
     }
   },
 

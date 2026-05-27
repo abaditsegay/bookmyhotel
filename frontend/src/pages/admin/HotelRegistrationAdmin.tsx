@@ -27,6 +27,7 @@ import {
   Divider,
 } from '@mui/material';
 import { Refresh, CheckCircle, Cancel, Visibility, NavigateNext, NavigateBefore } from '@mui/icons-material';
+import { useTranslation } from 'react-i18next';
 import PremiumDisplayField from '../../components/common/PremiumDisplayField';
 import { dialogSecondaryActionSx, tableHeadRowSx } from '../../theme/sxHelpers';
 import { getReadableAccentTextColor } from '../../theme/surfaces';
@@ -70,6 +71,7 @@ interface RegistrationStatistics {
 
 const HotelRegistrationAdmin: React.FC = () => {
   const theme = useTheme();
+  const { t } = useTranslation();
   const [registrations, setRegistrations] = useState<HotelRegistration[]>([]);
   const [statistics, setStatistics] = useState<RegistrationStatistics | null>(null);
   const [loading, setLoading] = useState(true);
@@ -79,7 +81,10 @@ const HotelRegistrationAdmin: React.FC = () => {
   const [comments, setComments] = useState('');
   const [wizardStep, setWizardStep] = useState(0);
 
-  const wizardSteps = ['Hotel & Admin Info', 'Additional Details'];
+  const wizardSteps = [
+    t('admin.hotelRegistrationAdmin.steps.hotelAndAdminInfo'),
+    t('admin.hotelRegistrationAdmin.steps.additionalDetails')
+  ];
 
 
   const statusColors = {
@@ -179,7 +184,7 @@ const HotelRegistrationAdmin: React.FC = () => {
         color: readableAccentText,
         fontWeight: 600
       }}>
-        Hotel Registration Management
+        {t('admin.hotelRegistrationAdmin.title')}
       </Typography>
 
       {/* Statistics Cards */}
@@ -189,7 +194,7 @@ const HotelRegistrationAdmin: React.FC = () => {
             <Card>
               <CardContent>
                 <Typography color="text.secondary" gutterBottom>
-                  Total
+                  {t('admin.hotelRegistrationAdmin.stats.total')}
                 </Typography>
                 <Typography variant="h4">
                   {statistics.total}
@@ -201,7 +206,7 @@ const HotelRegistrationAdmin: React.FC = () => {
             <Card>
               <CardContent>
                 <Typography color="text.secondary" gutterBottom>
-                  Pending
+                  {t('admin.hotelRegistrationAdmin.stats.pending')}
                 </Typography>
                 <Typography variant="h4" color="warning.main">
                   {statistics.pending}
@@ -213,7 +218,7 @@ const HotelRegistrationAdmin: React.FC = () => {
             <Card>
               <CardContent>
                 <Typography color="text.secondary" gutterBottom>
-                  Under Review
+                  {t('admin.hotelRegistrationAdmin.stats.underReview')}
                 </Typography>
                 <Typography variant="h4" color="info.main">
                   {statistics.underReview}
@@ -225,7 +230,7 @@ const HotelRegistrationAdmin: React.FC = () => {
             <Card>
               <CardContent>
                 <Typography color="text.secondary" gutterBottom>
-                  Approved
+                  {t('admin.hotelRegistrationAdmin.stats.approved')}
                 </Typography>
                 <Typography variant="h4" color="success.main">
                   {statistics.approved}
@@ -237,7 +242,7 @@ const HotelRegistrationAdmin: React.FC = () => {
             <Card>
               <CardContent>
                 <Typography color="text.secondary" gutterBottom>
-                  Rejected
+                  {t('admin.hotelRegistrationAdmin.stats.rejected')}
                 </Typography>
                 <Typography variant="h4" color="error.main">
                   {statistics.rejected}
@@ -256,7 +261,7 @@ const HotelRegistrationAdmin: React.FC = () => {
           onClick={fetchRegistrations}
           disabled={loading}
         >
-          Refresh
+          {t('common.refresh')}
         </Button>
       </Box>
 
@@ -265,13 +270,13 @@ const HotelRegistrationAdmin: React.FC = () => {
         <Table>
           <TableHead>
             <TableRow sx={adminTableHeaderSx}>
-              <TableCell>Hotel Name</TableCell>
-              <TableCell>Contact Person</TableCell>
-              <TableCell>Email</TableCell>
-              <TableCell>City</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Submitted</TableCell>
-              <TableCell>Actions</TableCell>
+              <TableCell>{t('admin.hotelRegistrationAdmin.table.hotelName')}</TableCell>
+              <TableCell>{t('admin.hotelRegistrationAdmin.table.contactPerson')}</TableCell>
+              <TableCell>{t('admin.hotelRegistrationAdmin.table.email')}</TableCell>
+              <TableCell>{t('admin.hotelRegistrationAdmin.table.city')}</TableCell>
+              <TableCell>{t('admin.hotelRegistrationAdmin.table.status')}</TableCell>
+              <TableCell>{t('admin.hotelRegistrationAdmin.table.submitted')}</TableCell>
+              <TableCell>{t('admin.hotelRegistrationAdmin.table.actions')}</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -303,7 +308,7 @@ const HotelRegistrationAdmin: React.FC = () => {
                       startIcon={<Visibility />}
                       onClick={() => openDialog(registration, 'view')}
                     >
-                      View
+                      {t('common.view')}
                     </Button>
                     {registration.status === 'PENDING' && (
                       <>
@@ -313,7 +318,7 @@ const HotelRegistrationAdmin: React.FC = () => {
                           startIcon={<CheckCircle />}
                           onClick={() => openDialog(registration, 'approve')}
                         >
-                          Approve
+                          {t('admin.hotelRegistrationAdmin.actions.approve')}
                         </Button>
                         <Button
                           size="small"
@@ -321,7 +326,7 @@ const HotelRegistrationAdmin: React.FC = () => {
                           startIcon={<Cancel />}
                           onClick={() => openDialog(registration, 'reject')}
                         >
-                          Reject
+                          {t('admin.hotelRegistrationAdmin.actions.reject')}
                         </Button>
                       </>
                     )}
@@ -336,9 +341,9 @@ const HotelRegistrationAdmin: React.FC = () => {
       {/* 2-Step Wizard Dialog */}
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="md" fullWidth>
         <DialogTitle sx={{ pb: 1 }}>
-          {actionType === 'view' && 'Hotel Registration Details'}
-          {actionType === 'approve' && 'Approve Registration'}
-          {actionType === 'reject' && 'Reject Registration'}
+          {actionType === 'view' && t('admin.hotelRegistrationAdmin.dialogs.viewTitle')}
+          {actionType === 'approve' && t('admin.hotelRegistrationAdmin.dialogs.approveTitle')}
+          {actionType === 'reject' && t('admin.hotelRegistrationAdmin.dialogs.rejectTitle')}
         </DialogTitle>
         <Box sx={{ px: 3, pb: 1 }}>
           <Stepper activeStep={wizardStep} alternativeLabel>
@@ -357,48 +362,48 @@ const HotelRegistrationAdmin: React.FC = () => {
                 <Grid container spacing={2}>
                   <Grid item xs={12}>
                     <Typography variant="subtitle1" sx={adminSectionTitleSx}>
-                      Hotel Information
+                      {t('admin.hotelRegistrationAdmin.sections.hotelInformation')}
                     </Typography>
                     <Divider sx={{ mb: 2 }} />
                   </Grid>
                   <Grid item xs={12} sm={6}>
                     <PremiumDisplayField
-                      label="Hotel Name"
+                      label={t('admin.hotelRegistrationAdmin.fields.hotelName')}
                       value={selectedRegistration.hotelName}
                       isEditMode={false}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
                     <PremiumDisplayField
-                      label="Status"
+                      label={t('admin.hotelRegistrationAdmin.fields.status')}
                       value={selectedRegistration.status}
                       isEditMode={false}
                     />
                   </Grid>
                   <Grid item xs={12}>
                     <PremiumDisplayField
-                      label="Address"
+                      label={t('admin.hotelRegistrationAdmin.fields.address')}
                       value={selectedRegistration.address}
                       isEditMode={false}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
                     <PremiumDisplayField
-                      label="City"
+                      label={t('admin.hotelRegistrationAdmin.fields.city')}
                       value={selectedRegistration.city}
                       isEditMode={false}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
                     <PremiumDisplayField
-                      label="Country"
+                      label={t('admin.hotelRegistrationAdmin.fields.country')}
                       value={selectedRegistration.country}
                       isEditMode={false}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
                     <PremiumDisplayField
-                      label="Submitted At"
+                      label={t('admin.hotelRegistrationAdmin.fields.submittedAt')}
                       value={formatDate(selectedRegistration.submittedAt)}
                       isEditMode={false}
                     />
@@ -406,7 +411,7 @@ const HotelRegistrationAdmin: React.FC = () => {
                   {selectedRegistration.reviewedAt && (
                     <Grid item xs={12} sm={6}>
                       <PremiumDisplayField
-                        label="Reviewed At"
+                        label={t('admin.hotelRegistrationAdmin.fields.reviewedAt')}
                         value={formatDate(selectedRegistration.reviewedAt)}
                         isEditMode={false}
                       />
@@ -415,20 +420,20 @@ const HotelRegistrationAdmin: React.FC = () => {
 
                   <Grid item xs={12}>
                     <Typography variant="subtitle1" sx={{ ...adminSectionTitleSx, mt: 1, mb: 1 }}>
-                      Registered Hotel Admin
+                      {t('admin.hotelRegistrationAdmin.sections.registeredHotelAdmin')}
                     </Typography>
                     <Divider sx={{ mb: 2 }} />
                   </Grid>
                   <Grid item xs={12} sm={6}>
                     <PremiumDisplayField
-                      label="Contact Person"
+                      label={t('admin.hotelRegistrationAdmin.fields.contactPerson')}
                       value={selectedRegistration.contactPerson}
                       isEditMode={false}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
                     <PremiumDisplayField
-                      label="Contact Email"
+                      label={t('admin.hotelRegistrationAdmin.fields.contactEmail')}
                       value={selectedRegistration.contactEmail}
                       isEditMode={false}
                     />
@@ -441,13 +446,13 @@ const HotelRegistrationAdmin: React.FC = () => {
                 <Grid container spacing={2}>
                   <Grid item xs={12}>
                     <Typography variant="subtitle1" sx={adminSectionTitleSx}>
-                      Business Details
+                      {t('admin.hotelRegistrationAdmin.sections.businessDetails')}
                     </Typography>
                     <Divider sx={{ mb: 2 }} />
                   </Grid>
                   <Grid item xs={12}>
                     <PremiumDisplayField
-                      label="Description"
+                      label={t('admin.hotelRegistrationAdmin.fields.description')}
                       value={selectedRegistration.description}
                       isEditMode={false}
                       multiline
@@ -456,14 +461,14 @@ const HotelRegistrationAdmin: React.FC = () => {
                   </Grid>
                   <Grid item xs={12} sm={6}>
                     <PremiumDisplayField
-                      label="Phone"
+                      label={t('admin.hotelRegistrationAdmin.fields.phone')}
                       value={selectedRegistration.phone}
                       isEditMode={false}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
                     <PremiumDisplayField
-                      label="Website"
+                      label={t('admin.hotelRegistrationAdmin.fields.website')}
                       value={selectedRegistration.websiteUrl}
                       isEditMode={false}
                     />
@@ -471,20 +476,20 @@ const HotelRegistrationAdmin: React.FC = () => {
 
                   <Grid item xs={12}>
                     <Typography variant="subtitle1" sx={{ ...adminSectionTitleSx, mt: 1, mb: 1 }}>
-                      Payment Information
+                      {t('admin.hotelRegistrationAdmin.sections.paymentInformation')}
                     </Typography>
                     <Divider sx={{ mb: 2 }} />
                   </Grid>
                   <Grid item xs={12} sm={6}>
                     <PremiumDisplayField
-                      label="Mobile Payment Phone"
+                      label={t('admin.hotelRegistrationAdmin.fields.mobilePaymentPhone')}
                       value={selectedRegistration.mobilePaymentPhone}
                       isEditMode={false}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
                     <PremiumDisplayField
-                      label="Mobile Payment Phone 2"
+                      label={t('admin.hotelRegistrationAdmin.fields.mobilePaymentPhone2')}
                       value={selectedRegistration.mobilePaymentPhone2}
                       isEditMode={false}
                     />
@@ -492,20 +497,20 @@ const HotelRegistrationAdmin: React.FC = () => {
 
                   <Grid item xs={12}>
                     <Typography variant="subtitle1" sx={{ ...adminSectionTitleSx, mt: 1, mb: 1 }}>
-                      Tax & License
+                      {t('admin.hotelRegistrationAdmin.sections.taxAndLicense')}
                     </Typography>
                     <Divider sx={{ mb: 2 }} />
                   </Grid>
                   <Grid item xs={12} sm={6}>
                     <PremiumDisplayField
-                      label="License Number"
+                      label={t('admin.hotelRegistrationAdmin.fields.licenseNumber')}
                       value={selectedRegistration.licenseNumber}
                       isEditMode={false}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
                     <PremiumDisplayField
-                      label="Tax ID"
+                      label={t('admin.hotelRegistrationAdmin.fields.taxId')}
                       value={selectedRegistration.taxId}
                       isEditMode={false}
                     />
@@ -513,13 +518,13 @@ const HotelRegistrationAdmin: React.FC = () => {
 
                   <Grid item xs={12}>
                     <Typography variant="subtitle1" sx={{ ...adminSectionTitleSx, mt: 1, mb: 1 }}>
-                      Facility Information
+                      {t('admin.hotelRegistrationAdmin.sections.facilityInformation')}
                     </Typography>
                     <Divider sx={{ mb: 2 }} />
                   </Grid>
                   <Grid item xs={12}>
                     <PremiumDisplayField
-                      label="Facility Amenities"
+                      label={t('admin.hotelRegistrationAdmin.fields.facilityAmenities')}
                       value={selectedRegistration.facilityAmenities}
                       isEditMode={false}
                       multiline
@@ -528,21 +533,21 @@ const HotelRegistrationAdmin: React.FC = () => {
                   </Grid>
                   <Grid item xs={12} sm={4}>
                     <PremiumDisplayField
-                      label="Number of Rooms"
+                      label={t('admin.hotelRegistrationAdmin.fields.numberOfRooms')}
                       value={selectedRegistration.numberOfRooms ?? ''}
                       isEditMode={false}
                     />
                   </Grid>
                   <Grid item xs={12} sm={4}>
                     <PremiumDisplayField
-                      label="Check-in Time"
+                      label={t('admin.hotelRegistrationAdmin.fields.checkInTime')}
                       value={selectedRegistration.checkInTime}
                       isEditMode={false}
                     />
                   </Grid>
                   <Grid item xs={12} sm={4}>
                     <PremiumDisplayField
-                      label="Check-out Time"
+                      label={t('admin.hotelRegistrationAdmin.fields.checkOutTime')}
                       value={selectedRegistration.checkOutTime}
                       isEditMode={false}
                     />
@@ -555,7 +560,7 @@ const HotelRegistrationAdmin: React.FC = () => {
                       </Grid>
                       <Grid item xs={12}>
                         <PremiumDisplayField
-                          label="Review Comments"
+                          label={t('admin.hotelRegistrationAdmin.fields.reviewComments')}
                           value={selectedRegistration.reviewComments}
                           isEditMode={false}
                           multiline
@@ -575,7 +580,7 @@ const HotelRegistrationAdmin: React.FC = () => {
                           fullWidth
                           multiline
                           rows={4}
-                          label={actionType === 'approve' ? 'Approval Comments' : 'Rejection Reason'}
+                          label={actionType === 'approve' ? t('admin.hotelRegistrationAdmin.fields.approvalComments') : t('admin.hotelRegistrationAdmin.fields.rejectionReason')}
                           value={comments}
                           onChange={(e) => setComments(e.target.value)}
                           required={actionType === 'reject'}
@@ -591,14 +596,14 @@ const HotelRegistrationAdmin: React.FC = () => {
         <DialogActions sx={{ px: 3, pb: 2 }}>
           {wizardStep === 0 ? (
             <>
-              <Button variant="outlined" sx={dialogSecondaryActionSx} onClick={() => setDialogOpen(false)}>Cancel</Button>
+              <Button variant="outlined" sx={dialogSecondaryActionSx} onClick={() => setDialogOpen(false)}>{t('common.cancel')}</Button>
               <Box sx={{ flex: 1 }} />
               <Button
                 variant="contained"
                 endIcon={<NavigateNext />}
                 onClick={() => setWizardStep(1)}
               >
-                Next
+                {t('common.next')}
               </Button>
             </>
           ) : (
@@ -609,10 +614,10 @@ const HotelRegistrationAdmin: React.FC = () => {
                 startIcon={<NavigateBefore />}
                 onClick={() => setWizardStep(0)}
               >
-                Back
+                {t('common.back')}
               </Button>
               <Box sx={{ flex: 1 }} />
-              <Button variant="outlined" sx={dialogSecondaryActionSx} onClick={() => setDialogOpen(false)}>Cancel</Button>
+              <Button variant="outlined" sx={dialogSecondaryActionSx} onClick={() => setDialogOpen(false)}>{t('common.cancel')}</Button>
               {actionType !== 'view' && (
                 <>
                   {actionType === 'approve' && (
@@ -624,7 +629,7 @@ const HotelRegistrationAdmin: React.FC = () => {
                         setActionType('reject');
                       }}
                     >
-                      Reject
+                      {t('admin.hotelRegistrationAdmin.actions.reject')}
                     </Button>
                   )}
                   <Button
@@ -634,7 +639,7 @@ const HotelRegistrationAdmin: React.FC = () => {
                     disabled={actionType === 'reject' && !comments.trim()}
                     startIcon={actionType === 'approve' ? <CheckCircle /> : <Cancel />}
                   >
-                    {actionType === 'approve' ? 'Approve' : 'Reject'}
+                    {actionType === 'approve' ? t('admin.hotelRegistrationAdmin.actions.approve') : t('admin.hotelRegistrationAdmin.actions.reject')}
                   </Button>
                 </>
               )}

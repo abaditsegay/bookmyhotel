@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   alpha,
   Container,
@@ -81,6 +82,7 @@ interface HotelData {
 
 const HotelViewEdit: React.FC = () => {
   const theme = useTheme();
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -115,15 +117,15 @@ const HotelViewEdit: React.FC = () => {
         setHotel(foundHotel);
         setEditedHotel({ ...foundHotel });
       } else {
-        setError('Hotel not found');
+        setError(t('admin.hotelDetail.errors.notFound'));
       }
     } catch (error) {
       // console.error('Error fetching hotel:', error);
-      setError('Failed to load hotel details');
+      setError(t('admin.hotelDetail.errors.loadFailed'));
     } finally {
       setLoading(false);
     }
-  }, [adminApiService, id]);
+  }, [adminApiService, id, t]);
 
   useEffect(() => {
     if (id && adminApiService) {
@@ -172,12 +174,12 @@ const HotelViewEdit: React.FC = () => {
       await adminApiService.updateHotel(editedHotel.id, updateRequest);
       setHotel({ ...editedHotel });
       setIsEditing(false);
-      setSuccessMessage('Hotel updated successfully');
+      setSuccessMessage(t('admin.hotelDetail.messages.updateSuccess'));
       navigate(`/admin/hotels/${id}`);
     } catch (error) {
       // console.error('Error updating hotel:', error);
       showSubmissionError(error, {
-        fallbackMessage: 'Failed to update hotel',
+        fallbackMessage: t('admin.hotelDetail.messages.updateFailed'),
       });
     } finally {
       setSaving(false);
@@ -231,6 +233,8 @@ const HotelViewEdit: React.FC = () => {
   const heroWhiteStrong = alpha(theme.palette.common.white, 0.5);
   const heroWhiteHover = alpha(theme.palette.common.white, 0.9);
   const heroPattern = `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='${theme.palette.common.white.replace('#', '%23')}' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`;
+
+  const translateHotelStatus = (status?: string) => t(`admin.hotelDetail.status.${status ?? 'ACTIVE'}`, status ?? 'ACTIVE');
 
   // Helper function to get status icon and color
   const getStatusInfo = (status: string) => {
@@ -308,12 +312,12 @@ const HotelViewEdit: React.FC = () => {
                     mb: 1,
                     color: 'common.white'
                   }}>
-                    {currentHotel?.name || 'Hotel Details'}
+                    {currentHotel?.name || t('admin.hotelDetail.title')}
                   </Typography>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     <Chip
                       icon={statusInfo.icon}
-                      label={currentHotel?.status || 'ACTIVE'}
+                      label={translateHotelStatus(currentHotel?.status || 'ACTIVE')}
                       sx={{
                         color: 'common.white',
                         bgcolor: heroWhiteMedium,
@@ -349,7 +353,7 @@ const HotelViewEdit: React.FC = () => {
                         }
                       }}
                     >
-                      Cancel
+                      {t('common.cancel')}
                     </Button>
                     <Button
                       variant="contained"
@@ -362,7 +366,7 @@ const HotelViewEdit: React.FC = () => {
                         '&:hover': { bgcolor: heroWhiteHover }
                       }}
                     >
-                      {saving ? 'Saving...' : 'Save Changes'}
+                      {saving ? t('admin.hotelDetail.actions.saving') : t('admin.hotelDetail.actions.saveChanges')}
                     </Button>
                   </>
                 ) : (
@@ -376,7 +380,7 @@ const HotelViewEdit: React.FC = () => {
                       '&:hover': { bgcolor: heroWhiteHover }
                     }}
                   >
-                    Edit Hotel
+                    {t('admin.hotelDetail.actions.editHotel')}
                   </Button>
                 )}
               </Box>
@@ -390,7 +394,7 @@ const HotelViewEdit: React.FC = () => {
                     {currentHotel?.totalRooms || '0'}
                   </Typography>
                   <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                    Total Rooms
+                    {t('admin.hotelDetail.hero.totalRooms')}
                   </Typography>
                 </Box>
               </Grid>
@@ -399,11 +403,11 @@ const HotelViewEdit: React.FC = () => {
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <StarIcon sx={{ mr: 0.5, color: 'warning.light' }} />
                     <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                      {currentHotel?.rating || 'N/A'}
+                      {currentHotel?.rating || t('common.notAvailable')}
                     </Typography>
                   </Box>
                   <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                    Average Rating
+                    {t('admin.hotelDetail.hero.averageRating')}
                   </Typography>
                 </Box>
               </Grid>
@@ -416,7 +420,7 @@ const HotelViewEdit: React.FC = () => {
                     }
                   </Typography>
                   <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                    Days Active
+                    {t('admin.hotelDetail.hero.daysActive')}
                   </Typography>
                 </Box>
               </Grid>
@@ -426,7 +430,7 @@ const HotelViewEdit: React.FC = () => {
                     {currentHotel?.currency || 'USD'}
                   </Typography>
                   <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                    Currency
+                    {t('admin.hotelDetail.hero.currency')}
                   </Typography>
                 </Box>
               </Grid>
@@ -446,27 +450,29 @@ const HotelViewEdit: React.FC = () => {
                       <BusinessIcon />
                     </Avatar>
                     <Typography variant="h5" sx={{ fontWeight: 600 }}>
-                      Basic Information
+                      {t('admin.hotelDetail.sections.basicInformation')}
                     </Typography>
                   </Box>
                   
                   <Grid container spacing={3}>
                     <Grid item xs={12}>
                       <PremiumDisplayField
-                        label="Hotel Name"
+                        label={t('admin.hotelDetail.fields.hotelName')}
                         value={currentHotel.name}
                         isEditMode={isEditing}
                         onChange={(value) => handleInputChange('name', value)}
+                        placeholder={t('common.notAvailable')}
                         required
                       />
                     </Grid>
                     
                     <Grid item xs={12}>
                       <PremiumDisplayField
-                        label="Description"
+                        label={t('admin.hotelDetail.fields.description')}
                         value={currentHotel.description}
                         isEditMode={isEditing}
                         onChange={(value) => handleInputChange('description', value)}
+                        placeholder={t('common.notAvailable')}
                         multiline
                         rows={4}
                       />
@@ -474,29 +480,32 @@ const HotelViewEdit: React.FC = () => {
 
                     <Grid item xs={12} sm={6}>
                       <PremiumDisplayField
-                        label="Phone Number"
+                        label={t('admin.hotelDetail.fields.phoneNumber')}
                         value={currentHotel.phone}
                         isEditMode={isEditing}
                         onChange={(value) => handleInputChange('phone', value)}
+                        placeholder={t('common.notAvailable')}
                       />
                     </Grid>
 
                     <Grid item xs={12} sm={6}>
                       <PremiumDisplayField
-                        label="Email Address"
+                        label={t('admin.hotelDetail.fields.emailAddress')}
                         value={currentHotel.email}
                         isEditMode={isEditing}
                         onChange={(value) => handleInputChange('email', value)}
+                        placeholder={t('common.notAvailable')}
                         type="email"
                       />
                     </Grid>
 
                     <Grid item xs={12}>
                       <PremiumDisplayField
-                        label="Website URL"
+                        label={t('admin.hotelDetail.fields.websiteUrl')}
                         value={currentHotel.website}
                         isEditMode={isEditing}
                         onChange={(value) => handleInputChange('website', value)}
+                        placeholder={t('common.notAvailable')}
                         type="url"
                       />
                     </Grid>
@@ -512,7 +521,7 @@ const HotelViewEdit: React.FC = () => {
                       <LocationIcon />
                     </Avatar>
                     <Typography variant="h5" sx={{ fontWeight: 600 }}>
-                      Location & Address
+                      {t('admin.hotelDetail.sections.locationAddress')}
                     </Typography>
                   </Box>
                   
@@ -520,7 +529,7 @@ const HotelViewEdit: React.FC = () => {
                     <Grid item xs={12}>
                       <PremiumTextField
                         fullWidth
-                        label="Street Address"
+                        label={t('admin.hotelDetail.fields.streetAddress')}
                         value={currentHotel.address || ''}
                         onChange={(e) => handleInputChange('address', e.target.value)}
                         disabled={!isEditing}
@@ -530,7 +539,7 @@ const HotelViewEdit: React.FC = () => {
                     <Grid item xs={12} sm={6}>
                       <PremiumTextField
                         fullWidth
-                        label="City"
+                        label={t('admin.hotelDetail.fields.city')}
                         value={currentHotel.city || ''}
                         onChange={(e) => handleInputChange('city', e.target.value)}
                         disabled={!isEditing}
@@ -540,7 +549,7 @@ const HotelViewEdit: React.FC = () => {
                     <Grid item xs={12} sm={6}>
                       <PremiumTextField
                         fullWidth
-                        label="State/Province"
+                        label={t('admin.hotelDetail.fields.stateProvince')}
                         value={currentHotel.state || ''}
                         onChange={(e) => handleInputChange('state', e.target.value)}
                         disabled={!isEditing}
@@ -550,7 +559,7 @@ const HotelViewEdit: React.FC = () => {
                     <Grid item xs={12} sm={6}>
                       <PremiumTextField
                         fullWidth
-                        label="ZIP/Postal Code"
+                        label={t('admin.hotelDetail.fields.zipPostalCode')}
                         value={currentHotel.zipCode || ''}
                         onChange={(e) => handleInputChange('zipCode', e.target.value)}
                         disabled={!isEditing}
@@ -560,7 +569,7 @@ const HotelViewEdit: React.FC = () => {
                     <Grid item xs={12} sm={6}>
                       <PremiumTextField
                         fullWidth
-                        label="Country"
+                        label={t('admin.hotelDetail.fields.country')}
                         value={currentHotel.country || ''}
                         onChange={(e) => handleInputChange('country', e.target.value)}
                         disabled={!isEditing}
@@ -578,7 +587,7 @@ const HotelViewEdit: React.FC = () => {
                       <ScheduleIcon />
                     </Avatar>
                     <Typography variant="h5" sx={{ fontWeight: 600 }}>
-                      Operations & Settings
+                      {t('admin.hotelDetail.sections.operationsSettings')}
                     </Typography>
                   </Box>
                   
@@ -586,7 +595,7 @@ const HotelViewEdit: React.FC = () => {
                     <Grid item xs={12} sm={6}>
                       <PremiumTextField
                         fullWidth
-                        label="Check-in Time"
+                        label={t('admin.hotelDetail.fields.checkInTime')}
                         value={currentHotel.checkInTime || ''}
                         onChange={(e) => handleInputChange('checkInTime', e.target.value)}
                         disabled={!isEditing}
@@ -603,7 +612,7 @@ const HotelViewEdit: React.FC = () => {
                     <Grid item xs={12} sm={6}>
                       <PremiumTextField
                         fullWidth
-                        label="Check-out Time"
+                        label={t('admin.hotelDetail.fields.checkOutTime')}
                         value={currentHotel.checkOutTime || ''}
                         onChange={(e) => handleInputChange('checkOutTime', e.target.value)}
                         disabled={!isEditing}
@@ -620,7 +629,7 @@ const HotelViewEdit: React.FC = () => {
                     <Grid item xs={12} sm={6}>
                       <PremiumTextField
                         fullWidth
-                        label="Currency"
+                        label={t('admin.hotelDetail.fields.currency')}
                         value={currentHotel.currency || ''}
                         onChange={(e) => handleInputChange('currency', e.target.value)}
                         disabled={!isEditing}
@@ -637,7 +646,7 @@ const HotelViewEdit: React.FC = () => {
                     <Grid item xs={12} sm={6}>
                       <PremiumTextField
                         fullWidth
-                        label="Time Zone"
+                        label={t('admin.hotelDetail.fields.timeZone')}
                         value={currentHotel.timeZone || ''}
                         onChange={(e) => handleInputChange('timeZone', e.target.value)}
                         disabled={!isEditing}
@@ -665,13 +674,13 @@ const HotelViewEdit: React.FC = () => {
                       {React.cloneElement(statusInfo.icon, { sx: { color: `${statusInfo.color}.main` } })}
                     </Avatar>
                     <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                      Status Management
+                      {t('admin.hotelDetail.sections.statusManagement')}
                     </Typography>
                   </Box>
                   
                   <PremiumSelect
                     fullWidth
-                    label="Hotel Status"
+                    label={t('admin.hotelDetail.fields.hotelStatus')}
                     value={currentHotel.status || 'ACTIVE'}
                     onChange={(e) => handleInputChange('status', e.target.value)}
                     disabled={!isEditing}
@@ -680,25 +689,25 @@ const HotelViewEdit: React.FC = () => {
                     <MenuItem value="ACTIVE">
                       <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         <VerifiedIcon sx={{ mr: 1, color: 'success.main' }} />
-                        Active
+                        {t('admin.hotelDetail.status.ACTIVE')}
                       </Box>
                     </MenuItem>
                     <MenuItem value="PENDING">
                       <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         <PendingIcon sx={{ mr: 1, color: 'warning.main' }} />
-                        Pending
+                        {t('admin.hotelDetail.status.PENDING')}
                       </Box>
                     </MenuItem>
                     <MenuItem value="INACTIVE">
                       <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         <InactiveIcon sx={{ mr: 1, color: 'text.secondary' }} />
-                        Inactive
+                        {t('admin.hotelDetail.status.INACTIVE')}
                       </Box>
                     </MenuItem>
                     <MenuItem value="SUSPENDED">
                       <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         <SuspendedIcon sx={{ mr: 1, color: 'error.main' }} />
-                        Suspended
+                        {t('admin.hotelDetail.status.SUSPENDED')}
                       </Box>
                     </MenuItem>
                   </PremiumSelect>
@@ -706,7 +715,7 @@ const HotelViewEdit: React.FC = () => {
                   <Box sx={{ textAlign: 'center' }}>
                     <Chip
                       icon={statusInfo.icon}
-                      label={currentHotel.status || 'ACTIVE'}
+                      label={translateHotelStatus(currentHotel.status || 'ACTIVE')}
                       color={statusInfo.color}
                       variant="filled"
                       size="medium"
@@ -724,7 +733,7 @@ const HotelViewEdit: React.FC = () => {
                       <AnalyticsIcon />
                     </Avatar>
                     <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                      Performance Metrics
+                      {t('admin.hotelDetail.sections.performanceMetrics')}
                     </Typography>
                   </Box>
                   
@@ -733,11 +742,11 @@ const HotelViewEdit: React.FC = () => {
                       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
                         <StarIcon sx={{ color: 'warning.main', mr: 1 }} />
                         <Typography variant="h3" sx={{ fontWeight: 700, color: 'warning.main' }}>
-                          {currentHotel.rating || 'N/A'}
+                          {currentHotel.rating || t('common.notAvailable')}
                         </Typography>
                       </Box>
                       <Typography variant="body2" color="warning.dark" sx={{ fontWeight: 500 }}>
-                        Average Rating
+                        {t('admin.hotelDetail.hero.averageRating')}
                       </Typography>
                     </Box>
 
@@ -746,7 +755,7 @@ const HotelViewEdit: React.FC = () => {
                         {currentHotel.totalRooms || '0'}
                       </Typography>
                       <Typography variant="body2" color="primary.dark" sx={{ fontWeight: 500 }}>
-                        Total Rooms
+                        {t('admin.hotelDetail.hero.totalRooms')}
                       </Typography>
                     </Box>
 
@@ -758,7 +767,7 @@ const HotelViewEdit: React.FC = () => {
                         </Typography>
                       </Box>
                       <Typography variant="body2" color="success.dark" sx={{ fontWeight: 500 }}>
-                        Occupancy Rate
+                        {t('admin.hotelDetail.sections.occupancyRate')}
                       </Typography>
                     </Box>
                   </Stack>
@@ -773,14 +782,14 @@ const HotelViewEdit: React.FC = () => {
                       <CalendarIcon />
                     </Avatar>
                     <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                      System Information
+                      {t('admin.hotelDetail.sections.systemInformation')}
                     </Typography>
                   </Box>
                   
                   <Stack spacing={2}>
                     <Box>
                       <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-                        Created Date
+                        {t('admin.hotelDetail.fields.createdDate')}
                       </Typography>
                       <Typography variant="body1" sx={{ fontWeight: 500 }}>
                         {currentHotel.createdAt ? 
@@ -789,14 +798,14 @@ const HotelViewEdit: React.FC = () => {
                             month: 'long',
                             day: 'numeric'
                           })
-                          : 'N/A'
+                          : t('common.notAvailable')
                         }
                       </Typography>
                     </Box>
                     
                     <Box>
                       <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-                        Last Updated
+                        {t('admin.hotelDetail.fields.lastUpdated')}
                       </Typography>
                       <Typography variant="body1" sx={{ fontWeight: 500 }}>
                         {currentHotel.updatedAt ? 
@@ -805,14 +814,14 @@ const HotelViewEdit: React.FC = () => {
                             month: 'long',
                             day: 'numeric'
                           })
-                          : 'N/A'
+                          : t('common.notAvailable')
                         }
                       </Typography>
                     </Box>
                     
                     <Box>
                       <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-                        Hotel ID
+                        {t('admin.hotelDetail.fields.hotelId')}
                       </Typography>
                       <Typography variant="body1" sx={{ fontWeight: 500, fontFamily: 'monospace' }}>
                         #{currentHotel.id}
@@ -821,7 +830,7 @@ const HotelViewEdit: React.FC = () => {
                     
                     <Box>
                       <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-                        Active Status
+                        {t('admin.hotelDetail.fields.activeStatus')}
                       </Typography>
                       <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         <Badge 
@@ -834,7 +843,7 @@ const HotelViewEdit: React.FC = () => {
                           }}
                         />
                         <Typography variant="body1" sx={{ fontWeight: 500, ml: 1 }}>
-                          {currentHotel.isActive ? 'Active' : 'Inactive'}
+                          {currentHotel.isActive ? t('admin.hotelDetail.status.ACTIVE') : t('admin.hotelDetail.status.INACTIVE')}
                         </Typography>
                       </Box>
                     </Box>
@@ -849,25 +858,25 @@ const HotelViewEdit: React.FC = () => {
         <Box sx={{ mt: 6, pt: 4, textAlign: 'center' }}>
           <Divider sx={{ mb: 4 }} />
           <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-            BookMyHotel System Admin Dashboard - Version 2.0.0
+            {t('admin.hotelDetail.footer.version')}
           </Typography>
           <Typography variant="caption" color="text.secondary">
-            Professional hotel management platform with advanced analytics
+            {t('admin.hotelDetail.footer.subtitle')}
           </Typography>
         </Box>
 
         {/* Cancel Confirmation Dialog */}
         <Dialog open={showCancelDialog} onClose={() => setShowCancelDialog(false)}>
-          <DialogTitle>Discard Changes?</DialogTitle>
+          <DialogTitle>{t('admin.hotelDetail.dialog.discardTitle')}</DialogTitle>
           <DialogContent>
             <Typography>
-              You have unsaved changes. Are you sure you want to discard them?
+              {t('admin.hotelDetail.dialog.discardMessage')}
             </Typography>
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setShowCancelDialog(false)}>Keep Editing</Button>
+            <Button onClick={() => setShowCancelDialog(false)}>{t('admin.hotelDetail.dialog.keepEditing')}</Button>
             <Button onClick={cancelEdit} color="error">
-              Discard Changes
+              {t('admin.hotelDetail.dialog.discardChanges')}
             </Button>
           </DialogActions>
         </Dialog>

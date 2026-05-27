@@ -56,6 +56,7 @@ import { getReadableAccentTextColor } from '../../theme/surfaces';
 import { formatEthiopianPhone, normalizeEthiopianPhone } from '../../utils/phoneUtils';
 import { getEffectiveSearchTerm } from '../../utils/search';
 import HotelEditDialog from '../../components/hotel/HotelEditDialog';
+import { useTranslation } from 'react-i18next';
 
 interface Hotel extends HotelDTO {}
 
@@ -71,6 +72,7 @@ const HotelManagementAdmin: React.FC = () => {
   const theme = useTheme();
   const { token } = useAuth();
   const { showSubmissionError } = useSubmissionError();
+  const { t } = useTranslation();
 
   // Tab state
   const [activeTab, setActiveTab] = useState(0);
@@ -102,7 +104,10 @@ const HotelManagementAdmin: React.FC = () => {
   const [registrationEditMode, setRegistrationEditMode] = useState(false);
   const [registrationWizardStep, setRegistrationWizardStep] = useState(0);
 
-  const wizardSteps = ['Hotel & Admin Info', 'Additional Details'];
+  const wizardSteps = [
+    t('admin.hotelManagement.steps.hotelAndAdminInfo'),
+    t('admin.hotelManagement.steps.additionalDetails')
+  ];
   const [approveDialogOpen, setApproveDialogOpen] = useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [toggleStatusDialogOpen, setToggleStatusDialogOpen] = useState(false);
@@ -593,6 +598,10 @@ const HotelManagementAdmin: React.FC = () => {
     CANCELLED: 'default',
   } as const;
 
+  const translateRegistrationStatus = (status: string) => t(`admin.hotelManagement.registrationStatus.${status}`, {
+    defaultValue: status.replace(/_/g, ' '),
+  });
+
   const adminSectionTitleSx = {
     mb: 1,
     color: getReadableAccentTextColor(theme),
@@ -745,9 +754,9 @@ const HotelManagementAdmin: React.FC = () => {
   return (
     <PageContainer maxWidth={false} data-testid="hotel-management-page">
       <PageHeader
-        eyebrow="Platform Operations"
-        title="Hotel Management"
-        description="Manage existing hotels, review inbound registrations, and control platform visibility from one administrative workspace."
+        eyebrow={t('admin.hotelManagement.eyebrow')}
+        title={t('admin.hotelManagement.title')}
+        description={t('admin.hotelManagement.description')}
         actions={
           <>
             <StandardButton
@@ -763,7 +772,7 @@ const HotelManagementAdmin: React.FC = () => {
               data-testid="hotel-management-refresh-button"
               sx={refreshActionButtonSx}
             >
-              Refresh
+              {t('common.refresh')}
             </StandardButton>
             <StandardButton
               variant="contained"
@@ -771,7 +780,7 @@ const HotelManagementAdmin: React.FC = () => {
               onClick={handleRegisterHotel}
               data-testid="hotel-management-register-button"
             >
-              Register Hotel
+              {t('admin.hotelManagement.actions.registerHotel')}
             </StandardButton>
           </>
         }
@@ -792,37 +801,37 @@ const HotelManagementAdmin: React.FC = () => {
       <SurfaceCard variantStyle="elevated" contentSx={{ p: 0 }}>
         <Box data-testid="hotel-management-tabs">
           <Tabs value={activeTab} onChange={handleTabChange}>
-            <Tab label="Existing Hotels" data-testid="hotel-management-existing-hotels-tab" />
-            <Tab label="Hotel Registrations" data-testid="hotel-management-registrations-tab" />
+            <Tab label={t('admin.hotelManagement.tabs.existingHotels')} data-testid="hotel-management-existing-hotels-tab" />
+            <Tab label={t('admin.hotelManagement.tabs.hotelRegistrations')} data-testid="hotel-management-registrations-tab" />
           </Tabs>
         </Box>
       </SurfaceCard>
 
       {activeTab === 0 && (
         <DataTableCard
-          title="Existing Hotels"
-          description="Review hotel status, tenant assignments, and public listing state for all configured properties."
+          title={t('admin.hotelManagement.existingHotels.title')}
+          description={t('admin.hotelManagement.existingHotels.description')}
           filters={
             <Grid container spacing={2}>
               <Grid item xs={12} md={6}>
                 <PremiumTextField
                   fullWidth
-                  label="Search hotels..."
+                  label={t('admin.hotelManagement.filters.search')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Search by name, city, or email"
+                  placeholder={t('admin.hotelManagement.filters.searchPlaceholder')}
                 />
               </Grid>
               <Grid item xs={12} md={3}>
                 <PremiumSelect
                   fullWidth
-                  label="Status"
+                  label={t('admin.hotelManagement.filters.status')}
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
                 >
-                  <MenuItem value="all">All Hotels</MenuItem>
-                  <MenuItem value="active">Active Only</MenuItem>
-                  <MenuItem value="inactive">Inactive Only</MenuItem>
+                  <MenuItem value="all">{t('admin.hotelManagement.filters.allHotels')}</MenuItem>
+                  <MenuItem value="active">{t('admin.hotelManagement.filters.activeOnly')}</MenuItem>
+                  <MenuItem value="inactive">{t('admin.hotelManagement.filters.inactiveOnly')}</MenuItem>
                 </PremiumSelect>
               </Grid>
             </Grid>
@@ -836,21 +845,22 @@ const HotelManagementAdmin: React.FC = () => {
               rowsPerPage={rowsPerPage}
               onRowsPerPageChange={handleChangeRowsPerPage}
               rowsPerPageOptions={[5, 10, 25]}
+              labelRowsPerPage={t('admin.hotelManagement.existingHotels.rowsPerPage')}
             />
           }
         >
           <Table>
             <TableHead>
               <TableRow sx={adminTableHeaderSx}>
-                    <TableCell>Hotel Name</TableCell>
-                    <TableCell>Location</TableCell>
-                    <TableCell>Tenant</TableCell>
-                    <TableCell>Contact</TableCell>
-                    <TableCell>Rooms</TableCell>
-                    <TableCell>Rating</TableCell>
-                    <TableCell>Status</TableCell>
-                    <TableCell>Public Listing</TableCell>
-                    <TableCell>Actions</TableCell>
+                    <TableCell>{t('admin.hotelManagement.existingHotels.table.hotelName')}</TableCell>
+                    <TableCell>{t('admin.hotelManagement.existingHotels.table.location')}</TableCell>
+                    <TableCell>{t('admin.hotelManagement.existingHotels.table.tenant')}</TableCell>
+                    <TableCell>{t('admin.hotelManagement.existingHotels.table.contact')}</TableCell>
+                    <TableCell>{t('admin.hotelManagement.existingHotels.table.rooms')}</TableCell>
+                    <TableCell>{t('admin.hotelManagement.existingHotels.table.rating')}</TableCell>
+                    <TableCell>{t('admin.hotelManagement.existingHotels.table.status')}</TableCell>
+                    <TableCell>{t('admin.hotelManagement.existingHotels.table.publicListing')}</TableCell>
+                    <TableCell>{t('admin.hotelManagement.existingHotels.table.actions')}</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -864,7 +874,7 @@ const HotelManagementAdmin: React.FC = () => {
                     <TableRow>
                       <TableCell colSpan={9} align="center" sx={{ py: 6 }}>
                         <Typography variant="body2" color="text.secondary">
-                          No hotels found
+                          {t('admin.hotelManagement.existingHotels.emptyState')}
                         </Typography>
                       </TableCell>
                     </TableRow>
@@ -902,19 +912,19 @@ const HotelManagementAdmin: React.FC = () => {
                           </TableCell>
                           <TableCell>
                             <Typography variant="body2">
-                              Not available
+                              {t('common.notAvailable')}
                             </Typography>
                           </TableCell>
                           <TableCell>
                             <Chip
-                              label={hotel.isActive ? 'Active' : 'Inactive'}
+                              label={hotel.isActive ? t('admin.hotelManagement.status.active') : t('admin.hotelManagement.status.inactive')}
                               color={hotel.isActive ? 'success' : 'error'}
                               size="small"
                             />
                           </TableCell>
                           <TableCell>
                             <Chip
-                              label={hotel.isPubliclyListed ? 'Published' : 'Unlisted'}
+                              label={hotel.isPubliclyListed ? t('admin.hotelManagement.publicListing.published') : t('admin.hotelManagement.publicListing.unlisted')}
                               color={hotel.isPubliclyListed ? 'info' : 'default'}
                               size="small"
                               icon={hotel.isPubliclyListed ? <PublishIcon fontSize="small" /> : <UnpublishIcon fontSize="small" />}
@@ -925,7 +935,7 @@ const HotelManagementAdmin: React.FC = () => {
                               <IconButton
                                 size="small"
                                 onClick={() => handleViewHotel(hotel)}
-                                title="View Details"
+                                title={t('admin.hotelManagement.actions.viewDetails')}
                               >
                                 <ViewIcon />
                               </IconButton>
@@ -936,7 +946,7 @@ const HotelManagementAdmin: React.FC = () => {
                                   setToggleStatusReason('');
                                   setToggleStatusDialogOpen(true);
                                 }}
-                                title={hotel.isActive ? "Deactivate" : "Activate"}
+                                title={hotel.isActive ? t('admin.hotelManagement.actions.deactivate') : t('admin.hotelManagement.actions.activate')}
                                 color={hotel.isActive ? "success" : "error"}
                               >
                                 {hotel.isActive ? <ToggleOnIcon /> : <ToggleOffIcon />}
@@ -948,7 +958,7 @@ const HotelManagementAdmin: React.FC = () => {
                                   setTogglePublicReason('');
                                   setTogglePublicDialogOpen(true);
                                 }}
-                                title={hotel.isPubliclyListed ? 'Unpublish from public search' : 'Publish to public search'}
+                                title={hotel.isPubliclyListed ? t('admin.hotelManagement.actions.unpublishFromSearch') : t('admin.hotelManagement.actions.publishToSearch')}
                                 color={hotel.isPubliclyListed ? 'info' : 'default'}
                                 disabled={!hotel.isActive}
                               >
@@ -971,7 +981,7 @@ const HotelManagementAdmin: React.FC = () => {
               <Grid item xs={12} sm={6} md={3}>
                 <SurfaceCard variantStyle="subtle">
                   <Typography color="text.secondary" gutterBottom>
-                    Total
+                    {t('admin.hotelManagement.registrationStats.total')}
                   </Typography>
                   <Typography variant="h4">{registrationStats.total}</Typography>
                 </SurfaceCard>
@@ -979,7 +989,7 @@ const HotelManagementAdmin: React.FC = () => {
               <Grid item xs={12} sm={6} md={3}>
                 <SurfaceCard variantStyle="subtle">
                   <Typography color="text.secondary" gutterBottom>
-                    Pending
+                    {t('admin.hotelManagement.registrationStats.pending')}
                   </Typography>
                   <Typography variant="h4" color="warning.main">
                     {registrationStats.pending}
@@ -989,7 +999,7 @@ const HotelManagementAdmin: React.FC = () => {
               <Grid item xs={12} sm={6} md={3}>
                 <SurfaceCard variantStyle="subtle">
                   <Typography color="text.secondary" gutterBottom>
-                    Approved
+                    {t('admin.hotelManagement.registrationStats.approved')}
                   </Typography>
                   <Typography variant="h4" sx={{ color: getReadableAccentTextColor(theme) }}>
                     {registrationStats.approved}
@@ -999,7 +1009,7 @@ const HotelManagementAdmin: React.FC = () => {
               <Grid item xs={12} sm={6} md={3}>
                 <SurfaceCard variantStyle="subtle">
                   <Typography color="text.secondary" gutterBottom>
-                    Rejected
+                    {t('admin.hotelManagement.registrationStats.rejected')}
                   </Typography>
                   <Typography variant="h4" color="error.main">
                     {registrationStats.rejected}
@@ -1010,19 +1020,19 @@ const HotelManagementAdmin: React.FC = () => {
           )}
 
           <DataTableCard
-            title="Hotel Registrations"
-            description="Review pending hotel onboarding submissions, inspect application details, and approve or reject registrations."
+            title={t('admin.hotelManagement.registrations.title')}
+            description={t('admin.hotelManagement.registrations.description')}
           >
             <Table>
               <TableHead>
                 <TableRow sx={adminTableHeaderSx}>
-                    <TableCell>Hotel Name</TableCell>
-                    <TableCell>Contact Person</TableCell>
-                    <TableCell>Email</TableCell>
-                    <TableCell>City</TableCell>
-                    <TableCell>Status</TableCell>
-                    <TableCell>Submitted</TableCell>
-                    <TableCell>Actions</TableCell>
+                    <TableCell>{t('admin.hotelManagement.registrations.table.hotelName')}</TableCell>
+                    <TableCell>{t('admin.hotelManagement.registrations.table.contactPerson')}</TableCell>
+                    <TableCell>{t('admin.hotelManagement.registrations.table.email')}</TableCell>
+                    <TableCell>{t('admin.hotelManagement.registrations.table.city')}</TableCell>
+                    <TableCell>{t('admin.hotelManagement.registrations.table.status')}</TableCell>
+                    <TableCell>{t('admin.hotelManagement.registrations.table.submitted')}</TableCell>
+                    <TableCell>{t('admin.hotelManagement.registrations.table.actions')}</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -1030,7 +1040,7 @@ const HotelManagementAdmin: React.FC = () => {
                     <TableRow>
                       <TableCell colSpan={7} align="center" sx={{ py: 6 }}>
                         <Typography variant="body2" color="text.secondary">
-                          No hotel registrations found.
+                          {t('admin.hotelManagement.registrations.emptyState')}
                         </Typography>
                       </TableCell>
                     </TableRow>
@@ -1049,7 +1059,7 @@ const HotelManagementAdmin: React.FC = () => {
                       <TableCell>{registration.city}, {registration.country}</TableCell>
                       <TableCell>
                         <Chip 
-                          label={registration.status} 
+                          label={translateRegistrationStatus(registration.status)} 
                           color={statusColors[registration.status as keyof typeof statusColors]}
                           size="small"
                         />
@@ -1063,7 +1073,7 @@ const HotelManagementAdmin: React.FC = () => {
                           onClick={() => viewRegistration(registration)}
                           sx={adminOutlinedActionSx}
                         >
-                          Review
+                          {t('admin.hotelManagement.actions.review')}
                         </StandardButton>
                       </TableCell>
                     </TableRow>
@@ -1080,17 +1090,17 @@ const HotelManagementAdmin: React.FC = () => {
           onClose={() => setRegisterDialogOpen(false)}
           maxWidth="md"
           fullWidth
-          title="Register New Hotel"
+          title={t('admin.hotelManagement.dialogs.register.title')}
           actions={
             <>
-              <Button variant="outlined" sx={dialogSecondaryActionSx} onClick={() => setRegisterDialogOpen(false)} data-testid="hotel-registration-cancel-button">Cancel</Button>
+              <Button variant="outlined" sx={dialogSecondaryActionSx} onClick={() => setRegisterDialogOpen(false)} data-testid="hotel-registration-cancel-button">{t('common.cancel')}</Button>
               <Button 
                 variant="contained" 
                 onClick={handleRegistrationSubmit}
                 disabled={!registrationForm.hotelName || !registrationForm.contactPerson || !registrationForm.contactEmail}
                 data-testid="hotel-registration-submit-button"
               >
-                Submit Registration
+                {t('admin.hotelManagement.actions.submitRegistration')}
               </Button>
             </>
           }
@@ -1099,7 +1109,7 @@ const HotelManagementAdmin: React.FC = () => {
           <Grid container spacing={2} sx={{ mt: 0.5 }}>
               <Grid item xs={12} sm={6}>
                 <PremiumTextField
-                  label="Hotel Name"
+                  label={t('admin.hotelManagement.fields.hotelName')}
                   fullWidth
                   required
                   value={registrationForm.hotelName}
@@ -1110,7 +1120,7 @@ const HotelManagementAdmin: React.FC = () => {
               
               <Grid item xs={12} sm={6}>
                 <PremiumTextField
-                  label="Contact Person"
+                  label={t('admin.hotelManagement.fields.contactPerson')}
                   fullWidth
                   required
                   value={registrationForm.contactPerson}
@@ -1121,7 +1131,7 @@ const HotelManagementAdmin: React.FC = () => {
               
               <Grid item xs={12}>
                 <PremiumTextField
-                  label="Description"
+                  label={t('admin.hotelManagement.fields.description')}
                   multiline
                   rows={3}
                   fullWidth
@@ -1133,7 +1143,7 @@ const HotelManagementAdmin: React.FC = () => {
               
               <Grid item xs={12}>
                 <PremiumTextField
-                  label="Address"
+                  label={t('admin.hotelManagement.fields.address')}
                   fullWidth
                   required
                   value={registrationForm.address}
@@ -1144,7 +1154,7 @@ const HotelManagementAdmin: React.FC = () => {
               
               <Grid item xs={12} sm={6}>
                 <PremiumTextField
-                  label="City"
+                  label={t('admin.hotelManagement.fields.city')}
                   fullWidth
                   required
                   value={registrationForm.city}
@@ -1155,7 +1165,7 @@ const HotelManagementAdmin: React.FC = () => {
               
               <Grid item xs={12} sm={6}>
                 <PremiumTextField
-                  label="Country"
+                  label={t('admin.hotelManagement.fields.country')}
                   fullWidth
                   required
                   value={registrationForm.country}
@@ -1167,7 +1177,7 @@ const HotelManagementAdmin: React.FC = () => {
               {/* Row 5: Contact Email - moved before phone numbers */}
               <Grid item xs={12}>
                 <PremiumTextField
-                  label="Contact Email"
+                  label={t('admin.hotelManagement.fields.contactEmail')}
                   type="email"
                   fullWidth
                   required
@@ -1181,17 +1191,17 @@ const HotelManagementAdmin: React.FC = () => {
               <Grid item xs={12}>
                 <Box sx={adminInfoPanelSx}>
                   <Typography variant="subtitle1" sx={{ ...adminSectionTitleSx, mb: 2 }}>
-                    Phone Numbers
+                    {t('admin.hotelManagement.sections.phoneNumbers')}
                   </Typography>
                   <Grid container spacing={2}>
                     <Grid item xs={12} sm={6}>
                       <PremiumTextField
-                        label="Phone (Communication)"
+                        label={t('admin.hotelManagement.fields.communicationPhone')}
                         fullWidth
                         required
                         value={registrationForm.phone}
                         onChange={(e) => handleRegistrationFormChange('phone', e.target.value)}
-                        helperText="Primary phone for general communication"
+                        helperText={t('admin.hotelManagement.helpers.communicationPhone')}
                         inputProps={{ 'data-testid': 'hotel-registration-phone-input' }}
                       />
                     </Grid>
@@ -1200,21 +1210,21 @@ const HotelManagementAdmin: React.FC = () => {
                     </Grid>
                     <Grid item xs={12} sm={6}>
                       <PremiumTextField
-                        label="Mobile Payment Phone"
+                        label={t('admin.hotelManagement.fields.mobilePaymentPhone')}
                         fullWidth
                         value={registrationForm.mobilePaymentPhone}
                         onChange={(e) => handleRegistrationFormChange('mobilePaymentPhone', e.target.value)}
-                        helperText="Primary mobile money account for payments"
+                        helperText={t('admin.hotelManagement.helpers.mobilePaymentPhone')}
                         inputProps={{ 'data-testid': 'hotel-registration-mobile-payment-phone-input' }}
                       />
                     </Grid>
                     <Grid item xs={12} sm={6}>
                       <PremiumTextField
-                        label="Mobile Payment Phone 2 (Optional)"
+                        label={t('admin.hotelManagement.fields.mobilePaymentPhone2')}
                         fullWidth
                         value={registrationForm.mobilePaymentPhone2}
                         onChange={(e) => handleRegistrationFormChange('mobilePaymentPhone2', e.target.value)}
-                        helperText="Optional secondary mobile money account"
+                        helperText={t('admin.hotelManagement.helpers.mobilePaymentPhone2')}
                         inputProps={{ 'data-testid': 'hotel-registration-mobile-payment-phone-2-input' }}
                       />
                     </Grid>
@@ -1224,7 +1234,7 @@ const HotelManagementAdmin: React.FC = () => {
 
               <Grid item xs={12} sm={6}>
                 <PremiumTextField
-                  label="License Number"
+                  label={t('admin.hotelManagement.fields.licenseNumber')}
                   fullWidth
                   value={registrationForm.licenseNumber}
                   onChange={(e) => handleRegistrationFormChange('licenseNumber', e.target.value)}
@@ -1234,7 +1244,7 @@ const HotelManagementAdmin: React.FC = () => {
 
               <Grid item xs={12} sm={6}>
                 <PremiumTextField
-                  label="Tax ID"
+                  label={t('admin.hotelManagement.fields.taxId')}
                   fullWidth
                   value={registrationForm.taxId}
                   onChange={(e) => handleRegistrationFormChange('taxId', e.target.value)}
@@ -1244,7 +1254,7 @@ const HotelManagementAdmin: React.FC = () => {
 
               <Grid item xs={12}>
                 <PremiumTextField
-                  label="Website URL"
+                  label={t('admin.hotelManagement.fields.websiteUrl')}
                   fullWidth
                   value={registrationForm.websiteUrl}
                   onChange={(e) => handleRegistrationFormChange('websiteUrl', e.target.value)}
@@ -1254,31 +1264,31 @@ const HotelManagementAdmin: React.FC = () => {
 
               <Grid item xs={12}>
                 <PremiumTextField
-                  label="Facility Amenities"
+                  label={t('admin.hotelManagement.fields.facilityAmenities')}
                   multiline
                   rows={2}
                   fullWidth
                   value={registrationForm.facilityAmenities}
                   onChange={(e) => handleRegistrationFormChange('facilityAmenities', e.target.value)}
-                  placeholder="WiFi, Pool, Spa, Restaurant, etc."
+                  placeholder={t('admin.hotelManagement.placeholders.facilityAmenities')}
                   inputProps={{ 'data-testid': 'hotel-registration-facility-amenities-input' }}
                 />
               </Grid>
 
               <Grid item xs={12} sm={4}>
                 <PremiumTextField
-                  label="Number of Rooms"
+                  label={t('admin.hotelManagement.fields.numberOfRooms')}
                   fullWidth
                   value={registrationForm.numberOfRooms}
                   onChange={(e) => handleRegistrationFormChange('numberOfRooms', e.target.value)}
-                  placeholder="Enter number of rooms"
+                  placeholder={t('admin.hotelManagement.placeholders.numberOfRooms')}
                   inputProps={{ 'data-testid': 'hotel-registration-number-of-rooms-input' }}
                 />
               </Grid>
 
               <Grid item xs={12} sm={4}>
                 <PremiumTextField
-                  label="Check-in Time"
+                  label={t('admin.hotelManagement.fields.checkInTime')}
                   type="time"
                   fullWidth
                   value={registrationForm.checkInTime}
@@ -1289,7 +1299,7 @@ const HotelManagementAdmin: React.FC = () => {
 
               <Grid item xs={12} sm={4}>
                 <PremiumTextField
-                  label="Check-out Time"
+                  label={t('admin.hotelManagement.fields.checkOutTime')}
                   type="time"
                   fullWidth
                   value={registrationForm.checkOutTime}

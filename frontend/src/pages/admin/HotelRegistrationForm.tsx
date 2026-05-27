@@ -22,6 +22,7 @@ import {
   Send,
   Hotel,
 } from '@mui/icons-material';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuthenticatedApi } from '../../hooks/useAuthenticatedApi';
 import { useTenant } from '../../contexts/TenantContext';
@@ -60,6 +61,7 @@ const HotelRegistrationForm: React.FC = () => {
   const [searchParams] = useSearchParams();
   const { adminApiService } = useAuthenticatedApi();
   const { tenantId } = useTenant();
+  const { t } = useTranslation();
   const [activeStep, setActiveStep] = useState(0);
   const [formData, setFormData] = useState<HotelFormData>({
     hotelName: '',
@@ -93,10 +95,18 @@ const HotelRegistrationForm: React.FC = () => {
   const [error, setError] = useState('');
 
   const steps = [
-    'Basic Information',
-    'Location Details', 
-    'Contact Information',
-    'Business Details'
+    t('admin.hotelRegistrationForm.steps.basicInformation'),
+    t('admin.hotelRegistrationForm.steps.locationDetails'),
+    t('admin.hotelRegistrationForm.steps.contactInformation'),
+    t('admin.hotelRegistrationForm.steps.businessDetails')
+  ];
+
+  const categoryOptions = [
+    { value: 'luxury', label: t('admin.hotelRegistrationForm.categories.luxury') },
+    { value: 'business', label: t('admin.hotelRegistrationForm.categories.business') },
+    { value: 'budget', label: t('admin.hotelRegistrationForm.categories.budget') },
+    { value: 'boutique', label: t('admin.hotelRegistrationForm.categories.boutique') },
+    { value: 'resort', label: t('admin.hotelRegistrationForm.categories.resort') },
   ];
 
   const handleInputChange = (field: keyof HotelFormData) => (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -151,7 +161,7 @@ const HotelRegistrationForm: React.FC = () => {
       
     } catch (err: any) {
       // console.error('Error registering hotel:', err);
-      setError(err.message || 'Failed to register hotel. Please try again.');
+      setError(err.message || t('admin.hotelRegistrationForm.messages.registerFailed'));
     } finally {
       setLoading(false);
     }
@@ -165,37 +175,35 @@ const HotelRegistrationForm: React.FC = () => {
             <Grid item xs={12}>
               <PremiumTextField
                 fullWidth
-                label="Hotel Name"
+                label={t('admin.hotelRegistrationForm.fields.hotelName')}
                 value={formData.hotelName}
                 onChange={handleInputChange('hotelName')}
                 required
-                placeholder="Enter hotel name"
+                placeholder={t('admin.hotelRegistrationForm.placeholders.hotelName')}
               />
             </Grid>
             <Grid item xs={12}>
               <PremiumTextField
                 fullWidth
-                label="Description"
+                label={t('admin.hotelRegistrationForm.fields.description')}
                 value={formData.description}
                 onChange={handleInputChange('description')}
                 multiline
                 rows={4}
-                placeholder="Enter hotel description"
+                placeholder={t('admin.hotelRegistrationForm.placeholders.description')}
               />
             </Grid>
             <Grid item xs={12} md={6}>
               <FormControl fullWidth>
-                <InputLabel>Hotel Category</InputLabel>
+                <InputLabel>{t('admin.hotelRegistrationForm.fields.category')}</InputLabel>
                 <Select
                   value={formData.category}
                   onChange={handleSelectChange('category')}
-                  label="Hotel Category"
+                  label={t('admin.hotelRegistrationForm.fields.category')}
                 >
-                  <MenuItem value="luxury">Luxury</MenuItem>
-                  <MenuItem value="business">Business</MenuItem>
-                  <MenuItem value="budget">Budget</MenuItem>
-                  <MenuItem value="boutique">Boutique</MenuItem>
-                  <MenuItem value="resort">Resort</MenuItem>
+                  {categoryOptions.map((option) => (
+                    <MenuItem key={option.value} value={option.value}>{option.label}</MenuItem>
+                  ))}
                 </Select>
               </FormControl>
             </Grid>
@@ -208,49 +216,49 @@ const HotelRegistrationForm: React.FC = () => {
             <Grid item xs={12}>
               <PremiumTextField
                 fullWidth
-                label="Address"
+                label={t('admin.hotelRegistrationForm.fields.address')}
                 value={formData.address}
                 onChange={handleInputChange('address')}
                 required
-                placeholder="Enter street address"
+                placeholder={t('admin.hotelRegistrationForm.placeholders.address')}
               />
             </Grid>
             <Grid item xs={12} md={6}>
               <PremiumTextField
                 fullWidth
-                label="City"
+                label={t('admin.hotelRegistrationForm.fields.city')}
                 value={formData.city}
                 onChange={handleInputChange('city')}
                 required
-                placeholder="Enter city"
+                placeholder={t('admin.hotelRegistrationForm.placeholders.city')}
               />
             </Grid>
             <Grid item xs={12} md={6}>
               <PremiumTextField
                 fullWidth
-                label="State/Province"
+                label={t('admin.hotelRegistrationForm.fields.stateProvince')}
                 value={formData.state}
                 onChange={handleInputChange('state')}
-                placeholder="Enter state or province"
+                placeholder={t('admin.hotelRegistrationForm.placeholders.stateProvince')}
               />
             </Grid>
             <Grid item xs={12} md={6}>
               <PremiumTextField
                 fullWidth
-                label="Country"
+                label={t('admin.hotelRegistrationForm.fields.country')}
                 value={formData.country}
                 onChange={handleInputChange('country')}
                 required
-                placeholder="Enter country"
+                placeholder={t('admin.hotelRegistrationForm.placeholders.country')}
               />
             </Grid>
             <Grid item xs={12} md={6}>
               <PremiumTextField
                 fullWidth
-                label="ZIP/Postal Code"
+                label={t('admin.hotelRegistrationForm.fields.zipPostalCode')}
                 value={formData.zipCode}
                 onChange={handleInputChange('zipCode')}
-                placeholder="Enter ZIP code"
+                placeholder={t('admin.hotelRegistrationForm.placeholders.zipPostalCode')}
               />
             </Grid>
           </Grid>
@@ -262,41 +270,41 @@ const HotelRegistrationForm: React.FC = () => {
             <Grid item xs={12} md={6}>
               <PremiumTextField
                 fullWidth
-                label="Phone Number"
+                label={t('admin.hotelRegistrationForm.fields.phoneNumber')}
                 value={formData.phone}
                 onChange={handleInputChange('phone')}
                 required
-                placeholder="Enter phone number"
+                placeholder={t('admin.hotelRegistrationForm.placeholders.phoneNumber')}
               />
             </Grid>
             <Grid item xs={12} md={6}>
               <PremiumTextField
                 fullWidth
-                label="Email Address"
+                label={t('admin.hotelRegistrationForm.fields.emailAddress')}
                 type="email"
                 value={formData.email}
                 onChange={handleInputChange('email')}
                 required
-                placeholder="Enter email address"
+                placeholder={t('admin.hotelRegistrationForm.placeholders.emailAddress')}
               />
             </Grid>
             <Grid item xs={12} md={6}>
               <PremiumTextField
                 fullWidth
-                label="Website"
+                label={t('admin.hotelRegistrationForm.fields.website')}
                 value={formData.website}
                 onChange={handleInputChange('website')}
-                placeholder="Enter website URL"
+                placeholder={t('admin.hotelRegistrationForm.placeholders.website')}
               />
             </Grid>
             <Grid item xs={12} md={6}>
               <PremiumTextField
                 fullWidth
-                label="Contact Person"
+                label={t('admin.hotelRegistrationForm.fields.contactPerson')}
                 value={formData.contactPerson}
                 onChange={handleInputChange('contactPerson')}
                 required
-                placeholder="Enter contact person name"
+                placeholder={t('admin.hotelRegistrationForm.placeholders.contactPerson')}
               />
             </Grid>
           </Grid>
@@ -308,28 +316,28 @@ const HotelRegistrationForm: React.FC = () => {
             <Grid item xs={12} md={6}>
               <PremiumTextField
                 fullWidth
-                label="Business License Number"
+                label={t('admin.hotelRegistrationForm.fields.businessLicenseNumber')}
                 value={formData.licenseNumber}
                 onChange={handleInputChange('licenseNumber')}
                 required
-                placeholder="Enter license number"
+                placeholder={t('admin.hotelRegistrationForm.placeholders.businessLicenseNumber')}
               />
             </Grid>
             <Grid item xs={12} md={6}>
               <PremiumTextField
                 fullWidth
-                label="Tax ID"
+                label={t('admin.hotelRegistrationForm.fields.taxId')}
                 value={formData.taxId}
                 onChange={handleInputChange('taxId')}
                 required
-                placeholder="Enter tax identification number"
+                placeholder={t('admin.hotelRegistrationForm.placeholders.taxId')}
               />
             </Grid>
           </Grid>
         );
       
       default:
-        return 'Unknown step';
+        return t('admin.hotelRegistrationForm.messages.unknownStep');
     }
   };
 
@@ -339,10 +347,10 @@ const HotelRegistrationForm: React.FC = () => {
         <Paper sx={{ p: 4, textAlign: 'center' }}>
           <Hotel sx={{ fontSize: 80, color: 'primary.main', mb: 2 }} />
           <Typography variant="h4" gutterBottom sx={{ color: 'primary.main' }}>
-            Hotel Registered Successfully!
+            {t('admin.hotelRegistrationForm.messages.registerSuccessTitle')}
           </Typography>
           <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-            The hotel "{formData.hotelName}" has been registered and is now pending review.
+            {t('admin.hotelRegistrationForm.messages.registerSuccessBody', { hotelName: formData.hotelName })}
           </Typography>
           <IconButton onClick={handleBackToAdmin} sx={{ mr: 1 }}>
             <ArrowBack />
@@ -361,10 +369,10 @@ const HotelRegistrationForm: React.FC = () => {
         </IconButton>
         <Box>
           <Typography variant="h4" component="h1" gutterBottom>
-            Register New Hotel
+            {t('admin.hotelRegistrationForm.title')}
           </Typography>
           <Typography variant="body1" color="text.secondary">
-            Add a new hotel to the platform
+            {t('admin.hotelRegistrationForm.description')}
           </Typography>
         </Box>
       </Box>
@@ -402,7 +410,7 @@ const HotelRegistrationForm: React.FC = () => {
             variant="outlined"
             sx={dialogSecondaryActionSx}
           >
-            Back
+            {t('common.back')}
           </Button>
           
           <Box sx={{ display: 'flex', gap: 2 }}>
@@ -411,7 +419,7 @@ const HotelRegistrationForm: React.FC = () => {
                 onClick={handleNext}
                 variant="contained"
               >
-                Next
+                {t('common.next')}
               </Button>
             ) : (
               <Button
@@ -420,7 +428,7 @@ const HotelRegistrationForm: React.FC = () => {
                 startIcon={<Send />}
                 disabled={loading}
               >
-                {loading ? 'Registering...' : 'Register Hotel'}
+                {loading ? t('admin.hotelRegistrationForm.actions.registering') : t('admin.hotelRegistrationForm.actions.registerHotel')}
               </Button>
             )}
           </Box>
@@ -431,26 +439,26 @@ const HotelRegistrationForm: React.FC = () => {
       {activeStep === steps.length - 1 && (
         <Paper sx={{ p: 3, mt: 3 }}>
           <Typography variant="h6" gutterBottom>
-            Registration Summary
+            {t('admin.hotelRegistrationForm.summary.title')}
           </Typography>
           <Grid container spacing={2}>
             <Grid item xs={12} md={6}>
-              <Typography variant="body2" color="text.secondary">Hotel Name:</Typography>
-              <Typography variant="body1">{formData.hotelName || 'Not specified'}</Typography>
+              <Typography variant="body2" color="text.secondary">{t('admin.hotelRegistrationForm.summary.hotelName')}</Typography>
+              <Typography variant="body1">{formData.hotelName || t('common.notAvailable')}</Typography>
             </Grid>
             <Grid item xs={12} md={6}>
-              <Typography variant="body2" color="text.secondary">Category:</Typography>
-              <Typography variant="body1">{formData.category || 'Not specified'}</Typography>
+              <Typography variant="body2" color="text.secondary">{t('admin.hotelRegistrationForm.summary.category')}</Typography>
+              <Typography variant="body1">{formData.category || t('common.notAvailable')}</Typography>
             </Grid>
             <Grid item xs={12} md={6}>
-              <Typography variant="body2" color="text.secondary">Location:</Typography>
+              <Typography variant="body2" color="text.secondary">{t('admin.hotelRegistrationForm.summary.location')}</Typography>
               <Typography variant="body1">
-                {formData.city ? `${formData.city}, ${formData.country}` : 'Not specified'}
+                {formData.city ? `${formData.city}, ${formData.country}` : t('common.notAvailable')}
               </Typography>
             </Grid>
             <Grid item xs={12} md={6}>
-              <Typography variant="body2" color="text.secondary">Contact:</Typography>
-              <Typography variant="body1">{formData.email || 'Not specified'}</Typography>
+              <Typography variant="body2" color="text.secondary">{t('admin.hotelRegistrationForm.summary.contact')}</Typography>
+              <Typography variant="body1">{formData.email || t('common.notAvailable')}</Typography>
             </Grid>
           </Grid>
         </Paper>

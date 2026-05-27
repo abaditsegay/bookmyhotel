@@ -54,6 +54,7 @@ export interface DonutChartProps {
   thickness?: number;
   showPercentages?: boolean;
   centerText?: string;
+  centerSubtext?: string;
 }
 
 const MetricCard: React.FC<MetricCardProps> = ({
@@ -182,7 +183,7 @@ const BarChart: React.FC<BarChartProps> = ({
     }
   }, [animated]);
 
-  const maxValue = Math.max(...data.map(d => d.value));
+  const maxValue = Math.max(1, ...data.map(d => d.value));
 
   return (
     <Paper
@@ -265,6 +266,7 @@ const DonutChart: React.FC<DonutChartProps> = ({
   thickness = 20,
   showPercentages = true,
   centerText,
+  centerSubtext,
 }) => {
   const theme = useTheme();
   const fallbackAccent = getReadableAccentTextColor(theme);
@@ -276,6 +278,7 @@ const DonutChart: React.FC<DonutChartProps> = ({
   }, []);
 
   const total = data.reduce((sum, item) => sum + item.value, 0);
+  const safeTotal = Math.max(total, 1);
   const radius = (size - thickness) / 2;
   const circumference = 2 * Math.PI * radius;
 
@@ -308,7 +311,7 @@ const DonutChart: React.FC<DonutChartProps> = ({
           
           {/* Data segments */}
           {data.map((item, index) => {
-            const percentage = (item.value / total) * 100;
+            const percentage = (item.value / safeTotal) * 100;
             const strokeDasharray = `${(percentage / 100) * circumference * (animationProgress / 100)} ${circumference}`;
             const strokeDashoffset = -currentOffset * (animationProgress / 100);
             
@@ -350,6 +353,11 @@ const DonutChart: React.FC<DonutChartProps> = ({
             <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
               {centerText}
             </Typography>
+            {centerSubtext && (
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                {centerSubtext}
+              </Typography>
+            )}
           </Box>
         )}
       </Box>
@@ -357,7 +365,7 @@ const DonutChart: React.FC<DonutChartProps> = ({
       {/* Legend */}
       <Box sx={{ mt: 3, display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 2 }}>
         {data.map((item, index) => {
-          const percentage = ((item.value / total) * 100).toFixed(1);
+          const percentage = total > 0 ? ((item.value / total) * 100).toFixed(1) : '0.0';
           
           return (
             <Box key={index} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
