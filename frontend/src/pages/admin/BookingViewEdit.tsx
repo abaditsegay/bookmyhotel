@@ -687,7 +687,12 @@ const BookingViewEdit: React.FC = () => {
                         onChange={(e: SelectChangeEvent<string>) => handleFieldChange('status', e.target.value as string)}
                       >
                         <MenuItem value="BOOKED">Booked</MenuItem>
-                        <MenuItem value="CHECKED_IN">Checked In</MenuItem>
+                        <MenuItem
+                          value="CHECKED_IN"
+                          disabled={!currentBooking?.roomNumber || currentBooking.roomNumber === 'To be assigned'}
+                        >
+                          Checked In
+                        </MenuItem>
                         <MenuItem value="CHECKED_OUT">Checked Out</MenuItem>
                         <MenuItem value="CANCELLED">Cancelled</MenuItem>
                         <MenuItem value="PENDING">Pending</MenuItem>

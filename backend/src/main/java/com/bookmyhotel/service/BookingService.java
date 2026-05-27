@@ -1036,8 +1036,10 @@ public class BookingService {
 
         if (reservation.getStatus() == ReservationStatus.CHECKED_IN) {
             assignedRoom.setStatus(RoomStatus.OCCUPIED);
+            assignedRoom.setIsAvailable(false);
         } else {
             assignedRoom.setStatus(RoomStatus.AVAILABLE);
+            assignedRoom.setIsAvailable(true);
         }
 
         roomRepository.save(assignedRoom);

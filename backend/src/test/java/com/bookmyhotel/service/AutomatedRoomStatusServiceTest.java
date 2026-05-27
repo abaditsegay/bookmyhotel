@@ -47,6 +47,7 @@ class AutomatedRoomStatusServiceTest {
         automatedRoomStatusService.checkRoomStatusConsistency(10L);
 
         assertEquals(RoomStatus.OCCUPIED, room.getStatus());
+        assertEquals(false, room.getIsAvailable());
         verify(roomRepository).findById(10L);
         verify(roomRepository).save(room);
     }
@@ -60,6 +61,7 @@ class AutomatedRoomStatusServiceTest {
         automatedRoomStatusService.checkRoomStatusConsistency(11L);
 
         assertEquals(RoomStatus.AVAILABLE, room.getStatus());
+        assertEquals(true, room.getIsAvailable());
         verify(roomRepository).save(room);
     }
 
@@ -72,6 +74,7 @@ class AutomatedRoomStatusServiceTest {
         automatedRoomStatusService.checkRoomStatusConsistency(12L);
 
         assertEquals(RoomStatus.AVAILABLE, room.getStatus());
+        assertEquals(true, room.getIsAvailable());
         verify(roomRepository).findById(12L);
         verify(roomRepository).save(room);
     }
@@ -117,6 +120,7 @@ class AutomatedRoomStatusServiceTest {
         automatedRoomStatusService.autoFixRoomStatusConsistency();
 
         assertEquals(RoomStatus.OCCUPIED, roomNeedingFix.getStatus());
+        assertEquals(false, roomNeedingFix.getIsAvailable());
         assertEquals(RoomStatus.AVAILABLE, consistentRoom.getStatus());
         verify(hotelRepository).findAll();
         verify(roomRepository).findByHotelId(1L);

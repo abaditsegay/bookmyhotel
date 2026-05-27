@@ -2,6 +2,7 @@ package com.bookmyhotel.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -114,6 +115,22 @@ class BookingStatusUpdateServiceIntegrationTest extends MySqlIntegrationTestSupp
                 eq(BigDecimal.ZERO),
                 eq("ops"));
         verify(automatedRoomStatusService).checkRoomStatusConsistency(room.getId());
+    }
+
+    @Test
+    void updateBookingStatusShouldRejectCheckInWithoutAssignedRoom() {
+        Hotel hotel = createHotel("checkin-no-room");
+        Reservation reservation = createReservation(hotel, null, ReservationStatus.BOOKED, "BKCHECKINNOROOM001");
+
+        assertThrows(IllegalStateException.class,
+                () -> bookingStatusUpdateService.updateBookingStatus(
+                        reservation.getId(),
+                        ReservationStatus.CHECKED_IN,
+                        "front desk"));
+
+        Reservation persistedReservation = reservationRepository.findById(reservation.getId()).orElseThrow();
+        assertEquals(ReservationStatus.BOOKED, persistedReservation.getStatus());
+        verify(automatedRoomStatusService, org.mockito.Mockito.never()).checkRoomStatusConsistency(any(Long.class));
     }
 
     private Hotel createHotel(String suffix) {

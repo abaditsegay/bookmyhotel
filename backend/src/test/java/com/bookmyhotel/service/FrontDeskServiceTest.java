@@ -132,6 +132,31 @@ class FrontDeskServiceTest {
     }
 
     @Test
+    void checkInGuestShouldEvictRoomCachesAfterOccupyingRoom() {
+        Hotel hotel = buildHotel(42L);
+        Room room = buildRoom(712L, hotel, "714", RoomType.STANDARD, "1800.00", RoomStatus.AVAILABLE);
+        Reservation reservation = buildReservation(620L, hotel, room, ReservationStatus.BOOKED);
+
+        when(reservationRepository.findById(620L)).thenReturn(Optional.of(reservation));
+        when(roomRepository.save(room)).thenReturn(room);
+        when(reservationRepository.save(reservation)).thenReturn(reservation);
+        when(bookingService.convertToBookingResponse(reservation)).thenAnswer(invocation -> {
+            Reservation updatedReservation = invocation.getArgument(0);
+            BookingResponse response = new BookingResponse();
+            response.setReservationId(updatedReservation.getId());
+            response.setStatus(updatedReservation.getStatus().name());
+            return response;
+        });
+
+        BookingResponse response = frontDeskService.checkInGuest(620L);
+
+        assertEquals("CHECKED_IN", response.getStatus());
+        assertEquals(RoomStatus.OCCUPIED, room.getStatus());
+        assertEquals(false, room.getIsAvailable());
+        verify(roomCacheService).evictRoomSpecificCaches(712L, 42L);
+    }
+
+    @Test
     void checkInWithRoomAssignmentShouldRejectRoomFromDifferentHotel() {
         Hotel reservationHotel = buildHotel(51L);
         Hotel otherHotel = buildHotel(52L);

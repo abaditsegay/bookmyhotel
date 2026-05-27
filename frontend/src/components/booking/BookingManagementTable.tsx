@@ -47,6 +47,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
 import { hotelAdminApi } from '../../services/hotelAdminApi';
 import { frontDeskApiService, CheckoutResponse } from '../../services/frontDeskApi';
+import { roomCacheService } from '../../services/RoomCacheService';
 import CheckoutReceiptDialog from '../receipts/CheckoutReceiptDialog';
 import CheckInDialog from './CheckInDialog';
 import { Booking } from '../../types/booking-shared';
@@ -83,7 +84,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
 }) => {
   const { t } = useTranslation();
   const { tenant, tenantId } = useTenant();
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const { showSubmissionError } = useSubmissionError();
   const muiTheme = useTheme();
   const isDark = muiTheme.palette.mode === 'dark';
@@ -441,6 +442,19 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
     // Close dialog and reset state
     setCheckInDialogOpen(false);
     setBookingForCheckIn(null);
+
+    if (onBookingAction) {
+      onBookingAction(updatedBooking, 'check-in');
+    }
+
+    if (user?.hotelId) {
+      const hotelId = parseInt(user.hotelId, 10);
+      if (!Number.isNaN(hotelId)) {
+        roomCacheService.getRooms(hotelId, true).catch(() => {
+          // Room cache refresh is best-effort; booking state is already updated locally.
+        });
+      }
+    }
     
     // Don't auto-refresh - state update above is sufficient and immediate
     // Auto-refresh gets stale data before backend commits the change

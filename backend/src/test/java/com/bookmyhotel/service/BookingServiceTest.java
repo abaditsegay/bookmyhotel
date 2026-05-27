@@ -218,6 +218,7 @@ class BookingServiceTest {
         assertEquals("PENDING", response.getPaymentStatus());
         assertEquals("101", response.getRoomNumber());
         assertEquals(RoomStatus.OCCUPIED, room.getStatus());
+        assertEquals(false, room.getIsAvailable());
     }
 
     @Test

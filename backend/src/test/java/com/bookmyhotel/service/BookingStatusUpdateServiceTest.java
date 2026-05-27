@@ -3,6 +3,7 @@ package com.bookmyhotel.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -52,6 +53,9 @@ class BookingStatusUpdateServiceTest {
     @Mock
     private AutomatedRoomStatusService automatedRoomStatusService;
 
+    @Mock
+    private RoomCacheService roomCacheService;
+
     @InjectMocks
     private BookingStatusUpdateService bookingStatusUpdateService;
 
@@ -66,8 +70,10 @@ class BookingStatusUpdateServiceTest {
 
         assertEquals("CHECKED_IN", response.getStatus());
         assertEquals(RoomStatus.OCCUPIED, reservation.getRoom().getStatus());
+        assertEquals(false, reservation.getRoom().getIsAvailable());
         assertNotNull(reservation.getActualCheckInTime());
         verify(roomRepository).save(reservation.getRoom());
+        verify(roomCacheService).evictRoomSpecificCaches(20L, 5L);
         verify(automatedRoomStatusService).checkRoomStatusConsistency(20L);
     }
 
@@ -82,11 +88,13 @@ class BookingStatusUpdateServiceTest {
 
         assertEquals("CANCELLED", response.getStatus());
         assertEquals(RoomStatus.AVAILABLE, reservation.getRoom().getStatus());
+        assertEquals(true, reservation.getRoom().getIsAvailable());
         verify(bookingChangeNotificationService).createCancellationNotification(
                 reservation,
                 "Booking cancelled by hotel admin",
                 BigDecimal.ZERO,
                 "hotel admin");
+        verify(roomCacheService).evictRoomSpecificCaches(20L, 5L);
         verify(automatedRoomStatusService).checkRoomStatusConsistency(20L);
     }
 
@@ -125,6 +133,20 @@ class BookingStatusUpdateServiceTest {
     }
 
     @Test
+    void updateBookingStatusShouldRejectCheckInWithoutAssignedRoom() {
+        Reservation reservation = reservationWithoutAssignedRoom(5L);
+        when(reservationRepository.findById(5L)).thenReturn(Optional.of(reservation));
+
+        IllegalStateException exception = assertThrows(IllegalStateException.class,
+                () -> bookingStatusUpdateService.updateBookingStatus(5L, ReservationStatus.CHECKED_IN, "front desk"));
+
+        assertTrue(exception.getMessage().contains("assigned room is required before check-in"));
+        verify(reservationRepository, never()).save(reservation);
+        verify(roomRepository, never()).save(org.mockito.ArgumentMatchers.any(Room.class));
+        verify(automatedRoomStatusService, never()).checkRoomStatusConsistency(org.mockito.ArgumentMatchers.anyLong());
+    }
+
+    @Test
     void updateBookingStatusStringShouldRejectInvalidStatus() {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
                 () -> bookingStatusUpdateService.updateBookingStatus(1L, "not-a-status", "api"));
@@ -154,6 +176,7 @@ class BookingStatusUpdateServiceTest {
         room.setPricePerNight(new BigDecimal("175.00"));
         room.setCapacity(2);
         room.setStatus(RoomStatus.AVAILABLE);
+        room.setIsAvailable(true);
 
         Reservation reservation = new Reservation();
         reservation.setId(reservationId);

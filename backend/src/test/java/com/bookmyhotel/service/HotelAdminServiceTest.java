@@ -163,11 +163,47 @@ class HotelAdminServiceTest {
         Map<String, Object> result = hotelAdminService.getHotelStatistics(admin.getEmail());
 
         assertEquals(2, result.get("totalRooms"));
-        assertEquals(1L, result.get("availableRooms"));
-        assertEquals(1L, result.get("bookedRooms"));
+        assertEquals(2L, result.get("availableRooms"));
+        assertEquals(0L, result.get("bookedRooms"));
         assertEquals(1L, result.get("bookedBookings"));
         assertEquals(2, result.get("totalStaff"));
         assertEquals(1, result.get("activeStaff"));
+    }
+
+    @Test
+    void getHotelStatisticsShouldCountOnlyCheckedInRoomsAsOccupied() {
+        Hotel hotel = hotel(16L);
+        User admin = user("admin@example.com", hotel, UserRole.HOTEL_ADMIN);
+
+        Room bookedRoom = room(61L, hotel, "601");
+        Room checkedInRoom = room(62L, hotel, "602");
+        Room emptyRoom = room(63L, hotel, "603");
+
+        Reservation bookedReservation = reservation(81L, hotel, bookedRoom);
+        bookedReservation.setStatus(ReservationStatus.BOOKED);
+        bookedReservation.setCheckOutDate(LocalDate.now().plusDays(1));
+
+        Reservation checkedInReservation = reservation(82L, hotel, checkedInRoom);
+        checkedInReservation.setStatus(ReservationStatus.CHECKED_IN);
+        checkedInReservation.setCheckOutDate(LocalDate.now().plusDays(1));
+
+        when(userRepository.findByEmailWithHotel(admin.getEmail())).thenReturn(Optional.of(admin));
+        when(roomRepository.findByHotelId(hotel.getId())).thenReturn(List.of(bookedRoom, checkedInRoom, emptyRoom));
+        when(reservationRepository.findByHotelId(hotel.getId())).thenReturn(List.of(bookedReservation, checkedInReservation));
+        when(userRepository.findByHotelAndRolesContaining(hotel, List.of(
+                UserRole.FRONTDESK,
+                UserRole.HOUSEKEEPING,
+                UserRole.HOTEL_ADMIN,
+                UserRole.ADMIN,
+                UserRole.OPERATIONAL_ADMIN,
+                UserRole.MAINTENANCE,
+                UserRole.TESTER))).thenReturn(List.of());
+
+        Map<String, Object> result = hotelAdminService.getHotelStatistics(admin.getEmail());
+
+        assertEquals(1L, result.get("bookedRooms"));
+        assertEquals(2L, result.get("availableRooms"));
+        assertEquals(2L, result.get("bookedBookings"));
     }
 
     @Test

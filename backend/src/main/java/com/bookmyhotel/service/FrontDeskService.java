@@ -43,7 +43,6 @@ import com.bookmyhotel.repository.ReservationRepository;
 import com.bookmyhotel.repository.RoomRepository;
 import com.bookmyhotel.repository.UserRepository;
 import com.bookmyhotel.tenant.HotelContext;
-import com.bookmyhotel.tenant.TenantContext;
 
 /**
  * Front desk service for managing bookings and guest services
@@ -472,6 +471,7 @@ public class FrontDeskService {
 
             if (previousRoom != null) {
                 previousRoom.setStatus(RoomStatus.AVAILABLE);
+                previousRoom.setIsAvailable(true);
                 roomRepository.save(previousRoom);
             }
         }
@@ -486,9 +486,11 @@ public class FrontDeskService {
 
         // Update room status
         room.setStatus(RoomStatus.OCCUPIED);
+        room.setIsAvailable(false);
 
         roomRepository.save(room);
         reservation = reservationRepository.save(reservation);
+        evictRoomCaches(previousRoom, room);
 
         hotelActivityAuditService.logActivity(
             reservation.getHotel(),
@@ -536,6 +538,7 @@ public class FrontDeskService {
             Room room = reservation.getRoom();
             room.setStatus(RoomStatus.AVAILABLE);
             roomRepository.save(room);
+            evictRoomCaches(room);
         }
 
         reservationRepository.delete(reservation);
@@ -585,6 +588,7 @@ public class FrontDeskService {
             // reservation status.
             if (previousRoom != null) {
                 previousRoom.setStatus(RoomStatus.AVAILABLE);
+                previousRoom.setIsAvailable(true);
                 roomRepository.save(previousRoom);
             }
         }
@@ -598,13 +602,16 @@ public class FrontDeskService {
         if (reservation.getStatus() == ReservationStatus.CHECKED_IN) {
             // For checked-in guests, immediately mark the new room as occupied
             newRoom.setStatus(RoomStatus.OCCUPIED);
+            newRoom.setIsAvailable(false);
         } else {
             // For booked bookings, keep room available until actual check-in
             newRoom.setStatus(RoomStatus.AVAILABLE);
+            newRoom.setIsAvailable(true);
         }
 
         roomRepository.save(newRoom);
         reservation = reservationRepository.save(reservation);
+        evictRoomCaches(previousRoom, newRoom);
 
         hotelActivityAuditService.logActivity(
             reservation.getHotel(),
@@ -713,9 +720,11 @@ public class FrontDeskService {
 
         // Update room status to occupied
         room.setStatus(RoomStatus.OCCUPIED);
+        room.setIsAvailable(false);
         roomRepository.save(room);
 
         reservation = reservationRepository.save(reservation);
+        evictRoomCaches(room);
 
         hotelActivityAuditService.logActivity(
             reservation.getHotel(),
@@ -785,7 +794,9 @@ public class FrontDeskService {
         Room room = reservation.getRoom();
         if (room != null) {
             room.setStatus(RoomStatus.MAINTENANCE); // Assuming rooms need cleaning after checkout
+            room.setIsAvailable(false);
             roomRepository.save(room);
+            evictRoomCaches(room);
         }
 
         reservation = reservationRepository.save(reservation);
@@ -915,6 +926,15 @@ public class FrontDeskService {
         return firstRoom.getId() != null && firstRoom.getId().equals(secondRoom.getId());
     }
 
+    private void evictRoomCaches(Room... rooms) {
+        for (Room room : rooms) {
+            if (room == null || room.getId() == null || room.getHotel() == null || room.getHotel().getId() == null) {
+                continue;
+            }
+            roomCacheService.evictRoomSpecificCaches(room.getId(), room.getHotel().getId());
+        }
+    }
+
     /**
      * Mark guest as no-show
      */
@@ -938,7 +958,9 @@ public class FrontDeskService {
         // Make room available again
         Room room = reservation.getRoom();
         room.setStatus(RoomStatus.AVAILABLE);
+        room.setIsAvailable(true);
         roomRepository.save(room);
+        evictRoomCaches(room);
 
         reservation = reservationRepository.save(reservation);
 
@@ -997,7 +1019,9 @@ public class FrontDeskService {
         if (reservation.getStatus() != ReservationStatus.CHECKED_IN) {
             Room room = reservation.getRoom();
             room.setStatus(RoomStatus.AVAILABLE);
+            room.setIsAvailable(true);
             roomRepository.save(room);
+            evictRoomCaches(room);
         }
 
         reservation = reservationRepository.save(reservation);

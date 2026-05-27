@@ -169,13 +169,15 @@ public class AutomatedRoomStatusService {
         // Fix logic: Update room status based on actual occupancy
         if (hasCheckedInGuest && room.getStatus() != RoomStatus.OCCUPIED) {
             room.setStatus(RoomStatus.OCCUPIED);
+            room.setIsAvailable(false);
             statusChanged = true;
             logger.debug("🔧 Fixed room {} status: {} → OCCUPIED (has checked-in guest)",
                     room.getRoomNumber(), originalStatus);
 
-        } else if (!hasCheckedInGuest && room.getStatus() == RoomStatus.OCCUPIED && room.getIsAvailable()) {
+        } else if (!hasCheckedInGuest && room.getStatus() == RoomStatus.OCCUPIED) {
             // Set to AVAILABLE if no checked-in guest is actually occupying the room.
             room.setStatus(RoomStatus.AVAILABLE);
+            room.setIsAvailable(true);
             statusChanged = true;
             logger.debug("🔧 Fixed room {} status: {} → AVAILABLE (no checked-in guest)",
                     room.getRoomNumber(), originalStatus);

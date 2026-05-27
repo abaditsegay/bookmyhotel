@@ -113,9 +113,6 @@ public class HotelAdminService {
     private RoomTypePricingService roomTypePricingService;
 
     @Autowired
-    private BookingChangeNotificationService bookingChangeNotificationService;
-
-    @Autowired
     private BookingStatusUpdateService bookingStatusUpdateService;
 
     @Autowired
@@ -1050,12 +1047,6 @@ public class HotelAdminService {
         // System.out.println("🔍 Total reservations found: " + allReservations.size());
         // System.out.println("🔍 Today's date: " + today);
 
-        for (Reservation r : allReservations) {
-            // System.out.println("🔍 Reservation " + r.getId() + " - Status: " +
-            // r.getStatus() +
-            // ", Check-in: " + r.getCheckInDate() + ", Check-out: " + r.getCheckOutDate());
-        }
-
         // Count booked bookings (BOOKED status or CHECKED_IN status)
         // We want to count all BOOKED bookings that haven't checked out yet,
         // and all CHECKED_IN bookings regardless of dates
@@ -1066,10 +1057,11 @@ public class HotelAdminService {
         // System.out.println("🔍 Booked bookings calculated: " + bookedBookings);
         stats.put("bookedBookings", bookedBookings);
 
-        // Booked rooms: rooms with active reservations that have assigned rooms
+        // Occupied rooms: rooms with checked-in reservations that are still in stay
         Set<Long> bookedRoomIds = allReservations.stream()
-                .filter(r -> isActiveDashboardBooking(r, today))
-                .filter(r -> r.getRoom() != null) // Filter out reservations without assigned rooms
+            .filter(r -> r.getStatus() == ReservationStatus.CHECKED_IN)
+            .filter(r -> !r.getCheckOutDate().isBefore(today))
+            .filter(r -> r.getRoom() != null)
                 .map(r -> r.getRoom().getId())
                 .collect(Collectors.toSet());
 
@@ -1317,7 +1309,7 @@ public class HotelAdminService {
     @Transactional(readOnly = true)
     public Page<BookingResponse> getHotelBookings(Long hotelId, int page, int size, String search) {
         // Verify hotel exists and user has access
-        Hotel hotel = hotelRepository.findById(hotelId)
+        hotelRepository.findById(hotelId)
                 .orElseThrow(() -> new RuntimeException("Hotel not found with id: " + hotelId));
 
         Pageable pageable = PageRequest.of(page, size);
@@ -1624,12 +1616,6 @@ public class HotelAdminService {
                 "Hotel admin deleted a booking",
                 true,
                 AuditTaxonomy.ComplianceCategory.FINANCIAL);
-    }
-
-    private void assertReservationBelongsToHotel(Reservation reservation, Long hotelId) {
-        if (reservation == null || hotelId == null || !hotelId.equals(reservation.getHotelId())) {
-            throw new RuntimeException("Booking does not belong to your hotel");
-        }
     }
 
     /**

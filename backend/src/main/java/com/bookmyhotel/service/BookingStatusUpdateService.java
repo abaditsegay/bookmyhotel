@@ -44,6 +44,9 @@ public class BookingStatusUpdateService {
     @Autowired
     private AutomatedRoomStatusService automatedRoomStatusService;
 
+    @Autowired
+    private RoomCacheService roomCacheService;
+
     /**
      * Update booking status with notification creation
      * 
@@ -64,8 +67,9 @@ public class BookingStatusUpdateService {
         logger.debug("Found reservation: {} - Current status: {}",
                 generateConfirmationNumber(reservation.getId()), reservation.getStatus());
 
-        // Store old status for comparison
-        ReservationStatus oldStatus = reservation.getStatus();
+        if (newStatus == ReservationStatus.CHECKED_IN && reservation.getRoom() == null) {
+            throw new IllegalStateException("An assigned room is required before check-in");
+        }
 
         // Update reservation status
         reservation.setStatus(newStatus);
@@ -77,21 +81,27 @@ public class BookingStatusUpdateService {
             switch (newStatus) {
                 case CHECKED_IN:
                     room.setStatus(RoomStatus.OCCUPIED);
+                    room.setIsAvailable(false);
                     reservation.setActualCheckInTime(LocalDateTime.now());
                     break;
                 case CHECKED_OUT:
                     room.setStatus(RoomStatus.MAINTENANCE);
+                    room.setIsAvailable(false);
                     reservation.setActualCheckOutTime(LocalDateTime.now());
                     break;
                 case CANCELLED:
                 case NO_SHOW:
                     room.setStatus(RoomStatus.AVAILABLE);
+                    room.setIsAvailable(true);
                     break;
                 default:
                     // For other statuses, keep room status as is
                     break;
             }
             roomRepository.save(room);
+            if (room.getHotel() != null && room.getHotel().getId() != null) {
+                roomCacheService.evictRoomSpecificCaches(room.getId(), room.getHotel().getId());
+            }
         }
 
         // Save the reservation
