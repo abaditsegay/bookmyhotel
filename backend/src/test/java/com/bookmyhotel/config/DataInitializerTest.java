@@ -40,12 +40,11 @@ class DataInitializerTest {
     private PasswordEncoder passwordEncoder;
 
     @InjectMocks
-    private DataInitializer dataInitializer;
+    private ProductionSuperAdminBootstrap dataInitializer;
 
     @BeforeEach
     void setUp() {
         ReflectionTestUtils.setField(dataInitializer, "superAdminBootstrapEnabled", true);
-        ReflectionTestUtils.setField(dataInitializer, "sampleDataBootstrapEnabled", false);
         ReflectionTestUtils.setField(dataInitializer, "superAdminEmail", "samuelweld2018@gmail.com");
         ReflectionTestUtils.setField(dataInitializer, "superAdminFirstName", "Samuel");
         ReflectionTestUtils.setField(dataInitializer, "superAdminLastName", "Weld");
