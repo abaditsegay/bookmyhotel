@@ -18,8 +18,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import com.bookmyhotel.dto.AuditTrailDto;
 import com.bookmyhotel.dto.BookingResponse;
 import com.bookmyhotel.dto.RoomDTO;
 import com.bookmyhotel.dto.UserDTO;
@@ -81,6 +85,9 @@ class HotelAdminServiceTest {
 
     @Mock
     private HotelActivityAuditService hotelActivityAuditService;
+
+    @Mock
+    private FinancialAuditService financialAuditService;
 
     @InjectMocks
     private HotelAdminService hotelAdminService;
@@ -204,6 +211,51 @@ class HotelAdminServiceTest {
         assertEquals(1L, result.get("bookedRooms"));
         assertEquals(2L, result.get("availableRooms"));
         assertEquals(2L, result.get("bookedBookings"));
+    }
+
+    @Test
+    void getHotelActivityLogsShouldUseAuthenticatedAdminsHotel() {
+        Hotel hotel = hotel(18L);
+        User admin = user("admin@example.com", hotel, UserRole.HOTEL_ADMIN);
+        PageRequest pageable = PageRequest.of(0, 20);
+        AuditTrailDto log = new AuditTrailDto();
+        log.setId(901L);
+        log.setAction("UPDATE");
+        Page<AuditTrailDto> page = new PageImpl<>(List.of(log), pageable, 1);
+
+        when(userRepository.findByEmailWithHotel(admin.getEmail())).thenReturn(Optional.of(admin));
+        when(financialAuditService.getAuditLogs(18L, "UPDATE", "ROOM", "staff@example.com", null, null, pageable))
+                .thenReturn(page);
+
+        Page<AuditTrailDto> result = hotelAdminService.getHotelActivityLogs(
+                admin.getEmail(),
+                "UPDATE",
+                "ROOM",
+                "staff@example.com",
+                null,
+                null,
+                pageable);
+
+        assertEquals(1, result.getTotalElements());
+        assertEquals(901L, result.getContent().get(0).getId());
+        verify(financialAuditService).getAuditLogs(18L, "UPDATE", "ROOM", "staff@example.com", null, null, pageable);
+    }
+
+    @Test
+    void getHotelActivityStatsShouldUseAuthenticatedAdminsHotel() {
+        Hotel hotel = hotel(19L);
+        User admin = user("admin@example.com", hotel, UserRole.HOTEL_ADMIN);
+
+        when(userRepository.findByEmailWithHotel(admin.getEmail())).thenReturn(Optional.of(admin));
+        when(financialAuditService.getAuditStats(19L)).thenReturn(Map.of(
+                "totalToday", 12L,
+                "sensitiveToday", 3L));
+
+        Map<String, Long> result = hotelAdminService.getHotelActivityStats(admin.getEmail());
+
+        assertEquals(12L, result.get("totalToday"));
+        assertEquals(3L, result.get("sensitiveToday"));
+        verify(financialAuditService).getAuditStats(19L);
     }
 
     @Test

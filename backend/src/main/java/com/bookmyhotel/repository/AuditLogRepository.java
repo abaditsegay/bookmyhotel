@@ -23,6 +23,31 @@ public interface AuditLogRepository extends JpaRepository<AuditLog, Long> {
        @Query("SELECT al FROM AuditLog al WHERE al.hotel.id = :hotelId ORDER BY al.timestamp DESC")
        Page<AuditLog> findByHotelIdOrderByTimestampDesc(@Param("hotelId") Long hotelId, Pageable pageable);
 
+       @Query("SELECT al FROM AuditLog al WHERE al.hotel.id = :hotelId " +
+                     "AND (:action IS NULL OR :action = '' OR LOWER(al.action) = LOWER(:action)) " +
+                     "AND (:entityType IS NULL OR :entityType = '' OR LOWER(al.entityType) = LOWER(:entityType)) " +
+                     "AND (:userEmail IS NULL OR :userEmail = '' OR (al.userEmail IS NOT NULL AND LOWER(al.userEmail) LIKE LOWER(CONCAT('%', :userEmail, '%')))) " +
+                     "AND (:fromTime IS NULL OR al.timestamp >= :fromTime) " +
+                     "AND (:toTime IS NULL OR al.timestamp <= :toTime)")
+       Page<AuditLog> searchHotelActivityLogs(@Param("hotelId") Long hotelId,
+                     @Param("action") String action,
+                     @Param("entityType") String entityType,
+                     @Param("userEmail") String userEmail,
+                     @Param("fromTime") LocalDateTime fromTime,
+                     @Param("toTime") LocalDateTime toTime,
+                     Pageable pageable);
+
+       @Query("SELECT COUNT(al) FROM AuditLog al WHERE al.hotel.id = :hotelId AND al.timestamp BETWEEN :startTime AND :endTime")
+       long countByHotelIdAndTimestampBetween(@Param("hotelId") Long hotelId,
+                     @Param("startTime") LocalDateTime startTime,
+                     @Param("endTime") LocalDateTime endTime);
+
+       @Query("SELECT COUNT(al) FROM AuditLog al WHERE al.hotel.id = :hotelId " +
+                     "AND al.isSensitive = true AND al.timestamp BETWEEN :startTime AND :endTime")
+       long countSensitiveByHotelIdAndTimestampBetween(@Param("hotelId") Long hotelId,
+                     @Param("startTime") LocalDateTime startTime,
+                     @Param("endTime") LocalDateTime endTime);
+
        /**
         * Find audit logs by entity type and entity ID
         */

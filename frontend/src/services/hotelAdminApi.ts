@@ -56,6 +56,58 @@ export interface HotelStatistics {
   roomsByType: { [key: string]: number };
 }
 
+export interface HotelActivityLog {
+  id: number;
+  hotelId: number | null;
+  tenantId: string | null;
+  entityType: string;
+  entityId: number | null;
+  action: string;
+  oldValues: string | null;
+  newValues: string | null;
+  changedFields: string | null;
+  userId: number | null;
+  userName: string | null;
+  userEmail: string | null;
+  userRole: string | null;
+  ipAddress: string | null;
+  userAgent: string | null;
+  sessionId: string | null;
+  timestamp: string;
+  reason: string | null;
+  details: string | null;
+  sensitive: boolean;
+  complianceCategory: string | null;
+}
+
+export interface HotelActivityLogPage {
+  content: HotelActivityLog[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+  size: number;
+  numberOfElements: number;
+  first: boolean;
+  last: boolean;
+  empty: boolean;
+}
+
+export interface HotelActivityLogParams {
+  action?: string;
+  entityType?: string;
+  userEmail?: string;
+  from?: string;
+  to?: string;
+  page?: number;
+  size?: number;
+  sort?: string;
+}
+
+export interface HotelActivityStats {
+  totalToday: number;
+  sensitiveToday: number;
+}
+
 export interface RoomResponse {
   id: number;
   roomNumber: string;
@@ -273,6 +325,80 @@ export const hotelAdminApi = {
       return { 
         success: false, 
         message: error instanceof Error ? error.message : 'Failed to fetch booking statistics' 
+      };
+    }
+  },
+
+  getActivityLogs: async (
+    token: string,
+    params: HotelActivityLogParams = {}
+  ): Promise<{ success: boolean; data?: HotelActivityLogPage; message?: string }> => {
+    try {
+      const query = new URLSearchParams();
+      query.set('page', String(params.page ?? 0));
+      query.set('size', String(params.size ?? 20));
+      query.set('sort', params.sort ?? 'timestamp,desc');
+
+      if (params.action?.trim()) query.set('action', params.action.trim());
+      if (params.entityType?.trim()) query.set('entityType', params.entityType.trim());
+      if (params.userEmail?.trim()) query.set('userEmail', params.userEmail.trim());
+      if (params.from?.trim()) query.set('from', params.from.trim());
+      if (params.to?.trim()) query.set('to', params.to.trim());
+
+      const user = TokenManager.getUser();
+      const tenantId = user?.tenantId || '';
+
+      const response = await fetch(`${API_BASE_URL}/hotel-admin/activities?${query.toString()}&_t=${Date.now()}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'X-Tenant-ID': tenantId,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to fetch hotel activities');
+      }
+
+      const data = await response.json();
+      return { success: true, data };
+    } catch (error) {
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : 'Failed to fetch hotel activities',
+      };
+    }
+  },
+
+  getActivityStats: async (
+    token: string
+  ): Promise<{ success: boolean; data?: HotelActivityStats; message?: string }> => {
+    try {
+      const user = TokenManager.getUser();
+      const tenantId = user?.tenantId || '';
+
+      const response = await fetch(`${API_BASE_URL}/hotel-admin/activities/stats?_t=${Date.now()}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'X-Tenant-ID': tenantId,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to fetch hotel activity stats');
+      }
+
+      const data = await response.json();
+      return { success: true, data };
+    } catch (error) {
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : 'Failed to fetch hotel activity stats',
       };
     }
   },

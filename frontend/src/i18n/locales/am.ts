@@ -259,7 +259,51 @@ export const amTranslations = {
         housekeeping: "የቤት ጽዳት",
         reports: "ሪፖርቶች",
         pricingTax: "ዋጋ እና ግብር",
+        activities: "እንቅስቃሴዎች",
         offlineBookings: "ከመስመር ውጭ ማስያዞች"
+      },
+
+      activities: {
+        stats: {
+          actionsToday: "የዛሬ እንቅስቃሴዎች",
+          sensitiveToday: "የዛሬ ስሱ እንቅስቃሴዎች"
+        },
+        filters: {
+          action: "እርምጃ",
+          allActions: "ሁሉም እርምጃዎች",
+          entityType: "የንጥል አይነት",
+          allEntityTypes: "ሁሉም የንጥል አይነቶች",
+          staffEmail: "የሰራተኛ ኢሜይል",
+          staffEmailPlaceholder: "በሰራተኛ ኢሜይል አጣራ",
+          fromDate: "ከ",
+          toDate: "እስከ",
+          clear: "አጽዳ"
+        },
+        table: {
+          timestamp: "ጊዜ",
+          actor: "ፈጻሚ",
+          role: "ሚና",
+          action: "እርምጃ",
+          entityType: "የንጥል አይነት",
+          entityId: "የንጥል መለያ",
+          reason: "ምክንያት",
+          sensitive: "ስሱ",
+          details: "ዝርዝር"
+        },
+        empty: "ከአሁኑ ማጣሪያዎች ጋር የሚጣጣሙ የሆቴል እንቅስቃሴዎች አልተገኙም።",
+        detailTitle: "የእንቅስቃሴ ዝርዝር",
+        changedFields: "የተቀየሩ መስኮች",
+        oldValues: "የቀድሞ እሴቶች",
+        newValues: "አዲስ እሴቶች",
+        complianceCategory: "የተግባር ምድብ",
+        systemActor: "ሲስተም",
+        viewDetails: "ዝርዝር ይመልከቱ",
+        yes: "አዎ",
+        no: "አይ",
+        errors: {
+          authRequired: "እንቅስቃሴዎችን ለመጫን ማረጋገጫ ያስፈልጋል።",
+          loadFailed: "የሆቴል እንቅስቃሴዎችን መጫን አልተሳካም።"
+        }
       },
       
       // Hotel Details Sub-tabs

@@ -27,8 +27,10 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -176,6 +178,39 @@ public class FinancialAuditService {
                 .collect(Collectors.toList());
         return new PageImpl<>(dtos, pageable, auditLogs.getTotalElements());
     }
+
+        @Transactional(readOnly = true)
+        public Page<AuditTrailDto> getAuditLogs(Long hotelId,
+            String action,
+            String entityType,
+            String userEmail,
+            LocalDateTime from,
+            LocalDateTime to,
+            Pageable pageable) {
+        Page<AuditLog> auditLogs = auditLogRepository.searchHotelActivityLogs(
+            hotelId,
+            action,
+            entityType,
+            userEmail,
+            from,
+            to,
+            pageable);
+        List<AuditTrailDto> dtos = auditLogs.getContent().stream().map(this::convertAuditLogToDto)
+            .collect(Collectors.toList());
+        return new PageImpl<>(dtos, pageable, auditLogs.getTotalElements());
+        }
+
+        @Transactional(readOnly = true)
+        public Map<String, Long> getAuditStats(Long hotelId) {
+        ZoneId zoneId = ZoneId.of("Africa/Addis_Ababa");
+        LocalDateTime startOfToday = LocalDate.now(zoneId).atStartOfDay();
+        LocalDateTime now = LocalDateTime.now(zoneId);
+
+        return Map.of(
+            "totalToday", auditLogRepository.countByHotelIdAndTimestampBetween(hotelId, startOfToday, now),
+            "sensitiveToday",
+            auditLogRepository.countSensitiveByHotelIdAndTimestampBetween(hotelId, startOfToday, now));
+        }
 
     /**
      * Get sensitive audit logs

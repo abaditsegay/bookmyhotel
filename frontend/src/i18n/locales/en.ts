@@ -200,7 +200,51 @@ export const enTranslations = {
         housekeeping: "Housekeeping",
         reports: "Reports",
         pricingTax: "Pricing & Tax",
+        activities: "Activities",
         offlineBookings: "Offline Bookings"
+      },
+
+      activities: {
+        stats: {
+          actionsToday: "Actions Today",
+          sensitiveToday: "Sensitive Actions Today"
+        },
+        filters: {
+          action: "Action",
+          allActions: "All Actions",
+          entityType: "Entity Type",
+          allEntityTypes: "All Entity Types",
+          staffEmail: "Staff Email",
+          staffEmailPlaceholder: "Filter by staff email",
+          fromDate: "From",
+          toDate: "To",
+          clear: "Clear"
+        },
+        table: {
+          timestamp: "Timestamp",
+          actor: "Actor",
+          role: "Role",
+          action: "Action",
+          entityType: "Entity Type",
+          entityId: "Entity ID",
+          reason: "Reason",
+          sensitive: "Sensitive",
+          details: "Details"
+        },
+        empty: "No hotel activities matched the current filters.",
+        detailTitle: "Activity Details",
+        changedFields: "Changed Fields",
+        oldValues: "Previous Values",
+        newValues: "New Values",
+        complianceCategory: "Compliance Category",
+        systemActor: "System",
+        viewDetails: "View details",
+        yes: "Yes",
+        no: "No",
+        errors: {
+          authRequired: "Authentication is required to load activities.",
+          loadFailed: "Failed to load hotel activities."
+        }
       },
       
       // Hotel Details Sub-tabs

@@ -2,6 +2,7 @@ package com.bookmyhotel.controller;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.List;
@@ -10,10 +11,14 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,6 +32,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.bookmyhotel.dto.BatchRoomCreateRequest;
 import com.bookmyhotel.dto.BatchRoomCreateResponse;
+import com.bookmyhotel.dto.AuditTrailDto;
 import com.bookmyhotel.dto.BookingModificationRequest;
 import com.bookmyhotel.dto.BookingModificationResponse;
 import com.bookmyhotel.dto.BookingResponse;
@@ -49,6 +55,7 @@ import com.bookmyhotel.service.RoomTypePricingService;
 import com.bookmyhotel.tenant.TenantContext;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -286,6 +293,51 @@ public class HotelAdminController {
     public ResponseEntity<?> getHotelStatistics(Authentication auth) {
         return ResponseEntity.ok(hotelAdminService.getHotelStatistics(auth.getName()));
     }
+
+        @GetMapping("/activities")
+        @Operation(summary = "Get hotel activity audit logs", description = "Returns hotel-scoped staff activity audit records for the authenticated hotel admin with optional filters for action, entity type, actor email, and time range.")
+        @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Hotel activity audit logs returned"),
+            @ApiResponse(responseCode = "403", description = "Access denied for non hotel-admin users"),
+            @ApiResponse(responseCode = "404", description = "Authenticated user is not bound to a hotel")
+        })
+        public ResponseEntity<Page<AuditTrailDto>> getHotelActivities(
+            @Parameter(description = "Filter by audit action") @RequestParam(required = false) String action,
+            @Parameter(description = "Filter by audited entity type") @RequestParam(required = false) String entityType,
+            @Parameter(description = "Case-insensitive partial match on performer email") @RequestParam(required = false) String userEmail,
+            @Parameter(description = "Inclusive ISO-8601 start timestamp") @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime from,
+            @Parameter(description = "Inclusive ISO-8601 end timestamp") @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime to,
+            @Parameter(description = "Zero-based page index") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Requested page size. Values above 100 are clamped to 100.") @RequestParam(defaultValue = "20") int size,
+            @Parameter(description = "Sort expression in field,direction format. Example: timestamp,desc") @RequestParam(defaultValue = "timestamp,desc") String sort,
+            Authentication auth) {
+        int cappedSize = Math.min(size, 100);
+        String[] sortParts = sort.split(",");
+        Sort.Direction direction = sortParts.length > 1 && sortParts[1].equalsIgnoreCase("asc")
+            ? Sort.Direction.ASC
+            : Sort.Direction.DESC;
+        Pageable pageable = PageRequest.of(page, cappedSize, Sort.by(direction, sortParts[0]));
+
+        Page<AuditTrailDto> activities = hotelAdminService.getHotelActivityLogs(
+            auth.getName(),
+            action,
+            entityType,
+            userEmail,
+            from,
+            to,
+            pageable);
+        return ResponseEntity.ok(activities);
+        }
+
+        @GetMapping("/activities/stats")
+        @Operation(summary = "Get hotel activity audit headline stats", description = "Returns quick counts for today's hotel-scoped activity audit records.")
+        @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Hotel activity headline stats returned"),
+            @ApiResponse(responseCode = "403", description = "Access denied for non hotel-admin users")
+        })
+        public ResponseEntity<Map<String, Long>> getHotelActivityStats(Authentication auth) {
+        return ResponseEntity.ok(hotelAdminService.getHotelActivityStats(auth.getName()));
+        }
 
     // ===========================
     // BOOKING MANAGEMENT ENDPOINTS
@@ -757,7 +809,6 @@ public class HotelAdminController {
 
         try {
             String tenantId = TenantContext.getTenantId();
-            HotelDTO hotel = hotelAdminService.getMyHotel(auth.getName());
 
             hotelImageService.deleteImage(tenantId, imageId);
 

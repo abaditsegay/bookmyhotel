@@ -33,6 +33,7 @@ import com.bookmyhotel.audit.AuditTaxonomy;
 import com.bookmyhotel.config.CacheConfig;
 import com.bookmyhotel.dto.BatchRoomCreateRequest;
 import com.bookmyhotel.dto.BatchRoomCreateResponse;
+import com.bookmyhotel.dto.AuditTrailDto;
 import com.bookmyhotel.dto.BookingModificationRequest;
 import com.bookmyhotel.dto.BookingModificationResponse;
 import com.bookmyhotel.dto.BookingResponse;
@@ -123,6 +124,9 @@ public class HotelAdminService {
 
     @Autowired
     private HotelActivityAuditService hotelActivityAuditService;
+
+    @Autowired
+    private FinancialAuditService financialAuditService;
 
     /**
      * Get the hotel for the logged-in hotel admin
@@ -1101,6 +1105,24 @@ public class HotelAdminService {
         return stats;
     }
 
+    @Transactional(readOnly = true)
+    public Page<AuditTrailDto> getHotelActivityLogs(String adminEmail,
+            String action,
+            String entityType,
+            String userEmail,
+            LocalDateTime from,
+            LocalDateTime to,
+            Pageable pageable) {
+        Hotel hotel = getRequiredHotelForAdmin(adminEmail);
+        return financialAuditService.getAuditLogs(hotel.getId(), action, entityType, userEmail, from, to, pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public Map<String, Long> getHotelActivityStats(String adminEmail) {
+        Hotel hotel = getRequiredHotelForAdmin(adminEmail);
+        return financialAuditService.getAuditStats(hotel.getId());
+    }
+
     // Helper methods
     private User getUserByEmail(String email) {
         // System.err.println("🔍 HotelAdminService.getUserByEmail called with email: "
@@ -1119,6 +1141,17 @@ public class HotelAdminService {
             // System.err.println("🔍 User not found, throwing exception");
             throw new RuntimeException("User not found");
         }
+    }
+
+    private Hotel getRequiredHotelForAdmin(String adminEmail) {
+        User admin = getUserByEmail(adminEmail);
+        Hotel hotel = admin.getHotel();
+
+        if (hotel == null) {
+            throw new RuntimeException("Hotel admin is not associated with any hotel");
+        }
+
+        return hotel;
     }
 
     private User getStaffForHotel(Long staffId, Long hotelId) {

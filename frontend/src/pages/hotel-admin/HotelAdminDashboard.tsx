@@ -37,13 +37,14 @@ import OfflineWalkInBooking from '../../components/OfflineWalkInBooking';
 import { roomCacheService } from '../../services/RoomCacheService';
 import PricingConfiguration from '../../components/PricingConfiguration';
 import HotelImageManagement from './HotelImageManagement';
+import HotelActivityTab from './HotelActivityTab';
 import HousekeepingPage from '../housekeeping/HousekeepingPage';
 import TabPanel from '../../components/common/TabPanel';
 import { getBookingStatusColor } from '../../utils/statusColors';
 import { getReadableAccentTextColor } from '../../theme/surfaces';
 import { composeSx, surfaceCardSx } from '../../theme/sxHelpers';
 
-const HOTEL_ADMIN_OFFLINE_TAB = 8;
+const HOTEL_ADMIN_OFFLINE_TAB = 9;
 
 const normalizeHotelAdminTab = (requestedTab: number, isOnline: boolean) => {
   if (!Number.isFinite(requestedTab)) {
@@ -92,7 +93,7 @@ const HotelAdminDashboard: React.FC = () => {
   const getInitialTab = () => {
     const tabParam = searchParams.get('tab');
     const tab = tabParam ? parseInt(tabParam, 10) : 0;
-    return isNaN(tab) || tab < 0 || tab > 8 ? 0 : tab;
+    return isNaN(tab) || tab < 0 || tab > HOTEL_ADMIN_OFFLINE_TAB ? 0 : tab;
   };
   
   const [activeTab, setActiveTab] = useState(() => normalizeHotelAdminTab(getInitialTab(), navigator.onLine));
@@ -500,6 +501,7 @@ const HotelAdminDashboard: React.FC = () => {
             <Tab value={5} disabled={!isOnline} label={t('dashboard.hotelAdmin.tabs.housekeeping')} />
             <Tab value={6} disabled={!isOnline} label={t('dashboard.hotelAdmin.tabs.reports')} />
             <Tab value={7} disabled={!isOnline} label={t('dashboard.hotelAdmin.tabs.pricingTax')} />
+            <Tab value={8} disabled={!isOnline} label={t('dashboard.hotelAdmin.tabs.activities', 'Activities')} />
             <Tab value={HOTEL_ADMIN_OFFLINE_TAB} disabled={isOnline} label={t('dashboard.hotelAdmin.tabs.offlineBookings')} />
           </Tabs>
         </Box>
@@ -1877,6 +1879,10 @@ const HotelAdminDashboard: React.FC = () => {
         </TabPanel>
 
         <TabPanel value={activeTab} index={8} idPrefix="hotel-admin" contentSx={{ p: 3 }}>
+          <HotelActivityTab />
+        </TabPanel>
+
+        <TabPanel value={activeTab} index={9} idPrefix="hotel-admin" contentSx={{ p: 3 }}>
           {/* Offline Bookings Tab */}
           <OfflineWalkInBooking
             hotelId={hotel?.id}

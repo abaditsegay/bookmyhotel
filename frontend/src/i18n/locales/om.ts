@@ -200,7 +200,51 @@ export const omTranslations = {
         housekeeping: "Qulqulleessaa Manaa",
         reports: "Gabaasalee",
         pricingTax: "Gatii fi Gibira",
+        activities: "Sochiiwwan",
         offlineBookings: "Kutaalee Oflaayinii"
+      },
+
+      activities: {
+        stats: {
+          actionsToday: "Tarkaanfiiwwan Har'aa",
+          sensitiveToday: "Tarkaanfiiwwan Miiraawaa Har'aa"
+        },
+        filters: {
+          action: "Tarkaanfii",
+          allActions: "Tarkaanfiiwwan Hunda",
+          entityType: "Gosa Wantaa",
+          allEntityTypes: "Gosa Wantaa Hunda",
+          staffEmail: "Imeelii Hojjetaa",
+          staffEmailPlaceholder: "Imeelii hojjetaan gulaali",
+          fromDate: "Irraa",
+          toDate: "Hanga",
+          clear: "Haqi"
+        },
+        table: {
+          timestamp: "Yeroo",
+          actor: "Raawwataa",
+          role: "Gahee",
+          action: "Tarkaanfii",
+          entityType: "Gosa Wantaa",
+          entityId: "ID Wantaa",
+          reason: "Sababa",
+          sensitive: "Miiraawaa",
+          details: "Bal'ina"
+        },
+        empty: "Sochiin hooteelaa filannoowwan kanaan wal simu hin argamne.",
+        detailTitle: "Bal'ina Sochii",
+        changedFields: "Dirreewwan Jijjiiraman",
+        oldValues: "Gatii Duraa",
+        newValues: "Gatii Haaraa",
+        complianceCategory: "Ramaddii Walsimsiisaa",
+        systemActor: "Sirna",
+        viewDetails: "Bal'ina ilaali",
+        yes: "Eeyyee",
+        no: "Lakki",
+        errors: {
+          authRequired: "Sochiiwwan fe'uuf mirkaneessi ni barbaachisa.",
+          loadFailed: "Sochiiwwan hooteelaa fe'uun hin milkoofne."
+        }
       },
       
       // Caancaloota Xiqqaa Bal'ina Hotela
