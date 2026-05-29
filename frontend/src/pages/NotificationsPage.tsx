@@ -123,6 +123,123 @@ const NotificationsPage: React.FC = () => {
     return formatDateTimeForDisplay(dateString);
   };
 
+  const getNotificationNetAmount = (notification: BookingNotification) => {
+    const refund = notification.refundAmount || 0;
+    const charges = notification.additionalCharges || 0;
+    return charges - refund;
+  };
+
+  const renderNotificationAmount = (notification: BookingNotification) => {
+    const refund = notification.refundAmount || 0;
+    const netAmount = getNotificationNetAmount(notification);
+
+    if (notification.type === 'CANCELLED') {
+      if (refund > 0) {
+        return (
+          <Typography 
+            variant="body2" 
+            color="success.main" 
+            fontWeight={notification.status === 'UNREAD' ? 'bold' : 'normal'}
+            sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+          >
+            Refund due: {formatCurrency(refund)}
+          </Typography>
+        );
+      }
+
+      return (
+        <Typography variant="body2" color="text.secondary">
+          No change
+        </Typography>
+      );
+    }
+
+    if (netAmount > 0) {
+      return (
+        <Typography 
+          variant="body2" 
+          color="warning.main" 
+          fontWeight={notification.status === 'UNREAD' ? 'bold' : 'normal'}
+          sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+        >
+          Customer owes: {formatCurrency(netAmount)}
+        </Typography>
+      );
+    }
+
+    if (netAmount < 0) {
+      return (
+        <Typography 
+          variant="body2" 
+          color="success.main" 
+          fontWeight={notification.status === 'UNREAD' ? 'bold' : 'normal'}
+          sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+        >
+          Refund due: {formatCurrency(Math.abs(netAmount))}
+        </Typography>
+      );
+    }
+
+    return (
+      <Typography variant="body2" color="text.secondary">
+        No payment changes
+      </Typography>
+    );
+  };
+
+  const renderNotificationFinancialAlert = (notification: BookingNotification) => {
+    const refund = notification.refundAmount || 0;
+    const netAmount = getNotificationNetAmount(notification);
+
+    if (notification.type === 'CANCELLED') {
+      if (refund > 0) {
+        return (
+          <Alert severity="success" sx={{ mt: 2 }}>
+            <Typography>
+              <strong>Refund Required:</strong> The hotel must refund {formatCurrency(refund)} to the guest.
+            </Typography>
+          </Alert>
+        );
+      }
+
+      return (
+        <Alert severity="info" sx={{ mt: 2 }}>
+          <Typography>
+            <strong>No Change:</strong> No refund is required for this cancellation.
+          </Typography>
+        </Alert>
+      );
+    }
+
+    if (netAmount > 0) {
+      return (
+        <Alert severity="warning" sx={{ mb: 1 }}>
+          <Typography>
+            <strong>Additional Payment Required:</strong> The customer needs to pay an additional {formatCurrency(netAmount)}.
+          </Typography>
+        </Alert>
+      );
+    }
+
+    if (netAmount < 0) {
+      return (
+        <Alert severity="success" sx={{ mb: 1 }}>
+          <Typography>
+            <strong>Refund Due:</strong> The hotel must refund {formatCurrency(Math.abs(netAmount))} to the customer.
+          </Typography>
+        </Alert>
+      );
+    }
+
+    return (
+      <Alert severity="info">
+        <Typography>
+          <strong>No Payment Changes:</strong> This modification does not require any additional payment or refund.
+        </Typography>
+      </Alert>
+    );
+  };
+
   const handlePageChange = (event: unknown, newPage: number) => {
     setPage(newPage);
   };
@@ -252,64 +369,7 @@ const NotificationsPage: React.FC = () => {
               </TableCell>
               <TableCell>
                 <Box>
-                  {(() => {
-                    const refund = notification.refundAmount || 0;
-                    const charges = notification.additionalCharges || 0;
-                    const netAmount = charges - refund;
-                    
-                    if (notification.type === 'CANCELLED') {
-                      // For cancellations, only show refund status
-                      if (refund > 0) {
-                        return (
-                          <Typography 
-                            variant="body2" 
-                            color="success.main" 
-                            fontWeight={notification.status === 'UNREAD' ? 'bold' : 'normal'}
-                            sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
-                          >
-                            ↩️ Refund due: {formatCurrency(refund)}
-                          </Typography>
-                        );
-                      } else {
-                        return (
-                          <Typography variant="body2" color="text.secondary">
-                            No change
-                          </Typography>
-                        );
-                      }
-                    } else {
-                      // For modifications, show net amount
-                      if (netAmount > 0) {
-                        return (
-                          <Typography 
-                            variant="body2" 
-                            color="warning.main" 
-                            fontWeight={notification.status === 'UNREAD' ? 'bold' : 'normal'}
-                            sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
-                          >
-                            💳 Customer owes: {formatCurrency(netAmount)}
-                          </Typography>
-                        );
-                      } else if (netAmount < 0) {
-                        return (
-                          <Typography 
-                            variant="body2" 
-                            color="success.main" 
-                            fontWeight={notification.status === 'UNREAD' ? 'bold' : 'normal'}
-                            sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
-                          >
-                            ↩️ Refund due: {formatCurrency(Math.abs(netAmount))}
-                          </Typography>
-                        );
-                      } else {
-                        return (
-                          <Typography variant="body2" color="text.secondary">
-                            No payment changes
-                          </Typography>
-                        );
-                      }
-                    }
-                  })()}
+                  {renderNotificationAmount(notification)}
                 </Box>
               </TableCell>
               <TableCell>
@@ -538,20 +598,7 @@ const NotificationsPage: React.FC = () => {
                       <strong>Reason:</strong> {selectedNotification.cancellationReason}
                     </Typography>
                   )}
-                  {selectedNotification.refundAmount && selectedNotification.refundAmount > 0 && (
-                    <Alert severity="success" sx={{ mt: 2 }}>
-                      <Typography>
-                        <strong>💰 Refund Required:</strong> The hotel must refund {formatCurrency(selectedNotification.refundAmount)} to the guest.
-                      </Typography>
-                    </Alert>
-                  )}
-                  {(!selectedNotification.refundAmount || selectedNotification.refundAmount === 0) && (
-                    <Alert severity="info" sx={{ mt: 2 }}>
-                      <Typography>
-                        <strong>ℹ️ No Change:</strong> No refund is required for this cancellation.
-                      </Typography>
-                    </Alert>
-                  )}
+                  {renderNotificationFinancialAlert(selectedNotification)}
                 </Box>
               )}
 
@@ -566,196 +613,150 @@ const NotificationsPage: React.FC = () => {
                       <strong>Latest Changes:</strong> {selectedNotification.changeDetails}
                     </Typography>
                   )}
-                  
-                  {/* Payment Information Section */}
                   <Box sx={{ mt: 2 }}>
-                    {(() => {
-                      const refund = selectedNotification.refundAmount || 0;
-                      const charges = selectedNotification.additionalCharges || 0;
-                      const netAmount = charges - refund;
-                      
-                      if (netAmount > 0) {
-                        return (
-                          <Alert severity="warning" sx={{ mb: 1 }}>
-                            <Typography>
-                              <strong>💳 Additional Payment Required:</strong> The customer needs to pay an additional {formatCurrency(netAmount)}.
-                            </Typography>
-                          </Alert>
-                        );
-                      } else if (netAmount < 0) {
-                        return (
-                          <Alert severity="success" sx={{ mb: 1 }}>
-                            <Typography>
-                              <strong>💰 Refund Due:</strong> The hotel must refund {formatCurrency(Math.abs(netAmount))} to the customer.
-                            </Typography>
-                          </Alert>
-                        );
-                      } else {
-                        return (
-                          <Alert severity="info">
-                            <Typography>
-                              <strong>ℹ️ No Payment Changes:</strong> This modification does not require any additional payment or refund.
-                            </Typography>
-                          </Alert>
-                        );
-                      }
-                    })()}
-                  </Box>
-
-                  {/* Complete Notification History Section */}
-                  <Box sx={{ mt: 3 }}>
-                    <Typography variant="h6" gutterBottom>
-                      Complete Notification History
-                    </Typography>
-                    <Typography variant="body2" color="textSecondary" sx={{ mb: 1 }}>
-                      Complete chronological history of all notifications for this booking (including current)
-                    </Typography>
-                    <Divider sx={{ mb: 2 }} />
-                    
-                    {historyLoading && (
-                      <Box display="flex" justifyContent="center" p={2}>
-                        <CircularProgress size={24} />
-                        <Typography sx={{ ml: 1 }}>Loading notification history...</Typography>
-                      </Box>
-                    )}
-
-                    {historyError && (
-                      <Alert severity="warning" sx={{ mb: 2 }}>
-                        <Typography>
-                          Unable to load notification history: {historyError}
-                        </Typography>
-                      </Alert>
-                    )}
-
-                    {!historyLoading && !historyError && bookingHistory.length === 0 && (
-                      <Typography color="textSecondary" sx={{ fontStyle: 'italic' }}>
-                        No notifications found for this booking.
-                      </Typography>
-                    )}
-
-                    {!historyLoading && !historyError && bookingHistory.length > 0 && (
-                      <TableContainer component={Paper} variant="outlined">
-                        <Table size="small" aria-label="modification history">
-                          <TableHead>
-                            <TableRow sx={tableHeaderSx}>
-                              <TableCell><strong>Date</strong></TableCell>
-                              <TableCell><strong>Type</strong></TableCell>
-                              <TableCell><strong>Status</strong></TableCell>
-                              <TableCell><strong>Details</strong></TableCell>
-                              <TableCell><strong>Amount</strong></TableCell>
-                              <TableCell><strong>Updated By</strong></TableCell>
-                            </TableRow>
-                          </TableHead>
-                          <TableBody>
-                            {bookingHistory.map((notification, index) => (
-                              <TableRow 
-                                key={notification.id}
-                                sx={{
-                                  backgroundColor: index === 0 ? 'action.hover' : 'inherit',
-                                  '&:hover': {
-                                    backgroundColor: index === 0 ? 'action.selected' : 'action.hover',
-                                  }
-                                }}
-                              >
-                                <TableCell>
-                                  <Box display="flex" alignItems="center" gap={1}>
-                                    <Box>
-                                      <Typography variant="body2">
-                                        {formatDateForDisplay(notification.createdAt)}
-                                      </Typography>
-                                      <Typography variant="caption" color="textSecondary">
-                                        {formatEthiopianTime(notification.createdAt)}
-                                      </Typography>
-                                    </Box>
-                                    {index === 0 && (
-                                      <Chip 
-                                        label="Latest" 
-                                        size="small"
-                                        color="success"
-                                        variant="filled"
-                                        sx={{ ml: 1, fontSize: '0.75rem' }}
-                                      />
-                                    )}
-                                  </Box>
-                                </TableCell>
-                                <TableCell>
-                                  <Chip 
-                                    label={notification.type} 
-                                    size="small"
-                                    color={notification.type === 'CANCELLED' ? 'error' : 'primary'}
-                                    variant="outlined"
-                                  />
-                                </TableCell>
-                                <TableCell>
-                                  <Chip 
-                                    label={notification.status} 
-                                    size="small"
-                                    color={notification.status === 'UNREAD' ? 'warning' : 'default'}
-                                    variant="filled"
-                                  />
-                                </TableCell>
-                                <TableCell>
-                                  <Typography variant="body2" sx={{ fontSize: '0.875rem' }}>
-                                    {notification.changeDetails || notification.cancellationReason || 'No additional details'}
-                                  </Typography>
-                                </TableCell>
-                                <TableCell>
-                                  {(() => {
-                                    const refund = notification.refundAmount || 0;
-                                    const charges = notification.additionalCharges || 0;
-                                    const netAmount = charges - refund;
-                                    
-                                    if (notification.type === 'CANCELLED') {
-                                      if (refund > 0) {
-                                        return (
-                                          <Typography variant="body2" color="success.main">
-                                            -ETB {refund.toFixed(2)}
-                                          </Typography>
-                                        );
-                                      } else {
-                                        return (
-                                          <Typography variant="body2" color="textSecondary">
-                                            ETB 0.00
-                                          </Typography>
-                                        );
-                                      }
-                                    } else {
-                                      if (netAmount > 0) {
-                                        return (
-                                          <Typography variant="body2" color="warning.main">
-                                            +ETB {netAmount.toFixed(2)}
-                                          </Typography>
-                                        );
-                                      } else if (netAmount < 0) {
-                                        return (
-                                          <Typography variant="body2" color="success.main">
-                                            -ETB {Math.abs(netAmount).toFixed(2)}
-                                          </Typography>
-                                        );
-                                      } else {
-                                        return (
-                                          <Typography variant="body2" color="textSecondary">
-                                            ETB 0.00
-                                          </Typography>
-                                        );
-                                      }
-                                    }
-                                  })()}
-                                </TableCell>
-                                <TableCell>
-                                  <Typography variant="body2">
-                                    {notification.updatedBy || 'System'}
-                                  </Typography>
-                                </TableCell>
-                              </TableRow>
-                            ))}
-                          </TableBody>
-                        </Table>
-                      </TableContainer>
-                    )}
+                    {renderNotificationFinancialAlert(selectedNotification)}
                   </Box>
                 </Box>
               )}
+
+              <Box sx={{ mt: 1 }}>
+                <Typography variant="h6" gutterBottom>
+                  Complete Notification History
+                </Typography>
+                <Typography variant="body2" color="textSecondary" sx={{ mb: 1 }}>
+                  Complete chronological history of all notifications for this booking (including current)
+                </Typography>
+                <Divider sx={{ mb: 2 }} />
+                
+                {historyLoading && (
+                  <Box display="flex" justifyContent="center" p={2}>
+                    <CircularProgress size={24} />
+                    <Typography sx={{ ml: 1 }}>Loading notification history...</Typography>
+                  </Box>
+                )}
+
+                {historyError && (
+                  <Alert severity="warning" sx={{ mb: 2 }}>
+                    <Typography>
+                      Unable to load notification history: {historyError}
+                    </Typography>
+                  </Alert>
+                )}
+
+                {!historyLoading && !historyError && bookingHistory.length === 0 && (
+                  <Typography color="textSecondary" sx={{ fontStyle: 'italic' }}>
+                    No notifications found for this booking.
+                  </Typography>
+                )}
+
+                {!historyLoading && !historyError && bookingHistory.length > 0 && (
+                  <TableContainer component={Paper} variant="outlined">
+                    <Table size="small" aria-label="booking notification history">
+                      <TableHead>
+                        <TableRow sx={tableHeaderSx}>
+                          <TableCell><strong>Date</strong></TableCell>
+                          <TableCell><strong>Type</strong></TableCell>
+                          <TableCell><strong>Status</strong></TableCell>
+                          <TableCell><strong>Details</strong></TableCell>
+                          <TableCell><strong>Amount</strong></TableCell>
+                          <TableCell><strong>Updated By</strong></TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {bookingHistory.map((notification, index) => {
+                          const refund = notification.refundAmount || 0;
+                          const netAmount = getNotificationNetAmount(notification);
+
+                          return (
+                            <TableRow 
+                              key={notification.id}
+                              sx={{
+                                backgroundColor: index === 0 ? 'action.hover' : 'inherit',
+                                '&:hover': {
+                                  backgroundColor: index === 0 ? 'action.selected' : 'action.hover',
+                                }
+                              }}
+                            >
+                              <TableCell>
+                                <Box display="flex" alignItems="center" gap={1}>
+                                  <Box>
+                                    <Typography variant="body2">
+                                      {formatDateForDisplay(notification.createdAt)}
+                                    </Typography>
+                                    <Typography variant="caption" color="textSecondary">
+                                      {formatEthiopianTime(notification.createdAt)}
+                                    </Typography>
+                                  </Box>
+                                  {index === 0 && (
+                                    <Chip 
+                                      label="Latest" 
+                                      size="small"
+                                      color="success"
+                                      variant="filled"
+                                      sx={{ ml: 1, fontSize: '0.75rem' }}
+                                    />
+                                  )}
+                                </Box>
+                              </TableCell>
+                              <TableCell>
+                                <Chip 
+                                  label={notification.type} 
+                                  size="small"
+                                  color={notification.type === 'CANCELLED' ? 'error' : 'primary'}
+                                  variant="outlined"
+                                />
+                              </TableCell>
+                              <TableCell>
+                                <Chip 
+                                  label={notification.status} 
+                                  size="small"
+                                  color={notification.status === 'UNREAD' ? 'warning' : 'default'}
+                                  variant="filled"
+                                />
+                              </TableCell>
+                              <TableCell>
+                                <Typography variant="body2" sx={{ fontSize: '0.875rem' }}>
+                                  {notification.changeDetails || notification.cancellationReason || 'No additional details'}
+                                </Typography>
+                              </TableCell>
+                              <TableCell>
+                                {notification.type === 'CANCELLED' ? (
+                                  refund > 0 ? (
+                                    <Typography variant="body2" color="success.main">
+                                      -USD {refund.toFixed(2)}
+                                    </Typography>
+                                  ) : (
+                                    <Typography variant="body2" color="textSecondary">
+                                      USD 0.00
+                                    </Typography>
+                                  )
+                                ) : netAmount > 0 ? (
+                                  <Typography variant="body2" color="warning.main">
+                                    +USD {netAmount.toFixed(2)}
+                                  </Typography>
+                                ) : netAmount < 0 ? (
+                                  <Typography variant="body2" color="success.main">
+                                    -USD {Math.abs(netAmount).toFixed(2)}
+                                  </Typography>
+                                ) : (
+                                  <Typography variant="body2" color="textSecondary">
+                                    USD 0.00
+                                  </Typography>
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                <Typography variant="body2">
+                                  {notification.updatedBy || 'System'}
+                                </Typography>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                )}
+              </Box>
 
               <Box>
                 <Typography variant="body2" color="textSecondary">

@@ -64,7 +64,7 @@ public class BookingChangeNotificationService {
             return savedNotification;
         } catch (Exception e) {
             logger.error("Failed to create cancellation notification for booking {}: {}",
-                    reservation.getConfirmationNumber(), e.getMessage());
+                    reservation != null ? reservation.getConfirmationNumber() : "unknown", e.getMessage());
             throw e;
         }
     }
@@ -87,19 +87,6 @@ public class BookingChangeNotificationService {
             }
             if (changeDetails == null || changeDetails.trim().isEmpty()) {
                 changeDetails = "Booking details modified";
-            }
-
-            // Skip notification creation if no financial implications (both amounts are
-            // zero or null)
-            boolean hasAdditionalCharges = additionalCharges != null
-                    && additionalCharges.compareTo(BigDecimal.ZERO) > 0;
-            boolean hasRefundAmount = refundAmount != null && refundAmount.compareTo(BigDecimal.ZERO) > 0;
-
-            if (!hasAdditionalCharges && !hasRefundAmount) {
-                logger.info(
-                        "Skipping modification notification for booking {} - no financial implications (additional charges: {}, refund: {})",
-                        reservation.getConfirmationNumber(), additionalCharges, refundAmount);
-                return null; // No notification needed for non-financial modifications
             }
 
             // Check for recent duplicate notification (within last 5 minutes) for the same
@@ -147,7 +134,7 @@ public class BookingChangeNotificationService {
             return savedNotification;
         } catch (Exception e) {
             logger.error("Failed to create modification notification for booking {}: {}",
-                    reservation.getConfirmationNumber(), e.getMessage());
+                    reservation != null ? reservation.getConfirmationNumber() : "unknown", e.getMessage());
             throw e;
         }
     }

@@ -1789,17 +1789,14 @@ public class BookingService {
             // Create booking change notification for hotel admin/front desk (only if there
             // are financial implications)
             try {
-                String modificationReason = request.getReason() != null &&
-                        !request.getReason().trim().isEmpty()
-                                ? request.getReason().trim()
-                                : "Booking details updated";
+                String changeDetails = buildNotificationChangeDetails(existingBooking, reservation, request.getReason());
                 BookingNotification notification = bookingChangeNotificationService.createModificationNotification(
-                        reservation, modificationReason,
+                        reservation, changeDetails,
                         additionalCharges, refundAmount, "Guest");
                 if (notification != null) {
-                    logger.info("Created booking modification notification for financial implications");
+                    logger.info("Created booking modification notification");
                 } else {
-                    logger.info("No notification created - booking modification had no financial implications");
+                    logger.info("No booking modification notification created");
                 }
             } catch (Exception e) {
                 logger.warn("Failed to create booking modification notification: {}", e.getMessage());
@@ -2012,6 +2009,8 @@ public class BookingService {
                         "Modifications must be made at least 24 hours before check-in");
             }
 
+            BookingResponse existingBooking = convertToBookingResponse(reservation);
+
             BigDecimal additionalCharges = BigDecimal.ZERO;
             BigDecimal refundAmount = BigDecimal.ZERO;
             BigDecimal totalPriceDifference = BigDecimal.ZERO; // Track net price difference
@@ -2184,16 +2183,14 @@ public class BookingService {
             // Create booking change notification for hotel admin/front desk (only if there
             // are financial implications)
             try {
-                String modificationReason = request.getReason() != null && !request.getReason().trim().isEmpty()
-                        ? request.getReason().trim()
-                        : "Booking details updated";
+                String changeDetails = buildNotificationChangeDetails(existingBooking, reservation, request.getReason());
                 BookingNotification notification = bookingChangeNotificationService.createModificationNotification(
-                        reservation, modificationReason,
+                        reservation, changeDetails,
                         additionalCharges, refundAmount, "Staff");
                 if (notification != null) {
-                    logger.info("Created booking modification notification for financial implications");
+                    logger.info("Created booking modification notification");
                 } else {
-                    logger.info("No notification created - booking modification had no financial implications");
+                    logger.info("No booking modification notification created");
                 }
             } catch (Exception e) {
                 logger.warn("Failed to create booking modification notification: {}", e.getMessage());
@@ -2638,6 +2635,22 @@ public class BookingService {
         }
 
         return summary.length() > 0 ? summary.toString() : "Minor booking details updated";
+    }
+
+    private String buildNotificationChangeDetails(BookingResponse existingBooking, Reservation updatedReservation,
+            String requestedReason) {
+        String summary = getModificationSummary(convertBookingResponseToMap(existingBooking), updatedReservation);
+
+        if (requestedReason == null || requestedReason.trim().isEmpty()) {
+            return summary;
+        }
+
+        String trimmedReason = requestedReason.trim();
+        if (summary.equals(trimmedReason)) {
+            return summary;
+        }
+
+        return summary + " Reason: " + trimmedReason;
     }
 
     /**
