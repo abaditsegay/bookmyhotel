@@ -2,10 +2,6 @@ package com.bookmyhotel.entity;
 
 import java.util.UUID;
 
-import org.hibernate.annotations.Filter;
-import org.hibernate.annotations.FilterDef;
-import org.hibernate.annotations.ParamDef;
-
 import com.bookmyhotel.tenant.TenantContext;
 
 import jakarta.persistence.Column;
@@ -22,8 +18,6 @@ import jakarta.persistence.PreUpdate;
  * - Proper inheritance structure for entity management
  */
 @MappedSuperclass
-@FilterDef(name = "tenantFilter", parameters = @ParamDef(name = "tenantId", type = String.class))
-@Filter(name = "tenantFilter", condition = "tenant_id = :tenantId")
 public abstract class TenantUUIDEntity extends BaseUUIDEntity {
 
     @Column(name = "tenant_id", nullable = false, length = 50)

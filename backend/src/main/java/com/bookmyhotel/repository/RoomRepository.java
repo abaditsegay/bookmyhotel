@@ -166,10 +166,11 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
        long countByStatusAndHotelId(@Param("status") RoomStatus status, @Param("hotelId") Long hotelId);
 
        /**
-        * Find available rooms of specific type excluding a reservation
+        * Find available rooms of specific type for a hotel excluding a reservation (C2: hotel filter added)
         */
        @Query("SELECT r FROM Room r " +
-                     "WHERE r.roomType = :roomType " +
+                     "WHERE r.hotel.id = :hotelId " +
+                     "AND r.roomType = :roomType " +
                      "AND r.isAvailable = true " +
                      "AND r.id NOT IN (" +
                      "  SELECT res.assignedRoom.id FROM Reservation res " +
@@ -179,6 +180,7 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
                      "  AND (res.checkInDate < :checkOutDate AND res.checkOutDate > :checkInDate)" +
                      ")")
        List<Room> findAvailableRoomsOfType(
+                     @Param("hotelId") Long hotelId,
                      @Param("roomType") RoomType roomType,
                      @Param("checkInDate") LocalDate checkInDate,
                      @Param("checkOutDate") LocalDate checkOutDate,
@@ -318,6 +320,29 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
        Optional<Room> findFirstRoomOfTypeForHotel(
                      @Param("hotelId") Long hotelId,
                      @Param("roomType") RoomType roomType);
+
+       /**
+        * Lock one available room of the given type for the given dates (C1: prevents TOCTOU overbooking).
+        * Using PESSIMISTIC_WRITE so two concurrent booking threads serialise here.
+        */
+       @Lock(LockModeType.PESSIMISTIC_WRITE)
+       @Query("SELECT r FROM Room r " +
+                     "WHERE r.hotel.id = :hotelId " +
+                     "AND r.roomType = :roomType " +
+                     "AND r.isAvailable = true " +
+                     "AND r.id NOT IN (" +
+                     "  SELECT res.assignedRoom.id FROM Reservation res " +
+                     "  WHERE res.assignedRoom IS NOT NULL " +
+                     "  AND res.status NOT IN ('CANCELLED', 'NO_SHOW') " +
+                     "  AND (res.checkInDate < :checkOutDate AND res.checkOutDate > :checkInDate)" +
+                     ") " +
+                     "ORDER BY r.id " +
+                     "LIMIT 1")
+       Optional<Room> lockFirstAvailableRoomOfType(
+                     @Param("hotelId") Long hotelId,
+                     @Param("roomType") RoomType roomType,
+                     @Param("checkInDate") LocalDate checkInDate,
+                     @Param("checkOutDate") LocalDate checkOutDate);
 
        /**
         * Find hotel by ID (bypasses tenant filter for cross-tenant booking)

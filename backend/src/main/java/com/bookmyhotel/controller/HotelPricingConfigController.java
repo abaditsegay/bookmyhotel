@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bookmyhotel.entity.HotelPricingConfig;
+import com.bookmyhotel.security.HotelSecurity;
 import com.bookmyhotel.service.HotelPricingConfigService;
 
 import jakarta.validation.Valid;
@@ -36,6 +37,9 @@ public class HotelPricingConfigController {
 
     @Autowired
     private HotelPricingConfigService pricingConfigService;
+
+    @Autowired
+    private HotelSecurity hotelSecurity;
 
     /**
      * Get the active pricing configuration for a hotel
@@ -160,6 +164,12 @@ public class HotelPricingConfigController {
         try {
             logger.info("Updating pricing configuration: {}", configId);
 
+            // H5: Verify the caller owns the hotel that owns this config
+            Long configHotelId = pricingConfigService.getHotelIdByConfigId(configId);
+            if (!hotelSecurity.canAccessHotel(configHotelId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+
             // Validate the updates
             if (!pricingConfigService.validateConfiguration(updates)) {
                 return ResponseEntity.badRequest().build();
@@ -191,6 +201,12 @@ public class HotelPricingConfigController {
     public ResponseEntity<Void> deleteConfiguration(@PathVariable Long configId) {
         try {
             logger.info("Deactivating pricing configuration: {}", configId);
+
+            // H5: Verify the caller owns the hotel that owns this config
+            Long configHotelId = pricingConfigService.getHotelIdByConfigId(configId);
+            if (!hotelSecurity.canAccessHotel(configHotelId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
 
             pricingConfigService.deleteConfiguration(configId);
 

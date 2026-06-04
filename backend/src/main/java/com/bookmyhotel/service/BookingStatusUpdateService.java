@@ -1,6 +1,8 @@
 package com.bookmyhotel.service;
 
 import java.time.LocalDateTime;
+import java.util.EnumSet;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +20,7 @@ import com.bookmyhotel.exception.ResourceNotFoundException;
 import com.bookmyhotel.repository.ReservationRepository;
 import com.bookmyhotel.repository.RoomRepository;
 import com.bookmyhotel.repository.UserRepository;
+import com.bookmyhotel.security.HotelSecurity;
 
 /**
  * Unified service for updating booking status
@@ -28,6 +31,28 @@ import com.bookmyhotel.repository.UserRepository;
 public class BookingStatusUpdateService {
 
     private static final Logger logger = LoggerFactory.getLogger(BookingStatusUpdateService.class);
+
+    /**
+     * Legal reservation status transitions (state machine).
+     * Key = current status. Value = set of statuses it may transition to.
+     */
+    private static final java.util.Map<ReservationStatus, Set<ReservationStatus>> ALLOWED_TRANSITIONS =
+            new java.util.EnumMap<>(ReservationStatus.class);
+
+    static {
+        ALLOWED_TRANSITIONS.put(ReservationStatus.PENDING,
+                EnumSet.of(ReservationStatus.BOOKED, ReservationStatus.CANCELLED));
+        ALLOWED_TRANSITIONS.put(ReservationStatus.BOOKED,
+                EnumSet.of(ReservationStatus.CHECKED_IN, ReservationStatus.CANCELLED, ReservationStatus.NO_SHOW));
+        ALLOWED_TRANSITIONS.put(ReservationStatus.CHECKED_IN,
+                EnumSet.of(ReservationStatus.CHECKED_OUT));
+        ALLOWED_TRANSITIONS.put(ReservationStatus.CHECKED_OUT,
+                EnumSet.noneOf(ReservationStatus.class));
+        ALLOWED_TRANSITIONS.put(ReservationStatus.CANCELLED,
+                EnumSet.noneOf(ReservationStatus.class));
+        ALLOWED_TRANSITIONS.put(ReservationStatus.NO_SHOW,
+                EnumSet.noneOf(ReservationStatus.class));
+    }
 
     @Autowired
     private ReservationRepository reservationRepository;
@@ -47,6 +72,9 @@ public class BookingStatusUpdateService {
     @Autowired
     private RoomCacheService roomCacheService;
 
+    @Autowired
+    private HotelSecurity hotelSecurity;
+
     /**
      * Update booking status with notification creation
      * 
@@ -61,11 +89,28 @@ public class BookingStatusUpdateService {
                 "BookingStatusUpdateService.updateBookingStatus called - reservationId: {}, newStatus: {}, initiatedBy: {}",
                 reservationId, newStatus, initiatedBy);
 
-        Reservation reservation = reservationRepository.findById(reservationId)
-                .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
+        // C5: Scope the lookup to the caller's hotel to prevent IDOR
+        Long callerHotelId = hotelSecurity.getCurrentUserHotelId();
+        Reservation reservation;
+        if (callerHotelId != null) {
+            reservation = reservationRepository.findByIdAndHotelId(reservationId, callerHotelId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
+        } else {
+            // System-wide admin: allow cross-hotel access
+            reservation = reservationRepository.findById(reservationId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Reservation not found with id: " + reservationId));
+        }
 
         logger.debug("Found reservation: {} - Current status: {}",
                 generateConfirmationNumber(reservation.getId()), reservation.getStatus());
+
+        // M1: Enforce state machine — reject illegal transitions
+        ReservationStatus currentStatus = reservation.getStatus();
+        Set<ReservationStatus> allowed = ALLOWED_TRANSITIONS.getOrDefault(currentStatus, EnumSet.noneOf(ReservationStatus.class));
+        if (!allowed.contains(newStatus)) {
+            throw new IllegalStateException(
+                    "Cannot transition reservation from " + currentStatus + " to " + newStatus);
+        }
 
         if (newStatus == ReservationStatus.CHECKED_IN && reservation.getRoom() == null) {
             throw new IllegalStateException("An assigned room is required before check-in");

@@ -57,6 +57,7 @@ public class BookingModificationHistoryController {
      * Get modification history for a specific confirmation number
      */
     @GetMapping("/confirmation/{confirmationNumber}")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<BookingModificationHistory>> getHistoryByConfirmationNumber(
             @PathVariable String confirmationNumber) {
         try {

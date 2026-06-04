@@ -6,6 +6,8 @@ import java.util.Optional;
 
 import jakarta.persistence.LockModeType;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
@@ -140,6 +142,12 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
         * Find active hotels by tenant ID
         */
        List<Hotel> findByTenant_IdAndIsActiveTrue(String tenantId);
+
+       /**
+        * Find active hotels by tenant ID with pagination
+        */
+       @Query("SELECT h FROM Hotel h WHERE h.tenant.id = :tenantId AND h.isActive = true")
+       Page<Hotel> findByTenantIdActivePaged(@Param("tenantId") String tenantId, Pageable pageable);
 
        /**
         * Count hotels by tenant ID

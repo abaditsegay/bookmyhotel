@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
@@ -352,6 +353,30 @@ public class GlobalExceptionHandler {
                 return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
                                 .header("Retry-After", String.valueOf(Math.max(1, ex.getRetryAfterSeconds())))
                                 .body(errorResponse);
+        }
+
+        /**
+         * Handle optimistic locking conflicts (concurrent edits to the same reservation).
+         * Returns 409 Conflict so callers can retry.
+         */
+        @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+        public ResponseEntity<ErrorResponse> handleOptimisticLockingFailure(
+                        ObjectOptimisticLockingFailureException ex, WebRequest request) {
+
+                ErrorResponse errorResponse = ErrorResponse.builder()
+                                .timestamp(LocalDateTime.now())
+                                .status(HttpStatus.CONFLICT.value())
+                                .error("Conflict")
+                                .message("The record was modified by another request. Please refresh and try again.")
+                                .details("Optimistic locking conflict on entity: " +
+                                        (ex.getPersistentClass() != null ? ex.getPersistentClass().getSimpleName() : "unknown"))
+                                .path(getPath(request))
+                                .userFriendlyMessage("Someone else updated this record at the same time. Please reload and retry.")
+                                .build();
+
+                logger.warn("Optimistic locking conflict for {}: {}", getPath(request), ex.getMessage());
+
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
         }
 
         /**

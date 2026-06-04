@@ -555,6 +555,16 @@ public class HotelPricingConfigService {
     }
 
     /**
+     * Retrieve the hotel ID associated with a pricing config (used for ownership checks).
+     */
+    @Transactional(readOnly = true)
+    public Long getHotelIdByConfigId(Long configId) {
+        return pricingConfigRepository.findById(configId)
+                .map(c -> c.getHotel() != null ? c.getHotel().getId() : null)
+                .orElseThrow(() -> new IllegalArgumentException("Configuration not found with ID: " + configId));
+    }
+
+    /**
      * Get configurations expiring within days (placeholder implementation)
      * 
      * @param days number of days

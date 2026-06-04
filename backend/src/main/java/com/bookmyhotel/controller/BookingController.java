@@ -53,6 +53,9 @@ public class BookingController {
     @Autowired
     private BookingSecurity bookingSecurity;
 
+    @Autowired
+    private com.bookmyhotel.service.AuthRateLimitService authRateLimitService;
+
     /**
      * Create a new booking by room type (the only booking method)
      */
@@ -286,7 +289,10 @@ public class BookingController {
      */
     @PostMapping("/cancel")
     public ResponseEntity<BookingModificationResponse> cancelBooking(
-            @Valid @RequestBody BookingCancellationRequest request) {
+            @Valid @RequestBody BookingCancellationRequest request,
+            jakarta.servlet.http.HttpServletRequest httpRequest) {
+
+        authRateLimitService.checkBookingCancellationAllowed(httpRequest.getRemoteAddr());
 
         BookingModificationResponse response = bookingService.cancelBooking(request);
 
@@ -367,8 +373,11 @@ public class BookingController {
      * Send authentication email for booking management
      */
     @PostMapping("/authenticate")
-    public ResponseEntity<?> authenticateBookingAccess(@RequestBody Map<String, String> request) {
+    public ResponseEntity<?> authenticateBookingAccess(@RequestBody Map<String, String> request,
+            jakarta.servlet.http.HttpServletRequest httpRequest) {
         try {
+            authRateLimitService.checkBookingCancellationAllowed(httpRequest.getRemoteAddr());
+
             String confirmationNumber = request.get("confirmationNumber");
             String email = request.get("email");
             String action = request.get("action"); // "modify" or "cancel"

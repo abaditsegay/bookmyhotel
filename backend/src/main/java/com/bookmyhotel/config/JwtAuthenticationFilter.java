@@ -9,7 +9,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.lang.NonNull;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
-import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.bookmyhotel.entity.User;
@@ -25,9 +24,11 @@ import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * JWT Authentication Filter to validate tokens and set authentication in
- * SecurityContext
+ * SecurityContext.
+ * Registered exclusively via SecurityConfig @Bean — NOT annotated with
+ * @Component to prevent Spring Boot's auto-registration from running the
+ * filter twice per request.
  */
-@Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Autowired

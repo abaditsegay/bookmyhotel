@@ -7,6 +7,9 @@ import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.validation.constraints.NotNull;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.ParamDef;
 
 /**
  * Base entity for hotel-scoped entities
@@ -23,6 +26,8 @@ import jakarta.validation.constraints.NotNull;
  * tenants)
  */
 @MappedSuperclass
+@FilterDef(name = "tenantFilter", parameters = { @ParamDef(name = "tenantId", type = String.class) })
+@Filter(name = "tenantFilter", condition = "hotel_id IN (SELECT h.id FROM hotels h WHERE h.tenant_id = :tenantId)")
 public abstract class HotelScopedEntity extends BaseEntity {
 
     @NotNull(message = "Hotel is required")

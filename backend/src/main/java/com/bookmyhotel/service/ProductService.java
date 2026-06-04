@@ -250,7 +250,9 @@ public class ProductService {
      * Reduce stock quantity (for order processing)
      */
     public void reduceStock(Long productId, Integer quantity) {
-        Product product = productRepository.findById(productId)
+        // H9: PESSIMISTIC_WRITE lock prevents concurrent reads from both seeing
+        // sufficient stock, decrementing to negative values.
+        Product product = productRepository.findByIdForUpdate(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with ID: " + productId));
         Map<String, Object> oldSnapshot = createProductSnapshot(product);
 

@@ -215,16 +215,9 @@ public class AuthController {
      * Helper method to extract client IP address
      */
     private String getClientIpAddress(HttpServletRequest request) {
-        String xForwardedFor = request.getHeader("X-Forwarded-For");
-        if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
-            return xForwardedFor.split(",")[0].trim();
-        }
-
-        String xRealIp = request.getHeader("X-Real-IP");
-        if (xRealIp != null && !xRealIp.isEmpty()) {
-            return xRealIp;
-        }
-
+        // Do NOT trust X-Forwarded-For or X-Real-IP: these headers can be
+        // spoofed by any client and would allow rate-limit bypass.
+        // Use the direct connection address from the container/load-balancer.
         return request.getRemoteAddr();
     }
 

@@ -47,6 +47,9 @@ public class Reservation extends HotelScopedEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @jakarta.persistence.Version
+    private Integer version;
+
     @NotNull(message = "Check-in date is required")
     @Column(name = "check_in_date", nullable = false)
     private LocalDate checkInDate;
@@ -376,5 +379,13 @@ public class Reservation extends HotelScopedEntity {
 
     public void setNumberOfGuests(Integer numberOfGuests) {
         this.numberOfGuests = numberOfGuests;
+    }
+
+    public Integer getVersion() {
+        return version;
+    }
+
+    public void setVersion(Integer version) {
+        this.version = version;
     }
 }

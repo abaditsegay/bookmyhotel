@@ -87,6 +87,14 @@ public class AuthRateLimitService {
                 "Too many password reset attempts. Please try again later.");
     }
 
+    public void checkBookingCancellationAllowed(String ipAddress) {
+        checkAndRecordWindow(
+                "booking-cancel-ip:" + normalizeIp(ipAddress),
+                10,
+                15,
+                "Too many booking cancellation attempts. Please try again later.");
+    }
+
     private void assertNotLocked(String key) {
         LoginAttemptState state = loginAttempts.get(key);
         if (state == null) {

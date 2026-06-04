@@ -147,8 +147,8 @@ public class User extends BaseEntity implements UserDetails {
             return hasSystemWideRole;
         }
 
-        // Fallback: if no hotel, consider system-wide
-        return this.hotel == null;
+        // No roles defined — treat as a regular (non-system-wide) user
+        return false;
     }
 
     /**

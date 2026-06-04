@@ -86,6 +86,9 @@ public class SecurityConfig {
                                                                 "/api/auth/forgot-password",
                                                                 "/api/auth/validate-reset-token",
                                                                 "/api/auth/reset-password",
+                                                                "/api/auth/refresh",
+                                                                "/api/auth/session-status",
+                                                                "/api/auth/verify-email",
                                                                 "/api/public/**",
                                                                 "/api/hotels/search",
                                                                 "/api/hotels/{id}",
@@ -105,14 +108,15 @@ public class SecurityConfig {
                                                                 "/api/booking/guest/**",
                                                                 "/api/booking-management/**",
                                                                 "/actuator/health",
-                                                                "/actuator/metrics",
-                                                                "/actuator/**",
                                                                 "/swagger-ui/**",
                                                                 "/swagger-ui.html",
                                                                 "/v3/api-docs/**",
                                                                 "/v3/api-docs.yaml",
                                                                 "/error")
                                                 .permitAll()
+
+                                                // Actuator management endpoints require SUPER_ADMIN
+                                                .requestMatchers("/actuator/**").hasRole("SUPER_ADMIN")
 
                                                 // Auth endpoints that require authentication
                                                 .requestMatchers("/api/auth/logout").authenticated()

@@ -68,8 +68,7 @@ public class HotelManagementService {
      */
     @Transactional(readOnly = true)
     public Page<HotelDTO> getHotelsByTenant(String tenantId, Pageable pageable) {
-        // Since we don't have findByTenantId method yet, we'll get all hotels for now
-        Page<Hotel> hotels = hotelRepository.findAll(pageable);
+        Page<Hotel> hotels = hotelRepository.findByTenantIdActivePaged(tenantId, pageable);
         return hotels.map(this::convertToDTO);
     }
 

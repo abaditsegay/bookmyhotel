@@ -1,9 +1,5 @@
 package com.bookmyhotel.entity;
 
-import org.hibernate.annotations.Filter;
-import org.hibernate.annotations.FilterDef;
-import org.hibernate.annotations.ParamDef;
-
 import com.bookmyhotel.tenant.TenantContext;
 
 import jakarta.persistence.Column;
@@ -15,8 +11,6 @@ import jakarta.persistence.PreUpdate;
  * Base entity for tenant-scoped entities
  */
 @MappedSuperclass
-@FilterDef(name = "tenantFilter", parameters = @ParamDef(name = "tenantId", type = String.class))
-@Filter(name = "tenantFilter", condition = "tenant_id = :tenantId")
 public abstract class TenantEntity extends BaseEntity {
     
     @Column(name = "tenant_id", nullable = false, length = 50)

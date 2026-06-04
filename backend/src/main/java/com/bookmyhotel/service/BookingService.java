@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -147,19 +148,21 @@ public class BookingService {
             // Validate booking request for room type booking
             validateBookingRequestForRoomType(request, userEmail == null);
 
-            // Serialize availability checks per hotel to reduce race conditions.
-            Hotel hotel = hotelRepository.findByIdForUpdate(request.getHotelId())
+            // Look up hotel without pessimistic locking to prevent serialization bottlenecks
+            Hotel hotel = hotelRepository.findById(request.getHotelId())
                     .orElseThrow(() -> new BookingException("Hotel not found with ID: " + request.getHotelId()));
 
-            // Check room type availability WITHOUT assigning a specific room
-            // This just verifies that rooms of this type exist and are available for the
-            // dates
+            // C1: Acquire a PESSIMISTIC_WRITE lock on one available room of this type
+            // to prevent two concurrent threads both passing the availability check
+            // and overbooking the same room-type slot.
             RoomType roomTypeEnum = request.getRoomType();
-            boolean hasAvailableRooms = roomRepository.hasAvailableRoomsOfType(
-                    request.getHotelId(),
-                    roomTypeEnum,
-                    request.getCheckInDate(),
-                    request.getCheckOutDate());
+            boolean hasAvailableRooms = roomRepository
+                    .lockFirstAvailableRoomOfType(
+                            request.getHotelId(),
+                            roomTypeEnum,
+                            request.getCheckInDate(),
+                            request.getCheckOutDate())
+                    .isPresent();
 
             if (!hasAvailableRooms) {
                 throw new BookingException("No available rooms of type " +
@@ -250,10 +253,9 @@ public class BookingService {
 
             alignAssignedRoomStatusWithReservation(reservation);
 
-            // Generate a temporary confirmation number before first save
-            // We'll update it with the actual ID-based number after save
-            String tempConfirmationNumber = "TEMP"
-                    + String.format("%08d", (int) (System.currentTimeMillis() % 100000000));
+            // Generate a UUID-based placeholder confirmation number before first save
+            // We'll replace it with the ID-based number after save
+            String tempConfirmationNumber = "TEMP-" + UUID.randomUUID().toString().replace("-", "").substring(0, 16).toUpperCase();
             reservation.setConfirmationNumber(tempConfirmationNumber);
 
             // Save reservation
@@ -317,17 +319,21 @@ public class BookingService {
             // Validate booking request
             validateRoomTypeBookingRequest(request, userEmail == null);
 
-            // Serialize availability checks per hotel to reduce race conditions.
-            Hotel hotel = hotelRepository.findByIdForUpdate(request.getHotelId())
+            // Look up hotel without pessimistic locking to prevent serialization bottlenecks
+            Hotel hotel = hotelRepository.findById(request.getHotelId())
                     .orElseThrow(() -> new BookingException("Hotel not found with ID: " + request.getHotelId()));
 
-            // Check room type availability WITHOUT assigning a specific room
+            // C1: Acquire a PESSIMISTIC_WRITE lock on one available room of this type
+            // to prevent two concurrent threads both passing the availability check
+            // and overbooking the same room-type slot.
             RoomType roomTypeEnum = request.getRoomType();
-            boolean hasAvailableRooms = roomRepository.hasAvailableRoomsOfType(
-                    request.getHotelId(),
-                    roomTypeEnum,
-                    request.getCheckInDate(),
-                    request.getCheckOutDate());
+            boolean hasAvailableRooms = roomRepository
+                    .lockFirstAvailableRoomOfType(
+                            request.getHotelId(),
+                            roomTypeEnum,
+                            request.getCheckInDate(),
+                            request.getCheckOutDate())
+                    .isPresent();
 
             if (!hasAvailableRooms) {
                 throw new BookingException("No available rooms of type " +
@@ -409,10 +415,9 @@ public class BookingService {
                 reservation.setPaymentStatus(PaymentStatus.PENDING);
             }
 
-            // Generate a temporary confirmation number before first save
-            // We'll update it with the actual ID-based number after save
-            String tempConfirmationNumber = "TEMP"
-                    + String.format("%08d", (int) (System.currentTimeMillis() % 100000000));
+            // Generate a UUID-based placeholder confirmation number before first save
+            // We'll replace it with the ID-based number after save
+            String tempConfirmationNumber = "TEMP-" + UUID.randomUUID().toString().replace("-", "").substring(0, 16).toUpperCase();
             reservation.setConfirmationNumber(tempConfirmationNumber);
 
             // Save reservation
@@ -1884,11 +1889,19 @@ public class BookingService {
             applyCancellationPaymentStatus(reservation, refundAmount);
             reservation.setUpdatedAt(LocalDateTime.now());
 
-            // Save cancellation reason if provided
-            if (request.getCancellationReason() != null && !request.getCancellationReason().trim().isEmpty()) {
-                reservation.setSpecialRequests(
-                        (reservation.getSpecialRequests() != null ? reservation.getSpecialRequests() + "\n" : "") +
-                                "Cancellation reason: " + request.getCancellationReason().trim());
+            // M2: Store cancellation reason and timestamp in proper fields (not specialRequests)
+            String cancelReason = (request.getCancellationReason() != null && !request.getCancellationReason().trim().isEmpty())
+                    ? request.getCancellationReason().trim()
+                    : "Cancelled by guest";
+            reservation.setCancellationReason(cancelReason);
+            reservation.setCancelledAt(LocalDateTime.now());
+
+            // M3: Release the assigned room when a booking is cancelled
+            Room assignedRoom = reservation.getRoom();
+            if (assignedRoom != null) {
+                assignedRoom.setStatus(RoomStatus.AVAILABLE);
+                assignedRoom.setIsAvailable(true);
+                roomRepository.save(assignedRoom);
             }
 
             // Save the updated reservation
@@ -1901,7 +1914,7 @@ public class BookingService {
                     AuditTaxonomy.Action.BOOKING_CANCELLED,
                         convertBookingResponseToMap(existingBooking),
                     convertReservationToMap(reservation),
-                    List.of("status", "paymentStatus", "specialRequests"),
+                    List.of("status", "paymentStatus", "cancellationReason", "cancelledAt"),
                     request.getCancellationReason() != null && !request.getCancellationReason().isBlank()
                         ? request.getCancellationReason().trim()
                         : "Guest cancelled booking",
@@ -1954,7 +1967,7 @@ public class BookingService {
              */
 
             if (refundAmount.compareTo(BigDecimal.ZERO) > 0) {
-                response.setMessage("Booking cancelled. Refund of $" + refundAmount
+                response.setMessage("Booking cancelled. Refund of ETB " + refundAmount
                         + " will be processed within 3-5 business days.");
             } else {
                 response.setMessage("Booking cancelled. No refund applicable based on cancellation policy.");
@@ -2255,11 +2268,19 @@ public class BookingService {
             applyCancellationPaymentStatus(reservation, refundAmount);
             reservation.setUpdatedAt(LocalDateTime.now());
 
-            // Save cancellation reason if provided
-            if (cancellationReason != null && !cancellationReason.trim().isEmpty()) {
-                reservation.setSpecialRequests(
-                        (reservation.getSpecialRequests() != null ? reservation.getSpecialRequests() + "\n" : "") +
-                                "Cancellation reason: " + cancellationReason.trim());
+            // M2: Store cancellation fields properly instead of appending to specialRequests
+            String normalizedReason = (cancellationReason != null && !cancellationReason.trim().isEmpty())
+                    ? cancellationReason.trim()
+                    : "Cancelled by staff";
+            reservation.setCancellationReason(normalizedReason);
+            reservation.setCancelledAt(LocalDateTime.now());
+
+            // M3: Release the assigned room back to AVAILABLE
+            Room assignedRoomCustomer = reservation.getRoom();
+            if (assignedRoomCustomer != null) {
+                assignedRoomCustomer.setStatus(RoomStatus.AVAILABLE);
+                assignedRoomCustomer.setIsAvailable(true);
+                roomRepository.save(assignedRoomCustomer);
             }
 
             // Save the updated reservation
@@ -2291,7 +2312,7 @@ public class BookingService {
             }
 
             if (refundAmount.compareTo(BigDecimal.ZERO) > 0) {
-                response.setMessage("Booking cancelled. Refund of $" + refundAmount
+                response.setMessage("Booking cancelled. Refund of ETB " + refundAmount
                         + " will be processed within 3-5 business days.");
             } else {
                 response.setMessage("Booking cancelled. No refund applicable based on cancellation policy.");
@@ -2889,9 +2910,21 @@ public class BookingService {
                 for (Reservation reservation : expiredPendingBookings) {
                     String confirmationNumber = reservation.getConfirmationNumber();
 
-                    // Update status to CANCELLED
+                    // M4: Set all cancellation fields, not just status
                     reservation.setStatus(ReservationStatus.CANCELLED);
+                    reservation.setCancelledAt(LocalDateTime.now());
+                    reservation.setCancellationReason("Auto-expired: payment not received within 30 minutes");
+                    reservation.setPaymentStatus(PaymentStatus.FAILED);
                     reservation.setUpdatedAt(LocalDateTime.now());
+
+                    // M4: Release any assigned room back to AVAILABLE
+                    Room assignedRoom = reservation.getRoom();
+                    if (assignedRoom != null) {
+                        assignedRoom.setStatus(RoomStatus.AVAILABLE);
+                        assignedRoom.setIsAvailable(true);
+                        roomRepository.save(assignedRoom);
+                    }
+
                     reservationRepository.save(reservation);
 
                     logger.info("Auto-cancelled expired PENDING booking: {} (created at: {})",

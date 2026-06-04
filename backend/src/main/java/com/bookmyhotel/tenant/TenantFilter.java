@@ -9,7 +9,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import com.bookmyhotel.entity.User;
-import com.bookmyhotel.repository.UserRepository;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -25,11 +24,11 @@ public class TenantFilter {
     @PersistenceContext
     private EntityManager entityManager;
 
-    @Autowired
-    private UserRepository userRepository;
-
     public static final String TENANT_FILTER_NAME = "tenantFilter";
     public static final String TENANT_PARAMETER_NAME = "tenantId";
+
+    /** Tracks whether the filter was actually enabled for the current request thread. */
+    private static final ThreadLocal<Boolean> filterEnabled = ThreadLocal.withInitial(() -> false);
 
     /**
      * Enable tenant filter for current session
@@ -41,7 +40,6 @@ public class TenantFilter {
      * This method now gracefully handles the absence of filter definitions.
      */
     public void enableFilter() {
-        // Check if current user is system-wide
         if (isCurrentUserSystemWide()) {
             logger.debug("🌐 System-wide user detected - bypassing tenant filter");
             return;
@@ -49,36 +47,25 @@ public class TenantFilter {
 
         String tenantId = TenantContext.getTenantId();
         if (tenantId != null) {
-            try {
-                Session session = entityManager.unwrap(Session.class);
-                session.enableFilter(TENANT_FILTER_NAME)
-                        .setParameter(TENANT_PARAMETER_NAME, tenantId);
-                logger.debug("🏢 Tenant filter enabled for tenant: {}", tenantId);
-            } catch (Exception e) {
-                // With hotel-scoped entities, the tenantFilter may not exist
-                // This is expected and entities use hotel relationships for isolation
-                logger.debug("📋 Tenant filter not available (using hotel-scoped relationships): {}", e.getMessage());
-            }
+            Session session = entityManager.unwrap(Session.class);
+            session.enableFilter(TENANT_FILTER_NAME)
+                    .setParameter(TENANT_PARAMETER_NAME, tenantId);
+            filterEnabled.set(true);
+            logger.debug("🏢 Tenant filter enabled for tenant: {}", tenantId);
         }
     }
 
-    /**
-     * Disable tenant filter for current session
-     * Gracefully handles cases where filter doesn't exist
-     */
     public void disableFilter() {
-        try {
+        if (Boolean.TRUE.equals(filterEnabled.get())) {
             Session session = entityManager.unwrap(Session.class);
             session.disableFilter(TENANT_FILTER_NAME);
-        } catch (Exception e) {
-            // With hotel-scoped entities, the tenantFilter may not exist
-            // This is expected and can be safely ignored
-            logger.debug("📋 Tenant filter not available for disabling: {}", e.getMessage());
         }
+        filterEnabled.remove();
     }
 
     /**
-     * Check if the current authenticated user is system-wide
+     * Check if the current authenticated user is system-wide.
+     * Uses the already-loaded principal instead of issuing a DB query on every request.
      */
     private boolean isCurrentUserSystemWide() {
         try {
@@ -86,10 +73,10 @@ public class TenantFilter {
             if (authentication != null && authentication.isAuthenticated() &&
                     !authentication.getPrincipal().equals("anonymousUser")) {
 
-                String email = authentication.getName();
-                return userRepository.findByEmail(email)
-                        .map(User::isSystemWideUser)
-                        .orElse(false);
+                Object principal = authentication.getPrincipal();
+                if (principal instanceof User) {
+                    return ((User) principal).isSystemWideUser();
+                }
             }
         } catch (Exception e) {
             logger.warn("Error checking if user is system-wide: {}", e.getMessage());
