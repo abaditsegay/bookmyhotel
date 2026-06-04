@@ -253,12 +253,8 @@ public class BookingService {
 
             alignAssignedRoomStatusWithReservation(reservation);
 
-            // Generate a UUID-based placeholder confirmation number before first save
-            // We'll replace it with the ID-based number after save
-            String tempConfirmationNumber = "TEMP-" + UUID.randomUUID().toString().replace("-", "").substring(0, 16).toUpperCase();
-            reservation.setConfirmationNumber(tempConfirmationNumber);
-
-            // Save reservation
+            // Save first to obtain the DB-generated ID; confirmation number is set
+            // in the second save to avoid a temp value that exceeds the 20-char column.
             reservation = reservationRepository.save(reservation);
 
             // Generate and set final confirmation number using the actual ID
@@ -415,12 +411,8 @@ public class BookingService {
                 reservation.setPaymentStatus(PaymentStatus.PENDING);
             }
 
-            // Generate a UUID-based placeholder confirmation number before first save
-            // We'll replace it with the ID-based number after save
-            String tempConfirmationNumber = "TEMP-" + UUID.randomUUID().toString().replace("-", "").substring(0, 16).toUpperCase();
-            reservation.setConfirmationNumber(tempConfirmationNumber);
-
-            // Save reservation
+            // Save first to obtain the DB-generated ID; confirmation number is set
+            // in the second save to avoid a temp value that exceeds the 20-char column.
             reservation = reservationRepository.save(reservation);
 
             // Generate and set final confirmation number using the actual ID
