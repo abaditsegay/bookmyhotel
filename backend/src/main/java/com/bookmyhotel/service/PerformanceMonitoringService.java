@@ -1,7 +1,7 @@
 package com.bookmyhotel.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.actuate.metrics.MetricsEndpoint;
+import org.springframework.boot.micrometer.metrics.actuate.endpoint.MetricsEndpoint;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;

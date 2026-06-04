@@ -74,6 +74,8 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
     ? addAlpha(theme.palette.common.white, 0.06)
     : addAlpha(theme.palette.text.primary, 0.03);
   const surfaceBorder = addAlpha(theme.palette.text.primary, theme.palette.mode === 'dark' ? 0.16 : 0.1);
+  const productCardBorder = addAlpha(theme.palette.text.primary, theme.palette.mode === 'dark' ? 0.24 : 0.16);
+  const productCardHoverBorder = addAlpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.36 : 0.28);
   const accentSurface = getSectionTint(theme, 'primary');
   const accentBorder = addAlpha(readableAccentColor, theme.palette.mode === 'dark' ? 0.34 : 0.18);
   const [products, setProducts] = useState<Product[]>([]);
@@ -600,7 +602,7 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                           cursor: isOutOfStock ? 'not-allowed' : 'pointer',
                           position: 'relative',
                           border: isSelected ? '2px solid' : '1px solid',
-                          borderColor: isSelected ? accentBorder : surfaceBorder,
+                          borderColor: isSelected ? accentBorder : productCardBorder,
                           backgroundColor: isSelected
                             ? accentSurface
                             : isOutOfStock
@@ -612,7 +614,7 @@ const OrderCreation: React.FC<OrderCreationProps> = ({ onOrderComplete }) => {
                             boxShadow: isOutOfStock ? 'none' : `0 8px 24px ${addAlpha(COLORS.BLACK, theme.palette.mode === 'dark' ? 0.22 : 0.08)}`,
                             transform: isOutOfStock ? 'none' : 'translateY(-4px)',
                             backgroundColor: isOutOfStock ? neutralSurface : (isSelected ? accentSurface : neutralSurfaceHover),
-                            borderColor: isOutOfStock ? surfaceBorder : (isSelected ? accentBorder : addAlpha(readableAccentColor, 0.2))
+                            borderColor: isOutOfStock ? productCardBorder : (isSelected ? accentBorder : productCardHoverBorder)
                           },
                           transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                         }}

@@ -406,7 +406,7 @@ export const hotelAdminApi = {
   // Get hotel statistics
   getHotelStatistics: async (token: string): Promise<{ success: boolean; data?: HotelStatistics; message?: string }> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/hotel-admin/statistics`, {
+      const response = await fetch(`${API_BASE_URL}/hotel-admin/statistics?_t=${Date.now()}`, {
         method: 'GET',
         headers: getAuthHeaders(token),
       });
@@ -677,10 +677,10 @@ export const hotelAdminApi = {
       // Transform backend response to match expected structure
       const transformedData: RoomPage = {
         content: backendData.content || [],
-        totalElements: backendData.totalElements || 0,
-        totalPages: backendData.totalPages || 0,
-        size: backendData.size || size,
-        number: backendData.number || page,
+        totalElements: backendData.totalElements ?? backendData.page?.totalElements ?? 0,
+        totalPages: backendData.totalPages ?? backendData.page?.totalPages ?? 0,
+        size: backendData.size ?? backendData.page?.size ?? size,
+        number: backendData.number ?? backendData.page?.number ?? page,
       };
       
       return { success: true, data: transformedData };

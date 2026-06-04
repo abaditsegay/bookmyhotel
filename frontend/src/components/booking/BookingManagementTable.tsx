@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { alpha } from '@mui/material/styles';
 import { BookingService } from '../../services/BookingService';
+import { getPageTotalElements } from '../../utils/pagination';
 import {
   Box,
   Typography,
@@ -139,7 +140,8 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
   const debouncedSearchTerm = useDebounce(searchTerm, searchTerm.trim() ? 300 : 0);
   const effectiveSearchTerm = getEffectiveSearchTerm(debouncedSearchTerm);
 
-  // Manual refresh function (used by refresh button)
+  // Single authoritative data loader — used by auto-reload (page/search changes) and manual refresh.
+  // Uses effectiveSearchTerm so both paths always pass the same search value to the API.
   const loadBookings = React.useCallback(async () => {
     if (!token) {
       setLoading(false);
@@ -150,7 +152,6 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
       });
       return;
     }
-    // For hotel-admin mode, we need tenant context (tenantId should be available from JWT)
     if (mode === 'hotel-admin' && !tenantId) {
       setLoading(false);
       setSnackbar({
@@ -160,9 +161,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
       });
       return;
     }
-    
-    // console.log('BookingManagementTable: Manual refresh triggered');
-    
+
     setLoading(true);
     try {
       let result: any;
@@ -171,7 +170,7 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
           token,
           page,
           size,
-            effectiveSearchTerm ?? '',
+          effectiveSearchTerm ?? '',
           tenant?.id || null
         );
       } else {
@@ -179,37 +178,24 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
           token,
           page,
           size,
-            effectiveSearchTerm ?? ''
+          effectiveSearchTerm ?? ''
         );
       }
 
       if (result.success && result.data) {
-        // Handle different data structures between front-desk and hotel-admin APIs
         const content = result.data.content || [];
-        let totalElements = 0;
-        
-          if (mode === 'front-desk') {
-            // frontDeskApi returns: { content: [], totalElements: number, ... }
-            totalElements = result.data.totalElements || 0;
-          } else {
-            // hotelAdminApi returns Spring Boot Page: { content: [], totalElements: number, ... }
-            // NOT nested in page object - it's directly on the response
-            totalElements = result.data.totalElements || 0;
-          }        setBookings(content);
-        setTotalElements(totalElements);
+        const total = getPageTotalElements(result.data);
+        setBookings(content);
+        setTotalElements(total);
       } else {
         throw new Error(result.message || 'Failed to load bookings');
       }
     } catch (error) {
-      // console.error('Error loading bookings:', error);
-      
       setSnackbar({
         open: true,
         message: `Failed to load bookings: ${error instanceof Error ? error.message : 'Unknown error'}`,
         severity: 'error'
       });
-      
-      // Set empty state when API fails
       setBookings([]);
       setTotalElements(0);
     } finally {
@@ -217,120 +203,24 @@ const BookingManagementTable: React.FC<BookingManagementTableProps> = ({
     }
   }, [token, mode, page, size, effectiveSearchTerm, tenant, tenantId]);
 
-  // Centralized booking loading logic
+  // Trigger reload whenever pagination, search, or auth context changes.
   useEffect(() => {
-    const loadData = async () => {
-      if (!token) {
-        setLoading(false);
-        setSnackbar({
-          open: true,
-          message: 'Authentication required to load bookings',
-          severity: 'error'
-        });
-        return;
-      }
-      // For hotel-admin mode, we need tenant context (tenantId should be available from JWT)
-      if (mode === 'hotel-admin' && !tenantId) {
-        setLoading(false);
-        setSnackbar({
-          open: true,
-          message: 'Tenant authentication required. Please log in again.',
-          severity: 'error'
-        });
-        return;
-      }
-      
-      // console.log('BookingManagementTable: Loading bookings with params:', { 
-      //   mode, 
-      //   page,
-      //   size,
-      //   searchTerm: debouncedSearchTerm,
-      //   tenant: tenant?.id
-      // });
-      
-      setLoading(true);
-      try {
-        let result: any;
-        if (mode === 'front-desk') {
-          // Use front desk API with tenant ID
-          result = await frontDeskApiService.getAllBookings(
-            token,
-            page,
-            size,
-            debouncedSearchTerm,
-            tenant?.id || null
-          );
-        } else {
-          // Use hotel admin API
-          // console.log('BookingManagementTable: Calling hotel admin API with search term:', debouncedSearchTerm);
-          result = await hotelAdminApi.getHotelBookings(
-            token,
-            page,
-            size,
-            debouncedSearchTerm
-          );
-        }
-
-        // console.log('BookingManagementTable: API response:', result);
-
-        if (result.success && result.data) {
-          // Handle different data structures between front-desk and hotel-admin APIs
-          const content = result.data.content || [];
-          let totalElements = 0;
-          
-          if (mode === 'front-desk') {
-            // frontDeskApi returns: { content: [], totalElements: number, ... }
-            totalElements = result.data.totalElements || 0;
-          } else {
-            // hotelAdminApi returns Spring Boot Page: { content: [], totalElements: number, ... }
-            // NOT nested in page object - it's directly on the response
-            totalElements = result.data.totalElements || 0;
-          }
-          
-          setBookings(content);
-          setTotalElements(totalElements);
-        } else {
-          throw new Error(result.message || 'Failed to load bookings');
-        }
-      } catch (error) {
-        // console.error('Error loading bookings:', error);
-        
-        setSnackbar({
-          open: true,
-          message: `Failed to load bookings: ${error instanceof Error ? error.message : 'Unknown error'}`,
-          severity: 'error'
-        });
-        
-        // Set empty state when API fails
-        setBookings([]);
-        setTotalElements(0);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     if (effectiveSearchTerm === null) {
       return;
     }
+    loadBookings();
+  }, [page, size, token, mode, effectiveSearchTerm, tenant, tenantId, loadBookings]);
 
-    loadData();
-  }, [page, size, token, mode, debouncedSearchTerm, effectiveSearchTerm, tenant, tenantId]);
-
-  // Debug: Log bookings data when it changes
-  useEffect(() => {
-    // Track bookings data changes
-  }, [bookings]);
-
+  // Reset to page 0 when search changes.
   useEffect(() => {
     if (effectiveSearchTerm !== null) {
       setPage(0);
     }
   }, [effectiveSearchTerm]);
 
-  // Handle refresh trigger - when this prop changes, refresh the data
+  // Handle external refresh trigger (e.g. after walk-in booking).
   useEffect(() => {
     if (refreshTrigger && refreshTrigger > 0) {
-      // console.log('BookingManagementTable: Refresh trigger received:', refreshTrigger);
       loadBookings();
     }
   }, [refreshTrigger, loadBookings]);

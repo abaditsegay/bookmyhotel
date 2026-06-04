@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   alpha,
   Box,
@@ -70,7 +70,7 @@ const HotelAdminDashboard: React.FC = () => {
   const reportInsetSurface = theme.palette.mode === 'dark'
     ? addAlpha(theme.palette.common.white, 0.04)
     : theme.palette.common.white;
-  const COLORS = {
+  const COLORS = useMemo(() => ({
     SECONDARY: theme.palette.secondary.main,
     SECONDARY_HOVER: theme.palette.secondary.light,
     WHITE: theme.palette.common.white,
@@ -82,7 +82,7 @@ const HotelAdminDashboard: React.FC = () => {
     BOOKED: theme.palette.info.main,
     PURPLE_600: theme.palette.primary.dark,
     TEXT_PRIMARY: theme.palette.text.primary,
-  } as const;
+  } as const), [theme]);
   const { t } = useTranslation();
   const { token, user } = useAuth();
   const navigate = useNavigate();
@@ -111,7 +111,8 @@ const HotelAdminDashboard: React.FC = () => {
     };
   }, []);
 
-  // Sync tab state with URL parameters when they change externally
+  // Sync tab state with URL parameters when they change externally.
+  // activeTab is intentionally excluded from deps: we only want to react to URL/online changes.
   useEffect(() => {
     const tabParam = searchParams.get('tab');
     const urlTab = tabParam ? parseInt(tabParam, 10) : 0;
@@ -119,7 +120,8 @@ const HotelAdminDashboard: React.FC = () => {
     if (nextTab !== activeTab) {
       setActiveTab(nextTab);
     }
-  }, [activeTab, isOnline, searchParams]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOnline, searchParams]);
 
   // Nested tabs state for Hotel Details tab
   const [hotelDetailsTab, setHotelDetailsTab] = useState(0);
@@ -178,11 +180,6 @@ const HotelAdminDashboard: React.FC = () => {
       preloadRoomData(); // Preload room data for offline use
     }
   }, [token, user?.hotelId]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Load initial data when component mounts or tab changes
-  useEffect(() => {
-    // Tab changes are now handled by individual components
-  }, [activeTab, token]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Role-based access control - check after all hooks
   const hasHotelAdminAccess = user?.roles?.includes('HOTEL_ADMIN') || user?.role === 'HOTEL_ADMIN';
@@ -985,8 +982,8 @@ const HotelAdminDashboard: React.FC = () => {
             refreshTrigger={bookingRefreshTrigger}
             onBookingAction={(booking, action) => {
               // console.log(`${action} for booking:`, booking);
-              // Handle booking actions like check-in/check-out
-              // BookingManagementTable handles its own data refresh
+                // Keep summary cards in sync with booking-table mutations like check-in/out.
+                setBookingRefreshTrigger(prev => prev + 1);
             }}
             onWalkInRequest={() => {
               // console.log('Walk-in booking requested from BookingManagementTable');

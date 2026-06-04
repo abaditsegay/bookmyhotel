@@ -122,7 +122,7 @@ KillMode=mixed
 KillSignal=SIGTERM
 TimeoutStopSec=30
 
-Environment=JAVA_OPTS="-Xmx512m -Xms256m"
+Environment="JAVA_OPTS=-Xmx512m -Xms256m"
 Environment=DB_USERNAME=admin
 Environment=DB_PASSWORD=Rootpassword123!
 Environment=JWT_KEY=your-super-secret-jwt-key-change-this-in-production-make-it-very-long-and-random

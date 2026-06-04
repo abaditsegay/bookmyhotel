@@ -40,7 +40,7 @@ public class TenantManagementService {
      */
     @Transactional(readOnly = true)
     public Page<TenantDTO> getAllTenants(Pageable pageable, String search, Boolean isActive) {
-        Specification<Tenant> spec = Specification.where(null);
+        Specification<Tenant> spec = (root, query, cb) -> cb.conjunction();
 
         if (search != null && !search.trim().isEmpty()) {
             spec = spec.and((root, query, cb) -> cb.or(

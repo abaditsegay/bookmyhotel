@@ -175,39 +175,6 @@ const RoleBasedRouter: React.FC = () => {
     if (user.roles.includes('HOUSEKEEPING') || user.roles.includes('MAINTENANCE')) {
       return <Navigate to="/staff/dashboard" replace />;
     }
-    
-    // Legacy single role handling for backward compatibility
-    if (user.role === 'SUPER_ADMIN') {
-      return <Navigate to="/system-dashboard" replace />;
-    }
-    
-    if (user.role === 'HOTEL_ADMIN') {
-      return <Navigate to="/hotel-admin/dashboard" replace />;
-    }
-    
-    if (user.role === 'ADMIN' && user.tenantId) {
-      return <Navigate to="/admin/dashboard" replace />;
-    }
-    
-    if (user.role === 'ADMIN' && !user.tenantId) {
-      return <Navigate to="/system-dashboard" replace />;
-    }
-    
-    if (user.role === 'FRONTDESK') {
-      return <Navigate to="/frontdesk/dashboard" replace />;
-    }
-
-    if (user.role === 'TESTER') {
-      return <Navigate to="/uat" replace />;
-    }
-    
-    if (user.role === 'OPERATIONAL_ADMIN') {
-      return <Navigate to="/operations/dashboard" replace />;
-    }
-    
-    if (user.role === 'HOUSEKEEPING' || user.role === 'MAINTENANCE') {
-      return <Navigate to="/staff/dashboard" replace />;
-    }
   }
   
   // For unauthenticated users or users without specific roles, redirect to hotel search

@@ -21,8 +21,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
@@ -81,25 +81,25 @@ class BookingPaymentCallbackIntegrationTest extends MySqlIntegrationTestSupport 
     @Autowired
     private PaymentCallbackEventRepository paymentCallbackEventRepository;
 
-    @MockBean
+        @MockitoBean
     private EmailService emailService;
 
-    @MockBean
+        @MockitoBean
     private BookingTokenService bookingTokenService;
 
-    @MockBean
+        @MockitoBean
     private RoomTypePricingService roomTypePricingService;
 
-    @MockBean
+        @MockitoBean
     private HotelPricingConfigService hotelPricingConfigService;
 
-    @MockBean
+        @MockitoBean
     private HotelActivityAuditService hotelActivityAuditService;
 
-    @MockBean
+        @MockitoBean
     private SystemSettingsService systemSettingsService;
 
-    @SpyBean
+        @MockitoSpyBean
     private EthiopianMobilePaymentService paymentServiceSpy;
 
     @BeforeEach

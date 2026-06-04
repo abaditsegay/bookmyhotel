@@ -72,14 +72,16 @@ const FrontDeskDashboard: React.FC = () => {
     };
   }, []);
 
-  // Sync tab state with URL parameters when they change externally
+  // Sync tab state with URL parameters when they change externally.
+  // activeTab is intentionally excluded from deps: we only want to react to URL/online changes.
   useEffect(() => {
     const urlTab = parseInt(searchParams.get('tab') || '0', 10);
     const nextTab = normalizeFrontDeskTab(urlTab, isOnline);
     if (nextTab !== activeTab) {
       setActiveTab(nextTab);
     }
-  }, [activeTab, isOnline, searchParams]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOnline, searchParams]);
   const [stats, setStats] = useState<FrontDeskStats | null>(null);
   const [walkInModalOpen, setWalkInModalOpen] = useState(false);
   
@@ -98,11 +100,6 @@ const FrontDeskDashboard: React.FC = () => {
     open: false,
     message: ''
   });
-
-  // Debug modal state changes
-  useEffect(() => {
-    // console.log('FrontDeskDashboard - walkInModalOpen state changed:', walkInModalOpen);
-  }, [walkInModalOpen]);
 
   // Update URL when tab changes
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {

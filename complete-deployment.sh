@@ -83,7 +83,7 @@ ExecStart=/usr/bin/java -jar target/backend-1.0.0.jar --spring.profiles.active=a
 Restart=always
 RestartSec=10
 Environment=JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
-Environment=JAVA_OPTS=-Xms512m -Xmx1g
+Environment="JAVA_OPTS=-Xms512m -Xmx1g"
 
 [Install]
 WantedBy=multi-user.target

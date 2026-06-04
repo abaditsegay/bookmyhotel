@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { buildApiUrl } from '../utils/apiConfig';
 import {
   Container,
   Typography,
@@ -61,7 +62,7 @@ const HotelRegistrationStatus: React.FC = () => {
     setLoading(true);
     
     try {
-      const response = await fetch(`/api/public/hotel-registration/status?email=${encodeURIComponent(email.trim())}`);
+      const response = await fetch(buildApiUrl(`/public/hotel-registration/status?email=${encodeURIComponent(email.trim())}`));
       
       if (response.status === 404) {
         showSubmissionError(t('hotelRegistrationStatus.errors.notFound'));

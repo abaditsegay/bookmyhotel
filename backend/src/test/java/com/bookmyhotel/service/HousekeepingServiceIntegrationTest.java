@@ -9,7 +9,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
@@ -54,7 +54,7 @@ class HousekeepingServiceIntegrationTest extends MySqlIntegrationTestSupport {
     @Autowired
     private HousekeepingTaskRepository housekeepingTaskRepository;
 
-    @MockBean
+    @MockitoBean
     private HotelActivityAuditService hotelActivityAuditService;
 
     @Test

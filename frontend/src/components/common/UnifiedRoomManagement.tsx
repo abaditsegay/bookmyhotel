@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import { getPageTotalElements } from '../../utils/pagination';
 import {
   Paper,
   Table,
@@ -46,7 +47,7 @@ import { useSubmissionError } from '../../contexts/SubmissionErrorContext';
 import { useDebounce } from '../../hooks/useDebounce';
 import { formatCurrency } from '../../utils/currencyUtils';
 import { buildApiUrl } from '../../config/apiConfig';
-import { hotelAdminApi, RoomLimitInfo } from '../../services/hotelAdminApi';
+import { hotelAdminApi, RoomLimitInfo, RoomResponse } from '../../services/hotelAdminApi';
 import * as frontDeskApi from '../../services/frontDeskApi';
 import { ROOM_TYPES, getRoomTypeLabel } from '../../constants/roomTypes';
 import PremiumTextField from './PremiumTextField';
@@ -57,30 +58,13 @@ import { useThemeColors } from '../../theme/useThemeColors';
 import { getReadableAccentTextColor } from '../../theme/surfaces';
 import { getEffectiveSearchTerm } from '../../utils/search';
 
-// Import hotel admin specific components conditionally
-let RoomTypePricing: any = null;
-let RoomBulkUpload: any = null;
-
-try {
-  RoomTypePricing = require('../RoomTypePricing').default;
-  RoomBulkUpload = require('../hotel-admin/RoomBulkUpload').default;
-} catch (error) {
-  // Components not available in this context
-}
-
-interface RoomResponse {
-  id: number;
-  roomNumber: string;
-  roomType: string;
-  pricePerNight: number;
-  capacity: number;
-  description?: string;
-  isAvailable: boolean;
-  status: string;
-  hotelId: number;
-  hotelName: string;
-  currentGuest?: string;
-}
+// Lazy-load hotel-admin-only components so this shared component stays tree-shakeable.
+const RoomTypePricing = React.lazy(() =>
+  import('../RoomTypePricing').then(m => ({ default: m.default })).catch(() => ({ default: () => null }))
+);
+const RoomBulkUpload = React.lazy(() =>
+  import('../hotel-admin/RoomBulkUpload').then(m => ({ default: m.default })).catch(() => ({ default: () => null }))
+);
 
 interface UnifiedRoomManagementProps {
   mode?: 'hotel-admin' | 'front-desk';
@@ -201,8 +185,7 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
         }
         
         setRooms(roomsData);
-        // Handle different response structures
-        const total = (response.data as any).totalElements ?? (response.data as any).page?.totalElements ?? 0;
+        const total = getPageTotalElements(response.data);
         setTotalElements(total);
       } else {
         setError(response.message || 'Failed to load rooms');
@@ -436,16 +419,20 @@ const UnifiedRoomManagement: React.FC<UnifiedRoomManagementProps> = ({
           }}
         >
           <Tab label={t(`${translationPrefix}.tabs.roomList`)} />
-          {RoomTypePricing && <Tab label={t(`${translationPrefix}.tabs.pricing`)} />}
-          {RoomBulkUpload && <Tab label={t(`${translationPrefix}.tabs.bulkUpload`)} />}
+          {mode === 'hotel-admin' && <Tab label={t(`${translationPrefix}.tabs.pricing`)} />}
+          {mode === 'hotel-admin' && <Tab label={t(`${translationPrefix}.tabs.bulkUpload`)} />}
         </Tabs>
 
-        {activeTab === 1 && RoomTypePricing && (
-          <RoomTypePricing />
+        {activeTab === 1 && mode === 'hotel-admin' && (
+          <React.Suspense fallback={<CircularProgress />}>
+            <RoomTypePricing />
+          </React.Suspense>
         )}
 
-        {activeTab === 2 && RoomBulkUpload && (
-          <RoomBulkUpload onUploadComplete={loadRooms} />
+        {activeTab === 2 && mode === 'hotel-admin' && (
+          <React.Suspense fallback={<CircularProgress />}>
+            <RoomBulkUpload onUploadComplete={loadRooms} />
+          </React.Suspense>
         )}
       </>
     );

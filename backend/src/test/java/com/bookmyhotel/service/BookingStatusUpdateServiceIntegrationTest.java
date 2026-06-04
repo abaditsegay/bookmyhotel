@@ -15,7 +15,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import com.bookmyhotel.dto.BookingResponse;
 import com.bookmyhotel.entity.GuestInfo;
@@ -57,10 +57,10 @@ class BookingStatusUpdateServiceIntegrationTest extends MySqlIntegrationTestSupp
     @Autowired
     private ReservationRepository reservationRepository;
 
-    @MockBean
+    @MockitoBean
     private BookingChangeNotificationService bookingChangeNotificationService;
 
-    @MockBean
+    @MockitoBean
     private AutomatedRoomStatusService automatedRoomStatusService;
 
     @Test

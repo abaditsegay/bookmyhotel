@@ -283,7 +283,7 @@ export const frontDeskApiService = {
   ): Promise<{ success: boolean; data?: FrontDeskBooking; message?: string }> => {
     try {
       const response = await fetch(
-        `${API_BASE_URL}/front-desk/bookings/${reservationId}/status?status=${status}`,
+        `${API_BASE_URL}/front-desk/bookings/${reservationId}/status?status=${encodeURIComponent(status)}`,
         {
           method: 'PUT',
           headers: getAuthHeaders(token, tenantId),
@@ -742,7 +742,7 @@ export const frontDeskApiService = {
    */
   getFrontDeskStats: async (token: string, tenantId: string | null = null): Promise<{ success: boolean; data?: FrontDeskStats; message?: string }> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/front-desk/stats`, {
+      const response = await fetch(`${API_BASE_URL}/front-desk/stats?_t=${Date.now()}`, {
         method: 'GET',
         headers: getAuthHeaders(token, tenantId),
       });

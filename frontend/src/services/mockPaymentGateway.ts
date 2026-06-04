@@ -149,9 +149,11 @@ class MockPaymentGateway {
   }
 
   /**
-   * Get pre-filled test data for a payment method
+   * Get pre-filled test data for a payment method.
+   * Only available in development — returns empty object in production.
    */
   public getTestData(paymentMethod: PaymentMethod): any {
+    if (!MOCK_PAYMENT_TEST_DATA) return {};
     switch (paymentMethod) {
       case PaymentMethod.CARD:
         return MOCK_PAYMENT_TEST_DATA.CARD;

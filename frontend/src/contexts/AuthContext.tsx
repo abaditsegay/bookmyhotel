@@ -311,7 +311,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
         // Helper properties
         isSystemWide: (loginData.tenantId === null || loginData.tenantId === undefined) && 
                       (Array.isArray(loginData.roles) ? loginData.roles : [loginData.roles])
-                      .some((role: string) => ['SUPER_ADMIN', 'ADMIN', 'GUEST', 'CUSTOMER'].includes(role)), // true if no tenant AND has system-wide role
+                      .some((role: string) => ['SUPER_ADMIN', 'ADMIN'].includes(role)), // true only for system-wide admin roles without a tenant
         isTenantBound: (loginData.tenantId !== null && loginData.tenantId !== undefined), // true if user has a tenant assignment
       };
 
@@ -409,14 +409,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children, onTokenCha
   const logout = () => {
     setSessionExpired(false);
     setError(null);
-    
-    // Stop room cache periodic refresh
-    offlineStorage.deactivateStaffSessions().catch(error => {
-      // console.error('Failed to deactivate staff sessions:', error);
-    });
+
+    // Notify backend to invalidate the refresh token (fire-and-forget)
+    const currentToken = token;
+    if (currentToken) {
+      fetch(`${API_CONFIG.BASE_URL}/auth/logout`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${currentToken}`,
+        },
+      }).catch(() => {
+        // Non-critical — client-side state is always cleared regardless
+      });
+    }
+
+    // Stop room cache periodic refresh and deactivate offline sessions
+    offlineStorage.deactivateStaffSessions().catch(() => {});
 
     clearAuthenticatedState(false);
-    
   };
 
   const handleSessionExpired = () => {
